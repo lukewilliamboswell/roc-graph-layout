@@ -54,14 +54,17 @@ requested bytes, refuting those two suspected call sites. The dominant alias
 was in `Quadtree.insert_at`: `List.set(...) ?? cells` retained the pre-update
 flat cell store through recursive insertion and forced repeated copies. Using
 an unreachable empty fallback preserved geometry while reducing the 3,000-node
-star from 2,395,816,472 to 148,846,040 requested bytes (93.8%) and about 322 ms
-to 30 ms on the reference setup. Allocation remained deterministic and the
-native smoke suite passed.
+star from 2,395,816,472 to 148,846,040 requested bytes (93.8%).
 
-The remaining growth is still superlinear because recursive insertion updates
-the growing flat cell store at every visited tree level. Treat a different
-quadtree construction strategy as a separate follow-up; H1's proposed force
-fold ownership mechanism is resolved.
+A phase benchmark then showed quadtree construction itself requested only
+1,229,192 bytes at 3,000 nodes and 4,506,984 at 10,000. The remaining quadratic
+traffic came from component position write-back: `acc.set(...) ?? acc` copied
+the global position list for every member. Its index is proven in bounds, so an
+unreachable empty fallback removes that alias. Together the fixes reduce the
+3,000-node star to 4,822,040 requested bytes and about 14 ms, and the 10,000-node
+star to 17,145,952 bytes. Allocation remained deterministic and the native
+smoke suite passed. This confirms the general ownership mechanism, but narrows
+it away from the originally suspected spring and iteration-position folds.
 
 **Hypothesis.** A force refinement iteration repeatedly copies one or more
 node-sized lists. In particular, the position fold both captures the original

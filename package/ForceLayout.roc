@@ -720,9 +720,12 @@ ForceInternals :: {}.{
 					max_iterations: input.max_iterations,
 					rand: st.rand,
 				})
+				# `global` came from indices_up_to(n), and the destination has
+				# length n. The fallback is unreachable and must not retain `acc`:
+				# doing so makes every write copy the whole global position list.
 				positions = members.fold_with_index(
 					st.positions,
-					|acc, global, local| acc.set(global, sim.positions.get(local) ?? zero) ?? acc,
+					|acc, global, local| acc.set(global, sim.positions.get(local) ?? zero) ?? [],
 				)
 				{
 					positions,
