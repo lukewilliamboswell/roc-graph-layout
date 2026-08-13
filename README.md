@@ -48,6 +48,16 @@ result = Layered.layout(input, settings, Layered.default_run)?
 # result.layout.bounds encloses the drawing
 ```
 
+## Example gallery
+
+Click a layout to open the example app that generated it.
+
+| Directed flows | Hierarchies |
+| --- | --- |
+| [Build pipeline](examples/build_pipeline/main.roc) — layered<br>[![A layered build pipeline](examples/build_pipeline/output.svg)](examples/build_pipeline/main.roc) | [Organization chart](examples/org_chart/main.roc) — tree<br>[![A level-by-level organization chart](examples/org_chart/output.svg)](examples/org_chart/main.roc) |
+| [Service ring](examples/service_ring/main.roc) — circular<br>[![A circular service dependency graph](examples/service_ring/output.svg)](examples/service_ring/main.roc) | [Mind map](examples/mind_map/main.roc) — radial tree<br>[![A radial mind map](examples/mind_map/output.svg)](examples/mind_map/main.roc) |
+| [Collaboration network](examples/collab_network/main.roc) — force-directed<br>[![A force-directed collaboration network](examples/collab_network/output.svg)](examples/collab_network/main.roc) | |
+
 See the [build-pipeline example](examples/build_pipeline/main.roc) for a
 complete program that writes the result as SVG, the
 [org-chart example](examples/org_chart/main.roc) for a level-by-level tree,
