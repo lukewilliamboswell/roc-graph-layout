@@ -73,9 +73,9 @@ CircularInternals :: {}.{
 					lists
 				} else {
 					from_list = lists.get(edge.from) ?? []
-					with_from = lists.set(edge.from, from_list.append(edge.to)) ?? lists
+					with_from = lists.set(edge.from, from_list.append(edge.to)) ?? []
 					to_list = with_from.get(edge.to) ?? []
-					with_from.set(edge.to, to_list.append(edge.from)) ?? with_from
+					with_from.set(edge.to, to_list.append(edge.from)) ?? []
 				},
 		)
 
@@ -102,31 +102,39 @@ CircularInternals :: {}.{
 	ring_order : U64, List({ from : U64, to : U64 }) -> List(U64)
 	ring_order = |node_count, edges| {
 		neighbors = CircularInternals.neighbor_lists(node_count, edges)
-		by_degree = CircularInternals.indices_up_to(node_count).sort_with(
-			|a, b| {
-				da = (neighbors.get(a) ?? []).len()
-				db = (neighbors.get(b) ?? []).len()
-				if da > db {
-					LT
-				} else if da < db {
-					GT
-				} else if a < b {
-					LT
-				} else {
-					GT
-				}
-			},
+		degree_order = |a, b| {
+			da = (neighbors.get(a) ?? []).len()
+			db = (neighbors.get(b) ?? []).len()
+			if da > db {
+				LT
+			} else if da < db {
+				GT
+			} else if a < b {
+				LT
+			} else {
+				GT
+			}
+		}
+		indices = CircularInternals.indices_up_to(node_count)
+		already_ordered = indices.fold_with_index(
+			True,
+			|ordered, node, index| ordered and (index == 0 or degree_order(indices.get(index - 1) ?? node, node) != GT),
 		)
+		by_degree = if already_ordered {
+			indices
+		} else {
+			indices.sort_with(degree_order)
+		}
 
-		seeded = { order: [], placed: List.repeat(False, node_count), cursor: 0 }
+		seeded = { order: List.repeat(0, node_count), placed: List.repeat(False, node_count), cursor: 0 }
 		CircularInternals.indices_up_to(node_count).fold(
 			seeded,
-			|state, _step| {
+			|state, step| {
 				affinity_pick = match (
-					if state.order.is_empty() {
+					if step == 0 {
 						Err(Empty)
 					} else {
-						state.order.get(state.order.len() - 1)
+						state.order.get(step - 1)
 					}
 				) {
 					Err(_) => None
@@ -155,8 +163,8 @@ CircularInternals :: {}.{
 
 				match affinity_pick {
 					Some(found) => {
-						order: state.order.append(found.node),
-						placed: state.placed.set(found.node, True) ?? state.placed,
+						order: state.order.set(step, found.node) ?? [],
+						placed: state.placed.set(found.node, True) ?? [],
 						cursor: state.cursor,
 					}
 
@@ -165,8 +173,8 @@ CircularInternals :: {}.{
 						match advanced.pick {
 							None => state
 							Some(node) => {
-								order: state.order.append(node),
-								placed: state.placed.set(node, True) ?? state.placed,
+								order: state.order.set(step, node) ?? [],
+								placed: state.placed.set(node, True) ?? [],
 								cursor: advanced.cursor,
 							}
 						}
@@ -182,6 +190,21 @@ CircularInternals :: {}.{
 		sequence.fold_with_index(
 			List.repeat(0, node_count),
 			|acc, node, seat| acc.set(node, seat) ?? acc,
+		)
+
+	## Edge indices incident to each node, preserving source edge order.
+	incident_edge_indices : U64, List({ from : U64, to : U64 }) -> List(List(U64))
+	incident_edge_indices = |node_count, edges|
+		edges.fold_with_index(
+			List.repeat([], node_count),
+			|lists, edge, index| if edge.from == edge.to {
+				lists
+			} else {
+				from_edges = lists.get(edge.from) ?? []
+				with_from = lists.set(edge.from, from_edges.append(index)) ?? []
+				to_edges = with_from.get(edge.to) ?? []
+				with_from.set(edge.to, to_edges.append(index)) ?? []
+			},
 		)
 
 	## Whether two chords of the ring cross: never when they share an
@@ -207,38 +230,61 @@ CircularInternals :: {}.{
 			a_inside != b_inside
 		}
 
+	seat_for_swap : List(U64), U64, U64, U64, U64, U64, Bool -> U64
+	seat_for_swap = |seats, node, u, v, u_seat, v_seat, swapped|
+		if swapped and node == u {
+			v_seat
+		} else if swapped and node == v {
+			u_seat
+		} else {
+			seats.get(node) ?? 0
+		}
+
 	## Crossings involving at least one edge incident to `u` or `v`, each
 	## crossing pair counted once. Self-loops never cross anything.
-	crossings_touching : List({ from : U64, to : U64 }), List(U64), U64, U64 -> U64
-	crossings_touching = |edges, seats, u, v| {
-		touching = edges.map(
-			|e| e.from != e.to and (e.from == u or e.to == u or e.from == v or e.to == v),
+	crossings_touching : List({ from : U64, to : U64 }), List(U64), List(List(U64)), U64, U64, Bool -> U64
+	crossings_touching = |edges, seats, incident, u, v, swapped| {
+		u_seat = seats.get(u) ?? 0
+		v_seat = seats.get(v) ?? 0
+		touching = (incident.get(u) ?? []).fold(
+			incident.get(v) ?? [],
+			|indices, index| if indices.contains(index) {
+				indices
+			} else {
+				indices.append(index)
+			},
 		)
-
-		edges.fold_with_index(
+		touching.fold(
 			0,
-			|acc, e, i|
-				if !(touching.get(i) ?? False) {
-					acc
-				} else {
-					e_seats = { a: seats.get(e.from) ?? 0, b: seats.get(e.to) ?? 0 }
-					edges.fold_with_index(
-						acc,
-						|inner, f, j|
-							if j == i or f.from == f.to {
-								inner
-							} else if (touching.get(j) ?? False) and j < i {
-								# already counted with the roles swapped
-								inner
-							} else {
-								f_seats = { a: seats.get(f.from) ?? 0, b: seats.get(f.to) ?? 0 }
-								if CircularInternals.chords_cross(e_seats, f_seats) {
-									inner + 1
-								} else {
+			|acc, i|
+				match edges.get(i) {
+					Err(_) => acc
+					Ok(e) => {
+						e_seats = {
+							a: CircularInternals.seat_for_swap(seats, e.from, u, v, u_seat, v_seat, swapped),
+							b: CircularInternals.seat_for_swap(seats, e.to, u, v, u_seat, v_seat, swapped),
+						}
+						edges.fold_with_index(
+							acc,
+							|inner, f, j|
+								if j == i or f.from == f.to {
 									inner
-								}
-							},
-					)
+								} else if (f.from == u or f.to == u or f.from == v or f.to == v) and j < i {
+									# already counted with the roles swapped
+									inner
+								} else {
+									f_seats = {
+										a: CircularInternals.seat_for_swap(seats, f.from, u, v, u_seat, v_seat, swapped),
+										b: CircularInternals.seat_for_swap(seats, f.to, u, v, u_seat, v_seat, swapped),
+									}
+									if CircularInternals.chords_cross(e_seats, f_seats) {
+										inner + 1
+									} else {
+										inner
+									}
+								},
+						)
+					}
 				},
 		)
 	}
@@ -247,10 +293,11 @@ CircularInternals :: {}.{
 	## the two seated nodes whenever that strictly reduces the crossings
 	## their edges are involved in — the same adjacent-swap machinery the
 	## layer sweep uses, bent around a ring.
-	polish_round : List(U64), List({ from : U64, to : U64 }), U64 -> { sequence : List(U64), improved : Bool }
-	polish_round = |sequence, edges, node_count|
-		CircularInternals.indices_up_to(sequence.len()).fold(
-			{ sequence, improved: False },
+	polish_round : List(U64), List({ from : U64, to : U64 }), List(List(U64)), U64 -> { sequence : List(U64), improved : Bool }
+	polish_round = |sequence, edges, incident, node_count| {
+		initial_seats = CircularInternals.seats_of(sequence, node_count)
+		polished = CircularInternals.indices_up_to(sequence.len()).fold(
+			{ sequence, seats: initial_seats, improved: False },
 			|state, seat| {
 				next_seat = if seat + 1 == state.sequence.len() {
 					0
@@ -259,21 +306,24 @@ CircularInternals :: {}.{
 				}
 				u = state.sequence.get(seat) ?? 0
 				v = state.sequence.get(next_seat) ?? 0
-				seats = CircularInternals.seats_of(state.sequence, node_count)
-				before = CircularInternals.crossings_touching(edges, seats, u, v)
-				half_swapped = seats.set(u, seats.get(v) ?? 0) ?? seats
-				swapped_seats = half_swapped.set(v, seats.get(u) ?? 0) ?? half_swapped
-				after = CircularInternals.crossings_touching(edges, swapped_seats, u, v)
+				u_seat = state.seats.get(u) ?? 0
+				v_seat = state.seats.get(v) ?? 0
+				before = CircularInternals.crossings_touching(edges, state.seats, incident, u, v, False)
+				after = CircularInternals.crossings_touching(edges, state.seats, incident, u, v, True)
 
 				if after < before {
-					half_sequence = state.sequence.set(seat, v) ?? state.sequence
-					swapped_sequence = half_sequence.set(next_seat, u) ?? half_sequence
-					{ sequence: swapped_sequence, improved: True }
+					half_swapped = state.seats.set(u, v_seat) ?? []
+					swapped_seats = half_swapped.set(v, u_seat) ?? []
+					half_sequence = state.sequence.set(seat, v) ?? []
+					swapped_sequence = half_sequence.set(next_seat, u) ?? []
+					{ sequence: swapped_sequence, seats: swapped_seats, improved: True }
 				} else {
 					state
 				}
 			},
 		)
+		{ sequence: polished.sequence, improved: polished.improved }
+	}
 
 	## Bounded adjacent-swap polish: rounds run until one makes no swap or
 	## the cap is reached, so termination never depends on convergence.
@@ -282,13 +332,14 @@ CircularInternals :: {}.{
 		if sequence.len() < 4 or edges.len() < 2 {
 			sequence
 		} else {
+			incident = CircularInternals.incident_edge_indices(node_count, edges)
 			CircularInternals.indices_up_to(round_cap).fold(
 				{ sequence, done: False },
 				|state, _round|
 					if state.done {
 						state
 					} else {
-						round = CircularInternals.polish_round(state.sequence, edges, node_count)
+						round = CircularInternals.polish_round(state.sequence, edges, incident, node_count)
 						{ sequence: round.sequence, done: !round.improved }
 					},
 			).sequence
@@ -377,68 +428,62 @@ CircularInternals :: {}.{
 
 	## For each edge, its rank among the edges joining the same unordered
 	## node pair, and how many there are — what deterministic fanning needs.
+	pair_slot : List(Bool), List(U64), List(U64), U64, U64, U64, U64 -> U64
+	pair_slot = |occupied, lows, highs, lo, hi, start, step| {
+		capacity = occupied.len()
+		slot = (start + step) % capacity
+		if step + 1 >= capacity or !(occupied.get(slot) ?? False) or ((lows.get(slot) ?? 0) == lo and (highs.get(slot) ?? 0) == hi) {
+			slot
+		} else {
+			CircularInternals.pair_slot(occupied, lows, highs, lo, hi, start, step + 1)
+		}
+	}
+
 	parallel_ranks : List({ from : U64, to : U64 }) -> List({ rank : U64, count : U64 })
 	parallel_ranks = |edges| {
-		keyed = edges.map_with_index(
-			|edge, index| {
-				lo = if edge.from < edge.to {
-					edge.from
-				} else {
-					edge.to
+		key_of = |edge| {
+			lo = if edge.from < edge.to {
+				edge.from
+			} else {
+				edge.to
+			}
+			hi = if edge.from < edge.to {
+				edge.to
+			} else {
+				edge.from
+			}
+			{ lo, hi }
+		}
+		capacity = edges.len() * 2 + 1
+		counted = edges.fold(
+			{ occupied: List.repeat(False, capacity), lows: List.repeat(0, capacity), highs: List.repeat(0, capacity), counts: List.repeat(0, capacity) },
+			|table, edge| {
+				key = key_of(edge)
+				start = key.lo.times_wrap(11400714819323198485).plus_wrap(key.hi.times_wrap(14029467366897019727)) % capacity
+				slot = CircularInternals.pair_slot(table.occupied, table.lows, table.highs, key.lo, key.hi, start, 0)
+				{
+					occupied: table.occupied.set(slot, True) ?? [],
+					lows: table.lows.set(slot, key.lo) ?? [],
+					highs: table.highs.set(slot, key.hi) ?? [],
+					counts: table.counts.set(slot, (table.counts.get(slot) ?? 0) + 1) ?? [],
 				}
-				hi = if edge.from < edge.to {
-					edge.to
-				} else {
-					edge.from
-				}
-				{ lo, hi, index }
 			},
 		)
-		sorted = keyed.sort_with(
-			|a, b|
-				if a.lo < b.lo {
-					LT
-				} else if a.lo > b.lo {
-					GT
-				} else if a.hi < b.hi {
-					LT
-				} else if a.hi > b.hi {
-					GT
-				} else if a.index < b.index {
-					LT
-				} else {
-					GT
-				},
+		ranked = edges.fold_with_index(
+			{ seen: List.repeat(0, capacity), ranks: List.repeat({ rank: 0, count: 1 }, edges.len()) },
+			|state, edge, index| {
+				key = key_of(edge)
+				start = key.lo.times_wrap(11400714819323198485).plus_wrap(key.hi.times_wrap(14029467366897019727)) % capacity
+				slot = CircularInternals.pair_slot(counted.occupied, counted.lows, counted.highs, key.lo, key.hi, start, 0)
+				rank = state.seen.get(slot) ?? 0
+				count = counted.counts.get(slot) ?? 1
+				{
+					seen: state.seen.set(slot, rank + 1) ?? [],
+					ranks: state.ranks.set(index, { rank, count }) ?? [],
+				}
+			},
 		)
-
-		grouped = sorted.fold(
-			{ finished: [], run: [] },
-			|state, entry|
-				match state.run.get(0) {
-					Ok(head) =>
-						if head.lo == entry.lo and head.hi == entry.hi {
-							{ finished: state.finished, run: state.run.append(entry) }
-						} else {
-							{ finished: state.finished.append(state.run), run: [entry] }
-						}
-
-					Err(_) => { finished: state.finished, run: [entry] }
-				},
-		)
-		runs = if grouped.run.is_empty() {
-			grouped.finished
-		} else {
-			grouped.finished.append(grouped.run)
-		}
-
-		runs.fold(
-			List.repeat({ rank: 0, count: 1 }, edges.len()),
-			|acc, run|
-				run.fold_with_index(
-					acc,
-					|inner, entry, rank| inner.set(entry.index, { rank, count: run.len() }) ?? inner,
-				),
-		)
+		ranked.ranks
 	}
 
 	## A smooth teardrop beside the node, pointing away from the ring's
@@ -1016,6 +1061,22 @@ expect {
 
 ## Parallel edges fan apart: two edges over the same pair take different
 ## cubic bows, offset to opposite sides.
+expect
+	CircularInternals.parallel_ranks([
+		{ from: 0, to: 1 },
+		{ from: 2, to: 3 },
+		{ from: 1, to: 0 },
+		{ from: 0, to: 1 },
+		{ from: 3, to: 2 },
+	])
+		== [
+			{ rank: 0, count: 3 },
+			{ rank: 0, count: 2 },
+			{ rank: 1, count: 3 },
+			{ rank: 2, count: 3 },
+			{ rank: 1, count: 2 },
+		]
+
 expect {
 	spec = {
 		nodes: [{ width: 10, height: 10 }, { width: 10, height: 10 }],

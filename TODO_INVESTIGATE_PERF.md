@@ -290,6 +290,26 @@ Relevant code: `crossings_between`, `transpose_layer`, and ordering sweeps in
 
 ## H6: Circular polish rebuilds global state for every candidate swap
 
+**Status (2026-08-14): partially refuted, then resolved.** A zero-polish
+control retained 810,421 of the original 810,424 allocation calls at 800
+nodes, disproving polish as the source of the observed quadratic allocation.
+The dominant source was circular routing: `parallel_ranks` sent an edge list
+with a long sorted prefix into Roc's first-pivot `List.sort_with`. A flat,
+deterministic open-addressed pair table now computes parallel counts and
+source-order ranks in linear requested memory, without the per-process hash
+seed and variable allocation behavior of `Dict`.
+
+The polish hypothesis did identify real secondary work. Seat positions are now
+maintained across a round, incident edge indices are prepared once, and a
+candidate swap is scored virtually so rejected candidates do not copy the
+node-sized seat map. At 800 nodes these changes together reduce the native case
+from 869 ms, 810,424 allocation calls, and 133,175,304 requested bytes to about
+80 ms, 8,826 calls, and 900,401 bytes. Requested memory is linear through the
+10,000-node rung (11,250,401 bytes); crossing comparisons remain quadratic, as
+expected for the polish heuristic. Circular tests, its fuzz contract, and the
+native smoke suite pass. A 1,000/3,000/10,000-node ladder is now in the scale
+suite.
+
 **Hypothesis.** Circular polishing rebuilds the node-to-seat map for each seat
 and uses a nested edge scan to compute crossings touching a swap. Repeating
 that work before and after each candidate swap makes allocation at least
