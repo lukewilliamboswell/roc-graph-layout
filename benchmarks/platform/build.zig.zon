@@ -1,0 +1,13 @@
+.{
+    .name = .roc_layout_bench_platform,
+    .version = "0.1.0",
+    .minimum_zig_version = "0.16.0",
+    .dependencies = .{},
+    .fingerprint = 0x72fe2409c4df90ea,
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "platform",
+        "src",
+    },
+}

@@ -30,6 +30,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29
+        with:
+          version: 0.16.0
+          use-cache: false
+
       - name: Read pinned Roc version
         run: printf 'ROC_NIGHTLY_TAG=%s\n' "$(sed -n '1p' .roc-version)" >> "$GITHUB_ENV"
 
@@ -42,6 +47,9 @@ jobs:
 
       - name: Run all tests
         run: ROC=roc roc scripts/all.roc
+
+      - name: Run performance harness smoke cases
+        run: ROC=roc python3 benchmarks/run.py smoke --output benchmarks/results/ci
 
       - name: Check example outputs are up to date
         run: |

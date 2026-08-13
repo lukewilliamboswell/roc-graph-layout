@@ -2,5 +2,14 @@
 dist/
 .DS_Store
 generated-docs/
+benchmarks/results/
+benchmarks/.cache/
+benchmarks/platform/.zig-cache/
+benchmarks/platform/zig-out/
+!benchmarks/platform/targets/
+!benchmarks/platform/targets/x64musl/
+!benchmarks/platform/targets/x64musl/crt1.o
+!benchmarks/platform/targets/x64musl/libc.a
+!benchmarks/platform/targets/x64musl/libhost.a
 /fuzz_*
 .roc-fuzz/

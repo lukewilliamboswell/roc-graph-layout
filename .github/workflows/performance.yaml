@@ -1,0 +1,30 @@
+name: Performance report
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  scale:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29
+        with:
+          version: 0.16.0
+          use-cache: false
+      - name: Read pinned Roc version
+        run: printf 'ROC_NIGHTLY_TAG=%s\n' "$(sed -n '1p' .roc-version)" >> "$GITHUB_ENV"
+      - uses: roc-lang/setup-roc@cbe782d6f165b89c87d99f50a59ac4f5f73b4427
+        with:
+          version: nightly-new-compiler
+          nightly-tag: ${{ env.ROC_NIGHTLY_TAG }}
+      - run: ROC=roc python3 benchmarks/run.py scale --output benchmarks/results/manual
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: graph-layout-performance-${{ github.sha }}
+          path: benchmarks/results/manual
