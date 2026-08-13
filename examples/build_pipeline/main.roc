@@ -29,11 +29,10 @@ edges = [
 	{ from: 5, to: 6 }, # package -> publish
 ]
 
-node_gap = 24
-layer_gap = 70
 padding = 20
 
 arrow_id = "arrow"
+
 line_style = { ..Svg.default_line_style, marker_end: arrow_id }
 
 render_node : { x : F64, y : F64 }, { width : F64, height : F64 }, Str -> Str
@@ -56,9 +55,13 @@ render_route = |route|
 
 		Polyline(points) =>
 			Svg.polyline(points.map(|p| { x: p.x + padding, y: p.y + padding }), line_style)
-	}
+		}
 
-render_svg : { positions : List({ x : F64, y : F64 }), bounds : { x : F64, y : F64, width : F64, height : F64 }, routes : List([Line({ x : F64, y : F64 }, { x : F64, y : F64 }), Polyline(List({ x : F64, y : F64 }))]) } -> Str
+render_svg : {
+	positions : List({ x : F64, y : F64 }),
+	bounds : { x : F64, y : F64, width : F64, height : F64 },
+	routes : List([Line({ x : F64, y : F64 }, { x : F64, y : F64 }), Polyline(List({ x : F64, y : F64 }))]),
+} -> Str
 render_svg = |result| {
 	total_width = result.bounds.width + padding * 2
 	total_height = result.bounds.height + padding * 2
@@ -78,14 +81,24 @@ render_svg = |result| {
 }
 
 main! : List(_) => Try({}, _)
-main! = |_args| {
-	result = Layered.sweep(nodes, edges, node_gap, layer_gap)
-	svg = render_svg(result)
+main! = |args| {
+	graph = { nodes, edges }
+	input = { ..Layered.default_input, graph }
+	settings = { ..Layered.default_settings, node_gap: 24 + args.len().to_f64(), layer_gap: 70 }
+	match Layered.prepare(input, settings) {
+		Err(problems) => Err(LayoutProblems(problems))
+		Ok(prepared) => {
+			result = Layered.layout_prepared(prepared)
+			svg = render_svg(result.layout)
 
-	output = Path.utf8("examples/build_pipeline/output.svg")
-	output.write_utf8!(svg)?
-
-	Stdout.line!(
-		"Laid out ${nodes.len().to_str()} nodes and ${edges.len().to_str()} edges -> ${Path.display(output)}",
-	)
+			output = Path.utf8("examples/build_pipeline/output.svg")
+			match output.write_utf8!(svg) {
+				Err(problem) => Err(WriteFailed(problem))
+				Ok({}) =>
+					Stdout.line!(
+						"Laid out ${nodes.len().to_str()} nodes and ${edges.len().to_str()} edges -> ${Path.display(output)}",
+					)
+				}
+		}
+	}
 }

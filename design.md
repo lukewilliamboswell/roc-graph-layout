@@ -266,6 +266,14 @@ concepts, same conventions for direction, units, and tolerances, same
 two-step contract, same output shape. A user who has learned one
 algorithm has learned most of the next one.
 
+**Plain language at the public boundary.** Public names describe what callers
+provide or accomplish: input, settings, preparation, layout, layers, and edges.
+Terms of art such as witness, canonicalization, stress majorization, virtual
+nodes, and feedback arcs remain internal or appear only in documentation that
+explains why they matter. Algorithm names are public only when choosing the
+algorithm is a meaningful user decision; the default path does not make callers
+name its implementation.
+
 **Speed is a data-structure discipline.** In a pure language,
 performance is earned by designing for unique ownership (so updates
 happen in place) and for flat, contiguous, index-addressed data. That
@@ -382,15 +390,25 @@ specs and one packing call ([Placement-independent passes](#placement-independen
 
 ### The algorithm contract: build, then run
 
-Every algorithm has the same two-step shape, shown here for the tree
-class's tidy algorithm:
+Every algorithm has the same two-step lifecycle. Roc's generated documentation
+is organized around the family nominal type, so public operations use
+algorithm-qualified names on that family; the returned witness supplies
+`run` as a method. The executable layered exemplar is:
 
 ```roc
-Tree.Tidy.build :
-    Tree.Spec, Tree.Tidy.Config -> Try(Tree.Tidy, List(Tree.Tidy.Problem))
+Layered.prepare :
+    Layered.Input, Layered.Settings
+    -> Try(Layered.Prepared, List(Layered.Problem))
 
-Tree.Tidy.run : Tree.Tidy -> Tree.Tidy.Result
+Layered.layout_prepared : Layered.Prepared -> Layered.Result
 ```
+
+Public names describe the caller's task rather than the implementation:
+`Input`, `Settings`, `prepare`, `layout_prepared`, and `layout`. Technical names
+such as sweep, rank assignment, and cycle breaking remain in algorithm
+documentation and internals. A future alternative algorithm uses a qualified
+name only when callers genuinely need to choose it. Every public operation
+appears on the family type so generated documentation is complete.
 
 **`build` validates jointly, because validity is joint.** Whether an
 input is usable is a property of spec and configuration *together*: a
@@ -406,7 +424,7 @@ not safety, it is silent nonsense. `build` reports **all** problems it
 found, not the first: build is a boundary that tools sit on, and a
 tool that reveals one error per run is a bad tool.
 
-On success, `build` returns the algorithm value — `Tree.Tidy` above —
+On success, `prepare` returns the opaque `Layered.Prepared` value above —
 which is two things at once. It is a **witness**: it cannot be
 constructed except through `build`, so holding one is proof that this
 spec and this configuration are valid together. And it is a
@@ -423,15 +441,29 @@ of the algorithm's equally valid outputs is wanted: a seed, for
 algorithms that use randomness, and position hints (F7), for
 algorithms that can continue from a previous drawing. Build fixes the
 problem; run picks the starting point. Re-rolling a force layout under
-a new seed, or re-laying-out after a small edit with hints from the
-previous result, is a cheap second `run` against one `build`.
+a new seed, or starting again from different hints, is a cheap second
+`run` against one `build` **only while the spec and build configuration
+are unchanged**. A graph edit requires a new build; hints from the old
+result may seed the new witness's run, but the old witness does not
+represent the edited graph.
 Algorithms with nothing that varies take no run arguments — the tree
 algorithms' criteria determine their drawing uniquely, so there is
 nothing to select — and for them the contract's value is the witness
 and the uniform shape, and that is enough.
 
-Each algorithm also provides a one-shot `layout` — `build` then `run`
-in a single call — for callers keeping nothing.
+Each family also provides a one-shot operation — for example
+`Layered.layout` — which performs preparation then layout. This is the
+default API for callers keeping nothing; the two-step form is the
+reusable path, not mandatory ceremony.
+
+**Family validation and algorithm compilation are distinct concepts.**
+The public exemplar combines them in `prepare`, because one boundary
+is easier to use and report errors from. Internally, family invariants
+are canonicalized by shared helpers so sibling algorithms do not grow
+divergent endpoint, size, or attribute validation. If real callers need
+to compare several algorithms over one large spec, a public
+family-preparation witness may be added later; the design does not
+require that extra lifetime until it earns its API cost.
 
 ### Geometry, units, and conventions
 
@@ -535,6 +567,15 @@ effort is bounded (N2, N3).
 | [`Layered`](#the-layered-class) | graph + flow edge data | `Sweep`, `Exact` | near-linear per sweep; capped search |
 | [`Graph`](#the-graph-class) | sized nodes + edges | `Force`, `Stress`, `Circular`, `Radial` | O((n+m) log n) or O(nk) per iteration |
 | [`Constrained`](#the-constrained-class) | graph + constraints | `Stress` | descent + projection per iteration |
+
+The table is a direction, not a quota. A new public algorithm earns a name only
+when it provides a different reading of the data, a material quality/cost
+tradeoff, or a hard geometric guarantee unavailable through configuration.
+Two heuristics pursuing the same criteria remain internal strategies until a
+caller needs to choose between their contracts. In particular, `Exact` means
+exact with respect to a stated bounded objective and is not exposed merely as a
+placeholder; projections such as tree radial may share one placement engine
+while remaining named readings at the public boundary.
 
 ### The tree class
 
@@ -903,13 +944,13 @@ layout for evaluating stability (F7).
 
 ## Configuration
 
-Configuration follows one pattern everywhere. Each algorithm exposes a
-`defaults` value for its configuration — and a `default_run` where it
-has per-run arguments — and callers update them:
+Configuration follows one pattern everywhere. Each family exposes an
+algorithm-qualified defaults value — and an algorithm-qualified default run
+value where it has per-run arguments — and callers update them:
 
 ```roc
-config = { ..Layered.Sweep.defaults, direction: Right, layer_gap: 60 }
-sweep = Layered.Sweep.build(spec, config)?
+settings = { ..Layered.default_settings, direction: Right, layer_gap: 60 }
+prepared = Layered.prepare(input, settings)?
 ```
 
 The pattern is load-bearing, not stylistic: it is how configs grow
@@ -917,14 +958,14 @@ without breaking (see the [output compatibility policy](#non-functional-requirem
 the call site, and it gives F5 ("defaults are good") a concrete
 referent the test suite pins.
 
-The split between configuration and run arguments follows [Data model](#data-model)'s
-contract: configuration is part of the algorithm's identity for this
-graph, participating in `build`'s validation and precomputation; run
-arguments (seed, position hints) only select among the algorithm's
-equally valid outputs. Effort dials — iteration caps, tolerances,
-pivot counts — are configuration, not run arguments: an algorithm
-allowed different effort is a different function, not a different
-sample of the same one.
+The split between configuration and run arguments is mechanical rather than
+philosophical. Build inputs affect validity or reusable preprocessing; run
+inputs affect only a particular solve. A pivot count that constructs a distance
+table therefore belongs at build. A seed belongs at run. Iteration caps and
+tolerances belong wherever their implementation lifecycle puts them: normally
+at run when they only control stopping, but at build if they alter validated or
+precomputed solver structure. Callers should not rebuild merely to ask an
+otherwise identical witness for a more thorough solve.
 
 Shared vocabulary is a rule ([Design principles](#design-principles)): `node_gap`, `layer_gap`,
 `direction : [Down, Up, Left, Right]`, `max_iterations : U64`, and
@@ -1104,25 +1145,25 @@ g = { ..Graph.default_spec,
     edges: [{ from: 0, to: 1 }, { from: 0, to: 2 }],
 }
 
-spec = { ..Layered.default_spec, graph: g }
-sweep = Layered.Sweep.build(spec, Layered.Sweep.defaults)?
-result = sweep.run()
+input = { ..Layered.default_input, graph: g }
+prepared = Layered.prepare(input, Layered.default_settings)?
+result = Layered.layout_prepared(prepared)
 
 # result.layout.positions : List(Point) — one per node, in spec order
 # result.layout.routes : List(Route)    — one per edge, in spec order
 # result.layout.bounds : Rect
-# result.ranks : List(U32), result.reversed : List(U64)
+# result.layers : List(U32), result.backward_edges : List(U64)
 ```
 
 One `build`, many `run`s — the seed selects among equally valid
 equilibria ([Data model](#data-model)):
 
 ```roc
-force = Graph.Force.build(g, Graph.Force.defaults)?
-first = force.run(Graph.Force.default_run)
-again = force.run({ ..Graph.Force.default_run, seed: 2 })
+force = Graph.build_force(g, Graph.force_defaults)?
+first = force.run(Graph.force_default_run)
+again = force.run({ ..Graph.force_default_run, seed: 2 })
 ```
 
 A renderer consumes `result.layout` and nothing else; a styling layer
-may also read `result.ranks`. Nothing here knows about the renderer —
+may also read `result.layers`. Nothing here knows about the renderer —
 which is [Scope and Boundary](#scope-and-boundary) holding at the API surface.

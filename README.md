@@ -1,19 +1,41 @@
 # roc-graph-layout
 
-A Roc package for deterministic, renderer-independent graph layout algorithms.
-The API is an early executable scaffold based on [`design.md`](design.md).
+A Roc package for deterministic, renderer-independent graph layout. It returns
+node positions, edge routes, and drawing bounds without choosing how they are
+rendered.
 
-The package currently exposes naive deterministic baselines for the four layout
-families: `Tree.tidy`, `Layered.sweep`, `Graph.force`, and
-`Constrained.stress`. The remaining algorithm names and the shared compound,
-packing, overlap, routing, and metrics layers are scaffolded with implementation
-plans in their module documentation. These APIs are intentionally provisional;
-the TODOs describe the path to the build/run witness contract in the design.
+The currently supported end-to-end layout is `Layered`, for directed flows such
+as dependencies, pipelines, and process diagrams.
 
-## Tasks
+## Example
 
-Local scripting is done with small [basic-cli](https://github.com/roc-lang/basic-cli)
-apps in `scripts/`, each runnable directly (via shebang) or through `roc`:
+```roc
+nodes = [
+    { width: 90, height: 40 },
+    { width: 90, height: 40 },
+]
+edges = [{ from: 0, to: 1 }]
+
+input = { ..Layered.default_input, graph: { nodes, edges } }
+settings = { ..Layered.default_settings, node_gap: 24, layer_gap: 70 }
+
+result = Layered.layout(input, settings)?
+
+# result.layout.positions lines up with nodes
+# result.layout.routes lines up with edges
+# result.layout.bounds encloses the drawing
+```
+
+See the [build-pipeline example](examples/build_pipeline/main.roc) for a complete
+program that writes the result as SVG.
+
+For repeated layouts of the same input and settings, use `Layered.prepare` once
+and pass the result to `Layered.layout_prepared`. Changed input must be prepared
+again.
+
+## Development
+
+Run the project checks with:
 
 ```sh
 ./scripts/check.roc
@@ -21,10 +43,5 @@ apps in `scripts/`, each runnable directly (via shebang) or through `roc`:
 ./scripts/bundle.roc [DIR]   # default DIR is dist
 ./scripts/all.roc            # check, test, then bundle
 ```
-
-Shared subcommand logic and helpers (running `roc`, reading `.roc-version`,
-etc.) live in `scripts/Tasks.roc` and are imported by each task script. Add
-new tasks (e.g. `fuzz.roc`) the same way: a tiny app that imports `Tasks` and
-calls into it, or adds a new function there.
 
 Set `ROC=/path/to/roc` if `roc` isn't already on your `PATH`.

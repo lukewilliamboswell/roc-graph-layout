@@ -2,19 +2,22 @@ import Geom
 
 ## Tree layouts for input already known to be a hierarchy.
 ##
-## TODO: Replace the temporary flat `{ depth, width, height }` input with the
-## recursive tree spec from `design.md`. Build should validate finite,
-## non-negative sizes once and number nodes in depth-first order. Both
-## algorithms should return routes, depths, tight bounds, and the common
-## layout record through the same build/run contract as every other family.
+## TODO: Replace the temporary flat `{ depth, width, height }` input with a
+## recursive `{ width, height, children }` tree spec. Build should validate
+## finite, non-negative sizes once and number nodes in depth-first order. Both
+## algorithms should return routes, depths, tight bounds, and the common layout
+## record through the same build/run contract as every other family.
 Tree :: {}.{
+
 	## Naive `Tree.Tidy`: preserve input order and put each depth on a level.
 	##
 	## TODO: Implement linear-time tidy placement for arbitrary arity and
 	## heterogeneous sizes. Combine child subtrees bottom-up using contours,
 	## defer subtree shifts, center parents, honor sibling/subtree/level gaps,
 	## support all four directions, and prove non-overlap with focused expects.
-	tidy : List({ width : F64, height : F64, depth : F64 }), F64, F64 -> {
+	tidy : List({ width : F64, height : F64, depth : F64 }),
+	F64,
+	F64 -> {
 		positions : List({ x : F64, y : F64 }),
 		bounds : { x : F64, y : F64, width : F64, height : F64 },
 	}
@@ -30,8 +33,16 @@ Tree :: {}.{
 				{
 					positions: state.positions.append(Geom.point(center_x, center_y)),
 					next_x: state.next_x + node.width + sibling_gap,
-					max_right: if right > state.max_right { right } else { state.max_right },
-					max_bottom: if bottom > state.max_bottom { bottom } else { state.max_bottom },
+					max_right: if right > state.max_right {
+						right
+					} else {
+						state.max_right
+					},
+					max_bottom: if bottom > state.max_bottom {
+						bottom
+					} else {
+						state.max_bottom
+					},
 				}
 			},
 		)
@@ -47,7 +58,9 @@ Tree :: {}.{
 	## TODO: Reuse the finished tidy engine, map depth to extent-aware ring
 	## radius and horizontal subtree extent to angular extent, then honor start
 	## angle and winding while preserving wedges and sibling order.
-	radial : List({ width : F64, height : F64, depth : F64 }), F64, F64 -> {
+	radial : List({ width : F64, height : F64, depth : F64 }),
+	F64,
+	F64 -> {
 		positions : List({ x : F64, y : F64 }),
 		bounds : { x : F64, y : F64, width : F64, height : F64 },
 	}
