@@ -18,68 +18,62 @@ EdgeRoutes :: {}.{
 
 	## For each edge, its rank among the edges joining the same unordered
 	## node pair, and how many there are — what deterministic fanning needs.
+	pair_slot : List(Bool), List(U64), List(U64), U64, U64, U64, U64 -> U64
+	pair_slot = |occupied, lows, highs, lo, hi, start, step| {
+		capacity = occupied.len()
+		slot = (start + step) % capacity
+		if step + 1 >= capacity or !(occupied.get(slot) ?? False) or ((lows.get(slot) ?? 0) == lo and (highs.get(slot) ?? 0) == hi) {
+			slot
+		} else {
+			EdgeRoutes.pair_slot(occupied, lows, highs, lo, hi, start, step + 1)
+		}
+	}
+
 	parallel_ranks : List({ from : U64, to : U64 }) -> List({ rank : U64, count : U64 })
 	parallel_ranks = |edges| {
-		keyed = edges.map_with_index(
-			|edge, index| {
-				lo = if edge.from < edge.to {
-					edge.from
-				} else {
-					edge.to
+		key_of = |edge| {
+			lo = if edge.from < edge.to {
+				edge.from
+			} else {
+				edge.to
+			}
+			hi = if edge.from < edge.to {
+				edge.to
+			} else {
+				edge.from
+			}
+			{ lo, hi }
+		}
+		capacity = edges.len() * 2 + 1
+		counted = edges.fold(
+			{ occupied: List.repeat(False, capacity), lows: List.repeat(0, capacity), highs: List.repeat(0, capacity), counts: List.repeat(0, capacity) },
+			|table, edge| {
+				key = key_of(edge)
+				start = key.lo.times_wrap(11400714819323198485).plus_wrap(key.hi.times_wrap(14029467366897019727)) % capacity
+				slot = EdgeRoutes.pair_slot(table.occupied, table.lows, table.highs, key.lo, key.hi, start, 0)
+				{
+					occupied: table.occupied.set(slot, True) ?? [],
+					lows: table.lows.set(slot, key.lo) ?? [],
+					highs: table.highs.set(slot, key.hi) ?? [],
+					counts: table.counts.set(slot, (table.counts.get(slot) ?? 0) + 1) ?? [],
 				}
-				hi = if edge.from < edge.to {
-					edge.to
-				} else {
-					edge.from
-				}
-				{ lo, hi, index }
 			},
 		)
-		sorted = keyed.sort_with(
-			|a, b|
-				if a.lo < b.lo {
-					LT
-				} else if a.lo > b.lo {
-					GT
-				} else if a.hi < b.hi {
-					LT
-				} else if a.hi > b.hi {
-					GT
-				} else if a.index < b.index {
-					LT
-				} else {
-					GT
-				},
+		ranked = edges.fold_with_index(
+			{ seen: List.repeat(0, capacity), ranks: List.repeat({ rank: 0, count: 1 }, edges.len()) },
+			|state, edge, index| {
+				key = key_of(edge)
+				start = key.lo.times_wrap(11400714819323198485).plus_wrap(key.hi.times_wrap(14029467366897019727)) % capacity
+				slot = EdgeRoutes.pair_slot(counted.occupied, counted.lows, counted.highs, key.lo, key.hi, start, 0)
+				rank = state.seen.get(slot) ?? 0
+				count = counted.counts.get(slot) ?? 1
+				{
+					seen: state.seen.set(slot, rank + 1) ?? [],
+					ranks: state.ranks.set(index, { rank, count }) ?? [],
+				}
+			},
 		)
-
-		grouped = sorted.fold(
-			{ finished: [], run: [] },
-			|state, entry|
-				match state.run.get(0) {
-					Ok(head) =>
-						if head.lo == entry.lo and head.hi == entry.hi {
-							{ finished: state.finished, run: state.run.append(entry) }
-						} else {
-							{ finished: state.finished.append(state.run), run: [entry] }
-						}
-
-					Err(_) => { finished: state.finished, run: [entry] }
-				},
-		)
-		runs = if grouped.run.is_empty() {
-			grouped.finished
-		} else {
-			grouped.finished.append(grouped.run)
-		}
-
-		runs.fold(
-			List.repeat({ rank: 0, count: 1 }, edges.len()),
-			|acc, run|
-				run.fold_with_index(
-					acc,
-					|inner, entry, rank| inner.set(entry.index, { rank, count: run.len() }) ?? inner,
-				),
-		)
+		ranked.ranks
 	}
 
 	## A smooth closed teardrop beside the node, pointing along the given
@@ -253,6 +247,24 @@ EdgeRoutes :: {}.{
 		}
 	}
 }
+
+## Parallel ranks preserve source order across interleaved and oppositely
+## directed copies of the same unordered node pair.
+expect
+	EdgeRoutes.parallel_ranks([
+		{ from: 0, to: 1 },
+		{ from: 2, to: 3 },
+		{ from: 1, to: 0 },
+		{ from: 0, to: 1 },
+		{ from: 3, to: 2 },
+	])
+		== [
+			{ rank: 0, count: 3 },
+			{ rank: 0, count: 2 },
+			{ rank: 1, count: 3 },
+			{ rank: 2, count: 3 },
+			{ rank: 1, count: 2 },
+		]
 
 ## A single edge between separated nodes is a boundary-to-boundary line.
 expect {

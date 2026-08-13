@@ -337,6 +337,30 @@ especially `seats_of`, `crossings_touching`, and `polish_round`.
 
 ## H7: General radial layout copies its outer ring list on deep paths
 
+**Status (2026-08-14): original hypothesis partly refuted; broader issue
+confirmed and resolved.** Preallocating the outer ring list and changing its
+updates did not materially affect the path ladder. The largest initial cost
+was shared routing: source-ordered path edges hit the quadratic case of Roc's
+first-pivot `List.sort_with` in `EdgeRoutes.parallel_ranks`. A deterministic
+flat pair table now computes counts and source-order ranks without sorting.
+
+After removing that noise, two genuine nested-state costs remained. Component
+members were accumulated by repeatedly replacing a growing inner list, and
+BFS carried node-sized distance and queue lists through one recursive wave per
+path depth. Component membership now uses flat offsets and members. BFS uses
+an imperative, bounded intrusive queue whose one flat entry list stores both
+distance and next-queue links; this is important on the pinned compiler,
+because the equivalent record-threaded functional fold copied the entry list.
+Singleton rings also skip meaningless median reordering, while wider rings
+reuse one node-indexed fraction table per sweep.
+
+At 3,000 nodes, native runtime fell from 13.5 seconds to about 46 ms and
+requested bytes from 1,140,724,128 to 3,784,799. The path remains linear in
+requested memory through 30,000 nodes (36,641,183 bytes, about 0.64 seconds).
+The current recursive ring discovery has a separate native stack limit before
+100,000 nodes, so the committed scale ladder is 1,000/3,000/10,000/30,000.
+Radial, shared path, fuzz-contract, and native smoke tests pass.
+
 **Hypothesis.** A path creates one singleton ring per node. Growing the outer
 ring list with `acc.append(next.order)` and repeatedly updating it with
 `acc.set(depth, reordered)` during median sweeps may copy a list whose length is

@@ -240,13 +240,8 @@ RadialInternals :: {}.{
 	## ring. Nodes with no previous-ring neighbor keep their own current
 	## angular position as the key, and ties break by current order, then
 	## index.
-	reorder_ring : Paths.Adjacency, List(F64), List(U64), List(U64), List({ width : F64, height : F64 }), F64, U64, U64 -> List(U64)
-	reorder_ring = |adj, distances, prev_ring, ring, nodes, node_gap, node_count, depth| {
-		prev_fractions = RadialInternals.ring_fractions(prev_ring, nodes, node_gap)
-		fraction_of = prev_ring.fold_with_index(
-			List.repeat(0.0, node_count),
-			|acc, node, position| acc.set(node, prev_fractions.get(position) ?? 0) ?? acc,
-		)
+	reorder_ring : Paths.Adjacency, List(F64), List(U64), List({ width : F64, height : F64 }), F64, List(F64), U64 -> List(U64)
+	reorder_ring = |adj, distances, ring, nodes, node_gap, fraction_of, depth| {
 		own_fractions = RadialInternals.ring_fractions(ring, nodes, node_gap)
 		prev_target = (depth - 1).to_f64()
 
@@ -298,17 +293,26 @@ RadialInternals :: {}.{
 			ring_orders,
 			|swept, _sweep|
 				RadialInternals.indices_up_to(swept.len()).fold(
-					swept,
-					|acc, depth|
+					{ orders: swept, fraction_of: List.repeat(0.0, node_count) },
+					|state, depth|
 						if depth == 0 {
-							acc
+							state
 						} else {
-							prev_ring = acc.get(depth - 1) ?? []
-							ring = acc.get(depth) ?? []
-							reordered = RadialInternals.reorder_ring(adj, distances, prev_ring, ring, nodes, node_gap, node_count, depth)
-							acc.set(depth, reordered) ?? acc
+							prev_ring = state.orders.get(depth - 1) ?? []
+							ring = state.orders.get(depth) ?? []
+							if ring.len() < 2 {
+								state
+							} else {
+								prev_fractions = RadialInternals.ring_fractions(prev_ring, nodes, node_gap)
+								fraction_of = prev_ring.fold_with_index(
+									state.fraction_of,
+									|acc, node, position| acc.set(node, prev_fractions.get(position) ?? 0) ?? [],
+								)
+								reordered = RadialInternals.reorder_ring(adj, distances, ring, nodes, node_gap, fraction_of, depth)
+								{ orders: state.orders.set(depth, reordered) ?? [], fraction_of }
+							}
 						},
-				),
+				).orders,
 		)
 
 	## A ring's radial extent: the largest node diagonal on it, which bounds
@@ -325,9 +329,9 @@ RadialInternals :: {}.{
 	## both rings' half extents plus `ring_gap`.
 	base_radii : List(F64), F64 -> List(F64)
 	base_radii = |extents, ring_gap| {
-		starts = extents.fold(
-			{ starts: [], cursor: 0.0 },
-			|state, extent| { starts: state.starts.append(state.cursor), cursor: state.cursor + extent + ring_gap },
+		starts = extents.fold_with_index(
+			{ starts: List.repeat(0.0, extents.len()), cursor: 0.0 },
+			|state, extent, depth| { starts: state.starts.set(depth, state.cursor) ?? [], cursor: state.cursor + extent + ring_gap },
 		).starts
 		center_0 = (extents.get(0) ?? 0) / 2
 		extents.map_with_index(
@@ -383,13 +387,13 @@ RadialInternals :: {}.{
 	grow_radii : List(List(U64)), List(F64), List({ width : F64, height : F64 }), F64 -> List(F64)
 	grow_radii = |ring_orders, base, nodes, node_gap|
 		base.fold_with_index(
-			{ radii: [], shift: 0.0 },
+			{ radii: List.repeat(0.0, base.len()), shift: 0.0 },
 			|state, base_radius, depth| {
 				order = ring_orders.get(depth) ?? []
 				shifted = base_radius + state.shift
 				required = RadialInternals.required_radius(order, nodes, node_gap)
 				final = shifted.max(required)
-				{ radii: state.radii.append(final), shift: state.shift + (final - shifted) }
+				{ radii: state.radii.set(depth, final) ?? [], shift: state.shift + (final - shifted) }
 			},
 		).radii
 
@@ -423,8 +427,8 @@ RadialInternals :: {}.{
 						angle = settings.start_angle + dir_sign * Trig.tau * ((inner.cursor + slot / 2) / safe_total)
 						point = { x: radius * Trig.cos(angle), y: radius * Trig.sin(angle) }
 						{
-							positions: inner.positions.set(node, point) ?? inner.positions,
-							rings: inner.rings.set(node, depth) ?? inner.rings,
+							positions: inner.positions.set(node, point) ?? [],
+							rings: inner.rings.set(node, depth) ?? [],
 							cursor: inner.cursor + slot,
 						}
 					},
@@ -445,11 +449,26 @@ RadialInternals :: {}.{
 		adj = Paths.adjacency(node_count, spec.edges)
 		comp = Paths.components(adj)
 
-		members_by_component = RadialInternals.indices_up_to(node_count).fold(
-			List.repeat([], comp.count),
-			|acc, node| {
+		member_counts = comp.labels.fold(
+			List.repeat(0, comp.count),
+			|counts, label| counts.set(label, (counts.get(label) ?? 0) + 1) ?? [],
+		)
+		member_index = member_counts.fold(
+			{ offsets: [0], total: 0 },
+			|state, count| {
+				total = state.total + count
+				{ offsets: state.offsets.append(total), total }
+			},
+		)
+		members_flat = RadialInternals.indices_up_to(node_count).fold(
+			{ members: List.repeat(0, node_count), cursors: member_index.offsets.take_first(comp.count) },
+			|state, node| {
 				label = comp.labels.get(node) ?? 0
-				acc.set(label, (acc.get(label) ?? []).append(node)) ?? acc
+				cursor = state.cursors.get(label) ?? 0
+				{
+					members: state.members.set(cursor, node) ?? [],
+					cursors: state.cursors.set(label, cursor + 1) ?? [],
+				}
 			},
 		)
 
@@ -462,7 +481,9 @@ RadialInternals :: {}.{
 				roots: [],
 			},
 			|state, component| {
-				members = members_by_component.get(component) ?? []
+				member_start = member_index.offsets.get(component) ?? 0
+				member_stop = member_index.offsets.get(component + 1) ?? member_start
+				members = RadialInternals.indices_up_to(member_stop - member_start).map(|index| members_flat.members.get(member_start + index) ?? 0)
 				root = RadialInternals.component_root(adj, comp.labels, members, component, settings.root)
 				distances = Paths.bfs_distances(adj, root)
 				initial_orders = RadialInternals.ring_orders_from(adj, distances, root, node_count)

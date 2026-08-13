@@ -36,9 +36,9 @@ Paths :: {}.{
 			List.repeat(0, node_count),
 			|acc, edge| {
 				from_degree = (acc.get(edge.from) ?? 0) + 1
-				bumped = acc.set(edge.from, from_degree) ?? acc
+				bumped = acc.set(edge.from, from_degree) ?? []
 				to_degree = (bumped.get(edge.to) ?? 0) + 1
-				bumped.set(edge.to, to_degree) ?? bumped
+				bumped.set(edge.to, to_degree) ?? []
 			},
 		)
 
@@ -58,11 +58,11 @@ Paths :: {}.{
 			{ slots: List.repeat(0, total_slots), cursors: start_cursors },
 			|state, edge| {
 				from_slot = state.cursors.get(edge.from) ?? 0
-				slots_a = state.slots.set(from_slot, edge.to) ?? state.slots
-				cursors_a = state.cursors.set(edge.from, from_slot + 1) ?? state.cursors
+				slots_a = state.slots.set(from_slot, edge.to) ?? []
+				cursors_a = state.cursors.set(edge.from, from_slot + 1) ?? []
 				to_slot = cursors_a.get(edge.to) ?? 0
-				slots_b = slots_a.set(to_slot, edge.from) ?? slots_a
-				cursors_b = cursors_a.set(edge.to, to_slot + 1) ?? cursors_a
+				slots_b = slots_a.set(to_slot, edge.from) ?? []
+				cursors_b = cursors_a.set(edge.to, to_slot + 1) ?? []
 				{ slots: slots_b, cursors: cursors_b }
 			},
 		)
@@ -88,35 +88,6 @@ Paths :: {}.{
 		Paths.indices_up_to(stop - start).map(|j| adj.neighbors.get(start + j) ?? 0)
 	}
 
-	## One BFS wave per call: assign `level` to every unvisited neighbor of
-	## the frontier, then recurse on the new frontier. Fuel bounds the
-	## recursion by the node count, so termination never depends on the
-	## visited test alone.
-	bfs_expand : Paths.Adjacency, List(F64), List(U64), F64, U64 -> List(F64)
-	bfs_expand = |adj, distances, frontier, level, fuel| {
-		if frontier.is_empty() or fuel == 0 {
-			distances
-		} else {
-			wave = frontier.fold(
-				{ distances: distances, next: [] },
-				|state, node| Paths.neighbors_of(adj, node).fold(
-					state,
-					|inner, neighbor| {
-						if (inner.distances.get(neighbor) ?? 0) == F64.infinity {
-							{
-								distances: inner.distances.set(neighbor, level) ?? inner.distances,
-								next: inner.next.append(neighbor),
-							}
-						} else {
-							inner
-						}
-					},
-				),
-			)
-			Paths.bfs_expand(adj, wave.distances, wave.next, level + 1, fuel - 1)
-		}
-	}
-
 	## Unweighted hop distance from `source` to every node in O(n + m):
 	## `F64.infinity` for unreachable nodes, 0 for the source itself. An
 	## out-of-range source yields all infinity.
@@ -127,8 +98,30 @@ Paths :: {}.{
 		if source >= node_count {
 			unreached
 		} else {
-			initial = unreached.set(source, 0) ?? unreached
-			Paths.bfs_expand(adj, initial, [source], 1, node_count)
+			sentinel = node_count
+			entries0 = List.repeat({ distance: F64.infinity, next: sentinel }, node_count)
+			var $entries = entries0.set(source, { distance: 0, next: sentinel }) ?? []
+			var $current = source
+			var $tail = source
+			var $done = False
+			for _ in Paths.indices_up_to(node_count) {
+				if $done == False {
+					node = $current
+					level = ($entries.get(node) ?? { distance: 0, next: sentinel }).distance + 1
+					for neighbor in Paths.neighbors_of(adj, node) {
+						if ($entries.get(neighbor) ?? { distance: 0, next: sentinel }).distance == F64.infinity {
+							$entries = $entries.set(neighbor, { distance: level, next: sentinel }) ?? []
+							tail_entry = $entries.get($tail) ?? { distance: 0, next: sentinel }
+							$entries = $entries.set($tail, { ..tail_entry, next: neighbor }) ?? []
+							$tail = neighbor
+						}
+					}
+					next = ($entries.get(node) ?? { distance: 0, next: sentinel }).next
+					$current = next
+					$done = next == sentinel
+				}
+			}
+			$entries.map(|entry| entry.distance)
 		}
 	}
 
@@ -140,23 +133,28 @@ Paths :: {}.{
 		if frontier.is_empty() or fuel == 0 {
 			labels
 		} else {
-			wave = frontier.fold(
-				{ labels: labels, next: [] },
-				|state, node| Paths.neighbors_of(adj, node).fold(
-					state,
-					|inner, neighbor| {
-						if (inner.labels.get(neighbor) ?? 0) == sentinel {
+			queue0 = List.repeat(0, fuel)
+			seeded_queue = frontier.fold_with_index(queue0, |queue, node, index| queue.set(index, node) ?? [])
+			Paths.indices_up_to(fuel).fold(
+				{ labels, queue: seeded_queue, tail: frontier.len() },
+				|state, cursor| if cursor >= state.tail {
+					state
+				} else {
+					node = state.queue.get(cursor) ?? 0
+					Paths.neighbors_of(adj, node).fold(
+						state,
+						|inner, neighbor| if (inner.labels.get(neighbor) ?? 0) == sentinel {
 							{
-								labels: inner.labels.set(neighbor, label) ?? inner.labels,
-								next: inner.next.append(neighbor),
+								labels: inner.labels.set(neighbor, label) ?? [],
+								queue: inner.queue.set(inner.tail, neighbor) ?? [],
+								tail: inner.tail + 1,
 							}
 						} else {
 							inner
-						}
-					},
-				),
-			)
-			Paths.flood_label(adj, wave.labels, wave.next, label, sentinel, fuel - 1)
+						},
+					)
+				},
+			).labels
 		}
 	}
 
