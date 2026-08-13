@@ -109,8 +109,9 @@ render_svg = |result| {
 }
 
 main! : List(_) => Try({}, _)
-main! = |_args| {
-	settings = { ..Tree.default_radial_settings, sibling_gap: 20, subtree_gap: 48, ring_gap: 90 }
+main! = |args| {
+	runtime_zero = args.len().to_f64() * 0
+	settings = { ..Tree.default_radial_settings, sibling_gap: 20, subtree_gap: 48, ring_gap: 90 + runtime_zero }
 	match Tree.layout_radial(spec, settings) {
 		Err(problems) => Err(LayoutProblems(problems))
 		Ok(result) => {

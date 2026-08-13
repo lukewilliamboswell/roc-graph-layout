@@ -25,38 +25,27 @@ Tasks :: [].{
 		run!(roc_bin!(), ["check", "package/main.roc"])
 	}
 
-	## Recursively collects every `.roc` file under `dir`, except ones named
-	## `main.roc` — those are package manifests or app entry points, not
-	## modules with `expect` tests of their own.
-	testable_files! : Path => Try(List(Path), _)
-	testable_files! = |dir| {
-		entries = dir.list!()?
-		var $collected = []
-
-		for entry in entries {
-			if entry.is_dir!()? {
-				nested = testable_files!(entry)?
-				$collected = $collected.concat(nested)
-			} else {
-				name = Path.display(entry)
-				if name.ends_with(".roc") and !name.ends_with("main.roc") {
-					$collected = $collected.append(entry)
-				}
-			}
-		}
-
-		Ok($collected)
-	}
-
 	test! : () => Try({}, _)
 	test! = || {
 		Stdout.line!("Running tests...")?
 		roc = roc_bin!()
-		package_files = testable_files!(Path.utf8("package"))?
-		example_files = testable_files!(Path.utf8("examples"))?
+		run!(roc, ["test", "package/main.roc"])?
 
-		for entry in package_files.concat(example_files) {
-			run!(roc, ["test", Path.display(entry)])?
+		for entry in Path.utf8("package").list!()? {
+			name = Path.display(entry)
+			if name.starts_with("package/fuzz_") and name.ends_with(".roc") {
+				run!(roc, ["test", name])?
+			}
+		}
+
+		for dir in Path.utf8("examples").list!()? {
+			if dir.is_dir!()? {
+				main_path = Path.join(dir, "main.roc")
+				match main_path.read_utf8!() {
+					Ok(_) => run!(roc, ["test", Path.display(main_path)])?
+					Err(_) => {}
+				}
+			}
 		}
 
 		Ok({})

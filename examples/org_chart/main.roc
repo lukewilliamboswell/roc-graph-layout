@@ -129,8 +129,9 @@ render_svg = |result| {
 }
 
 main! : List(_) => Try({}, _)
-main! = |_args| {
-	settings = { ..Tree.default_settings, sibling_gap: 16, subtree_gap: 32, level_gap: 60 }
+main! = |args| {
+	runtime_zero = args.len().to_f64() * 0
+	settings = { ..Tree.default_settings, sibling_gap: 16, subtree_gap: 32, level_gap: 60 + runtime_zero }
 	match Tree.prepare(spec, settings) {
 		Err(problems) => Err(LayoutProblems(problems))
 		Ok(prepared) => {

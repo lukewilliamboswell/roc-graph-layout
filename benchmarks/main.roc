@@ -65,13 +65,13 @@ run_case! = |family, operation, source, fixture, n, seed| {
 				}
 				Ok(prepared) => {
 					_ = Measure.start!({})
-					result = Layered.layout_prepared(prepared)
+					result = Layered.layout_prepared(prepared, Layered.default_run)
 					Measure.finish!(result.layout.positions.len() + result.layout.routes.len() + result.layers.len())
 				}
 			}
 		} else {
 			_ = Measure.start!({})
-			result = Layered.layout(input, Layered.default_settings)
+			result = Layered.layout(input, Layered.default_settings, Layered.default_run)
 			observation = match result {
 				Ok(value) => value.layout.positions.len() + value.layout.routes.len() + value.layers.len()
 				Err(problems) => List.len(problems)
@@ -165,18 +165,28 @@ run_case! = |family, operation, source, fixture, n, seed| {
 		Measure.finish!(result.positions.len() + result.bounds.width.to_u64_wrap())
 	} else if family == "compound" {
 		boxes = List.repeat({ width: 24, height: 16 }, n)
+		children = List.repeat(0, n).map_with_index(|_, i| Node(i))
+		root = Group({ children, algorithm: Rows, padding: 16, min_width: 0, min_height: 0, gap: 4, routing: Orthogonal, pins: [], bands: [] })
+		input = { ..Compound.default_input, graph: { nodes: boxes, edges: [] }, root }
 		_ = Measure.start!({})
-		result = Compound.pack_groups(boxes, 4)
-		Measure.finish!(result.positions.len())
+		result = Compound.layout(input, Compound.default_run)
+		observation = match result {
+			Ok(value) => value.layout.positions.len() + value.groups.len()
+			Err(problems) => problems.len()
+		}
+		Measure.finish!(observation)
 	} else if family == "route" {
-		endpoints = Generators.routes(fixture, n).map(|route| match route {
-			Line(from, to) => { from, to }
-			Polyline(_) => { from: { x: 0, y: 0 }, to: { x: 0, y: 0 } }
-			Curves(_) => { from: { x: 0, y: 0 }, to: { x: 0, y: 0 } }
-		})
+		positions = List.repeat(0, n + 1).map_with_index(|_, i| { x: i.to_f64() * 40, y: 0 })
+		nodes = List.repeat({ width: 24, height: 16 }, n + 1)
+		edges = List.repeat(0, n).map_with_index(|_, i| { from: i, to: i + 1 })
+		input = { ..Route.default_input, graph: { nodes, edges }, positions }
 		_ = Measure.start!({})
-		result = Route.straight(endpoints)
-		Measure.finish!(result.len())
+		result = Route.orthogonal(input, Route.default_settings)
+		observation = match result {
+			Ok(value) => value.layout.routes.len() + value.layout.positions.len()
+			Err(problems) => problems.len()
+		}
+		Measure.finish!(observation)
 	} else {
 		routes = Generators.routes(fixture, n)
 		_ = Measure.start!({})

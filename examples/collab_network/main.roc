@@ -110,8 +110,9 @@ render_svg = |result| {
 }
 
 main! : List(_) => Try({}, _)
-main! = |_args| {
-	settings = { ..Graph.default_force_settings, node_gap: 40, gravity: 0.15 }
+main! = |args| {
+	runtime_zero = args.len().to_f64() * 0
+	settings = { ..Graph.default_force_settings, node_gap: 40 + runtime_zero, gravity: 0.15 }
 	match Graph.layout_force(spec, settings, { ..Graph.default_force_run, seed: 7 }) {
 		Err(problems) => Err(LayoutProblems(problems))
 		Ok(result) => {
