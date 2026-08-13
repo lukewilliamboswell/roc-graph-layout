@@ -34,8 +34,12 @@ Generators := [].{
 		} else if name == "star" {
 			{ width: 24, height: 16, children: List.repeat({ width: 24, height: 16, children: [] }, n - 1) }
 		} else {
-			# Chain is intentionally recursive: it is the tree contour/depth adversary.
-			{ width: 24, height: 16, children: [Generators.tree(name, n - 1)] }
+			# Build from the leaf upward so the fixture itself does not consume
+			# one native stack frame per node before measurement begins.
+			Generators.indices(n - 1).fold(
+				{ width: 24, height: 16, children: [] },
+				|child, _| { width: 24, height: 16, children: [child] },
+			)
 		}
 	}
 

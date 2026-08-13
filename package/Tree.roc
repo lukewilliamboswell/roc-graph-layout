@@ -1,17 +1,21 @@
 import Geom
 import Trig
 
+Contour := [Empty, Entry(F64, Contour), Shift(F64, Contour)]
+
 ## Bottom-up placement result for one subtree, in a local frame where this
 ## subtree's own root sits at spread-axis offset 0. `contour_left`/
 ## `contour_right` give, for each depth below this root (index 0 = this
 ## root's own row, index 1 = its children's row, ...), the extreme
-## spread-axis edge reached at that depth — the machinery `layout_subtree`
+## spread-axis edge reached at that depth — the bottom-up placement machinery
 ## merges siblings against.
 Placed := {
 	width : F64,
 	height : F64,
-	contour_left : List(F64),
-	contour_right : List(F64),
+	contour_left : Contour,
+	contour_right : Contour,
+	spread_min : F64,
+	spread_max : F64,
 	children : List({ offset : F64, placed : Placed }),
 }
 
@@ -19,6 +23,27 @@ Placed := {
 ## contour-merge placement, and the downward pass that turns local offsets
 ## into absolute, direction-mapped positions.
 TreeInternals :: {}.{
+	FlatNode : { width : F64, height : F64, child_count : U64 }
+	contour_from_list : List(F64) -> Contour
+	contour_from_list = |values| values.fold_rev(Empty, |value, rest| Entry(value, rest))
+
+	contour_shift : Contour, F64 -> Contour
+	contour_shift = |contour, amount| if amount == 0 {
+		contour
+	} else {
+		Shift(amount, contour)
+	}
+
+	contour_fold_from : Contour, state, U64, F64, (state, F64, U64 -> state) -> state
+	contour_fold_from = |contour, state, index, shift, step|
+		match contour {
+			Empty => state
+			Entry(value, rest) => TreeInternals.contour_fold_from(rest, step(state, value + shift, index), index + 1, shift, step)
+			Shift(amount, rest) => TreeInternals.contour_fold_from(rest, state, index, shift + amount, step)
+		}
+
+	contour_fold_with_index : Contour, state, (state, F64, U64 -> state) -> state
+	contour_fold_with_index = |contour, initial, step| TreeInternals.contour_fold_from(contour, initial, 0, 0, step)
 
 	## The axis that varies within one level: width for a top-to-bottom or
 	## bottom-to-top tree, height for a left-to-right or right-to-left one.
@@ -60,43 +85,34 @@ TreeInternals :: {}.{
 			list.append({ width: w, height: h })
 		}
 
-	## Depth-first (pre-order) validation and per-depth extent scan in one
-	## pass. `own_index` is this node's index in that same order, the index
-	## every other output list aligns to.
-	analyze_node : Tree.Spec,
-	U64,
-	{ next_index : U64, problems : List(Tree.Problem), depth_extents : List({ width : F64, height : F64 }) } -> {
-		next_index : U64,
-		problems : List(Tree.Problem),
-		depth_extents : List({ width : F64, height : F64 }),
-		own_index : U64,
-	}
-	analyze_node = |spec, depth, acc| {
-		own_index = acc.next_index
-		w_ok = F64.is_finite(spec.width) and spec.width >= 0
-		h_ok = F64.is_finite(spec.height) and spec.height >= 0
-		p1 = if w_ok {
-			acc.problems
-		} else {
-			acc.problems.append(InvalidWidth(own_index))
-		}
-		p2 = if h_ok {
-			p1
-		} else {
-			p1.append(InvalidHeight(own_index))
-		}
-		de = TreeInternals.extend_dims(acc.depth_extents, depth, spec.width, spec.height)
-		started = { next_index: own_index + 1, problems: p2, depth_extents: de }
+	## Iterative pre-order analysis. The explicit work list makes validation
+	## and depth collection safe for hierarchies much deeper than the native
+	## call stack, while reversed child pushes preserve source order.
+	analyze : Tree.Spec -> { problems : List(Tree.Problem), depth_extents : List({ width : F64, height : F64 }), nodes : List(FlatNode) }
+	analyze = |root| {
+		var $work = [{ spec: root, depth: 0.U64 }]
+		var $problems = []
+		var $depth_extents = []
+		var $nodes = []
+		var $index = 0.U64
 
-		finished = spec.children.fold(
-			started,
-			|state, child| {
-				result = TreeInternals.analyze_node(child, depth + 1, state)
-				{ next_index: result.next_index, problems: result.problems, depth_extents: result.depth_extents }
-			},
-		)
+		while !$work.is_empty() {
+			last = $work.len() - 1
+			current = $work.get(last) ?? { spec: root, depth: 0 }
+			$work = $work.drop_last(1)
+			if !F64.is_finite(current.spec.width) or current.spec.width < 0 {
+				$problems = $problems.append(InvalidWidth($index))
+			}
+			if !F64.is_finite(current.spec.height) or current.spec.height < 0 {
+				$problems = $problems.append(InvalidHeight($index))
+			}
+			$depth_extents = TreeInternals.extend_dims($depth_extents, current.depth, current.spec.width, current.spec.height)
+			$nodes = $nodes.append({ width: current.spec.width, height: current.spec.height, child_count: current.spec.children.len() })
+			$work = current.spec.children.fold_rev($work, |child, acc| acc.append({ spec: child, depth: current.depth + 1 }))
+			$index = $index + 1
+		}
 
-		{ next_index: finished.next_index, problems: finished.problems, depth_extents: finished.depth_extents, own_index }
+		{ problems: $problems, depth_extents: $depth_extents, nodes: $nodes }
 	}
 
 	validate_settings : Tree.Settings -> List(Tree.Problem)
@@ -155,9 +171,10 @@ TreeInternals :: {}.{
 
 	## The smallest offset that keeps a new child's contour clear of every
 	## previously placed child's contour, at every depth the two overlap.
-	candidate_offset : List(F64), List(F64), F64, F64 -> F64
+	candidate_offset : List(F64), Contour, F64, F64 -> F64
 	candidate_offset = |accumulated_right, child_contour_left, sibling_gap, subtree_gap|
-		child_contour_left.fold_with_index(
+		TreeInternals.contour_fold_with_index(
+			child_contour_left,
 			0,
 			|acc, left_edge, rel_depth| {
 				right_edge = accumulated_right.get(rel_depth) ?? (0 - 1.0e15)
@@ -170,60 +187,88 @@ TreeInternals :: {}.{
 			},
 		)
 
-	## Bottom-up tidy placement: lay out each child independently, merge
-	## them left to right by contour (deferring the shift into each child's
-	## small offset rather than moving its whole subtree), center this node
-	## over the merged span, then re-anchor everything to local offset 0.
-	layout_subtree : Tree.Spec, [Down, Up, Left, Right], F64, F64 -> Placed
-	layout_subtree = |spec, direction, sibling_gap, subtree_gap| {
-		half = TreeInternals.spread_extent(direction, spec.width, spec.height) / 2
+	## Merge already-placed children left to right by contour, center their
+	## parent over the merged span, then re-anchor to local offset zero.
+	layout_parent : F64, F64, List(Placed), [Down, Up, Left, Right], F64, F64 -> Placed
+	layout_parent = |width, height, placed_children, direction, sibling_gap, subtree_gap| {
+		half = TreeInternals.spread_extent(direction, width, height) / 2
+		if placed_children.is_empty() {
+			{ width, height, contour_left: Entry(0 - half, Empty), contour_right: Entry(half, Empty), spread_min: 0 - half, spread_max: half, children: [] }
+		} else if placed_children.len() == 1 {
+			child = placed_children.get(0) ?? { width: 0, height: 0, contour_left: Empty, contour_right: Empty, spread_min: 0, spread_max: 0, children: [] }
+			{
+				width,
+				height,
+				contour_left: Entry(0 - half, child.contour_left),
+				contour_right: Entry(half, child.contour_right),
+				spread_min: (0 - half).min(child.spread_min),
+				spread_max: half.max(child.spread_max),
+				children: [{ offset: 0, placed: child }],
+			}
+		} else {
+			merged = placed_children.fold(
+				{ placed_offsets: [], accumulated_right: [] },
+				|state, child| {
+					offset = if state.placed_offsets.is_empty() {
+						0
+					} else {
+						TreeInternals.candidate_offset(state.accumulated_right, child.contour_left, sibling_gap, subtree_gap)
+					}
 
-		placed_children = spec.children.map(|child| TreeInternals.layout_subtree(child, direction, sibling_gap, subtree_gap))
+					new_accumulated = TreeInternals.contour_fold_with_index(
+						child.contour_right,
+						state.accumulated_right,
+						|acc, right_edge, rel_depth| TreeInternals.extend_max(acc, rel_depth, offset + right_edge),
+					)
 
-		merged = placed_children.fold(
-			{ placed_offsets: [], accumulated_right: [] },
-			|state, child| {
-				offset = if state.placed_offsets.is_empty() {
-					0
-				} else {
-					TreeInternals.candidate_offset(state.accumulated_right, child.contour_left, sibling_gap, subtree_gap)
-				}
+					{
+						placed_offsets: state.placed_offsets.append({ offset, placed: child }),
+						accumulated_right: new_accumulated,
+					}
+				},
+			)
 
-				new_accumulated = child.contour_right.fold_with_index(
-					state.accumulated_right,
-					|acc, right_edge, rel_depth| TreeInternals.extend_max(acc, rel_depth, offset + right_edge),
-				)
+			accumulated_left = merged.placed_offsets.fold(
+				[],
+				|acc, entry|
+					TreeInternals.contour_fold_with_index(
+						entry.placed.contour_left,
+						acc,
+						|inner, left_edge, rel_depth| TreeInternals.extend_min(inner, rel_depth, entry.offset + left_edge),
+					),
+			)
 
-				{
-					placed_offsets: state.placed_offsets.append({ offset, placed: child }),
-					accumulated_right: new_accumulated,
-				}
+			center = if accumulated_left.is_empty() {
+				0
+			} else {
+				l = accumulated_left.get(0) ?? 0
+				r = merged.accumulated_right.get(0) ?? 0
+				(l + r) / 2
+			}
+
+			shifted_children = merged.placed_offsets.map(|entry| { offset: entry.offset - center, placed: entry.placed })
+
+			contour_left = Entry(0 - half, TreeInternals.contour_shift(TreeInternals.contour_from_list(accumulated_left), 0 - center))
+			contour_right = Entry(half, TreeInternals.contour_shift(TreeInternals.contour_from_list(merged.accumulated_right), 0 - center))
+			spread_min = shifted_children.fold(0 - half, |bound, entry| bound.min(entry.offset + entry.placed.spread_min))
+			spread_max = shifted_children.fold(half, |bound, entry| bound.max(entry.offset + entry.placed.spread_max))
+
+			{ width, height, contour_left, contour_right, spread_min, spread_max, children: shifted_children }
+		}
+	}
+
+	layout_nodes : List(FlatNode), [Down, Up, Left, Right], F64, F64 -> Placed
+	layout_nodes = |nodes, direction, sibling_gap, subtree_gap| {
+		placed = nodes.fold_rev(
+			[],
+			|node, stack| {
+				child_count = node.child_count.min(stack.len())
+				children = stack.take_last(child_count).rev()
+				remaining = stack.drop_last(child_count)
+				remaining.append(TreeInternals.layout_parent(node.width, node.height, children, direction, sibling_gap, subtree_gap))
 			},
 		)
-
-		accumulated_left = merged.placed_offsets.fold(
-			[],
-			|acc, entry|
-				entry.placed.contour_left.fold_with_index(
-					acc,
-					|inner, left_edge, rel_depth| TreeInternals.extend_min(inner, rel_depth, entry.offset + left_edge),
-				),
-		)
-
-		center = if accumulated_left.is_empty() {
-			0
-		} else {
-			l = accumulated_left.get(0) ?? 0
-			r = merged.accumulated_right.get(0) ?? 0
-			(l + r) / 2
-		}
-
-		shifted_children = merged.placed_offsets.map(|entry| { offset: entry.offset - center, placed: entry.placed })
-
-		contour_left = [0 - half].concat(accumulated_left.map(|v| v - center))
-		contour_right = [half].concat(merged.accumulated_right.map(|v| v - center))
-
-		{ width: spec.width, height: spec.height, contour_left, contour_right, children: shifted_children }
+		placed.get(0) ?? TreeInternals.layout_parent(0, 0, [], direction, sibling_gap, subtree_gap)
 	}
 
 	## Cumulative level-axis start per depth: depth 0 starts at 0, each next
@@ -253,27 +298,7 @@ TreeInternals :: {}.{
 		}
 
 	spread_bounds : Placed -> { min : F64, max : F64 }
-	spread_bounds = |placed| {
-		seed_l = placed.contour_left.get(0) ?? 0
-		seed_r = placed.contour_right.get(0) ?? 0
-		min_v = placed.contour_left.fold(
-			seed_l,
-			|acc, v| if v < acc {
-				v
-			} else {
-				acc
-			},
-		)
-		max_v = placed.contour_right.fold(
-			seed_r,
-			|acc, v| if v > acc {
-				v
-			} else {
-				acc
-			},
-		)
-		{ min: min_v, max: max_v }
-	}
+	spread_bounds = |placed| { min: placed.spread_min, max: placed.spread_max }
 
 	## Maps a (spread, level) pair to (x, y) for the configured direction,
 	## keeping every axis within `[0, extent]` — `Up`/`Left` mirror the
@@ -308,25 +333,43 @@ TreeInternals :: {}.{
 		routes : List(Geom.Route),
 	}
 	flatten_node = |placed, depth, abs_spread, own_point, lvl_starts, lvl_total, direction, acc0|
-		placed.children.fold(
-			acc0,
-			|acc, entry| {
-				child_abs = abs_spread + entry.offset
-				child_level_start = lvl_starts.get(depth + 1) ?? 0
-				child_level_c = child_level_start + TreeInternals.level_extent(direction, entry.placed.width, entry.placed.height) / 2
-				child_point = TreeInternals.to_xy(direction, child_abs, child_level_c, lvl_total)
-				route = Line(
-					Geom.clip_to_node(own_point, { width: placed.width, height: placed.height }, child_point),
-					Geom.clip_to_node(child_point, { width: entry.placed.width, height: entry.placed.height }, own_point),
-				)
-				with_child = {
-					positions: acc.positions.append(child_point),
-					depths: acc.depths.append(depth + 1),
-					routes: acc.routes.append(route),
-				}
-				TreeInternals.flatten_node(entry.placed, depth + 1, child_abs, child_point, lvl_starts, lvl_total, direction, with_child)
-			},
-		)
+		if placed.children.len() == 1 {
+			entry = placed.children.get(0) ?? { offset: 0, placed }
+			child_abs = abs_spread + entry.offset
+			child_level_start = lvl_starts.get(depth + 1) ?? 0
+			child_level_c = child_level_start + TreeInternals.level_extent(direction, entry.placed.width, entry.placed.height) / 2
+			child_point = TreeInternals.to_xy(direction, child_abs, child_level_c, lvl_total)
+			route = Line(
+				Geom.clip_to_node(own_point, { width: placed.width, height: placed.height }, child_point),
+				Geom.clip_to_node(child_point, { width: entry.placed.width, height: entry.placed.height }, own_point),
+			)
+			with_child = {
+				positions: acc0.positions.append(child_point),
+				depths: acc0.depths.append(depth + 1),
+				routes: acc0.routes.append(route),
+			}
+			TreeInternals.flatten_node(entry.placed, depth + 1, child_abs, child_point, lvl_starts, lvl_total, direction, with_child)
+		} else {
+			placed.children.fold(
+				acc0,
+				|acc, entry| {
+					child_abs = abs_spread + entry.offset
+					child_level_start = lvl_starts.get(depth + 1) ?? 0
+					child_level_c = child_level_start + TreeInternals.level_extent(direction, entry.placed.width, entry.placed.height) / 2
+					child_point = TreeInternals.to_xy(direction, child_abs, child_level_c, lvl_total)
+					route = Line(
+						Geom.clip_to_node(own_point, { width: placed.width, height: placed.height }, child_point),
+						Geom.clip_to_node(child_point, { width: entry.placed.width, height: entry.placed.height }, own_point),
+					)
+					with_child = {
+						positions: acc.positions.append(child_point),
+						depths: acc.depths.append(depth + 1),
+						routes: acc.routes.append(route),
+					}
+					TreeInternals.flatten_node(entry.placed, depth + 1, child_abs, child_point, lvl_starts, lvl_total, direction, with_child)
+				},
+			)
+		}
 
 	validate_radial_settings : Tree.RadialSettings -> List(Tree.Problem)
 	validate_radial_settings = |settings| {
@@ -409,30 +452,53 @@ TreeInternals :: {}.{
 		max_y : F64,
 	}
 	flatten_radial = |placed, depth, abs_spread, own_point, radii, projection, acc0|
-		placed.children.fold(
-			acc0,
-			|acc, entry| {
-				child_abs = abs_spread + entry.offset
-				radius = radii.get(depth + 1) ?? 0
-				child_point = TreeInternals.radial_point(child_abs, projection.spread_wrap, radius, projection.start_angle, projection.dir_sign)
-				half_w = entry.placed.width / 2
-				half_h = entry.placed.height / 2
-				route = Line(
-					Geom.clip_to_node(own_point, { width: placed.width, height: placed.height }, child_point),
-					Geom.clip_to_node(child_point, { width: entry.placed.width, height: entry.placed.height }, own_point),
-				)
-				with_child = {
-					positions: acc.positions.append(child_point),
-					depths: acc.depths.append(depth + 1),
-					routes: acc.routes.append(route),
-					min_x: acc.min_x.min(child_point.x - half_w),
-					min_y: acc.min_y.min(child_point.y - half_h),
-					max_x: acc.max_x.max(child_point.x + half_w),
-					max_y: acc.max_y.max(child_point.y + half_h),
-				}
-				TreeInternals.flatten_radial(entry.placed, depth + 1, child_abs, child_point, radii, projection, with_child)
-			},
-		)
+		if placed.children.len() == 1 {
+			entry = placed.children.get(0) ?? { offset: 0, placed }
+			child_abs = abs_spread + entry.offset
+			radius = radii.get(depth + 1) ?? 0
+			child_point = TreeInternals.radial_point(child_abs, projection.spread_wrap, radius, projection.start_angle, projection.dir_sign)
+			half_w = entry.placed.width / 2
+			half_h = entry.placed.height / 2
+			route = Line(
+				Geom.clip_to_node(own_point, { width: placed.width, height: placed.height }, child_point),
+				Geom.clip_to_node(child_point, { width: entry.placed.width, height: entry.placed.height }, own_point),
+			)
+			with_child = {
+				positions: acc0.positions.append(child_point),
+				depths: acc0.depths.append(depth + 1),
+				routes: acc0.routes.append(route),
+				min_x: acc0.min_x.min(child_point.x - half_w),
+				min_y: acc0.min_y.min(child_point.y - half_h),
+				max_x: acc0.max_x.max(child_point.x + half_w),
+				max_y: acc0.max_y.max(child_point.y + half_h),
+			}
+			TreeInternals.flatten_radial(entry.placed, depth + 1, child_abs, child_point, radii, projection, with_child)
+		} else {
+			placed.children.fold(
+				acc0,
+				|acc, entry| {
+					child_abs = abs_spread + entry.offset
+					radius = radii.get(depth + 1) ?? 0
+					child_point = TreeInternals.radial_point(child_abs, projection.spread_wrap, radius, projection.start_angle, projection.dir_sign)
+					half_w = entry.placed.width / 2
+					half_h = entry.placed.height / 2
+					route = Line(
+						Geom.clip_to_node(own_point, { width: placed.width, height: placed.height }, child_point),
+						Geom.clip_to_node(child_point, { width: entry.placed.width, height: entry.placed.height }, own_point),
+					)
+					with_child = {
+						positions: acc.positions.append(child_point),
+						depths: acc.depths.append(depth + 1),
+						routes: acc.routes.append(route),
+						min_x: acc.min_x.min(child_point.x - half_w),
+						min_y: acc.min_y.min(child_point.y - half_h),
+						max_x: acc.max_x.max(child_point.x + half_w),
+						max_y: acc.max_y.max(child_point.y + half_h),
+					}
+					TreeInternals.flatten_radial(entry.placed, depth + 1, child_abs, child_point, radii, projection, with_child)
+				},
+			)
+		}
 
 	## Combines a computed placement with the per-depth extents into the
 	## radial reading of the family's public `Result`: the root at the
@@ -527,13 +593,13 @@ TreeInternals :: {}.{
 Prepared := { result : Tree.Result }.{
 	build : Tree.Spec, Tree.Settings -> [Ok(Prepared), Err(List(Tree.Problem))]
 	build = |spec, settings| {
-		analyzed = TreeInternals.analyze_node(spec, 0, { next_index: 0, problems: [], depth_extents: [] })
+		analyzed = TreeInternals.analyze(spec)
 		problems = analyzed.problems.concat(TreeInternals.validate_settings(settings))
 
 		if !problems.is_empty() {
 			Err(problems)
 		} else {
-			root_placed = TreeInternals.layout_subtree(spec, settings.direction, settings.sibling_gap, settings.subtree_gap)
+			root_placed = TreeInternals.layout_nodes(analyzed.nodes, settings.direction, settings.sibling_gap, settings.subtree_gap)
 			computed = TreeInternals.assemble(root_placed, analyzed.depth_extents, settings)
 			prepared : Prepared
 			prepared = { result: computed }
@@ -560,13 +626,13 @@ Prepared := { result : Tree.Result }.{
 RadialPrepared := { result : Tree.Result }.{
 	build : Tree.Spec, Tree.RadialSettings -> [Ok(RadialPrepared), Err(List(Tree.Problem))]
 	build = |spec, settings| {
-		analyzed = TreeInternals.analyze_node(spec, 0, { next_index: 0, problems: [], depth_extents: [] })
+		analyzed = TreeInternals.analyze(spec)
 		problems = analyzed.problems.concat(TreeInternals.validate_radial_settings(settings))
 
 		if !problems.is_empty() {
 			Err(problems)
 		} else {
-			root_placed = TreeInternals.layout_subtree(spec, Down, settings.sibling_gap, settings.subtree_gap)
+			root_placed = TreeInternals.layout_nodes(analyzed.nodes, Down, settings.sibling_gap, settings.subtree_gap)
 			computed = TreeInternals.assemble_radial(root_placed, analyzed.depth_extents, settings)
 			prepared : RadialPrepared
 			prepared = { result: computed }

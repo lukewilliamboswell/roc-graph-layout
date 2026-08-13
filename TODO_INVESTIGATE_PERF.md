@@ -194,6 +194,20 @@ Relevant code: the `placed` fold in `package/Pack.roc`.
 
 ## H4: Deep tree contours cause quadratic memory traffic
 
+**Status (2026-08-14): confirmed and resolved.** Two depth-proportional copies
+compounded on chains. Every unary ancestor rebuilt both child contour lists,
+and the downward pass recursed from inside a one-item child fold that retained
+the prior growing output accumulators. Contours are now persistent spines:
+unary parents prepend one entry while sharing the child tail, and multi-child
+parents apply a lazy shift instead of mapping every depth. Unary flattening has
+a direct tail path. Validation and bottom-up placement also use explicit flat
+work lists, removing the separate native-stack failure on deep inputs; the
+benchmark chain fixture is built leaf-first for the same reason. At 320 nodes,
+tidy requested bytes fell from 7,796,608 to 204,856. Growth remains linear
+through 10,000 nodes (6,955,368 bytes), and both tidy and radial layouts now
+complete the 100,000-node chain target natively in under 1.1 seconds with
+83–88 MB requested. Star geometry and the existing tree fuzz contract pass.
+
 **Hypothesis.** Tidy placement materializes a contour proportional to subtree
 depth at every ancestor. A chain therefore retains and reconstructs contours
 of lengths `1 + 2 + ... + n`; radial tree layout inherits the same placement
