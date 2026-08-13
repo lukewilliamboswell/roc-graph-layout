@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="826" height="364" viewBox="0 0 826 364">
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+<path d="M0,0 L8,4 L0,8 z" fill="#64748b" />
+</marker>
+</defs>
+<rect x="0" y="0" width="826" height="364" fill="#ffffff" />
+<line x1="491.1875" y1="56" x2="351.8125" y2="116" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="286.75" y1="152" x2="209.25" y2="212" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="164.25" y1="248" x2="91.75" y2="308" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="186" y1="248" x2="186" y2="308" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="207.75" y1="248" x2="280.25" y2="308" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="333.25" y1="152" x2="410.75" y2="212" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="434" y1="248" x2="434" y2="308" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="550.0625" y1="56" x2="606.9375" y2="116" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="624" y1="152" x2="624" y2="212" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="613.125" y1="248" x2="576.875" y2="308" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="634.875" y1="248" x2="671.125" y2="308" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="574.8125" y1="56" x2="714.1875" y2="116" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="756" y1="152" x2="756" y2="212" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="483" y="20" width="100" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="533" y="38" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">CEO</text>
+<rect x="260" y="116" width="100" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="310" y="134" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">CTO</text>
+<rect x="136" y="212" width="100" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="186" y="230" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Eng Manager</text>
+<rect x="20" y="308" width="100" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="70" y="326" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Dev 1</text>
+<rect x="136" y="308" width="100" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="186" y="326" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Dev 2</text>
+<rect x="252" y="308" width="100" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="302" y="326" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Dev 3</text>
+<rect x="384" y="212" width="100" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="434" y="230" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">QA Lead</text>
+<rect x="384" y="308" width="100" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="434" y="326" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">QA Engineer</text>
+<rect x="574" y="116" width="100" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="624" y="134" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">COO</text>
+<rect x="574" y="212" width="100" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="624" y="230" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Ops Manager</text>
+<rect x="516" y="308" width="100" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="566" y="326" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Ops Analyst 1</text>
+<rect x="632" y="308" width="100" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="682" y="326" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Ops Analyst 2</text>
+<rect x="706" y="116" width="100" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="756" y="134" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">CFO</text>
+<rect x="706" y="212" width="100" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="756" y="230" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Accountant</text>
+</svg>

@@ -8,28 +8,62 @@ app [main!] {
 import pf.Path
 import pf.Stdout
 import layout.Geom
-import layout.Layered
+import layout.Tree
 import svg.Svg
 
-## A small build-pipeline-shaped DAG: one source fans out into two
-## intermediate stages that both feed a shared build step, which in turn
-## feeds two independent downstream consumers. The `fetch -> package` edge
-## skips two layers, so it routes through waypoints and (with the default
-## settings) renders as a smooth curve.
-stages = ["fetch", "compile", "lint", "build", "test", "package", "publish"]
+## A small company org chart: a CEO over three functional leads, each with
+## their own reports — the shape a real caller building an org-structure
+## diagram would actually have. Labels are listed in the same depth-first
+## order `Tree.Tidy` numbers nodes in, so `labels.get(i)` names `positions.get(i)`.
+node_size = { width: 100, height: 36 }
 
-nodes = stages.map(|_| { width: 90, height: 40 })
+leaf = |children| { width: node_size.width, height: node_size.height, children }
 
-edges = [
-	{ from: 0, to: 1 }, # fetch -> compile
-	{ from: 0, to: 2 }, # fetch -> lint
-	{ from: 1, to: 3 }, # compile -> build
-	{ from: 2, to: 3 }, # lint -> build
-	{ from: 3, to: 4 }, # build -> test
-	{ from: 3, to: 5 }, # build -> package
-	{ from: 4, to: 6 }, # test -> publish
-	{ from: 5, to: 6 }, # package -> publish
-	{ from: 0, to: 5 }, # fetch -> package (vendored assets skip the build)
+spec : Tree.Spec
+spec = {
+	width: node_size.width,
+	height: node_size.height,
+	children: [
+		{
+			width: node_size.width,
+			height: node_size.height,
+			children: [
+				leaf([leaf([]), leaf([]), leaf([])]),
+				leaf([leaf([])]),
+			],
+		},
+		{
+			width: node_size.width,
+			height: node_size.height,
+			children: [
+				leaf([leaf([]), leaf([])]),
+			],
+		},
+		{
+			width: node_size.width,
+			height: node_size.height,
+			children: [
+				leaf([]),
+			],
+		},
+	],
+}
+
+labels = [
+	"CEO",
+	"CTO",
+	"Eng Manager",
+	"Dev 1",
+	"Dev 2",
+	"Dev 3",
+	"QA Lead",
+	"QA Engineer",
+	"COO",
+	"Ops Manager",
+	"Ops Analyst 1",
+	"Ops Analyst 2",
+	"CFO",
+	"Accountant",
 ]
 
 padding = 20
@@ -38,12 +72,12 @@ arrow_id = "arrow"
 
 line_style = { ..Svg.default_line_style, marker_end: arrow_id }
 
-render_node : { x : F64, y : F64 }, { width : F64, height : F64 }, Str -> Str
-render_node = |center, size, label| {
+render_node : { x : F64, y : F64 }, Str -> Str
+render_node = |center, label| {
 	cx = center.x + padding
 	cy = center.y + padding
 
-	rect = Svg.rect_centered(cx, cy, size.width, size.height, Svg.default_rect_style)
+	rect = Svg.rect_centered(cx, cy, node_size.width, node_size.height, Svg.default_rect_style)
 	text = Svg.text_centered(cx, cy, label, Svg.default_text_style)
 
 	\\${rect}
@@ -83,9 +117,7 @@ render_svg = |result| {
 	total_height = result.bounds.height + padding * 2
 
 	rects = Str.join_with(
-		nodes.map_with_index(
-			|size, i| render_node(result.positions.get(i) ?? Geom.point(0, 0), size, stages.get(i) ?? ""),
-		),
+		result.positions.map_with_index(|p, i| render_node(p, labels.get(i) ?? "")),
 		"\n",
 	)
 
@@ -97,22 +129,20 @@ render_svg = |result| {
 }
 
 main! : List(_) => Try({}, _)
-main! = |args| {
-	graph = { nodes, edges }
-	input = { ..Layered.default_input, graph }
-	settings = { ..Layered.default_settings, node_gap: 24 + args.len().to_f64(), layer_gap: 70 }
-	match Layered.prepare(input, settings) {
+main! = |_args| {
+	settings = { ..Tree.default_settings, sibling_gap: 16, subtree_gap: 32, level_gap: 60 }
+	match Tree.prepare(spec, settings) {
 		Err(problems) => Err(LayoutProblems(problems))
 		Ok(prepared) => {
-			result = Layered.layout_prepared(prepared)
+			result = Tree.layout_prepared(prepared)
 			svg = render_svg(result.layout)
 
-			output = Path.utf8("examples/build_pipeline/output.svg")
+			output = Path.utf8("examples/org_chart/output.svg")
 			match output.write_utf8!(svg) {
 				Err(problem) => Err(WriteFailed(problem))
 				Ok({}) =>
 					Stdout.line!(
-						"Laid out ${nodes.len().to_str()} nodes and ${edges.len().to_str()} edges -> ${Path.display(output)}",
+						"Laid out ${result.layout.positions.len().to_str()} nodes -> ${Path.display(output)}",
 					)
 				}
 		}

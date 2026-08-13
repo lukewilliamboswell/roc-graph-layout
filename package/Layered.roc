@@ -2,7 +2,8 @@ import Geom
 
 ## Layered layouts for directed graphs read as flow — a minimal, complete
 ## Sugiyama-style pipeline: rank, insert virtual chains, order layers by a
-## median heuristic, assign coordinates, and route edges as lines/polylines.
+## median heuristic, assign coordinates, and route edges as lines, polylines,
+## or smooth curve chains whose endpoints clip to the node boundaries.
 ##
 ## This is a deliberately compact implementation: the public API has a
 ## build/run witness and reports its deterministic baseline cycle orientation,
@@ -316,6 +317,158 @@ LayeredInternals :: {}.{
 		).positions
 	}
 
+	distance : { x : F64, y : F64 }, { x : F64, y : F64 } -> F64
+	distance = |a, b| {
+		dx = b.x - a.x
+		dy = b.y - a.y
+		(dx * dx + dy * dy).sqrt()
+	}
+
+	## Clips a source-to-target point list's two endpoints to the source and
+	## target node boxes, so arrowheads land on the boundary rather than
+	## inside it. Interior waypoints are untouched; a route shorter than two
+	## points passes through unchanged.
+	clip_route_ends : List({ x : F64, y : F64 }), { width : F64, height : F64 }, { width : F64, height : F64 } -> List({ x : F64, y : F64 })
+	clip_route_ends = |points, source_size, target_size| {
+		count = points.len()
+		if count < 2 {
+			points
+		} else {
+			first = points.get(0) ?? Geom.point(0, 0)
+			second = points.get(1) ?? Geom.point(0, 0)
+			second_last = points.get(count - 2) ?? Geom.point(0, 0)
+			last = points.get(count - 1) ?? Geom.point(0, 0)
+
+			clipped_first = Geom.clip_to_node(first, source_size, second)
+			clipped_last = Geom.clip_to_node(last, target_size, second_last)
+
+			with_first = points.set(0, clipped_first) ?? points
+			with_first.set(count - 1, clipped_last) ?? with_first
+		}
+	}
+
+	## One tangent vector per point of a smooth curve through `points`: an
+	## interior tangent follows the direction between its two neighbors,
+	## scaled to a third of the shorter adjacent segment (so the curve never
+	## overshoots past a neighboring waypoint); an endpoint tangent follows
+	## its one adjacent segment, scaled to a third of that segment's length.
+	## Coincident points produce a zero tangent, keeping the curve finite.
+	curve_tangents : List({ x : F64, y : F64 }) -> List({ x : F64, y : F64 })
+	curve_tangents = |points| {
+		count = points.len()
+		if count < 2 {
+			points.map(|_point| Geom.point(0, 0))
+		} else {
+			points.map_with_index(
+				|point, i| {
+					if i == 0 {
+						next = points.get(1) ?? point
+						Geom.point((next.x - point.x) / 3, (next.y - point.y) / 3)
+					} else if i == count - 1 {
+						prev = points.get(i - 1) ?? point
+						Geom.point((point.x - prev.x) / 3, (point.y - prev.y) / 3)
+					} else {
+						prev = points.get(i - 1) ?? point
+						next = points.get(i + 1) ?? point
+						dx = next.x - prev.x
+						dy = next.y - prev.y
+						len = (dx * dx + dy * dy).sqrt()
+						if len == 0 {
+							Geom.point(0, 0)
+						} else {
+							scale = LayeredInternals.distance(prev, point).min(LayeredInternals.distance(point, next)) / 3
+							Geom.point(dx / len * scale, dy / len * scale)
+						}
+					}
+				},
+			)
+		}
+	}
+
+	## A cubic segment per consecutive point pair, control points one tangent
+	## along from each end — a deterministic smooth path through every
+	## waypoint.
+	curve_through : List({ x : F64, y : F64 }) -> List(
+		{
+			from : { x : F64, y : F64 },
+			ctl_a : { x : F64, y : F64 },
+			ctl_b : { x : F64, y : F64 },
+			to : { x : F64, y : F64 },
+		},
+	)
+	curve_through = |points| {
+		tangents = LayeredInternals.curve_tangents(points)
+		segment_count = if points.len() < 2 {
+			0
+		} else {
+			points.len() - 1
+		}
+
+		LayeredInternals.indices_up_to(segment_count).map(
+			|i| {
+				from = points.get(i) ?? Geom.point(0, 0)
+				to = points.get(i + 1) ?? Geom.point(0, 0)
+				from_tangent = tangents.get(i) ?? Geom.point(0, 0)
+				to_tangent = tangents.get(i + 1) ?? Geom.point(0, 0)
+				{
+					from,
+					ctl_a: Geom.point(from.x + from_tangent.x, from.y + from_tangent.y),
+					ctl_b: Geom.point(to.x - to_tangent.x, to.y - to_tangent.y),
+					to,
+				}
+			},
+		)
+	}
+
+	## Builds one route from an already clipped source-to-target point list.
+	## Two points always draw a straight `Line`; longer chains keep their
+	## bends as a `Polyline` or smooth them into a `Curves` chain, per the
+	## requested style.
+	make_route : List({ x : F64, y : F64 }), [Straight, Curved] -> Geom.Route
+	make_route = |points, route_style|
+		match points {
+			[a, b] => Line(a, b)
+			_ =>
+				match route_style {
+					Straight => Polyline(points)
+					Curved => Curves(LayeredInternals.curve_through(points))
+				}
+			}
+
+	## Every point a route can reach, control points included — the set a
+	## bounding box must cover.
+	route_extent_points : Geom.Route -> List({ x : F64, y : F64 })
+	route_extent_points = |route|
+		match route {
+			Line(a, b) => [a, b]
+			Polyline(points) => points
+			Curves(segments) =>
+				segments.fold(
+					[],
+					|acc, segment| acc.append(segment.from).append(segment.ctl_a).append(segment.ctl_b).append(segment.to),
+				)
+			}
+
+	translate_route : Geom.Route, F64, F64 -> Geom.Route
+	translate_route = |route, dx, dy| {
+		shift = |p| Geom.point(p.x + dx, p.y + dy)
+		match route {
+			Line(a, b) => Line(shift(a), shift(b))
+			Polyline(points) => Polyline(points.map(shift))
+			Curves(segments) =>
+				Curves(
+					segments.map(
+						|segment| {
+							from: shift(segment.from),
+							ctl_a: shift(segment.ctl_a),
+							ctl_b: shift(segment.ctl_b),
+							to: shift(segment.to),
+						},
+					),
+				)
+			}
+	}
+
 	## Full minimal Sugiyama pipeline: rank, split long edges into virtual
 	## chains, order layers by median sweeps, assign coordinates, then route
 	## each original edge as a `Line` (unit span) or `Polyline` (through its
@@ -327,7 +480,7 @@ LayeredInternals :: {}.{
 	F64 -> {
 		positions : List({ x : F64, y : F64 }),
 		bounds : { x : F64, y : F64, width : F64, height : F64 },
-		routes : List([Line({ x : F64, y : F64 }, { x : F64, y : F64 }), Polyline(List({ x : F64, y : F64 }))]),
+		routes : List(Geom.Route),
 	}
 	sugiyama = |nodes, edges, node_gap, layer_gap| {
 		if nodes.is_empty() {
@@ -394,7 +547,7 @@ LayeredInternals :: {}.{
 	F64 -> {
 		positions : List({ x : F64, y : F64 }),
 		bounds : { x : F64, y : F64, width : F64, height : F64 },
-		routes : List([Line({ x : F64, y : F64 }, { x : F64, y : F64 }), Polyline(List({ x : F64, y : F64 }))]),
+		routes : List(Geom.Route),
 	}
 	sweep = |nodes, edges, node_gap, layer_gap| LayeredInternals.sugiyama(nodes, edges, node_gap, layer_gap)
 
@@ -406,7 +559,7 @@ LayeredInternals :: {}.{
 	F64 -> {
 		positions : List({ x : F64, y : F64 }),
 		bounds : { x : F64, y : F64, width : F64, height : F64 },
-		routes : List([Line({ x : F64, y : F64 }, { x : F64, y : F64 }), Polyline(List({ x : F64, y : F64 }))]),
+		routes : List(Geom.Route),
 	}
 	exact = |nodes, edges, node_gap, layer_gap| LayeredInternals.sugiyama(nodes, edges, node_gap, layer_gap)
 
@@ -506,8 +659,9 @@ Prepared := {
 	ordered_layers : List(List(U64)),
 	node_gap : F64,
 	layer_gap : F64,
+	route_style : [Straight, Curved],
 }.{
-	Config : { node_gap : F64, layer_gap : F64 }
+	Config : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved] }
 	Spec : {
 		graph : {
 			nodes : List({ width : F64, height : F64 }),
@@ -524,7 +678,7 @@ Prepared := {
 	]
 
 	defaults : Config
-	defaults = { node_gap: 24, layer_gap: 70 }
+	defaults = { node_gap: 24, layer_gap: 70, route_style: Curved }
 
 	default_spec : Spec
 	default_spec = { graph: { nodes: [], edges: [] } }
@@ -551,6 +705,7 @@ Prepared := {
 				ordered_layers,
 				node_gap: config.node_gap,
 				layer_gap: config.layer_gap,
+				route_style: config.route_style,
 			})
 		}
 	}
@@ -559,7 +714,7 @@ Prepared := {
 		layout : {
 			positions : List({ x : F64, y : F64 }),
 			bounds : { x : F64, y : F64, width : F64, height : F64 },
-			routes : List([Line({ x : F64, y : F64 }, { x : F64, y : F64 }), Polyline(List({ x : F64, y : F64 }))]),
+			routes : List(Geom.Route),
 		},
 		layers : List(U64),
 		backward_edges : List(U64),
@@ -579,10 +734,11 @@ Prepared := {
 				} else {
 					points
 				}
-				match oriented_points {
-					[a, b] => Line(a, b)
-					_ => Polyline(oriented_points)
-				}
+				edge = sweep.edges.get(edge_index) ?? { from: 0, to: 0 }
+				source_size = sweep.nodes.get(edge.from) ?? { width: 0, height: 0 }
+				target_size = sweep.nodes.get(edge.to) ?? { width: 0, height: 0 }
+				clipped = LayeredInternals.clip_route_ends(oriented_points, source_size, target_size)
+				LayeredInternals.make_route(clipped, sweep.route_style)
 			},
 		)
 
@@ -611,11 +767,59 @@ Prepared := {
 			},
 		)
 
+		# Node boxes are anchored at the origin, but route points — virtual
+		# waypoints have zero size, and curve control points extend past their
+		# anchors — may lie outside every node box. Extend the bounds to cover
+		# them, and translate everything back to the origin if any escaped
+		# above or to the left.
+		extent = routes.fold(
+			{ min_x: 0, min_y: 0, max_x: max_right, max_y: max_bottom },
+			|acc, route|
+				LayeredInternals.route_extent_points(route).fold(
+					acc,
+					|inner, point| {
+						min_x: if point.x < inner.min_x {
+							point.x
+						} else {
+							inner.min_x
+						},
+						min_y: if point.y < inner.min_y {
+							point.y
+						} else {
+							inner.min_y
+						},
+						max_x: if point.x > inner.max_x {
+							point.x
+						} else {
+							inner.max_x
+						},
+						max_y: if point.y > inner.max_y {
+							point.y
+						} else {
+							inner.max_y
+						},
+					},
+				),
+		)
+
+		shift_x = 0 - extent.min_x
+		shift_y = 0 - extent.min_y
+		final_positions = if shift_x == 0 and shift_y == 0 {
+			positions
+		} else {
+			positions.map(|point| Geom.point(point.x + shift_x, point.y + shift_y))
+		}
+		final_routes = if shift_x == 0 and shift_y == 0 {
+			routes
+		} else {
+			routes.map(|route| LayeredInternals.translate_route(route, shift_x, shift_y))
+		}
+
 		{
 			layout: {
-				positions,
-				bounds: { ..Geom.empty_bounds, width: max_right, height: max_bottom },
-				routes,
+				positions: final_positions,
+				bounds: { ..Geom.empty_bounds, width: extent.max_x - extent.min_x, height: extent.max_y - extent.min_y },
+				routes: final_routes,
 			},
 			layers: sweep.real_ranks,
 			backward_edges: sweep.reversed,
@@ -629,7 +833,7 @@ Prepared := {
 				layout : {
 					positions : List({ x : F64, y : F64 }),
 					bounds : { x : F64, y : F64, width : F64, height : F64 },
-					routes : List([Line({ x : F64, y : F64 }, { x : F64, y : F64 }), Polyline(List({ x : F64, y : F64 }))]),
+					routes : List(Geom.Route),
 				},
 				layers : List(U64),
 				backward_edges : List(U64),
@@ -658,8 +862,12 @@ Layered := [].{
 		},
 	}
 
-	## Space between nodes on the same layer and between adjacent layers.
-	Settings : { node_gap : F64, layer_gap : F64 }
+	## Space between nodes on the same layer and between adjacent layers,
+	## plus how edges through intermediate layers are drawn: `Curved` (the
+	## default) smooths their bends into cubic curve chains, `Straight`
+	## keeps them as polylines. Edges between adjacent layers are always
+	## straight lines.
+	Settings : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved] }
 
 	## Invalid sizes, spacing, or edge endpoints found while checking input.
 	Problem : [
@@ -672,11 +880,13 @@ Layered := [].{
 	]
 
 	## Geometry plus each node's layer and any edges drawn against the flow.
+	## Positions hold node centers; route endpoints lie on the source and
+	## target node boundaries.
 	Result : {
 		layout : {
 			positions : List({ x : F64, y : F64 }),
 			bounds : { x : F64, y : F64, width : F64, height : F64 },
-			routes : List([Line({ x : F64, y : F64 }, { x : F64, y : F64 }), Polyline(List({ x : F64, y : F64 }))]),
+			routes : List(Geom.Route),
 		},
 		layers : List(U64),
 		backward_edges : List(U64),
@@ -787,6 +997,8 @@ expect {
 
 ## Exemplar contract: the witness stores deterministic preprocessing, run is
 ## total, and routes remain aligned with the caller's original edge direction.
+## The reversed edge runs from node 1's top edge (center 5,79 clipped up by
+## half its height) to node 0's bottom edge (center 5,3 clipped down).
 expect {
 	spec = {
 		..Prepared.default_spec,
@@ -799,7 +1011,7 @@ expect {
 		Err(_) => False
 		Ok(sweep) => {
 			result = sweep.run()
-			result.backward_edges == [0] and result.layers == [0, 1] and result.layout.routes == [Line({ x: 5, y: 79 }, { x: 5, y: 3 })]
+			result.backward_edges == [0] and result.layers == [0, 1] and result.layout.routes == [Line({ x: 5, y: 76 }, { x: 5, y: 6 })]
 		}
 	}
 }
@@ -811,4 +1023,84 @@ expect {
 		Err(_) => False
 		Ok(prepared) => Prepared.layout(spec, Prepared.defaults) == Ok(prepared.run())
 	}
+}
+
+## A unit-span route's endpoints lie exactly on the two nodes' facing edges:
+## the source's bottom edge and the target's top edge.
+expect {
+	spec = {
+		..Prepared.default_spec,
+		graph: {
+			nodes: [{ width: 10, height: 6 }, { width: 10, height: 6 }],
+			edges: [{ from: 0, to: 1 }],
+		},
+	}
+	match Prepared.layout(spec, Prepared.defaults) {
+		Err(_) => False
+		Ok(result) => result.layout.routes == [Line({ x: 5, y: 6 }, { x: 5, y: 76 })]
+	}
+}
+
+## With the default `Curved` style, an edge spanning two layers becomes a
+## cubic curve chain through its virtual waypoint at (34, 76): the chain
+## starts on the source's boundary, passes through the waypoint, and ends on
+## the target's boundary, while the unit-span edges stay straight lines.
+expect {
+	spec = {
+		..Prepared.default_spec,
+		graph: {
+			nodes: [{ width: 10, height: 6 }, { width: 10, height: 6 }, { width: 10, height: 6 }],
+			edges: [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 0, to: 2 }],
+		},
+	}
+	expected_start = Geom.clip_to_node({ x: 5, y: 3 }, { width: 10, height: 6 }, { x: 34, y: 76 })
+	expected_end = Geom.clip_to_node({ x: 5, y: 155 }, { width: 10, height: 6 }, { x: 34, y: 76 })
+	match Prepared.layout(spec, Prepared.defaults) {
+		Err(_) => False
+		Ok(result) => {
+			unit_is_line = match result.layout.routes.get(0) ?? Polyline([]) {
+				Line(_, _) => True
+				_ => False
+			}
+			long_is_curve = match result.layout.routes.get(2) ?? Polyline([]) {
+				Curves([first, last]) => {
+					starts_on_source = first.from == expected_start and first.to == { x: 34, y: 76 }
+					ends_on_target = last.from == { x: 34, y: 76 } and last.to == expected_end
+					starts_on_source and ends_on_target
+				}
+				_ => False
+			}
+			unit_is_line and long_is_curve
+		}
+	}
+}
+
+## `route_style: Straight` keeps the same long edge as a polyline through the
+## waypoint, still clipped to the node boundaries at both ends.
+expect {
+	spec = {
+		..Prepared.default_spec,
+		graph: {
+			nodes: [{ width: 10, height: 6 }, { width: 10, height: 6 }, { width: 10, height: 6 }],
+			edges: [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 0, to: 2 }],
+		},
+	}
+	expected_start = Geom.clip_to_node({ x: 5, y: 3 }, { width: 10, height: 6 }, { x: 34, y: 76 })
+	expected_end = Geom.clip_to_node({ x: 5, y: 155 }, { width: 10, height: 6 }, { x: 34, y: 76 })
+	match Prepared.layout(spec, { ..Prepared.defaults, route_style: Straight }) {
+		Err(_) => False
+		Ok(result) => result.layout.routes.get(2) == Ok(Polyline([expected_start, { x: 34, y: 76 }, expected_end]))
+	}
+}
+
+## Determinism: laying out the same input twice produces identical results.
+expect {
+	input = {
+		..Layered.default_input,
+		graph: {
+			nodes: [{ width: 10, height: 6 }, { width: 10, height: 6 }, { width: 10, height: 6 }],
+			edges: [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 0, to: 2 }],
+		},
+	}
+	Layered.layout(input, Layered.default_settings) == Layered.layout(input, Layered.default_settings)
 }

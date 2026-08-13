@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="887.3383578053965" height="815.375461404084" viewBox="0 0 887.3383578053965 815.375461404084">
+
+<rect x="0" y="0" width="887.3383578053965" height="815.375461404084" fill="#ffffff" />
+<line x1="460.47969977767934" y1="391.687730702042" x2="565.3498961749159" y2="291.8738608740692" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="578.9137669025092" y1="259.8738608740692" x2="536.7329105872066" y2="52" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="598.9709379248781" y1="259.8738608740692" x2="703.8411343221146" y2="160.05999104609634" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="630.160417049897" y1="288.10949551430673" x2="771.3383578053965" y2="324.0970309798358" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="458.8977373693786" y1="423.687730702042" x2="560.2544902639908" y2="530.1789688492407" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="623.483048730671" y1="558.8691197167977" x2="726.8249699855504" y2="586.1904649598731" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="578.8777494712452" y1="562.1789688492407" x2="614.8830008219437" y2="731.8799427011334" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="412.4961564804771" y1="423.687730702042" x2="304.7460953253737" y2="478.9919920319517" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="278.0897362459082" y1="510.9919920319517" x2="349.335434022822" y2="763.375461404084" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="263.8739565917367" y1="510.9919920319517" x2="176.38581891971677" y2="655.3154703579877" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="225.5730729031525" y1="491.2679565389286" x2="116" y2="482.7668312770338" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="260.81154593052827" y1="478.9919920319517" x2="102.07778655411141" y2="279.97661123380215" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="435.45694986270905" y1="391.687730702042" x2="364.57714661277777" y2="253.5916247024963" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="348.1526885327993" y1="221.5916247024963" x2="277.27288528286806" y2="83.49551870295056" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<rect x="395.66917890269826" y="391.687730702042" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="443.66917890269826" y="407.687730702042" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Trip planning</text>
+<rect x="534.160417049897" y="259.8738608740692" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="582.160417049897" y="275.8738608740692" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Getting there</text>
+<rect x="485.4862604398188" y="20" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="533.4862604398188" y="36" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Flights</text>
+<rect x="672.6516551970957" y="128.05999104609634" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="720.6516551970957" y="144.05999104609634" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Trains</text>
+<rect x="771.3383578053965" y="320.3326656200733" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="819.3383578053965" y="336.3326656200733" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Car hire</text>
+<rect x="527.483048730671" y="530.1789688492407" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="575.483048730671" y="546.1789688492407" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Staying</text>
+<rect x="726.8249699855504" y="582.8806158274301" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="774.8249699855504" y="598.8806158274301" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Hotels</text>
+<rect x="570.2777015625179" y="731.8799427011334" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="618.2777015625179" y="747.8799427011334" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Camping</text>
+<rect x="225.57307290315248" y="478.9919920319517" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="273.5730729031525" y="494.9919920319517" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Doing</text>
+<rect x="305.8520973655778" y="763.375461404084" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="353.8520973655778" y="779.375461404084" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Museums</text>
+<rect x="118.68670260830095" y="655.3154703579877" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="166.68670260830095" y="671.3154703579877" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Hiking</text>
+<rect x="20" y="463.0427957840107" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="68" y="479.0427957840107" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Beaches</text>
+<rect x="41.316259581487145" y="247.97661123380215" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="89.31625958148715" y="263.97661123380215" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Food tour</text>
+<rect x="308.36491757278856" y="221.5916247024963" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="356.36491757278856" y="237.5916247024963" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Budget</text>
+<rect x="221.06065624287885" y="51.49551870295056" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="269.06065624287885" y="67.49551870295056" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Daily limit</text>
+</svg>
