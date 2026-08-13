@@ -1129,7 +1129,11 @@ description of what they are doing:
 
 The general class shares the `Graph` module with the shared spec
 deliberately: that class adds nothing to the spec, so they share a
-home. Internal and unexposed: the pseudo-random generator, quadtree,
+home. (Implementation note: the current compiler only exposes a module's
+namesake type across modules, so the force, stress, and radial algorithms
+live in `ForceLayout`, `StressLayout`, and `RadialLayout` modules with
+one-call conveniences on `Graph`; they fold back into `Graph` when the
+compiler permits it.) Internal and unexposed: the pseudo-random generator, quadtree,
 shortest paths, union-find, projection solver, and contours.
 
 End to end — inside a function returning `Try`, so `?` propagates build

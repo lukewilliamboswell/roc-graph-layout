@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="564.9789858889483" height="532.4164826808407" viewBox="0 0 564.9789858889483 532.4164826808407">
+
+<rect x="0" y="0" width="564.9789858889483" height="532.4164826808407" fill="#ffffff" />
+<line x1="183.04213740984235" y1="147.80790692350183" x2="98.40510702693004" y2="254.61153646448048" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="151.92895681101803" y1="136.66230611270342" x2="110" y2="140.42069999959776" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="193.46003202305891" y1="147.80790692350183" x2="183.20113924637306" y2="252.56711101051872" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="84.18238020130485" y1="254.61153646448048" x2="69.33590742444952" y2="159.27509918879935" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="80.95859465222091" y1="159.27509918879935" x2="167.77361980619304" y2="252.56711101051872" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="214.35686753491476" y1="117.80790692350183" x2="297.0004888141485" y2="54" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="325.43256225963637" y1="54" x2="385.34080856450817" y2="153.80091679354763" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="392.3460506054254" y1="183.80091679354763" x2="375.8438208706233" y2="307.63446777696277" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="411.0719464621807" y1="183.80091679354763" x2="481.25201071286676" y2="246.7352460837344" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="404.42018889995313" y1="307.63446777696277" x2="467.4036971789444" y2="276.7352460837344" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<line x1="158.3793059955062" y1="447.63446777696277" x2="96.93947716828191" y2="478.41648268084066" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+<rect x="151.92895681101803" y="117.80790692350183" width="86" height="30" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="194.92895681101803" y="132.80790692350183" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Ada</text>
+<rect x="43.51828762575437" y="254.61153646448048" width="86" height="30" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="86.51828762575437" y="269.6115364644805" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Grace</text>
+<rect x="24" y="129.27509918879935" width="86" height="30" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="67" y="144.27509918879935" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Alan</text>
+<rect x="138.73221445841395" y="252.56711101051872" width="86" height="30" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="181.73221445841395" y="267.5671110105187" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Edsger</text>
+<rect x="273.42839953804526" y="24" width="86" height="30" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="316.42839953804526" y="39" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Barbara</text>
+<rect x="351.3449712860993" y="153.80091679354763" width="86" height="30" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="394.3449712860993" y="168.80091679354763" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Donald</text>
+<rect x="330.8449001899494" y="307.63446777696277" width="86" height="30" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="373.8449001899494" y="322.63446777696277" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">John</text>
+<rect x="454.9789858889483" y="246.7352460837344" width="86" height="30" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="497.9789858889483" y="261.7352460837344" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Leslie</text>
+<rect x="145.31878316378808" y="417.63446777696277" width="86" height="30" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="188.31878316378808" y="432.63446777696277" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Contractor A</text>
+<rect x="24.000000000000043" y="478.41648268084066" width="86" height="30" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="67.00000000000004" y="493.41648268084066" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Contractor B</text>
+</svg>

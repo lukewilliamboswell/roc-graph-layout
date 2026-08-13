@@ -1,31 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="278.4059981964892" height="520" viewBox="0 0 278.4059981964892 520">
+<svg xmlns="http://www.w3.org/2000/svg" width="337.5" height="520" viewBox="0 0 337.5 520">
 <defs>
 <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
 <path d="M0,0 L8,4 L0,8 z" fill="#64748b" />
 </marker>
 </defs>
-<rect x="0" y="0" width="278.4059981964892" height="520" fill="#ffffff" />
-<line x1="65" y1="60" x2="65" y2="130" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<line x1="85.9090909090909" y1="60" x2="159.0909090909091" y2="130" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<line x1="65" y1="170" x2="65" y2="240" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<line x1="159.0909090909091" y1="170" x2="85.9090909090909" y2="240" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<line x1="65" y1="280" x2="65" y2="350" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<line x1="85.9090909090909" y1="280" x2="159.0909090909091" y2="350" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<line x1="65" y1="390" x2="65" y2="460" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<line x1="159.0909090909091" y1="390" x2="85.9090909090909" y2="460" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<path d="M 106.11111111111111 60 C 154.07407407407408 83.33333333333333, 241.59400180351082 77.62416508341363, 250 130 C 258.4059981964892 182.37583491658637, 147.80660880371718 203.37309882136887, 135 240 C 122.19339119628282 276.62690117863116, 160.3846153846154 313.3333333333333, 173.07692307692307 350" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<rect x="20" y="20" width="90" height="40" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
-<text x="65" y="40" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">fetch</text>
+<rect x="0" y="0" width="337.5" height="520" fill="#ffffff" />
+<line x1="159.0909090909091" y1="60" x2="85.9090909090909" y2="130" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="180" y1="60" x2="180" y2="130" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="75.45454545454545" y1="170" x2="112.04545454545455" y2="240" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="169.54545454545453" y1="170" x2="132.95454545454544" y2="240" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="122.5" y1="280" x2="122.5" y2="350" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="149.77272727272728" y1="280" x2="245.22727272727272" y2="350" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="132.95454545454544" y1="390" x2="169.54545454545453" y2="460" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<line x1="255.6818181818182" y1="390" x2="196.8181818181818" y2="460" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<path d="M 200.55555555555554 60 C 224.53703703703704 83.33333333333333, 260.0816223430404 98.93008215556064, 272.5 130 C 284.91837765695954 161.06991784443937, 272.5 203.33333333333334, 272.5 240 C 272.5 276.6666666666667, 272.5 313.3333333333333, 272.5 350" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="135" y="20" width="90" height="40" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="180" y="40" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">fetch</text>
 <rect x="20" y="130" width="90" height="40" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
 <text x="65" y="150" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">compile</text>
 <rect x="135" y="130" width="90" height="40" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
 <text x="180" y="150" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">lint</text>
-<rect x="20" y="240" width="90" height="40" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
-<text x="65" y="260" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">build</text>
-<rect x="20" y="350" width="90" height="40" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
-<text x="65" y="370" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">test</text>
-<rect x="135" y="350" width="90" height="40" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
-<text x="180" y="370" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">package</text>
-<rect x="20" y="460" width="90" height="40" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
-<text x="65" y="480" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">publish</text>
+<rect x="77.5" y="240" width="90" height="40" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="122.5" y="260" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">build</text>
+<rect x="77.5" y="350" width="90" height="40" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="122.5" y="370" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">test</text>
+<rect x="227.5" y="350" width="90" height="40" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="272.5" y="370" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">package</text>
+<rect x="135" y="460" width="90" height="40" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="180" y="480" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">publish</text>
 </svg>

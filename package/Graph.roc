@@ -1,4 +1,7 @@
+import ForceLayout
 import Geom
+import RadialLayout
+import StressLayout
 import Trig
 
 ## Pure helpers behind `Graph.Circular`: joint validation, the greedy
@@ -652,12 +655,20 @@ CircularPrepared := { result : Graph.Result }.{
 }
 
 ## General-graph layouts for data whose meaning comes from connectivity: any
-## sized graph, no structure claimed beyond nodes and edges.
+## sized graph, no structure claimed beyond nodes and edges. Four readings of
+## the same input:
 ##
-## `layout_circular` — all nodes on one ring, neighbors seated together — is
-## the family's end-to-end reading today. For repeated layouts of unchanged
-## input, call `prepare_circular` once and pass the result to
-## `layout_circular_prepared`.
+## - `layout_circular` — all nodes on one ring, neighbors seated together.
+## - `layout_force` — organic clusters from a seeded physical simulation
+##   (one-call form here; the `ForceLayout` module has the reusable
+##   prepare/place/run surface, position hints, and pins).
+## - `layout_stress` — drawn distances tracking graph distances (one-call
+##   form here; the reusable surface is in `StressLayout`).
+## - `layout_radial` — concentric rings by depth from a root (one-call
+##   form here; the reusable surface is in `RadialLayout`).
+##
+## For repeated circular layouts of unchanged input, call `prepare_circular`
+## once and pass the result to `layout_circular_prepared`.
 Graph := [].{
 
 	## The shared input every layout family consumes: sized nodes and the
@@ -729,96 +740,179 @@ Graph := [].{
 	layout_circular : Input, CircularSettings -> [Ok(Result), Err(List(Problem))]
 	layout_circular = |input, settings| CircularPrepared.layout(input, settings)
 
-	## Naive `Graph.Force` baseline: place nodes left-to-right with a fixed gap.
-	##
-	## TODO: Introduce the uniform build/run contract and a `Force` witness.
-	## The production implementation needs seeded starts, position hints, pins,
-	## an iteration cap, a tolerance, Barnes-Hut repulsion, component packing,
-	## and deterministic tie-breaking. Until then this pure O(n) placement gives
-	## every valid node one finite, non-overlapping position.
-	force : List({ width : F64, height : F64 }),
-	F64 -> {
-		positions : List({ x : F64, y : F64 }),
-		bounds : { x : F64, y : F64, width : F64, height : F64 },
+	## Force settings that produce a readable organic drawing in common
+	## cases; see the `ForceLayout` module for what each dial changes.
+	default_force_settings : {
+		node_gap : F64,
+		repulsion : F64,
+		gravity : F64,
+		opening_angle : F64,
+		max_iterations : U64,
+		tolerance : F64,
+		pins : List({ node : U64, x : F64, y : F64 }),
 	}
-	force = |nodes, node_gap| {
-		placed = nodes.fold(
-			{ positions: [], next_x: 0, max_height: 0 },
-			|state, node| {
-				center_x = state.next_x + node.width / 2
-				max_height = if node.height > state.max_height {
-					node.height
-				} else {
-					state.max_height
-				}
+	default_force_settings = ForceLayout.force_defaults
 
-				{
-					positions: state.positions.append(Geom.point(center_x, node.height / 2)),
-					next_x: state.next_x + node.width + node_gap,
-					max_height,
-				}
+	## The default force run arguments: the fixed seed and no position hints.
+	default_force_run : { seed : U32, hints : List({ x : F64, y : F64 }) }
+	default_force_run = ForceLayout.force_default_run
+
+	## Check and lay out input in one call, read organically: connected
+	## nodes pull together, everything else pushes apart, and clusters
+	## emerge from the balance. The seed selects among equally valid
+	## drawings. For repeated layouts, position hints, or pinned nodes, use
+	## the `ForceLayout` module's prepare/place/run surface.
+	layout_force : Input,
+	{
+		node_gap : F64,
+		repulsion : F64,
+		gravity : F64,
+		opening_angle : F64,
+		max_iterations : U64,
+		tolerance : F64,
+		pins : List({ node : U64, x : F64, y : F64 }),
+	},
+	{ seed : U32, hints : List({ x : F64, y : F64 }) } -> [
+		Ok(
+			{
+				layout : {
+					positions : List({ x : F64, y : F64 }),
+					bounds : { x : F64, y : F64, width : F64, height : F64 },
+					routes : List(Geom.Route),
+				},
+				components : List(U64),
+				convergence : { iterations : U64, converged : Bool },
 			},
-		)
+		),
+		Err(
+			List(
+				[
+					InvalidNodeWidth(U64),
+					InvalidNodeHeight(U64),
+					MissingEdgeStart(U64, U64),
+					MissingEdgeEnd(U64, U64),
+					InvalidNodeGap,
+					InvalidRepulsion,
+					InvalidGravity,
+					InvalidOpeningAngle,
+					InvalidTolerance,
+					MissingPin(U64),
+					InvalidPin(U64),
+				],
+			),
+		),
+	]
+	layout_force = |input, settings, run_args| ForceLayout.layout_force(input, settings, run_args)
 
-		width = if nodes.is_empty() {
-			0
-		} else {
-			placed.next_x - node_gap
-		}
-
-		{
-			positions: placed.positions,
-			bounds: { ..Geom.empty_bounds, width, height: placed.max_height },
-		}
+	## Stress settings that produce a readable distance-faithful drawing in
+	## common cases; see the `StressLayout` module for what each dial
+	## changes.
+	default_stress_settings : {
+		node_gap : F64,
+		mode : [Exact, Pivots(U64)],
+		max_iterations : U64,
+		tolerance : F64,
+		pins : List({ node : U64, x : F64, y : F64 }),
 	}
+	default_stress_settings = StressLayout.stress_defaults
 
-	## Naive `Graph.Stress` scaffold.
-	##
-	## TODO: Replace delegation to row placement with graph-distance stress
-	## majorization. Build should compute exact distances for small graphs or a
-	## deterministic pivot approximation for large ones; run should descend
-	## until relative stress change reaches tolerance or the iteration cap.
-	stress : List({ width : F64, height : F64 }),
-	F64 -> {
-		positions : List({ x : F64, y : F64 }),
-		bounds : { x : F64, y : F64, width : F64, height : F64 },
-	}
-	stress = |nodes, node_gap| Graph.force(nodes, node_gap)
+	## The default stress run arguments: the fixed seed and no position
+	## hints.
+	default_stress_run : { seed : U32, hints : List({ x : F64, y : F64 }) }
+	default_stress_run = StressLayout.stress_default_run
 
-	## Naive `Graph.Radial` scaffold.
-	##
-	## TODO: Replace delegation with root validation or deterministic automatic
-	## root selection, breadth-first ring assignment, median ordering between
-	## adjacent rings, extent-aware radii, and deterministic angular placement.
-	radial : List({ width : F64, height : F64 }),
-	F64 -> {
-		positions : List({ x : F64, y : F64 }),
-		bounds : { x : F64, y : F64, width : F64, height : F64 },
+	## Check and lay out input in one call, read metrically: how far apart
+	## two nodes are drawn tracks how far apart they are in the graph. For
+	## repeated layouts, position hints, or pinned nodes, use the
+	## `StressLayout` module's prepare/place/run surface.
+	layout_stress : Input,
+	{
+		node_gap : F64,
+		mode : [Exact, Pivots(U64)],
+		max_iterations : U64,
+		tolerance : F64,
+		pins : List({ node : U64, x : F64, y : F64 }),
+	},
+	{ seed : U32, hints : List({ x : F64, y : F64 }) } -> [
+		Ok(
+			{
+				layout : {
+					positions : List({ x : F64, y : F64 }),
+					bounds : { x : F64, y : F64, width : F64, height : F64 },
+					routes : List(Geom.Route),
+				},
+				components : List(U64),
+				convergence : { iterations : U64, converged : Bool },
+			},
+		),
+		Err(
+			List(
+				[
+					InvalidNodeWidth(U64),
+					InvalidNodeHeight(U64),
+					MissingEdgeStart(U64, U64),
+					MissingEdgeEnd(U64, U64),
+					InvalidNodeGap,
+					InvalidPivotCount,
+					InvalidTolerance,
+					MissingPin(U64),
+					InvalidPin(U64),
+				],
+			),
+		),
+	]
+	layout_stress = |input, settings, run_args| StressLayout.layout_stress(input, settings, run_args)
+
+	## Radial settings that produce a readable ringed drawing in common
+	## cases; see the `RadialLayout` module for what each dial changes.
+	default_radial_settings : {
+		root : [Auto, Node(U64)],
+		ring_gap : F64,
+		node_gap : F64,
+		start_angle : F64,
+		winding : [Clockwise, CounterClockwise],
 	}
-	radial = |nodes, node_gap| Graph.force(nodes, node_gap)
+	default_radial_settings = RadialLayout.radial_defaults
+
+	## Check and lay out input in one call, read as centrality: concentric
+	## rings by depth from a root, everything oriented around one thing.
+	## For the reusable prepare/run surface, use the `RadialLayout` module.
+	layout_radial : Input,
+	{
+		root : [Auto, Node(U64)],
+		ring_gap : F64,
+		node_gap : F64,
+		start_angle : F64,
+		winding : [Clockwise, CounterClockwise],
+	} -> [
+		Ok(
+			{
+				layout : {
+					positions : List({ x : F64, y : F64 }),
+					bounds : { x : F64, y : F64, width : F64, height : F64 },
+					routes : List(Geom.Route),
+				},
+				rings : List(U64),
+				components : List(U64),
+			},
+		),
+		Err(
+			List(
+				[
+					InvalidNodeWidth(U64),
+					InvalidNodeHeight(U64),
+					MissingEdgeStart(U64, U64),
+					MissingEdgeEnd(U64, U64),
+					InvalidRingGap,
+					InvalidNodeGap,
+					InvalidStartAngle,
+					InvalidRoot(U64),
+				],
+			),
+		),
+	]
+	layout_radial = |input, settings| RadialLayout.layout_radial(input, settings)
 }
-
-## Force baseline places heterogeneous nodes without overlap.
-expect {
-	result = Graph.force(
-		[
-			{ width: 20, height: 10 },
-			{ width: 10, height: 30 },
-		],
-		5,
-	)
-
-	result == {
-		positions: [{ x: 10, y: 5 }, { x: 30, y: 15 }],
-		bounds: { x: 0, y: 0, width: 35, height: 30 },
-	}
-}
-
-## Force baseline defines the empty graph.
-expect Graph.force([], 10) == { positions: [], bounds: Geom.empty_bounds }
-
-## General-graph scaffolds currently share the deterministic baseline.
-expect Graph.stress([{ width: 4, height: 2 }], 1) == Graph.radial([{ width: 4, height: 2 }], 1)
 
 ## The empty graph has a defined circular layout: no positions, no routes,
 ## zero-size bounds at the origin.
@@ -1067,4 +1161,49 @@ expect {
 		],
 	}
 	Graph.layout_circular(spec, Graph.default_circular_settings) == Graph.layout_circular(spec, Graph.default_circular_settings)
+}
+
+## The one-call force layout is exactly the ForceLayout module's: same
+## validation, same geometry, bit for bit.
+expect {
+	spec = {
+		nodes: List.repeat({ width: 20, height: 20 }, 4),
+		edges: [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 2, to: 3 }, { from: 3, to: 0 }],
+	}
+	Graph.layout_force(spec, Graph.default_force_settings, Graph.default_force_run)
+		== ForceLayout.layout_force(spec, ForceLayout.force_defaults, ForceLayout.force_default_run)
+}
+
+## The one-call stress layout is exactly the StressLayout module's.
+expect {
+	spec = {
+		nodes: List.repeat({ width: 20, height: 20 }, 3),
+		edges: [{ from: 0, to: 1 }, { from: 1, to: 2 }],
+	}
+	Graph.layout_stress(spec, Graph.default_stress_settings, Graph.default_stress_run)
+		== StressLayout.layout_stress(spec, StressLayout.stress_defaults, StressLayout.stress_default_run)
+}
+
+## Force and stress one-shots report aggregated problems through Graph.
+expect {
+	bad = { nodes: [{ width: 0 - 1.0, height: 2 }], edges: [{ from: 0, to: 5 }] }
+	force_err = match Graph.layout_force(bad, Graph.default_force_settings, Graph.default_force_run) {
+		Err(problems) => problems.len() >= 2
+		Ok(_) => False
+	}
+	stress_err = match Graph.layout_stress(bad, Graph.default_stress_settings, Graph.default_stress_run) {
+		Err(problems) => problems.len() >= 2
+		Ok(_) => False
+	}
+	force_err and stress_err
+}
+
+## The one-call radial layout is exactly the RadialLayout module's.
+expect {
+	spec = {
+		nodes: List.repeat({ width: 20, height: 20 }, 5),
+		edges: [{ from: 0, to: 1 }, { from: 0, to: 2 }, { from: 0, to: 3 }, { from: 0, to: 4 }],
+	}
+	Graph.layout_radial(spec, Graph.default_radial_settings)
+		== RadialLayout.layout_radial(spec, RadialLayout.radial_defaults)
 }

@@ -2,3 +2,5 @@
 dist/
 .DS_Store
 generated-docs/
+/fuzz_*
+.roc-fuzz/
