@@ -102,6 +102,18 @@ Relevant code: `package/ForceLayout.roc`, especially `one_iteration`,
 
 ## H2: Dense overlap removal compounds quadratic constraints with global merges
 
+**Status (2026-08-14): confirmed and mitigated.** The dominant cost occurred
+before block merging. `Overlap.remove` emits its dense pair constraints in the
+same canonical order that `Solver.project` requires, but `project` sorted them
+again. The built-in `List.sort_with` uses its first item as the quicksort pivot,
+so this already-sorted list of O(n^2) constraints triggered O(n^4) sorting work.
+A linear sortedness check now preserves canonical input directly and retains
+sorting for other callers. At 80 piled-up nodes this reduced the native case
+from 22.1 seconds and 825,592,880 requested bytes to 2.64 ms and 745,144 bytes.
+The formerly unattempted 160-node case completes in 6.3 ms. Dense constraint
+construction and solver work remain at least quadratic, as expected; their
+bounded 320/640/1,000-node ladder is now practical in the scale suite.
+
 **Hypothesis.** A pileup creates quadratic pair constraints, after which every
 solver merge scans all constraints and variables and repeated sweeps revisit
 the full constraint list. Persistent list updates may add further copying, so

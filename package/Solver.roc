@@ -185,31 +185,44 @@ Solver :: {}.{
 	project = |variables, constraints| {
 		count = variables.len()
 		desired = variables.map(|v| v.position)
-		ordered = constraints.sort_with(
-			|a, b| {
-				a_key = desired.get(a.left) ?? 0
-				b_key = desired.get(b.left) ?? 0
-				if a_key < b_key {
-					LT
-				} else if a_key > b_key {
-					GT
-				} else if a.left < b.left {
-					LT
-				} else if a.left > b.left {
-					GT
-				} else if a.right < b.right {
-					LT
-				} else if a.right > b.right {
-					GT
-				} else if a.gap > b.gap {
-					LT
-				} else if a.gap < b.gap {
-					GT
-				} else {
-					EQ
-				}
-			},
+		constraint_order = |a, b| {
+			a_key = desired.get(a.left) ?? 0
+			b_key = desired.get(b.left) ?? 0
+			if a_key < b_key {
+				LT
+			} else if a_key > b_key {
+				GT
+			} else if a.left < b.left {
+				LT
+			} else if a.left > b.left {
+				GT
+			} else if a.right < b.right {
+				LT
+			} else if a.right > b.right {
+				GT
+			} else if a.gap > b.gap {
+				LT
+			} else if a.gap < b.gap {
+				GT
+			} else {
+				EQ
+			}
+		}
+		already_ordered = constraints.fold_with_index(
+			True,
+			|ordered, constraint, index|
+				ordered
+					and if index == 0 {
+						True
+					} else {
+						constraint_order(constraints.get(index - 1) ?? constraint, constraint) != GT
+					},
 		)
+		ordered = if already_ordered {
+			constraints
+		} else {
+			constraints.sort_with(constraint_order)
+		}
 		initial = {
 			block_of: List.repeat(0, count).map_with_index(|_, i| i),
 			offset: List.repeat(0.0, count),
@@ -293,6 +306,19 @@ expect {
 	variables = [{ position: 9, weight: 2 }, { position: 1, weight: 1 }, { position: 4, weight: 3 }]
 	constraints = [{ left: 0, right: 1, gap: 3 }, { left: 1, right: 2, gap: 3 }]
 	Solver.project(variables, constraints) == Solver.project(variables, constraints)
+}
+
+## Constraints already in canonical order take the fast path, while the same
+## constraints in another order are sorted and produce the identical result.
+expect {
+	variables = [{ position: 0, weight: 1 }, { position: 0, weight: 1 }, { position: 0, weight: 1 }]
+	ordered = [
+		{ left: 0, right: 1, gap: 4 },
+		{ left: 0, right: 2, gap: 8 },
+		{ left: 1, right: 2, gap: 4 },
+	]
+	shuffled = [ordered.get(2)?, ordered.get(0)?, ordered.get(1)?]
+	Solver.project(variables, ordered) == Solver.project(variables, shuffled)
 }
 
 ## Empty variables are defined: constraints referencing nothing are skipped
