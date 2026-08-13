@@ -104,7 +104,7 @@ main! = |args| {
 	match Layered.prepare(input, settings) {
 		Err(problems) => Err(LayoutProblems(problems))
 		Ok(prepared) => {
-			result = Layered.layout_prepared(prepared)
+			result = Layered.layout_prepared(prepared, Layered.default_run)
 			svg = render_svg(result.layout)
 
 			output = Path.utf8("examples/build_pipeline/output.svg")

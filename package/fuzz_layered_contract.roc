@@ -30,7 +30,7 @@ test = |bytes| {
 			{ from, to: from + 1 + (byte_at(bytes, 19 + index * 2).to_u64() % span) }
 		},
 	)
-	input = { graph: { nodes, edges } }
+	input = { ..Layered.default_input, graph: { nodes, edges } }
 	settings = {
 		..Layered.default_settings,
 		node_gap: (byte_at(bytes, 45) % 32).to_f64(),
@@ -45,8 +45,8 @@ test = |bytes| {
 	match Layered.prepare(input, settings) {
 		Err(_) => crash "bounded valid layered input failed preparation"
 		Ok(prepared) => {
-			one_call = Layered.layout(input, settings)
-			result = Layered.layout_prepared(prepared)
+			one_call = Layered.layout(input, settings, Layered.default_run)
+			result = Layered.layout_prepared(prepared, Layered.default_run)
 			aligned = result.layout.positions.len() == node_count
 				and result.layout.routes.len() == edges.len()
 					and result.layers.len() == node_count
@@ -61,7 +61,7 @@ test = |bytes| {
 			valid_backward = result.backward_edges.all(|index| index < edges.len())
 
 			if one_call == Ok(result)
-				and Layered.layout(input, settings) == one_call
+				and Layered.layout(input, settings, Layered.default_run) == one_call
 					and aligned
 						and forward
 							and result.backward_edges.is_empty()

@@ -120,7 +120,44 @@ Overlap :: {}.{
 				with_x.map(|p| { position: p.y, weight: 1.0 }),
 				y_rules,
 			)
-			with_x.map_with_index(|p, i| { ..p, y: solved.get(i) ?? p.y })
+			projected = with_x.map_with_index(|p, i| { ..p, y: solved.get(i) ?? p.y })
+			# The solver is allowed tiny residual error. Scan in its deterministic
+			# vertical order and push later boxes only when that error would still
+			# count as overlap at this pass's tolerance.
+			order = projected
+				.map_with_index(|p, index| { index, y: p.y })
+				.sort_with(
+					|a, b| if a.y < b.y {
+						LT
+					} else if a.y > b.y {
+						GT
+					} else if a.index < b.index {
+						LT
+					} else {
+						GT
+					},
+				)
+			order.fold(
+				projected,
+				|current, entry| {
+					point = current.get(entry.index) ?? { x: 0, y: 0 }
+					minimum = order.fold(
+						point.y,
+						|needed, prior| if prior.index == entry.index {
+							needed
+						} else {
+							other = current.get(prior.index) ?? point
+							need = need_between(prior.index, entry.index)
+							if other.y <= point.y and (other.x - point.x).abs() < need.x - tolerance {
+								needed.max(other.y + need.y)
+							} else {
+								needed
+							}
+						},
+					)
+					current.set(entry.index, { ..point, y: minimum }) ?? current
+				},
+			)
 		}
 	}
 }
@@ -290,6 +327,27 @@ expect {
 
 ## Empty input gives an empty result.
 expect Overlap.remove([], [], 5) == []
+
+## fuzz regression: a mixed box-and-waypoint pileup with a positive gap must
+## leave every pair separated, including coincident zero-size waypoints.
+expect {
+	positions = [{ x: 0 - 10.0, y: 5.0 }, { x: 0 - 17.0, y: 0 - 20.0 }, { x: 0 - 20.0, y: 0 - 20.0 }, { x: 0 - 20.0, y: 0 - 20.0 }, { x: 0 - 20.0, y: 0 - 20.0 }, { x: 0 - 20.0, y: 0 - 20.0 }]
+	sizes = [{ width: 10, height: 10 }, { width: 0, height: 0 }, { width: 0, height: 0 }, { width: 0, height: 0 }, { width: 0, height: 0 }, { width: 0, height: 0 }]
+	result = Overlap.remove(positions, sizes, 6)
+	result.fold_with_index(
+		True,
+		|outer, a, i| result.fold_with_index(
+			outer,
+			|ok, b, j| if j <= i {
+				ok
+			} else {
+				sa = sizes.get(i) ?? { width: 0, height: 0 }
+				sb = sizes.get(j) ?? { width: 0, height: 0 }
+				ok and ((b.x - a.x).abs() >= (sa.width + sb.width) / 2 + 6 - 0.000000001 or (b.y - a.y).abs() >= (sa.height + sb.height) / 2 + 6 - 0.000000001)
+			},
+		),
+	)
+}
 
 ## A position without a matching size is a zero-size point: strictly inside
 ## another box it still gets pushed clear, with spacing measured from its

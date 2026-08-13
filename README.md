@@ -41,7 +41,7 @@ edges = [{ from: 0, to: 1 }]
 input = { ..Layered.default_input, graph: { nodes, edges } }
 settings = { ..Layered.default_settings, node_gap: 24, layer_gap: 70 }
 
-result = Layered.layout(input, settings)?
+result = Layered.layout(input, settings, Layered.default_run)?
 
 # result.layout.positions lines up with nodes
 # result.layout.routes lines up with edges
@@ -57,8 +57,8 @@ and the [collab-network example](examples/collab_network/main.roc) for a
 force-directed graph with a disconnected component.
 
 For repeated layouts of the same input and settings, use `Layered.prepare` once
-and pass the result to `Layered.layout_prepared`. Changed input must be prepared
-again.
+and pass the result to `Layered.layout_prepared` with `Layered.default_run`.
+Changed input must be prepared again.
 
 ## Development
 

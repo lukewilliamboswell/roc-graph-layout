@@ -1,4 +1,5 @@
 import Geom
+import Route
 
 ## Layered layouts for directed graphs read as flow — a complete
 ## Sugiyama-style pipeline: break cycles with a greedy vertex-ordering
@@ -20,6 +21,211 @@ LayeredInternals :: {}.{
 	## that needs to walk a bounded range of indices.
 	indices_up_to : U64 -> List(U64)
 	indices_up_to = |n| List.repeat(0, n).map_with_index(|_, i| i)
+
+	## Weighted, constrained ranking used by the public Spec surface. This is
+	## the GKNV network simplex above with per-edge minimum slack and weighted
+	## cut values. The tight-forest exchange rule is unchanged; consequently a
+	## completed pivot sequence is an optimum of sum(weight * edge span).
+	rank_nodes_spec : U64, List({ from : U64, to : U64 }), List(F64), List(U64) -> List(U64)
+	rank_nodes_spec = |node_count, edges, weights, min_spans| {
+		if node_count == 0 {
+			[]
+		} else {
+			weighted = edges.map_with_index(|edge, i| { from: edge.from, to: edge.to, weight: weights.get(i) ?? 1, min_span: min_spans.get(i) ?? 1 })
+			init = LayeredInternals.indices_up_to(node_count).fold(
+				List.repeat(0, node_count),
+				|ranks, _|
+					weighted.fold(
+						ranks,
+						|acc, edge| if edge.from == edge.to {
+							acc
+						} else {
+							wanted = (acc.get(edge.from) ?? 0) + edge.min_span
+							if wanted > (acc.get(edge.to) ?? 0.U64) {
+								acc.set(edge.to, wanted) ?? acc
+							} else {
+								acc
+							}
+						},
+					),
+			).map(|r| r.to_i64_wrap())
+			spanning = weighted.keep_if(|e| e.from != e.to)
+			forest = LayeredInternals.grow_weighted_forest(node_count, spanning, init)
+			refined = LayeredInternals.improve_weighted_ranks(node_count, spanning, forest.ranks, forest.tree_flags)
+			LayeredInternals.normalize_ranks(node_count, edges, refined)
+		}
+	}
+
+	weighted_slack : List(I64), { from : U64, to : U64, weight : F64, min_span : U64 } -> I64
+	weighted_slack = |ranks, edge| (ranks.get(edge.to) ?? 0) - (ranks.get(edge.from) ?? 0) - edge.min_span.to_i64_wrap()
+
+	grow_weighted_forest : U64, List({ from : U64, to : U64, weight : F64, min_span : U64 }), List(I64) -> { ranks : List(I64), tree_flags : List(Bool) }
+	grow_weighted_forest = |node_count, edges, init_ranks| {
+		empty = List.repeat(False, node_count)
+		finished = LayeredInternals.indices_up_to(node_count).fold(
+			{ ranks: init_ranks, tree_flags: List.repeat(False, edges.len()), in_forest: empty },
+			|state, start| if state.in_forest.get(start) ?? False {
+				state
+			} else {
+				tree = LayeredInternals.indices_up_to(node_count).fold(
+					{ ranks: state.ranks, tree_flags: state.tree_flags, cur: empty.set(start, True) ?? empty },
+					|inner, _| {
+						found = edges.fold_with_index(
+							None,
+							|best, edge, i| {
+								a = inner.cur.get(edge.from) ?? False
+								b = inner.cur.get(edge.to) ?? False
+								if a == b {
+									best
+								} else {
+									slack = LayeredInternals.weighted_slack(inner.ranks, edge)
+									match best {
+										None => Some({ index: i, slack })
+										Some(old) => if slack < old.slack {
+											Some({ index: i, slack })
+										} else {
+											Some(old)
+										}
+									}
+								}
+							},
+						)
+						match found {
+							None => inner
+							Some(hit) => {
+								edge = edges.get(hit.index) ?? { from: 0, to: 0, weight: 1, min_span: 1 }
+								from_in = inner.cur.get(edge.from) ?? False
+								delta = if from_in {
+									hit.slack
+								} else {
+									0 - hit.slack
+								}
+								ranks = inner.ranks.map_with_index(
+									|r, n| if inner.cur.get(n) ?? False {
+										r + delta
+									} else {
+										r
+									},
+								)
+								joined = if from_in {
+									edge.to
+								} else {
+									edge.from
+								}
+								{ ranks, tree_flags: inner.tree_flags.set(hit.index, True) ?? inner.tree_flags, cur: inner.cur.set(joined, True) ?? inner.cur }
+							}
+						}
+					},
+				)
+				{ ranks: tree.ranks, tree_flags: tree.tree_flags, in_forest: state.in_forest.map_with_index(|f, n| f or (tree.cur.get(n) ?? False)) }
+			},
+		)
+		{ ranks: finished.ranks, tree_flags: finished.tree_flags }
+	}
+
+	weighted_cut_value : List({ from : U64, to : U64, weight : F64, min_span : U64 }), List(Bool) -> F64
+	weighted_cut_value = |edges, side| edges.fold(
+		0,
+		|total, edge| {
+			from_in = side.get(edge.from) ?? False
+			to_in = side.get(edge.to) ?? False
+			if to_in and !from_in {
+				total + edge.weight
+			} else if from_in and !to_in {
+				total - edge.weight
+			} else {
+				total
+			}
+		},
+	)
+
+	weighted_tree_side : U64, U64, U64, List({ from : U64, to : U64, weight : F64, min_span : U64 }), List(Bool) -> List(Bool)
+	weighted_tree_side = |node_count, start, excluded, edges, tree_flags| {
+		empty = List.repeat(False, node_count)
+		LayeredInternals.indices_up_to(node_count).fold(
+			empty.set(start, True) ?? empty,
+			|side, _|
+				edges.fold_with_index(
+					side,
+					|acc, edge, i| if (tree_flags.get(i) ?? False) and i != excluded {
+						a = acc.get(edge.from) ?? False
+						b = acc.get(edge.to) ?? False
+						if a and !b {
+							acc.set(edge.to, True) ?? acc
+						} else if b and !a {
+							acc.set(edge.from, True) ?? acc
+						} else {
+							acc
+						}
+					} else {
+						acc
+					},
+				),
+		)
+	}
+
+	improve_weighted_ranks : U64, List({ from : U64, to : U64, weight : F64, min_span : U64 }), List(I64), List(Bool) -> List(I64)
+	improve_weighted_ranks = |node_count, edges, init_ranks, init_tree| {
+		cap = 8 + 4 * (node_count + edges.len())
+		LayeredInternals.indices_up_to(cap).fold(
+			{ ranks: init_ranks, tree_flags: init_tree, done: False },
+			|state, _| if state.done {
+				state
+			} else {
+				leaving = edges.fold_with_index(
+					None,
+					|found, edge, i| match found {
+						Some(_) => found
+						None => if state.tree_flags.get(i) ?? False {
+							side = LayeredInternals.weighted_tree_side(node_count, edge.to, i, edges, state.tree_flags)
+							if LayeredInternals.weighted_cut_value(edges, side) < 0 {
+								Some({ index: i, side })
+							} else {
+								None
+							}
+						} else {
+							None
+						}
+					},
+				)
+				match leaving {
+					None => { ..state, done: True }
+					Some(out) => {
+						entering = edges.fold_with_index(
+							None,
+							|best, edge, i| if (state.tree_flags.get(i) ?? False) or !((out.side.get(edge.from) ?? False) and !(out.side.get(edge.to) ?? False)) {
+								best
+							} else {
+								slack = LayeredInternals.weighted_slack(state.ranks, edge)
+								match best {
+									None => Some({ index: i, slack })
+									Some(old) => if slack < old.slack {
+										Some({ index: i, slack })
+									} else {
+										Some(old)
+									}
+								}
+							},
+						)
+						match entering {
+							None => { ..state, done: True }
+							Some(hit) => {
+								removed = state.tree_flags.set(out.index, False) ?? state.tree_flags
+								ranks = state.ranks.map_with_index(
+									|r, n| if out.side.get(n) ?? False {
+										r + hit.slack
+									} else {
+										r
+									},
+								)
+								{ ranks, tree_flags: removed.set(hit.index, True) ?? removed, done: False }
+							}
+						}
+					}
+				}
+			},
+		).ranks
+	}
 
 	## Longest-path-from-sources ranking, the feasible starting point for the
 	## exact ranking below. Nodes with no incoming edges rank 0; every other
@@ -498,6 +704,151 @@ LayeredInternals :: {}.{
 		)
 	}
 
+	## Seeds real-node order from a full finite hint list. Virtual waypoints
+	## interpolate their owning edge's endpoints before each layer is sorted.
+	hinted_layers : List(List(U64)), List(List(U64)), List({ x : F64, y : F64 }), List(Bool) -> List(List(U64))
+	hinted_layers = |layers, chains, hints, reversed_flags| {
+		real_count = hints.len()
+		virtual_keys = chains.fold_with_index(
+			List.repeat(0, layers.fold(0, |n, layer| n + layer.len())),
+			|keys, chain, edge_index| {
+				oriented = if reversed_flags.get(edge_index) ?? False {
+					chain.rev()
+				} else {
+					chain
+				}
+				start = hints.get(oriented.first() ?? 0) ?? Geom.point(0, 0)
+				end = hints.get(oriented.last() ?? 0) ?? start
+				denom = (oriented.len() - 1).to_f64()
+				oriented.fold_with_index(
+					keys,
+					|acc, node, i| if node < real_count {
+						acc.set(node, (hints.get(node) ?? Geom.point(0, 0)).x) ?? acc
+					} else {
+						fraction = i.to_f64() / denom
+						acc.set(node, start.x + (end.x - start.x) * fraction) ?? acc
+					},
+				)
+			},
+		)
+		layers.map(
+			|layer| layer.sort_with(
+				|a, b| {
+					ak = virtual_keys.get(a) ?? 0
+					bk = virtual_keys.get(b) ?? 0
+					if ak < bk {
+						LT
+					} else if ak > bk {
+						GT
+					} else if a < b {
+						LT
+					} else if a > b {
+						GT
+					} else {
+						EQ
+					}
+				},
+			),
+		)
+	}
+
+	canonical_hints : List({ x : F64, y : F64 }), U64, [Down, Up, Left, Right] -> [Some(List({ x : F64, y : F64 })), None]
+	canonical_hints = |hints, node_count, direction| {
+		usable = hints.len() == node_count and hints.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y))
+		if !usable {
+			None
+		} else {
+			Some(
+				hints.map(
+					|p| match direction {
+						Down => p
+						Up => Geom.point(0 - p.x, 0 - p.y)
+						Right => Geom.point(p.y, 0 - p.x)
+						Left => Geom.point(0 - p.y, p.x)
+					},
+				),
+			)
+		}
+	}
+
+	## Hard ordering constraints induced by port declaration order. For two
+	## consecutive bindings on one node, their opposite endpoints must appear
+	## in the same order whenever they share a layer. Repeated stable adjacent
+	## swaps compute the deterministic closure; crossings are optimized only
+	## inside the remaining unconstrained choices.
+	port_precedences = |graph, ports, bindings| graph.nodes.fold_with_index(
+		[],
+		|all, _node, node| {
+			ordered = bindings.keep_if(|b| (ports.get(b.port) ?? { node: 0, side: Top, offset: 0 }).node == node).sort_with(
+				|a, b| if a.port < b.port {
+					LT
+				} else if a.port > b.port {
+					GT
+				} else if a.edge < b.edge {
+					LT
+				} else if a.edge > b.edge {
+					GT
+				} else {
+					EQ
+				},
+			)
+			if ordered.len() < 2 {
+				all
+			} else {
+				LayeredInternals.indices_up_to(ordered.len() - 1).fold(
+					all,
+					|acc, i| {
+						a = ordered.get(i) ?? { edge: 0, endpoint: From, port: 0 }
+						b = ordered.get(i + 1) ?? a
+						ea = graph.edges.get(a.edge) ?? { from: 0, to: 0 }
+						eb = graph.edges.get(b.edge) ?? { from: 0, to: 0 }
+						before = if ea.from == node {
+							ea.to
+						} else {
+							ea.from
+						}
+						after = if eb.from == node {
+							eb.to
+						} else {
+							eb.from
+						}
+						if before == after {
+							acc
+						} else {
+							acc.append({ before, after })
+						}
+					},
+				)
+			}
+		},
+	)
+
+	enforce_precedences = |layers, precedences| layers.map(
+		|layer| {
+			passes = layer.len() * layer.len()
+			LayeredInternals.indices_up_to(passes).fold(
+				layer,
+				|cur, _| precedences.fold(
+					cur,
+					|acc, rule| {
+						before_pos = acc.find_first_index(|n| n == rule.before)
+						after_pos = acc.find_first_index(|n| n == rule.after)
+						match (before_pos, after_pos) {
+							(Ok(a), Ok(b)) => if a > b {
+								value = acc.get(a) ?? rule.before
+								without = acc.take_first(a).concat(acc.drop_first(a + 1))
+								without.take_first(b).append(value).concat(without.drop_first(b))
+							} else {
+								acc
+							}
+							_ => acc
+						}
+					},
+				),
+			)
+		},
+	)
+
 	## Position of every node inside one layer, or `None` for nodes that live
 	## elsewhere — the lookup table the crossing counter needs.
 	layer_positions : U64, List(U64) -> List([Some(U64), None])
@@ -611,9 +962,8 @@ LayeredInternals :: {}.{
 	## the search stops early when a round fails to improve it, at a perfect
 	## score of zero, or at the round cap. Every choice inside is
 	## deterministic, so the result is too.
-	order_layers : List(List(U64)), List({ from : U64, to : U64 }) -> List(List(U64))
-	order_layers = |layers, unit_edges| {
-		rounds = 4
+	order_layers : List(List(U64)), List({ from : U64, to : U64 }), U64 -> List(List(U64))
+	order_layers = |layers, unit_edges, rounds| {
 		node_total = layers.fold(0, |acc, layer| acc + layer.len())
 		initial_score = LayeredInternals.total_crossings(node_total, layers, unit_edges)
 
@@ -669,7 +1019,7 @@ LayeredInternals :: {}.{
 	exact_order_layers : List(List(U64)), List({ from : U64, to : U64 }), U64 -> { layers : List(List(U64)), proven_optimal : Bool }
 	exact_order_layers = |layers, unit_edges, effort_cap| {
 		node_total = layers.fold(0, |acc, layer| acc + layer.len())
-		incumbent = LayeredInternals.order_layers(layers, unit_edges)
+		incumbent = LayeredInternals.order_layers(layers, unit_edges, 4)
 		incumbent_cost = LayeredInternals.total_crossings(node_total, incumbent, unit_edges)
 
 		searched = LayeredInternals.search_layer(
@@ -1356,6 +1706,22 @@ LayeredInternals :: {}.{
 			}
 	}
 
+	transform_point = |point, direction| match direction {
+		Down => point
+		Up => Geom.point(point.x, 0 - point.y)
+		Right => Geom.point(point.y, point.x)
+		Left => Geom.point(0 - point.y, point.x)
+	}
+
+	transform_route = |route, direction| {
+		shift = |p| LayeredInternals.transform_point(p, direction)
+		match route {
+			Line(a, b) => Line(shift(a), shift(b))
+			Polyline(points) => Polyline(points.map(shift))
+			Curves(segments) => Curves(segments.map(|s| { from: shift(s.from), ctl_a: shift(s.ctl_a), ctl_b: shift(s.ctl_b), to: shift(s.to) }))
+		}
+	}
+
 	## Full minimal Sugiyama pipeline: rank, split long edges into virtual
 	## chains, order layers by median sweeps, assign coordinates, then route
 	## each original edge as a `Line` (unit span) or `Polyline` (through its
@@ -1381,7 +1747,7 @@ LayeredInternals :: {}.{
 			heights = nodes.map(|n| n.height).concat(List.repeat(0, virtual_count))
 
 			layers = LayeredInternals.group_by_rank(extended.ranks)
-			ordered = LayeredInternals.order_layers(layers, extended.unit_edges)
+			ordered = LayeredInternals.order_layers(layers, extended.unit_edges, 4)
 			all_positions = LayeredInternals.assign_coordinates(ordered, extended.unit_edges, nodes.len(), widths, heights, node_gap, layer_gap)
 
 			positions = all_positions.take_first(nodes.len())
@@ -1583,6 +1949,8 @@ LayeredInternals :: {}.{
 		chains : List(List(U64)),
 		unit_edges : List({ from : U64, to : U64 }),
 		ordered_layers : List(List(U64)),
+		direction : [Down, Up, Left, Right],
+		edge_labels : List(Route.EdgeLabel),
 		node_gap : F64,
 		layer_gap : F64,
 		route_style : [Straight, Curved],
@@ -1597,8 +1965,18 @@ LayeredInternals :: {}.{
 	}
 	finish_layout = |prepared| {
 		virtual_count = prepared.extended_ranks.len() - prepared.nodes.len()
-		widths = prepared.nodes.map(|node| node.width).concat(List.repeat(0, virtual_count))
-		heights = prepared.nodes.map(|node| node.height).concat(List.repeat(0, virtual_count))
+		base_widths = prepared.nodes.map(|node| node.width).concat(List.repeat(0, virtual_count))
+		base_heights = prepared.nodes.map(|node| node.height).concat(List.repeat(0, virtual_count))
+		label_sizes = prepared.edge_labels.fold(
+			{ widths: base_widths, heights: base_heights },
+			|state, label| {
+				chain = prepared.chains.get(label.edge) ?? []
+				middle = chain.get(chain.len() // 2) ?? 0
+				{ widths: state.widths.set(middle, label.width) ?? state.widths, heights: state.heights.set(middle, label.height) ?? state.heights }
+			},
+		)
+		widths = label_sizes.widths
+		heights = label_sizes.heights
 		all_positions = LayeredInternals.assign_coordinates(prepared.ordered_layers, prepared.unit_edges, prepared.nodes.len(), widths, heights, prepared.node_gap, prepared.layer_gap)
 		positions = all_positions.take_first(prepared.nodes.len())
 
@@ -1691,7 +2069,7 @@ LayeredInternals :: {}.{
 			routes.map(|route| LayeredInternals.translate_route(route, shift_x, shift_y))
 		}
 
-		{
+		canonical = {
 			layout: {
 				positions: final_positions,
 				bounds: { ..Geom.empty_bounds, width: extent.max_x - extent.min_x, height: extent.max_y - extent.min_y },
@@ -1700,7 +2078,133 @@ LayeredInternals :: {}.{
 			layers: prepared.real_ranks,
 			backward_edges: prepared.reversed,
 		}
+
+		transformed_positions = canonical.layout.positions.map(|p| LayeredInternals.transform_point(p, prepared.direction))
+		transformed_routes = canonical.layout.routes.map(|r| LayeredInternals.transform_route(r, prepared.direction))
+		label_points = prepared.edge_labels.map(
+			|label| {
+				chain = prepared.chains.get(label.edge) ?? []
+				middle = chain.get(chain.len() // 2) ?? 0
+				point = all_positions.get(middle) ?? Geom.point(0, 0)
+				LayeredInternals.transform_point(Geom.point(point.x + shift_x, point.y + shift_y), prepared.direction)
+			},
+		)
+		node_extent = transformed_positions.fold_with_index(
+			{ min_x: 0, min_y: 0, max_x: 0, max_y: 0 },
+			|acc, p, i| {
+				node = prepared.nodes.get(i) ?? { width: 0, height: 0 }
+				size = match prepared.direction {
+					Down | Up => node
+					Left | Right => { width: node.height, height: node.width }
+				}
+				{
+					min_x: acc.min_x.min(p.x - size.width / 2),
+					min_y: acc.min_y.min(p.y - size.height / 2),
+					max_x: acc.max_x.max(p.x + size.width / 2),
+					max_y: acc.max_y.max(p.y + size.height / 2),
+				}
+			},
+		)
+		extent2 = transformed_routes.fold(
+			node_extent,
+			|acc, route| LayeredInternals.route_extent_points(route).fold(
+				acc,
+				|inner, p| {
+					min_x: inner.min_x.min(p.x),
+					min_y: inner.min_y.min(p.y),
+					max_x: inner.max_x.max(p.x),
+					max_y: inner.max_y.max(p.y),
+				},
+			),
+		)
+		label_extent = prepared.edge_labels.fold_with_index(
+			extent2,
+			|acc, label, i| {
+				p = label_points.get(i) ?? Geom.point(0, 0)
+				{ min_x: acc.min_x.min(p.x - label.width / 2), min_y: acc.min_y.min(p.y - label.height / 2), max_x: acc.max_x.max(p.x + label.width / 2), max_y: acc.max_y.max(p.y + label.height / 2) }
+			},
+		)
+		dx = 0 - label_extent.min_x
+		dy = 0 - label_extent.min_y
+		{
+			..canonical,
+			layout: {
+				positions: transformed_positions.map(|p| Geom.point(p.x + dx, p.y + dy)),
+				routes: transformed_routes.map(|r| LayeredInternals.translate_route(r, dx, dy)),
+				bounds: { ..Geom.empty_bounds, width: label_extent.max_x - label_extent.min_x, height: label_extent.max_y - label_extent.min_y },
+			},
+		}
 	}
+
+	port_order_violations = |input, positions| {
+		input.graph.nodes.fold_with_index(
+			[],
+			|all, _node, node_index| {
+				incident = input.port_bindings.keep_if(
+					|b| {
+						port = input.ports.get(b.port) ?? { node: 0, side: Top, offset: 0 }
+						port.node == node_index
+					},
+				).sort_with(
+					|a, b| if a.port < b.port {
+						LT
+					} else if a.port > b.port {
+						GT
+					} else if a.edge < b.edge {
+						LT
+					} else if a.edge > b.edge {
+						GT
+					} else {
+						EQ
+					},
+				)
+				if incident.len() < 2 {
+					all
+				} else {
+					LayeredInternals.indices_up_to(incident.len() - 1).fold(
+						all,
+						|acc, i| {
+							a = incident.get(i) ?? { edge: 0, endpoint: From, port: 0 }
+							b = incident.get(i + 1) ?? a
+							ea = input.graph.edges.get(a.edge) ?? { from: 0, to: 0 }
+							eb = input.graph.edges.get(b.edge) ?? { from: 0, to: 0 }
+							oa = if ea.from == node_index {
+								ea.to
+							} else {
+								ea.from
+							}
+							ob = if eb.from == node_index {
+								eb.to
+							} else {
+								eb.from
+							}
+							pa = positions.get(oa) ?? Geom.point(0, 0)
+							pb = positions.get(ob) ?? Geom.point(0, 0)
+							if pa.x > pb.x {
+								acc.append({ node: node_index, before_edge: a.edge, after_edge: b.edge })
+							} else {
+								acc
+							}
+						},
+					)
+				}
+			},
+		)
+	}
+
+	label_anchors = |labels, routes| labels.map(
+		|label| {
+			route = routes.get(label.edge) ?? Polyline([])
+			points = LayeredInternals.route_extent_points(route)
+			if points.is_empty() {
+				Geom.point(0, 0)
+			} else {
+				first = points.get(0) ?? Geom.point(0, 0)
+				last = points.get(points.len() - 1) ?? first
+				Geom.point((first.x + last.x) / 2, (first.y + last.y) / 2)
+			}
+		},
+	)
 
 	validation_problems = |spec, config| {
 		node_problems = spec.graph.nodes.fold_with_index(
@@ -1746,7 +2250,77 @@ LayeredInternals :: {}.{
 		if !F64.is_finite(config.layer_gap) or config.layer_gap < 0 {
 			gap_problems.append(InvalidLayerGap)
 		} else {
-			gap_problems
+			metadata = spec.ports.fold_with_index(
+				gap_problems,
+				|acc, port, i| if port.node >= spec.graph.nodes.len() {
+					acc.append(InvalidPortNode(i))
+				} else if !F64.is_finite(port.offset) or port.offset < 0 or port.offset > 1 {
+					acc.append(InvalidPortOffset(i))
+				} else {
+					acc
+				},
+			)
+			bindings = spec.port_bindings.fold_with_index(
+				metadata,
+				|acc, binding, i| if binding.edge >= spec.graph.edges.len() {
+					acc.append(InvalidPortBindingEdge(i))
+				} else if binding.port >= spec.ports.len() {
+					acc.append(InvalidPortBindingPort(i))
+				} else {
+					edge = spec.graph.edges.get(binding.edge) ?? { from: 0, to: 0 }
+					port = spec.ports.get(binding.port) ?? { node: 0, side: Top, offset: 0 }
+					expected = match binding.endpoint {
+						From => edge.from
+						To => edge.to
+					}
+					duplicate = spec.port_bindings.take_first(i).count_if(|other| other.edge == binding.edge and other.endpoint == binding.endpoint) > 0
+					if port.node != expected {
+						acc.append(PortBindingNodeMismatch(i))
+					} else if duplicate {
+						acc.append(DuplicatePortBinding(i))
+					} else {
+						acc
+					}
+				},
+			)
+			labels = spec.edge_labels.fold_with_index(
+				bindings,
+				|acc, label, i| if label.edge >= spec.graph.edges.len() {
+					acc.append(InvalidEdgeLabelEdge(i))
+				} else if !F64.is_finite(label.width) or label.width < 0 {
+					acc.append(InvalidEdgeLabelWidth(i))
+				} else if !F64.is_finite(label.height) or label.height < 0 {
+					acc.append(InvalidEdgeLabelHeight(i))
+				} else {
+					duplicate = spec.edge_labels.take_first(i).count_if(|other| other.edge == label.edge) > 0
+					if duplicate {
+						acc.append(DuplicateEdgeLabel(i))
+					} else {
+						acc
+					}
+				},
+			)
+			spec.edge_weights.fold(
+				labels,
+				|acc, item| if item.edge >= spec.graph.edges.len() {
+					acc.append(MissingEdgeWeightEdge(item.edge))
+				} else if !F64.is_finite(item.weight) or item.weight < 0 {
+					acc.append(InvalidEdgeWeight(item.edge))
+				} else {
+					acc
+				},
+			).concat(
+				spec.min_spans.fold(
+					[],
+					|acc, item| if item.edge >= spec.graph.edges.len() {
+						acc.append(MissingMinimumSpanEdge(item.edge))
+					} else if item.span < 1 {
+						acc.append(InvalidMinimumSpan(item.edge))
+					} else {
+						acc
+					},
+				),
+			)
 		}
 	}
 }
@@ -1766,16 +2340,27 @@ Prepared := {
 	chains : List(List(U64)),
 	unit_edges : List({ from : U64, to : U64 }),
 	ordered_layers : List(List(U64)),
+	direction : [Down, Up, Left, Right],
+	max_sweeps : U64,
 	node_gap : F64,
 	layer_gap : F64,
 	route_style : [Straight, Curved],
+	ports : List(Route.Port),
+	port_bindings : List(Route.PortBinding),
+	edge_labels : List(Route.EdgeLabel),
+	precedences : List({ before : U64, after : U64 }),
 }.{
-	Config : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved] }
+	Config : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved], direction : [Down, Up, Left, Right], max_sweeps : U64 }
 	Spec : {
 		graph : {
 			nodes : List({ width : F64, height : F64 }),
 			edges : List({ from : U64, to : U64 }),
 		},
+		edge_weights : List({ edge : U64, weight : F64 }),
+		min_spans : List({ edge : U64, span : U64 }),
+		ports : List(Route.Port),
+		port_bindings : List(Route.PortBinding),
+		edge_labels : List(Route.EdgeLabel),
 	}
 	Problem : [
 		InvalidNodeWidth(U64),
@@ -1784,13 +2369,27 @@ Prepared := {
 		MissingEdgeEnd(U64, U64),
 		InvalidNodeGap,
 		InvalidLayerGap,
+		MissingEdgeWeightEdge(U64),
+		InvalidEdgeWeight(U64),
+		MissingMinimumSpanEdge(U64),
+		InvalidMinimumSpan(U64),
+		InvalidPortNode(U64),
+		InvalidPortOffset(U64),
+		InvalidPortBindingEdge(U64),
+		InvalidPortBindingPort(U64),
+		PortBindingNodeMismatch(U64),
+		DuplicatePortBinding(U64),
+		InvalidEdgeLabelEdge(U64),
+		InvalidEdgeLabelWidth(U64),
+		InvalidEdgeLabelHeight(U64),
+		DuplicateEdgeLabel(U64),
 	]
 
 	defaults : Config
-	defaults = { node_gap: 24, layer_gap: 70, route_style: Curved }
+	defaults = { node_gap: 24, layer_gap: 70, route_style: Curved, direction: Down, max_sweeps: 4 }
 
 	default_spec : Spec
-	default_spec = { graph: { nodes: [], edges: [] } }
+	default_spec = { graph: { nodes: [], edges: [] }, edge_weights: [], min_spans: [], ports: [], port_bindings: [], edge_labels: [] }
 
 	build : Spec, Config -> [Ok(Prepared), Err(List(Problem))]
 	build = |spec, config| {
@@ -1799,9 +2398,13 @@ Prepared := {
 			Err(problems)
 		} else {
 			oriented = LayeredInternals.orient_edges(spec.graph.nodes.len(), spec.graph.edges)
-			real_ranks = LayeredInternals.rank_nodes(spec.graph.nodes.len(), oriented.edges)
+			weights = spec.edge_weights.fold(List.repeat(1, spec.graph.edges.len()), |acc, item| acc.set(item.edge, item.weight) ?? acc)
+			base_spans = spec.min_spans.fold(List.repeat(1, spec.graph.edges.len()), |acc, item| acc.set(item.edge, item.span) ?? acc)
+			spans = spec.edge_labels.fold(base_spans, |acc, label| acc.set(label.edge, (acc.get(label.edge) ?? 1).max(2)) ?? acc)
+			real_ranks = LayeredInternals.rank_nodes_spec(spec.graph.nodes.len(), oriented.edges, weights, spans)
 			extended = LayeredInternals.insert_virtual_chains(real_ranks, oriented.edges)
-			ordered_layers = LayeredInternals.order_layers(LayeredInternals.group_by_rank(extended.ranks), extended.unit_edges)
+			ordered_layers = LayeredInternals.order_layers(LayeredInternals.group_by_rank(extended.ranks), extended.unit_edges, config.max_sweeps)
+			precedences = LayeredInternals.port_precedences(spec.graph, spec.ports, spec.port_bindings)
 
 			Ok({
 				nodes: spec.graph.nodes,
@@ -1813,14 +2416,25 @@ Prepared := {
 				chains: extended.chains,
 				unit_edges: extended.unit_edges,
 				ordered_layers,
+				precedences,
+				direction: config.direction,
+				max_sweeps: config.max_sweeps,
 				node_gap: config.node_gap,
 				layer_gap: config.layer_gap,
 				route_style: config.route_style,
+				ports: spec.ports,
+				port_bindings: spec.port_bindings,
+				edge_labels: spec.edge_labels,
 			})
 		}
 	}
 
-	run : Prepared -> {
+	RunArgs : { hints : List({ x : F64, y : F64 }) }
+	default_run : RunArgs
+	default_run = { hints: [] }
+
+	run : Prepared,
+	RunArgs -> {
 		layout : {
 			positions : List({ x : F64, y : F64 }),
 			bounds : { x : F64, y : F64, width : F64, height : F64 },
@@ -1828,9 +2442,16 @@ Prepared := {
 		},
 		layers : List(U64),
 		backward_edges : List(U64),
+		label_anchors : List({ x : F64, y : F64 }),
+		port_order_violations : List({ node : U64, before_edge : U64, after_edge : U64 }),
 	}
-	run = |sweep|
-		LayeredInternals.finish_layout({
+	run = |sweep, args| {
+		seeded = match LayeredInternals.canonical_hints(args.hints, sweep.nodes.len(), sweep.direction) {
+			None => LayeredInternals.group_by_rank(sweep.extended_ranks)
+			Some(hints) => LayeredInternals.hinted_layers(LayeredInternals.group_by_rank(sweep.extended_ranks), sweep.chains, hints, sweep.reversed_flags)
+		}
+		ordered = LayeredInternals.enforce_precedences(LayeredInternals.order_layers(LayeredInternals.enforce_precedences(seeded, sweep.precedences), sweep.unit_edges, sweep.max_sweeps), sweep.precedences)
+		finished = LayeredInternals.finish_layout({
 			nodes: sweep.nodes,
 			edges: sweep.edges,
 			reversed: sweep.reversed,
@@ -1839,14 +2460,19 @@ Prepared := {
 			extended_ranks: sweep.extended_ranks,
 			chains: sweep.chains,
 			unit_edges: sweep.unit_edges,
-			ordered_layers: sweep.ordered_layers,
+			ordered_layers: ordered,
+			direction: sweep.direction,
+			edge_labels: sweep.edge_labels,
 			node_gap: sweep.node_gap,
 			layer_gap: sweep.layer_gap,
 			route_style: sweep.route_style,
 		})
+		{ layout: finished.layout, layers: finished.layers, backward_edges: finished.backward_edges, label_anchors: LayeredInternals.label_anchors(sweep.edge_labels, finished.layout.routes), port_order_violations: LayeredInternals.port_order_violations({ graph: { nodes: sweep.nodes, edges: sweep.edges }, ports: sweep.ports, port_bindings: sweep.port_bindings }, finished.layout.positions) }
+	}
 
 	layout : Spec,
-	Config -> [
+	Config,
+	RunArgs -> [
 		Ok(
 			{
 				layout : {
@@ -1856,13 +2482,15 @@ Prepared := {
 				},
 				layers : List(U64),
 				backward_edges : List(U64),
+				label_anchors : List({ x : F64, y : F64 }),
+				port_order_violations : List({ node : U64, before_edge : U64, after_edge : U64 }),
 			},
 		),
 		Err(List(Problem)),
 	]
-	layout = |spec, config|
+	layout = |spec, config, args|
 		match Prepared.build(spec, config) {
-			Ok(sweep) => Ok(sweep.run())
+			Ok(sweep) => Ok(sweep.run(args))
 			Err(problems) => Err(problems)
 		}
 }
@@ -1883,17 +2511,27 @@ ExactPrepared := {
 	chains : List(List(U64)),
 	unit_edges : List({ from : U64, to : U64 }),
 	ordered_layers : List(List(U64)),
+	direction : [Down, Up, Left, Right],
 	proven_optimal : Bool,
 	node_gap : F64,
 	layer_gap : F64,
 	route_style : [Straight, Curved],
+	ports : List(Route.Port),
+	port_bindings : List(Route.PortBinding),
+	edge_labels : List(Route.EdgeLabel),
+	precedences : List({ before : U64, after : U64 }),
 }.{
-	Config : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved], effort_cap : U64 }
+	Config : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved], effort_cap : U64, direction : [Down, Up, Left, Right] }
 	Spec : {
 		graph : {
 			nodes : List({ width : F64, height : F64 }),
 			edges : List({ from : U64, to : U64 }),
 		},
+		edge_weights : List({ edge : U64, weight : F64 }),
+		min_spans : List({ edge : U64, span : U64 }),
+		ports : List(Route.Port),
+		port_bindings : List(Route.PortBinding),
+		edge_labels : List(Route.EdgeLabel),
 	}
 	Problem : [
 		InvalidNodeWidth(U64),
@@ -1902,21 +2540,40 @@ ExactPrepared := {
 		MissingEdgeEnd(U64, U64),
 		InvalidNodeGap,
 		InvalidLayerGap,
+		MissingEdgeWeightEdge(U64),
+		InvalidEdgeWeight(U64),
+		MissingMinimumSpanEdge(U64),
+		InvalidMinimumSpan(U64),
+		InvalidPortNode(U64),
+		InvalidPortOffset(U64),
+		InvalidPortBindingEdge(U64),
+		InvalidPortBindingPort(U64),
+		PortBindingNodeMismatch(U64),
+		DuplicatePortBinding(U64),
+		InvalidEdgeLabelEdge(U64),
+		InvalidEdgeLabelWidth(U64),
+		InvalidEdgeLabelHeight(U64),
+		DuplicateEdgeLabel(U64),
 	]
 
 	defaults : Config
-	defaults = { node_gap: 24, layer_gap: 70, route_style: Curved, effort_cap: 100_000 }
+	defaults = { node_gap: 24, layer_gap: 70, route_style: Curved, effort_cap: 100_000, direction: Down }
 
 	build : Spec, Config -> [Ok(ExactPrepared), Err(List(Problem))]
 	build = |spec, config| {
-		problems = LayeredInternals.validation_problems(spec, { node_gap: config.node_gap, layer_gap: config.layer_gap, route_style: config.route_style })
+		problems = LayeredInternals.validation_problems(spec, { node_gap: config.node_gap, layer_gap: config.layer_gap, route_style: config.route_style, direction: config.direction, max_sweeps: 4 })
 		if !problems.is_empty() {
 			Err(problems)
 		} else {
 			oriented = LayeredInternals.orient_edges(spec.graph.nodes.len(), spec.graph.edges)
-			real_ranks = LayeredInternals.rank_nodes(spec.graph.nodes.len(), oriented.edges)
+			weights = spec.edge_weights.fold(List.repeat(1, spec.graph.edges.len()), |acc, item| acc.set(item.edge, item.weight) ?? acc)
+			base_spans = spec.min_spans.fold(List.repeat(1, spec.graph.edges.len()), |acc, item| acc.set(item.edge, item.span) ?? acc)
+			spans = spec.edge_labels.fold(base_spans, |acc, label| acc.set(label.edge, (acc.get(label.edge) ?? 1).max(2)) ?? acc)
+			real_ranks = LayeredInternals.rank_nodes_spec(spec.graph.nodes.len(), oriented.edges, weights, spans)
 			extended = LayeredInternals.insert_virtual_chains(real_ranks, oriented.edges)
-			searched = LayeredInternals.exact_order_layers(LayeredInternals.group_by_rank(extended.ranks), extended.unit_edges, config.effort_cap)
+			precedences = LayeredInternals.port_precedences(spec.graph, spec.ports, spec.port_bindings)
+			constrained_layers = LayeredInternals.enforce_precedences(LayeredInternals.group_by_rank(extended.ranks), precedences)
+			searched = LayeredInternals.exact_order_layers(constrained_layers, extended.unit_edges, config.effort_cap)
 
 			Ok({
 				nodes: spec.graph.nodes,
@@ -1927,11 +2584,16 @@ ExactPrepared := {
 				extended_ranks: extended.ranks,
 				chains: extended.chains,
 				unit_edges: extended.unit_edges,
-				ordered_layers: searched.layers,
+				ordered_layers: LayeredInternals.enforce_precedences(searched.layers, precedences),
+				precedences,
+				direction: config.direction,
 				proven_optimal: searched.proven_optimal,
 				node_gap: config.node_gap,
 				layer_gap: config.layer_gap,
 				route_style: config.route_style,
+				ports: spec.ports,
+				port_bindings: spec.port_bindings,
+				edge_labels: spec.edge_labels,
 			})
 		}
 	}
@@ -1945,6 +2607,8 @@ ExactPrepared := {
 		layers : List(U64),
 		backward_edges : List(U64),
 		proven_optimal : Bool,
+		label_anchors : List({ x : F64, y : F64 }),
+		port_order_violations : List({ node : U64, before_edge : U64, after_edge : U64 }),
 	}
 	run = |exact| {
 		finished = LayeredInternals.finish_layout({
@@ -1957,6 +2621,8 @@ ExactPrepared := {
 			chains: exact.chains,
 			unit_edges: exact.unit_edges,
 			ordered_layers: exact.ordered_layers,
+			direction: exact.direction,
+			edge_labels: exact.edge_labels,
 			node_gap: exact.node_gap,
 			layer_gap: exact.layer_gap,
 			route_style: exact.route_style,
@@ -1967,6 +2633,8 @@ ExactPrepared := {
 			layers: finished.layers,
 			backward_edges: finished.backward_edges,
 			proven_optimal: exact.proven_optimal,
+			label_anchors: LayeredInternals.label_anchors(exact.edge_labels, finished.layout.routes),
+			port_order_violations: LayeredInternals.port_order_violations({ graph: { nodes: exact.nodes, edges: exact.edges }, ports: exact.ports, port_bindings: exact.port_bindings }, finished.layout.positions),
 		}
 	}
 
@@ -1982,6 +2650,8 @@ ExactPrepared := {
 				layers : List(U64),
 				backward_edges : List(U64),
 				proven_optimal : Bool,
+				label_anchors : List({ x : F64, y : F64 }),
+				port_order_violations : List({ node : U64, before_edge : U64, after_edge : U64 }),
 			},
 		),
 		Err(List(Problem)),
@@ -2008,6 +2678,11 @@ Layered := [].{
 			nodes : List({ width : F64, height : F64 }),
 			edges : List({ from : U64, to : U64 }),
 		},
+		edge_weights : List({ edge : U64, weight : F64 }),
+		min_spans : List({ edge : U64, span : U64 }),
+		ports : List(Route.Port),
+		port_bindings : List(Route.PortBinding),
+		edge_labels : List(Route.EdgeLabel),
 	}
 
 	## Space between nodes on the same layer and between adjacent layers,
@@ -2015,7 +2690,9 @@ Layered := [].{
 	## default) smooths their bends into cubic curve chains, `Straight`
 	## keeps them as polylines. Edges between adjacent layers are always
 	## straight lines.
-	Settings : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved] }
+	Settings : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved], direction : [Down, Up, Left, Right], max_sweeps : U64 }
+
+	RunArgs : { hints : List({ x : F64, y : F64 }) }
 
 	## Invalid sizes, spacing, or edge endpoints found while checking input.
 	Problem : [
@@ -2025,6 +2702,20 @@ Layered := [].{
 		MissingEdgeEnd(U64, U64),
 		InvalidNodeGap,
 		InvalidLayerGap,
+		MissingEdgeWeightEdge(U64),
+		InvalidEdgeWeight(U64),
+		MissingMinimumSpanEdge(U64),
+		InvalidMinimumSpan(U64),
+		InvalidPortNode(U64),
+		InvalidPortOffset(U64),
+		InvalidPortBindingEdge(U64),
+		InvalidPortBindingPort(U64),
+		PortBindingNodeMismatch(U64),
+		DuplicatePortBinding(U64),
+		InvalidEdgeLabelEdge(U64),
+		InvalidEdgeLabelWidth(U64),
+		InvalidEdgeLabelHeight(U64),
+		DuplicateEdgeLabel(U64),
 	]
 
 	## Geometry plus each node's layer and any edges drawn against the flow.
@@ -2038,6 +2729,8 @@ Layered := [].{
 		},
 		layers : List(U64),
 		backward_edges : List(U64),
+		label_anchors : List({ x : F64, y : F64 }),
+		port_order_violations : List({ node : U64, before_edge : U64, after_edge : U64 }),
 	}
 
 	## Empty flow input. Replace `graph` by record update.
@@ -2048,17 +2741,20 @@ Layered := [].{
 	default_settings : Settings
 	default_settings = Prepared.defaults
 
+	default_run : RunArgs
+	default_run = Prepared.default_run
+
 	## Check the input and settings, then cache work reusable across layouts.
 	prepare : Input, Settings -> [Ok(Prepared), Err(List(Problem))]
 	prepare = |input, settings| Prepared.build(input, settings)
 
 	## Lay out previously prepared input. This operation cannot fail.
-	layout_prepared : Prepared -> Result
-	layout_prepared = |prepared| prepared.run()
+	layout_prepared : Prepared, RunArgs -> Result
+	layout_prepared = |prepared, args| prepared.run(args)
 
 	## Check and lay out input in one call. This is the usual entry point.
-	layout : Input, Settings -> [Ok(Result), Err(List(Problem))]
-	layout = |input, settings| Prepared.layout(input, settings)
+	layout : Input, Settings, RunArgs -> [Ok(Result), Err(List(Problem))]
+	layout = |input, settings, args| Prepared.layout(input, settings, args)
 
 	## Settings for `layout_exact`: spacing and route style exactly as in
 	## `Settings`, plus `effort_cap` — the most ordering choices the crossing
@@ -2066,7 +2762,7 @@ Layered := [].{
 	## Higher caps prove optimality on wider layers at higher cost; a cap of
 	## `0` skips the search entirely and keeps the ordering `layout` would
 	## produce.
-	ExactSettings : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved], effort_cap : U64 }
+	ExactSettings : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved], effort_cap : U64, direction : [Down, Up, Left, Right] }
 
 	## Everything `Result` reports, plus whether the crossing search proved
 	## its ordering has the fewest crossings any ordering can achieve:
@@ -2081,6 +2777,8 @@ Layered := [].{
 		layers : List(U64),
 		backward_edges : List(U64),
 		proven_optimal : Bool,
+		label_anchors : List({ x : F64, y : F64 }),
+		port_order_violations : List({ node : U64, before_edge : U64, after_edge : U64 }),
 	}
 
 	## Default spacing and route style with an effort cap of 100,000 ordering
@@ -2208,7 +2906,7 @@ expect {
 	down = LayeredInternals.sweep_median(layers, unit_edges, Down)
 	swept = LayeredInternals.sweep_median(down, unit_edges, Up)
 	swept_score = LayeredInternals.total_crossings(4, swept, unit_edges)
-	final = LayeredInternals.order_layers(layers, unit_edges)
+	final = LayeredInternals.order_layers(layers, unit_edges, 4)
 	final_score = LayeredInternals.total_crossings(4, final, unit_edges)
 	swept_score == 1 and final_score == 0
 }
@@ -2226,9 +2924,9 @@ expect {
 		{ from: 5, to: 6 },
 	]
 	initial = LayeredInternals.total_crossings(8, layers, unit_edges)
-	ordered = LayeredInternals.order_layers(layers, unit_edges)
+	ordered = LayeredInternals.order_layers(layers, unit_edges, 4)
 	final = LayeredInternals.total_crossings(8, ordered, unit_edges)
-	final <= initial and ordered == LayeredInternals.order_layers(layers, unit_edges)
+	final <= initial and ordered == LayeredInternals.order_layers(layers, unit_edges, 4)
 }
 
 ## Full pipeline: a 5-node diamond-plus-tail places every node without overlap
@@ -2299,7 +2997,7 @@ expect {
 	match Prepared.build(spec, Prepared.defaults) {
 		Err(_) => False
 		Ok(sweep) => {
-			result = sweep.run()
+			result = sweep.run(Prepared.default_run)
 			result.backward_edges == [] and result.layers == [1, 0] and result.layout.routes == [Line({ x: 5, y: 6 }, { x: 5, y: 76 })]
 		}
 	}
@@ -2326,7 +3024,7 @@ expect {
 	match Prepared.build(spec, Prepared.defaults) {
 		Err(_) => False
 		Ok(sweep) => {
-			result = sweep.run()
+			result = sweep.run(Prepared.default_run)
 			result.backward_edges == [1] and result.layers == [0, 1] and result.layout.routes == [Line({ x: 5, y: 6 }, { x: 5, y: 76 }), Line({ x: 5, y: 76 }, { x: 5, y: 6 })]
 		}
 	}
@@ -2358,7 +3056,7 @@ expect {
 	spec = { ..Prepared.default_spec, graph: { nodes: [{ width: 8, height: 4 }], edges: [] } }
 	match Prepared.build(spec, Prepared.defaults) {
 		Err(_) => False
-		Ok(prepared) => Prepared.layout(spec, Prepared.defaults) == Ok(prepared.run())
+		Ok(prepared) => Prepared.layout(spec, Prepared.defaults, Prepared.default_run) == Ok(prepared.run(Prepared.default_run))
 	}
 }
 
@@ -2372,7 +3070,7 @@ expect {
 			edges: [{ from: 0, to: 1 }],
 		},
 	}
-	match Prepared.layout(spec, Prepared.defaults) {
+	match Prepared.layout(spec, Prepared.defaults, Prepared.default_run) {
 		Err(_) => False
 		Ok(result) => result.layout.routes == [Line({ x: 5, y: 6 }, { x: 5, y: 76 })]
 	}
@@ -2391,7 +3089,7 @@ expect {
 			edges: [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 0, to: 2 }],
 		},
 	}
-	match Prepared.layout(spec, Prepared.defaults) {
+	match Prepared.layout(spec, Prepared.defaults, Prepared.default_run) {
 		Err(_) => False
 		Ok(result) => {
 			source_center = result.layout.positions.get(0) ?? Geom.point(0, 0)
@@ -2424,7 +3122,7 @@ expect {
 			edges: [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 0, to: 2 }],
 		},
 	}
-	match Prepared.layout(spec, { ..Prepared.defaults, route_style: Straight }) {
+	match Prepared.layout(spec, { ..Prepared.defaults, route_style: Straight }, Prepared.default_run) {
 		Err(_) => False
 		Ok(result) => {
 			source_center = result.layout.positions.get(0) ?? Geom.point(0, 0)
@@ -2543,7 +3241,63 @@ expect {
 			edges: [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 0, to: 2 }],
 		},
 	}
-	Layered.layout(input, Layered.default_settings) == Layered.layout(input, Layered.default_settings)
+	Layered.layout(input, Layered.default_settings, Layered.default_run) == Layered.layout(input, Layered.default_settings, Layered.default_run)
+}
+
+## Port declaration order is a hard priority for both ordering paths. Even
+## when the initial node order is reversed, the two targets follow their port
+## order and no residual violation is reported.
+expect {
+	input = {
+		..Layered.default_input,
+		graph: { nodes: List.repeat({ width: 10, height: 6 }, 3), edges: [{ from: 0, to: 2 }, { from: 0, to: 1 }] },
+		ports: [{ node: 0, side: Bottom, offset: 0.25 }, { node: 0, side: Bottom, offset: 0.75 }],
+		port_bindings: [{ edge: 0, endpoint: From, port: 0 }, { edge: 1, endpoint: From, port: 1 }],
+	}
+	sweep = Layered.layout(input, Layered.default_settings, { hints: [Geom.point(0, 0), Geom.point(0, 20), Geom.point(0, 0)] })
+	exact = Layered.layout_exact(input, Layered.default_exact_settings)
+	match (sweep, exact) {
+		(Ok(a), Ok(b)) => a.port_order_violations.is_empty() and b.port_order_violations.is_empty() and (a.layout.positions.get(2) ?? Geom.point(0, 0)).x <= (a.layout.positions.get(1) ?? Geom.point(0, 0)).x
+		_ => False
+	}
+}
+
+## A label reserves a middle virtual layer and its box contributes to bounds.
+expect {
+	input = {
+		..Layered.default_input,
+		graph: { nodes: [{ width: 10, height: 6 }, { width: 10, height: 6 }], edges: [{ from: 0, to: 1 }] },
+		edge_labels: [{ edge: 0, width: 120, height: 30 }],
+	}
+	match Layered.layout(input, Layered.default_settings, Layered.default_run) {
+		Ok(result) => result.layers == [0, 2] and result.label_anchors.len() == 1 and result.layout.bounds.width >= 120
+		Err(_) => False
+	}
+}
+
+## Direction normalization keeps complete node rectangles inside bounds,
+## including non-square nodes whose width and height swap after rotation.
+expect {
+	input = {
+		..Layered.default_input,
+		graph: { nodes: [{ width: 90, height: 40 }, { width: 30, height: 70 }], edges: [{ from: 0, to: 1 }] },
+	}
+	[Down, Up, Left, Right].all(
+		|direction| match Layered.layout(input, { ..Layered.default_settings, direction }, Layered.default_run) {
+			Err(_) => False
+			Ok(result) => result.layout.positions.fold_with_index(
+				True,
+				|inside, p, i| {
+					node = input.graph.nodes.get(i) ?? { width: 0, height: 0 }
+					size = match direction {
+						Down | Up => node
+						Left | Right => { width: node.height, height: node.width }
+					}
+					inside and p.x - size.width / 2 >= 0 and p.y - size.height / 2 >= 0 and p.x + size.width / 2 <= result.layout.bounds.width and p.y + size.height / 2 <= result.layout.bounds.height
+				},
+			)
+		},
+	)
 }
 
 ## Exact ordering beats the sweep: on this two-layer graph the median sweeps
@@ -2552,7 +3306,7 @@ expect {
 expect {
 	edges = [{ from: 0, to: 3 }, { from: 0, to: 5 }, { from: 1, to: 4 }, { from: 2, to: 5 }]
 	layers = LayeredInternals.group_by_rank(LayeredInternals.rank_nodes(6, edges))
-	swept = LayeredInternals.order_layers(layers, edges)
+	swept = LayeredInternals.order_layers(layers, edges, 4)
 	sweep_score = LayeredInternals.total_crossings(6, swept, edges)
 	searched = LayeredInternals.exact_order_layers(layers, edges, 100_000)
 	exact_score = LayeredInternals.total_crossings(6, searched.layers, edges)
@@ -2569,7 +3323,7 @@ expect {
 			edges: [{ from: 0, to: 3 }, { from: 0, to: 5 }, { from: 1, to: 4 }, { from: 2, to: 5 }],
 		},
 	}
-	match Layered.layout(input, Layered.default_settings) {
+	match Layered.layout(input, Layered.default_settings, Layered.default_run) {
 		Err(_) => False
 		Ok(sweep_result) =>
 			match Layered.layout_exact(input, Layered.default_exact_settings) {
@@ -2610,7 +3364,7 @@ expect {
 			edges: [{ from: 0, to: 3 }, { from: 0, to: 5 }, { from: 1, to: 4 }, { from: 2, to: 5 }],
 		},
 	}
-	match Layered.layout(input, Layered.default_settings) {
+	match Layered.layout(input, Layered.default_settings, Layered.default_run) {
 		Err(_) => False
 		Ok(sweep_result) =>
 			match Layered.layout_exact(input, { ..Layered.default_exact_settings, effort_cap: 0 }) {
@@ -2630,7 +3384,7 @@ expect {
 expect {
 	edges = [{ from: 0, to: 4 }, { from: 1, to: 3 }, { from: 1, to: 5 }, { from: 2, to: 4 }, { from: 2, to: 5 }]
 	layers = LayeredInternals.group_by_rank(LayeredInternals.rank_nodes(6, edges))
-	swept = LayeredInternals.order_layers(layers, edges)
+	swept = LayeredInternals.order_layers(layers, edges, 4)
 	sweep_score = LayeredInternals.total_crossings(6, swept, edges)
 	searched = LayeredInternals.exact_order_layers(layers, edges, 3)
 	exact_score = LayeredInternals.total_crossings(6, searched.layers, edges)
@@ -2666,7 +3420,7 @@ expect {
 			edges: [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 2, to: 0 }],
 		},
 	}
-	match Layered.layout(input, Layered.default_settings) {
+	match Layered.layout(input, Layered.default_settings, Layered.default_run) {
 		Err(_) => False
 		Ok(sweep_result) =>
 			match Layered.layout_exact(input, Layered.default_exact_settings) {
