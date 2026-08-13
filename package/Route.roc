@@ -100,29 +100,40 @@ RouteInternals :: {}.{
 				}
 			},
 		)
-		p6 = input.edge_labels.fold_with_index(
+		p6 = input.labels.fold_with_index(
 			p5,
 			|acc, label, i| {
-				a = if label.edge < input.graph.edges.len() {
-					acc
-				} else {
-					acc.append(InvalidLabelEdge(i))
+				box = match label {
+					NodeLabel(value) => value.box
+					PortLabel(value) => value.box
+					EdgeLabel(value) => value.box
 				}
-				b = if F64.is_finite(label.width) and label.width >= 0 {
-					a
-				} else {
-					a.append(InvalidLabelWidth(i))
+				target = match label {
+					NodeLabel(value) => if value.node < input.graph.nodes.len() {
+						acc
+					} else {
+						acc.append(InvalidLabelNode(i))
+					}
+					PortLabel(value) => if value.port < input.ports.len() {
+						acc
+					} else {
+						acc.append(InvalidLabelPort(i))
+					}
+					EdgeLabel(value) => if value.edge < input.graph.edges.len() {
+						acc
+					} else {
+						acc.append(InvalidLabelEdge(i))
+					}
 				}
-				c = if F64.is_finite(label.height) and label.height >= 0 {
+				b = if F64.is_finite(box.width) and box.width >= 0 {
+					target
+				} else {
+					target.append(InvalidLabelWidth(i))
+				}
+				if F64.is_finite(box.height) and box.height >= 0 {
 					b
 				} else {
 					b.append(InvalidLabelHeight(i))
-				}
-				duplicate = input.edge_labels.fold_with_index(False, |found, other, j| found or (j < i and other.edge == label.edge))
-				if duplicate {
-					c.append(DuplicateEdgeLabel(i))
-				} else {
-					c
 				}
 			},
 		)
@@ -353,26 +364,24 @@ RouteInternals :: {}.{
 	overlaps_box : { x : F64, y : F64 }, F64, F64, { min_x : F64, min_y : F64, max_x : F64, max_y : F64 }, F64 -> Bool
 	overlaps_box = |p, width, height, box, gap| p.x + width / 2 + gap > box.min_x and p.x - width / 2 - gap < box.max_x and p.y + height / 2 + gap > box.min_y and p.y - height / 2 - gap < box.max_y
 
-	label_clear : { x : F64, y : F64 }, Route.EdgeLabel, Route.Input, Route.Settings, List({ point : { x : F64, y : F64 }, width : F64, height : F64 }), List(Geom.Route) -> Bool
-	label_clear = |p, label, input, settings, placed, routes| {
+	label_clear : { x : F64, y : F64 }, Route.LabelBox, Route.Input, Route.Settings, List({ point : { x : F64, y : F64 }, box : Route.LabelBox }), List(Geom.Route) -> Bool
+	label_clear = |p, label_box, input, settings, placed, routes| {
 		nodes_clear = input.positions.fold_with_index(
 			True,
 			|ok, center, i| {
 				n = input.graph.nodes.get(i) ?? { width: 0, height: 0 }
-				ok and RouteInternals.overlaps_box(p, label.width, label.height, { min_x: center.x - n.width / 2, min_y: center.y - n.height / 2, max_x: center.x + n.width / 2, max_y: center.y + n.height / 2 }, settings.clearance) == False
+				ok and RouteInternals.overlaps_box(p, label_box.width, label_box.height, { min_x: center.x - n.width / 2, min_y: center.y - n.height / 2, max_x: center.x + n.width / 2, max_y: center.y + n.height / 2 }, settings.clearance) == False
 			},
 		)
-		labels_clear = placed.all(|old| RouteInternals.overlaps_box(p, label.width, label.height, { min_x: old.point.x - old.width / 2, min_y: old.point.y - old.height / 2, max_x: old.point.x + old.width / 2, max_y: old.point.y + old.height / 2 }, settings.clearance) == False)
+		labels_clear = placed.all(|old| RouteInternals.overlaps_box(p, label_box.width, label_box.height, { min_x: old.point.x - old.box.width / 2, min_y: old.point.y - old.box.height / 2, max_x: old.point.x + old.box.width / 2, max_y: old.point.y + old.box.height / 2 }, settings.clearance) == False)
 		routes_clear = routes.fold_with_index(
 			True,
-			|ok, route, edge| if edge == label.edge {
-				ok
-			} else {
+			|ok, route, _edge| {
 				points = RouteInternals.route_points(route)
 				points.fold_with_index(
 					ok,
 					|clear, a, j| match points.get(j + 1) {
-						Ok(b) => clear and RouteInternals.segment_hits(a, b, { min_x: p.x - label.width / 2 - settings.clearance, min_y: p.y - label.height / 2 - settings.clearance, max_x: p.x + label.width / 2 + settings.clearance, max_y: p.y + label.height / 2 + settings.clearance }) == False
+						Ok(b) => clear and RouteInternals.segment_hits(a, b, { min_x: p.x - label_box.width / 2 - settings.clearance, min_y: p.y - label_box.height / 2 - settings.clearance, max_x: p.x + label_box.width / 2 + settings.clearance, max_y: p.y + label_box.height / 2 + settings.clearance }) == False
 						Err(_) => clear
 					},
 				)
@@ -401,21 +410,91 @@ RouteInternals :: {}.{
 		}
 	}
 
-	compute : Route.Input, Route.Settings -> Route.Result
-	compute = |input, settings| {
-		ranks = EdgeRoutes.parallel_ranks(input.graph.edges)
-		raw_routes = input.graph.edges.fold_with_index([], |routes, edge, i| routes.append(RouteInternals.route_one(i, edge, input, settings, ranks.get(i) ?? { rank: 0, count: 1 }, routes)))
-		placed_labels = input.edge_labels.fold(
+	label_box : Route.Label -> Route.LabelBox
+	label_box = |label| match label {
+		NodeLabel(value) => value.box
+		PortLabel(value) => value.box
+		EdgeLabel(value) => value.box
+	}
+
+	node_label_point : { x : F64, y : F64 }, { width : F64, height : F64 }, Route.LabelBox, Route.Side, F64 -> { x : F64, y : F64 }
+	node_label_point = |center, node, box, side, gap| match side {
+		Top => { x: center.x, y: center.y - node.height / 2 - gap - box.height / 2 }
+		Right => { x: center.x + node.width / 2 + gap + box.width / 2, y: center.y }
+		Bottom => { x: center.x, y: center.y + node.height / 2 + gap + box.height / 2 }
+		Left => { x: center.x - node.width / 2 - gap - box.width / 2, y: center.y }
+	}
+
+	edge_label_points : Route.EdgeLabelAt, Route.LabelSide, Route.LabelBox, Geom.Route, { from : U64, to : U64 }, Route.Input, Route.Settings -> List({ x : F64, y : F64 })
+	edge_label_points = |at, side, box, route, edge, input, settings| {
+		from = input.positions.get(edge.from) ?? { x: 0, y: 0 }
+		to = input.positions.get(edge.to) ?? from
+		base = match at {
+			Middle => RouteInternals.midpoint(route)
+			NearSource => {
+				points = RouteInternals.route_points(route)
+				points.get(1) ?? RouteInternals.midpoint(route)
+			}
+			NearTarget => {
+				points = RouteInternals.route_points(route)
+				index = if points.len() >= 2 {
+					points.len() - 2
+				} else {
+					0
+				}
+				points.get(index) ?? RouteInternals.midpoint(route)
+			}
+		}
+		dx = to.x - from.x
+		dy = to.y - from.y
+		d = Geom.hypot(dx, dy)
+		normal = if d == 0 {
+			{ x: 0, y: 0 - 1.0 }
+		} else {
+			{ x: dy / d, y: (0 - dx) / d }
+		}
+		offset = Geom.hypot(box.width, box.height) / 2 + settings.clearance
+		left = { x: base.x + normal.x * offset, y: base.y + normal.y * offset }
+		right = { x: base.x - normal.x * offset, y: base.y - normal.y * offset }
+		match side {
+			Either => [left, right]
+			LeftOfRoute => [left]
+			RightOfRoute => [right]
+		}
+	}
+
+	finish : Route.Input, Route.Settings, List(Geom.Route) -> Route.Result
+	finish = |input, settings, raw_routes| {
+		placed_labels = input.labels.fold(
 			[],
 			|placed, label| {
-				base = RouteInternals.midpoint(raw_routes.get(label.edge) ?? Polyline([]))
-				step = label.height / 2 + settings.clearance + settings.track_gap
-				candidates = [base, { x: base.x, y: base.y - step }, { x: base.x, y: base.y + step }, { x: base.x - label.width / 2 - step, y: base.y }, { x: base.x + label.width / 2 + step, y: base.y }]
-				point = candidates.find_first(|p| RouteInternals.label_clear(p, label, input, settings, placed, raw_routes)) ?? {
-					top = input.positions.fold(base.y, |m, p| m.min(p.y)) - label.height / 2 - settings.clearance - settings.track_gap * (placed.len() + 1).to_f64()
-					{ x: base.x, y: top }
+				box = RouteInternals.label_box(label)
+				candidates = match label {
+					NodeLabel(value) => {
+						center = input.positions.get(value.node) ?? { x: 0, y: 0 }
+						node = input.graph.nodes.get(value.node) ?? { width: 0, height: 0 }
+						[RouteInternals.node_label_point(center, node, box, value.side, settings.clearance)]
+					}
+					PortLabel(value) => {
+						port = input.ports.get(value.port) ?? { node: 0, side: Top, offset: 0 }
+						attachment = RouteInternals.port_point(port, input.graph.nodes, input.positions)
+						distance = settings.clearance + Geom.hypot(box.width * attachment.outward.x, box.height * attachment.outward.y) / 2
+						[{ x: attachment.point.x + attachment.outward.x * distance, y: attachment.point.y + attachment.outward.y * distance }]
+					}
+					EdgeLabel(value) => {
+						edge = input.graph.edges.get(value.edge) ?? { from: 0, to: 0 }
+						route = raw_routes.get(value.edge) ?? Polyline([])
+						RouteInternals.edge_label_points(value.at, value.side, box, route, edge, input, settings)
+					}
 				}
-				placed.append({ point, width: label.width, height: label.height })
+				base = candidates.first() ?? { x: 0, y: 0 }
+				point = candidates.find_first(|p| RouteInternals.label_clear(p, box, input, settings, placed, raw_routes)) ?? {
+					node_top = input.positions.fold(base.y, |m, p| m.min(p.y))
+					route_top = raw_routes.fold(node_top, |m, route| RouteInternals.route_points(route).fold(m, |lowest, p| lowest.min(p.y)))
+					label_top = placed.fold(route_top, |m, old| m.min(old.point.y - old.box.height / 2))
+					{ x: base.x, y: label_top - settings.clearance - box.height / 2 }
+				}
+				placed.append({ point, box })
 			},
 		)
 		raw_labels = placed_labels.map(|entry| entry.point)
@@ -434,11 +513,12 @@ RouteInternals :: {}.{
 			},
 		)
 		route_box = raw_routes.fold(node_box, |box, route| RouteInternals.route_points(route).fold(box, |b, p| { min_x: b.min_x.min(p.x), min_y: b.min_y.min(p.y), max_x: b.max_x.max(p.x), max_y: b.max_y.max(p.y) }))
-		box = input.edge_labels.fold_with_index(
+		box = input.labels.fold_with_index(
 			route_box,
 			|b, label, i| {
 				p = raw_labels.get(i) ?? { x: 0, y: 0 }
-				{ min_x: b.min_x.min(p.x - label.width / 2), min_y: b.min_y.min(p.y - label.height / 2), max_x: b.max_x.max(p.x + label.width / 2), max_y: b.max_y.max(p.y + label.height / 2) }
+				label_size = RouteInternals.label_box(label)
+				{ min_x: b.min_x.min(p.x - label_size.width / 2), min_y: b.min_y.min(p.y - label_size.height / 2), max_x: b.max_x.max(p.x + label_size.width / 2), max_y: b.max_y.max(p.y + label_size.height / 2) }
 			},
 		)
 		dx = Geom.saturate(0 - box.min_x)
@@ -450,8 +530,25 @@ RouteInternals :: {}.{
 				Polyline(ps) => Polyline(ps.map(shift))
 				Curves(ss) => Curves(ss.map(|s| { from: shift(s.from), ctl_a: shift(s.ctl_a), ctl_b: shift(s.ctl_b), to: shift(s.to) }))
 			}
-		{ layout: { positions: input.positions.map(shift), routes: raw_routes.map(shift_route), bounds: { ..Geom.empty_bounds, width: Geom.saturate(box.max_x - box.min_x), height: Geom.saturate(box.max_y - box.min_y) } }, label_anchors: raw_labels.map(shift) }
+		label_boxes = raw_labels.map_with_index(
+			|p, i| {
+				size = RouteInternals.label_box(input.labels.get(i) ?? NodeLabel({ node: 0, box: { width: 0, height: 0 }, side: Top }))
+				center = shift(p)
+				{ x: center.x - size.width / 2, y: center.y - size.height / 2, width: size.width, height: size.height }
+			},
+		)
+		{ layout: { positions: input.positions.map(shift), routes: raw_routes.map(shift_route), bounds: { ..Geom.empty_bounds, width: Geom.saturate(box.max_x - box.min_x), height: Geom.saturate(box.max_y - box.min_y) } }, label_boxes }
 	}
+
+	compute : Route.Input, Route.Settings -> Route.Result
+	compute = |input, settings| {
+		ranks = EdgeRoutes.parallel_ranks(input.graph.edges)
+		routes = input.graph.edges.fold_with_index([], |prior, edge, i| prior.append(RouteInternals.route_one(i, edge, input, settings, ranks.get(i) ?? { rank: 0, count: 1 }, prior)))
+		RouteInternals.finish(input, settings, routes)
+	}
+
+	routes_finite : List(Geom.Route) -> Bool
+	routes_finite = |routes| routes.all(|route| RouteInternals.route_points(route).all(RouteInternals.finite_point))
 }
 
 ## Input and settings checked once, with all reusable routing data retained.
@@ -475,15 +572,24 @@ RoutePrepared := { input : Route.Input, settings : Route.Settings }.{
 ## Placement-independent routing for an already positioned, sized graph.
 ## `orthogonal` produces deterministic axis-aligned polylines, honors optional
 ## boundary ports, separates parallel edges into stable tracks, gives self-loops
-## exterior rectangular paths, and returns one anchor per sparse edge label.
+## exterior rectangular paths, and places measured label boxes as part of the
+## same collision-aware routing pass.
 Route :: {}.{
 	Side : [Top, Right, Bottom, Left]
 	Endpoint : [From, To]
 	Port : { node : U64, side : Side, offset : F64 }
 	PortBinding : { edge : U64, endpoint : Endpoint, port : U64 }
-	EdgeLabel : { edge : U64, width : F64, height : F64 }
+	LabelBox : { width : F64, height : F64 }
 
-	Input : { graph : { nodes : List({ width : F64, height : F64 }), edges : List({ from : U64, to : U64 }) }, positions : List({ x : F64, y : F64 }), ports : List(Port), port_bindings : List(PortBinding), edge_labels : List(EdgeLabel) }
+	LabelSide : [Either, LeftOfRoute, RightOfRoute]
+	EdgeLabelAt : [Middle, NearSource, NearTarget]
+	Label : [
+		NodeLabel({ node : U64, box : LabelBox, side : Side }),
+		PortLabel({ port : U64, box : LabelBox }),
+		EdgeLabel({ edge : U64, box : LabelBox, at : EdgeLabelAt, side : LabelSide }),
+	]
+
+	Input : { graph : { nodes : List({ width : F64, height : F64 }), edges : List({ from : U64, to : U64 }) }, positions : List({ x : F64, y : F64 }), ports : List(Port), port_bindings : List(PortBinding), labels : List(Label) }
 
 	## `clearance` is the empty space kept around node boxes. `track_gap`
 	## separates parallel edges. `bend_penalty` favors fewer turns over a
@@ -491,11 +597,11 @@ Route :: {}.{
 	## one already used by earlier edges. All four values use layout units;
 	## zero disables the corresponding spacing or preference.
 	Settings : { clearance : F64, bend_penalty : F64, congestion_penalty : F64, track_gap : F64 }
-	Result : { layout : { positions : List({ x : F64, y : F64 }), routes : List(Geom.Route), bounds : { x : F64, y : F64, width : F64, height : F64 } }, label_anchors : List({ x : F64, y : F64 }) }
-	Problem : [InvalidNodeWidth(U64), InvalidNodeHeight(U64), PositionCountMismatch, InvalidPosition(U64), InvalidEdgeFrom(U64), InvalidEdgeTo(U64), InvalidPortNode(U64), InvalidPortOffset(U64), InvalidBindingEdge(U64), InvalidBindingPort(U64), BindingNodeMismatch(U64), DuplicateEndpointBinding(U64), InvalidLabelEdge(U64), InvalidLabelWidth(U64), InvalidLabelHeight(U64), DuplicateEdgeLabel(U64), InvalidClearance, InvalidBendPenalty, InvalidCongestionPenalty, InvalidTrackGap]
+	Result : { layout : { positions : List({ x : F64, y : F64 }), routes : List(Geom.Route), bounds : { x : F64, y : F64, width : F64, height : F64 } }, label_boxes : List(Geom.Rect) }
+	Problem : [InvalidNodeWidth(U64), InvalidNodeHeight(U64), PositionCountMismatch, InvalidPosition(U64), InvalidEdgeFrom(U64), InvalidEdgeTo(U64), InvalidPortNode(U64), InvalidPortOffset(U64), InvalidBindingEdge(U64), InvalidBindingPort(U64), BindingNodeMismatch(U64), DuplicateEndpointBinding(U64), InvalidLabelNode(U64), InvalidLabelPort(U64), InvalidLabelEdge(U64), InvalidLabelWidth(U64), InvalidLabelHeight(U64), RouteCountMismatch, InvalidRoute, InvalidClearance, InvalidBendPenalty, InvalidCongestionPenalty, InvalidTrackGap]
 
 	default_input : Input
-	default_input = { graph: { nodes: [], edges: [] }, positions: [], ports: [], port_bindings: [], edge_labels: [] }
+	default_input = { graph: { nodes: [], edges: [] }, positions: [], ports: [], port_bindings: [], labels: [] }
 
 	## Readable default clearance and parallel-edge separation, with modest
 	## preferences for fewer bends and less shared routing.
@@ -512,14 +618,35 @@ Route :: {}.{
 			Ok(prepared) => Ok(prepared.run())
 			Err(problems) => Err(problems)
 		}
+
+	## Place labels against caller-provided final routes. This is useful when a
+	## family adds structural waypoints after its routing phase. The returned
+	## layout is normalized exactly like `orthogonal`, so routes and label boxes
+	## always share one coordinate system.
+	place_labels : Input, Settings, List(Geom.Route) -> [Ok(Result), Err(List(Problem))]
+	place_labels = |input, settings, routes| {
+		base = RouteInternals.problems(input, settings)
+		problems = if routes.len() != input.graph.edges.len() {
+			base.append(RouteCountMismatch)
+		} else if !RouteInternals.routes_finite(routes) {
+			base.append(InvalidRoute)
+		} else {
+			base
+		}
+		if problems.is_empty() {
+			Ok(RouteInternals.finish(input, settings, routes))
+		} else {
+			Err(problems)
+		}
+	}
 }
 
-expect Route.orthogonal(Route.default_input, Route.default_settings) == Ok({ layout: { positions: [], routes: [], bounds: Geom.empty_bounds }, label_anchors: [] })
+expect Route.orthogonal(Route.default_input, Route.default_settings) == Ok({ layout: { positions: [], routes: [], bounds: Geom.empty_bounds }, label_boxes: [] })
 
 expect {
-	input = { graph: { nodes: [{ width: 10, height: 10 }, { width: 10, height: 10 }], edges: [{ from: 0, to: 1 }] }, positions: [{ x: 0, y: 0 }, { x: 40, y: 20 }], ports: [{ node: 0, side: Right, offset: 0.5 }], port_bindings: [{ edge: 0, endpoint: From, port: 0 }], edge_labels: [{ edge: 0, width: 8, height: 4 }] }
+	input = { graph: { nodes: [{ width: 10, height: 10 }, { width: 10, height: 10 }], edges: [{ from: 0, to: 1 }] }, positions: [{ x: 0, y: 0 }, { x: 40, y: 20 }], ports: [{ node: 0, side: Right, offset: 0.5 }], port_bindings: [{ edge: 0, endpoint: From, port: 0 }], labels: [EdgeLabel({ edge: 0, box: { width: 8, height: 4 }, at: Middle, side: Either })] }
 	match Route.orthogonal(input, Route.default_settings) {
-		Ok(result) => result.layout.routes.len() == 1 and result.label_anchors.len() == 1
+		Ok(result) => result.layout.routes.len() == 1 and result.label_boxes.len() == 1
 		Err(_) => False
 	}
 }
@@ -540,15 +667,43 @@ expect {
 
 ## Two labels on crossing routes are placed in distinct clear boxes.
 expect {
-	input = { ..Route.default_input, graph: { nodes: [{ width: 8, height: 8 }, { width: 8, height: 8 }, { width: 8, height: 8 }, { width: 8, height: 8 }], edges: [{ from: 0, to: 1 }, { from: 2, to: 3 }] }, positions: [{ x: 0, y: 0 }, { x: 60, y: 60 }, { x: 0, y: 60 }, { x: 60, y: 0 }], edge_labels: [{ edge: 0, width: 20, height: 10 }, { edge: 1, width: 20, height: 10 }] }
+	input = { ..Route.default_input, graph: { nodes: [{ width: 8, height: 8 }, { width: 8, height: 8 }, { width: 8, height: 8 }, { width: 8, height: 8 }], edges: [{ from: 0, to: 1 }, { from: 2, to: 3 }] }, positions: [{ x: 0, y: 0 }, { x: 60, y: 60 }, { x: 0, y: 60 }, { x: 60, y: 0 }], labels: [EdgeLabel({ edge: 0, box: { width: 20, height: 10 }, at: Middle, side: Either }), EdgeLabel({ edge: 1, box: { width: 20, height: 10 }, at: Middle, side: Either })] }
 	match Route.orthogonal(input, Route.default_settings) {
 		Ok(result) =>
-			match (result.label_anchors.get(0), result.label_anchors.get(1)) {
+			match (result.label_boxes.get(0), result.label_boxes.get(1)) {
 				(Ok(a), Ok(b)) => a != b
 				_ => False
 			}
 		Err(_) => False
 	}
+}
+
+## Node, port, source, middle, and target labels all retain label input order;
+## repeated labels on one edge are valid and receive distinct boxes.
+expect {
+	input = {
+		..Route.default_input,
+		graph: { nodes: [{ width: 20, height: 20 }, { width: 20, height: 20 }], edges: [{ from: 0, to: 1 }] },
+		positions: [{ x: 0, y: 0 }, { x: 100, y: 0 }],
+		ports: [{ node: 0, side: Right, offset: 0.5 }],
+		labels: [
+			NodeLabel({ node: 0, box: { width: 24, height: 8 }, side: Top }),
+			PortLabel({ port: 0, box: { width: 16, height: 8 } }),
+			EdgeLabel({ edge: 0, box: { width: 20, height: 8 }, at: NearSource, side: LeftOfRoute }),
+			EdgeLabel({ edge: 0, box: { width: 20, height: 8 }, at: Middle, side: RightOfRoute }),
+			EdgeLabel({ edge: 0, box: { width: 20, height: 8 }, at: NearTarget, side: Either }),
+		],
+	}
+	match Route.orthogonal(input, Route.default_settings) {
+		Ok(result) => result.label_boxes.len() == 5 and result.label_boxes.all(|box| F64.is_finite(box.x) and F64.is_finite(box.y)) and result.label_boxes.fold_with_index(True, |distinct, box, i| distinct and result.label_boxes.take_first(i).all(|before| before.x != box.x or before.y != box.y))
+		Err(_) => False
+	}
+}
+
+## Validation aggregates independent owner and box problems by label index.
+expect {
+	bad = { ..Route.default_input, labels: [NodeLabel({ node: 2, box: { width: 0 - 1.0, height: F64.nan }, side: Top }), PortLabel({ port: 3, box: { width: 1, height: 1 } })] }
+	Route.prepare(bad, Route.default_settings) == Err([InvalidLabelNode(0), InvalidLabelWidth(0), InvalidLabelHeight(0), InvalidLabelPort(1)])
 }
 
 ## fuzz regression: repeated self-loops on zero-size nodes at coincident

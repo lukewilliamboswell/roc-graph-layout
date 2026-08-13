@@ -80,7 +80,7 @@ input = {
 	graph: { nodes, edges },
 	ports: [],
 	port_bindings: [],
-	edge_labels: [],
+	labels: [],
 	root,
 	routing: Compound.default_routing,
 }

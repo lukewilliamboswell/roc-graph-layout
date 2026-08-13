@@ -2037,7 +2037,7 @@ LayeredInternals :: {}.{
 		unit_edges : List({ from : U64, to : U64 }),
 		ordered_layers : List(List(U64)),
 		direction : [Down, Up, Left, Right],
-		edge_labels : List(Route.EdgeLabel),
+		edge_labels : List({ edge : U64, width : F64, height : F64 }),
 		node_gap : F64,
 		layer_gap : F64,
 		route_style : [Straight, Curved],
@@ -2434,7 +2434,7 @@ Prepared := {
 	route_style : [Straight, Curved],
 	ports : List(Route.Port),
 	port_bindings : List(Route.PortBinding),
-	edge_labels : List(Route.EdgeLabel),
+	edge_labels : List({ edge : U64, width : F64, height : F64 }),
 	precedences : List({ before : U64, after : U64 }),
 }.{
 	Config : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved], direction : [Down, Up, Left, Right], max_sweeps : U64 }
@@ -2447,7 +2447,7 @@ Prepared := {
 		min_spans : List({ edge : U64, span : U64 }),
 		ports : List(Route.Port),
 		port_bindings : List(Route.PortBinding),
-		edge_labels : List(Route.EdgeLabel),
+		edge_labels : List({ edge : U64, width : F64, height : F64 }),
 	}
 	Problem : [
 		InvalidNodeWidth(U64),
@@ -2605,7 +2605,7 @@ ExactPrepared := {
 	route_style : [Straight, Curved],
 	ports : List(Route.Port),
 	port_bindings : List(Route.PortBinding),
-	edge_labels : List(Route.EdgeLabel),
+	edge_labels : List({ edge : U64, width : F64, height : F64 }),
 	precedences : List({ before : U64, after : U64 }),
 }.{
 	Config : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved], effort_cap : U64, direction : [Down, Up, Left, Right] }
@@ -2618,7 +2618,7 @@ ExactPrepared := {
 		min_spans : List({ edge : U64, span : U64 }),
 		ports : List(Route.Port),
 		port_bindings : List(Route.PortBinding),
-		edge_labels : List(Route.EdgeLabel),
+		edge_labels : List({ edge : U64, width : F64, height : F64 }),
 	}
 	Problem : [
 		InvalidNodeWidth(U64),
@@ -2769,7 +2769,7 @@ Layered := [].{
 		min_spans : List({ edge : U64, span : U64 }),
 		ports : List(Route.Port),
 		port_bindings : List(Route.PortBinding),
-		edge_labels : List(Route.EdgeLabel),
+		edge_labels : List({ edge : U64, width : F64, height : F64 }),
 	}
 
 	## Space between nodes on the same layer and between adjacent layers,
