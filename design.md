@@ -857,14 +857,21 @@ containment within a band.
 #### Constrained.Stress
 
 Stress ([the graph class](#the-graph-class)), optimized subject to the rules. The solver alternates a
-stress-descent step with projection onto the feasible region. Per-axis
-projection of separation constraints is solvable exactly and
-near-linearly by incremental block merging: scan the constraints,
-merge violating nodes into rigid blocks placed at their
-offset-weighted average, and the result is the minimally-moved
-feasible placement. Alternating descent and projection converges to
-layouts that satisfy every constraint while staying as faithful as the
-constraints allow.
+stress-descent step with projection onto the feasible region — and the
+projection must be one SIMULTANEOUS solve per axis, never a sequence
+of per-kind projections: implementation evidence (a fuzzer-found
+violation) showed that projecting separations, then alignments, then
+bands lets each later stage break the one before it. Instead,
+alignment groups merge into single solver variables, band and pin
+bounds enter the same solve as separations against an effectively
+immovable anchor variable, and per-axis projection of the combined
+system is solved exactly and near-linearly by incremental block
+merging: scan the constraints, merge violating nodes into rigid blocks
+placed at their offset-weighted average (respecting every constraint
+that crosses the merged blocks), and the result is the minimally-moved
+feasible placement. Alternating descent and unified projection
+converges to layouts that satisfy every constraint while staying as
+faithful as the constraints allow.
 
 The projection solver is the same machinery overlap removal uses ([Placement-independent passes](#placement-independent-passes))
 — one solver, two consumers — and pinning ([Degenerate inputs and the failure posture](#degenerate-inputs-and-the-failure-posture)) is its degenerate
@@ -1018,9 +1025,13 @@ coordinates, small differences); and genericity over fractional types
 would tax every internal structure to offer a dial no consumer of
 *geometry* has asked to turn. Sizes in, coordinates out: `F64`.
 
-**The precision of the guarantee.** Determinism (F4) is bit-exact,
-unconditionally: same package version, same input, same configuration,
-same run arguments — same bits, on every platform. Basic arithmetic
+**The precision of the guarantee.** Determinism (F4) is bit-exact:
+same package version, same input, same configuration, same run
+arguments — same bits, on every platform, conditional on the compiler
+emitting correct code. That condition is real, not theoretical:
+interpreter and native backends have been observed to disagree, so the
+verification suite must run against built binaries as well as the test
+runner, and ultimately on more than one platform. Basic arithmetic
 and square root are exactly specified by the floating-point standard,
 so the only threat is transcendental functions, whose last-bit
 behavior varies between platform math libraries. The library therefore
@@ -1070,6 +1081,13 @@ Costs the design commits to (N3):
 
 Memory is O(n + m) throughout, plus O(n) for the quadtree.
 
+**Measured, not claimed.** A complexity budget in the table above
+counts as met only once a scale test exercises it; until then it is a
+commitment the implementation has not yet earned, and saying otherwise
+is the same dishonesty F8 exists to prevent in quality claims. The
+regression suite grows a benchmark tier as algorithms approach their
+stated scales.
+
 **Scale targets, honestly framed.** The targets — 10⁵-node trees,
 10⁴-node layered drawings, 10⁴–10⁵-node force/stress layouts — are set
 by the asymptotics above; constant factors in a pure language are real
@@ -1108,6 +1126,16 @@ Defined behavior at the edges, chosen and tested rather than emergent:
 - **Adversarial scale** → iteration caps bound time; quality degrades
   gradually (N3); nothing hangs.
 
+**Guarantees are proven, or their residual is reported.** When an
+algorithm's promise cannot be established at `build` time — constraint
+feasibility being the exemplar: the analysis is sound but not complete —
+the result must carry the discrepancy explicitly (the constrained
+class's `unsatisfied` list). Silent best effort is forbidden; a
+guarantee by construction (overlap removal's two-pass projection, whose
+postcondition is a theorem) is preferred wherever it is achievable.
+This generalizes the rule that capped exactness is stated, never
+silent.
+
 A panic anywhere, on any input, is a bug by definition, and the fuzz
 pass exists to enforce that definition.
 
@@ -1129,11 +1157,14 @@ description of what they are doing:
 
 The general class shares the `Graph` module with the shared spec
 deliberately: that class adds nothing to the spec, so they share a
-home. (Implementation note: the current compiler only exposes a module's
-namesake type across modules, so the force, stress, and radial algorithms
-live in `ForceLayout`, `StressLayout`, and `RadialLayout` modules with
-one-call conveniences on `Graph`; they fold back into `Graph` when the
-compiler permits it.) Internal and unexposed: the pseudo-random generator, quadtree,
+home. Algorithms with a reusable preparation surface live in their own
+modules (`ForceLayout`, `StressLayout`, `RadialLayout`), each exposing
+its witness and prepare/run operations through its namesake type, with
+one-call conveniences on the family module. Implementation experience
+promoted this from workaround to design: per-algorithm modules produce
+smaller, clearer generated documentation and smaller review surfaces
+than a monolithic family module, and the compiler's namesake-only
+visibility rule makes the namesake the natural public boundary. Internal and unexposed: the pseudo-random generator, quadtree,
 shortest paths, union-find, projection solver, and contours.
 
 End to end — inside a function returning `Try`, so `?` propagates build
@@ -1151,7 +1182,7 @@ g = { ..Graph.default_spec,
 
 input = { ..Layered.default_input, graph: g }
 prepared = Layered.prepare(input, Layered.default_settings)?
-result = Layered.layout_prepared(prepared)
+result = Layered.layout_prepared(prepared, Layered.default_run)
 
 # result.layout.positions : List(Point) — one per node, in spec order
 # result.layout.routes : List(Route)    — one per edge, in spec order
