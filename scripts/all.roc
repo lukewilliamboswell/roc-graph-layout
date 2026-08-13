@@ -9,5 +9,6 @@ main! : List(_) => Try({}, _)
 main! = |_args| {
 	Tasks.check!()?
 	Tasks.test!()?
+	Tasks.run_examples!()?
 	Tasks.bundle!("dist")
 }
