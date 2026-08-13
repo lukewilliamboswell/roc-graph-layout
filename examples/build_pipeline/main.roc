@@ -93,7 +93,7 @@ render_svg = |result| {
 	defs = Svg.arrow_marker_defs(arrow_id, "#64748b")
 	body = Str.join_with([routes, rects], "\n")
 
-	Svg.document(total_width, total_height, defs, body)
+	Svg.square_document(total_width, total_height, defs, body)
 }
 
 main! : List(_) => Try({}, _)

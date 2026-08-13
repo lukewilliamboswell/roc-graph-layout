@@ -28,6 +28,25 @@ Svg :: {}.{
 		\\</svg>
 	}
 
+	## A square 720px preview around rectangular content. The view box keeps
+	## the content's natural scale and centers its shorter dimension, so a set
+	## of generated examples has consistent dimensions without distortion.
+	square_document : F64, F64, Str, Str -> Str
+	square_document = |content_width, content_height, defs, body| {
+		side = content_width.max(content_height)
+		dx = (side - content_width) / 2
+		dy = (side - content_height) / 2
+		s = side.to_str()
+
+		\\<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720" viewBox="0 0 ${s} ${s}">
+		\\${defs}
+		\\<rect x="0" y="0" width="${s}" height="${s}" fill="#ffffff" />
+		\\<g transform="translate(${dx.to_str()} ${dy.to_str()})">
+		\\${body}
+		\\</g>
+		\\</svg>
+	}
+
 	## A `<defs>` block with a single arrowhead marker, referenced from a
 	## route's `marker_end` as `"url(#${id})"`.
 	arrow_marker_defs : Str, Str -> Str

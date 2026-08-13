@@ -1,6 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="504.1834866792833" height="523.3750245021687" viewBox="0 0 504.1834866792833 523.3750245021687">
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720" viewBox="0 0 523.3750245021687 523.3750245021687">
 
-<rect x="0" y="0" width="504.1834866792833" height="523.3750245021687" fill="#ffffff" />
+<rect x="0" y="0" width="523.3750245021687" height="523.3750245021687" fill="#ffffff" />
+<g transform="translate(9.59576891144269 0)">
 <path d="M 342.6881859023357 139.19153782288544 C 378.50032799363635 152.37626291621652, 402.9987615859522 176.8746965085324, 416.1834866792833 212.686838599833" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
 <line x1="432.1834866792833" y1="244.686838599833" x2="432.18348667928325" y2="361.8797237252212" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
 <line x1="416.1834866792832" y1="393.8797237252212" x2="342.6881859023356" y2="467.3750245021687" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -29,4 +30,5 @@
 <text x="72.00000000000006" y="228.6868385998329" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Shipping</text>
 <rect x="129.49530077694766" y="107.19153782288541" width="96" height="32" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
 <text x="177.49530077694766" y="123.19153782288541" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Notify</text>
+</g>
 </svg>

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720" viewBox="0 0 863.0082304979696 863.0082304979696">
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+<path d="M0,0 L8,4 L0,8 z" fill="#64748b" />
+</marker>
+</defs>
+<rect x="0" y="0" width="863.0082304979696" height="863.0082304979696" fill="#ffffff" />
+<g transform="translate(292.396887535748 0)">
+<rect x="20" y="20" width="238.2144554264736" height="823.0082304979696" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="6 4" />
+<text x="32" y="38" font-family="sans-serif" font-size="11" font-weight="600" fill="#64748b">PRODUCTION</text>
+<rect x="59.107227713236796" y="180" width="160" height="150" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 4" />
+<text x="71.1072277132368" y="198" font-family="sans-serif" font-size="11" font-weight="600" fill="#64748b">EDGE</text>
+<rect x="-10" y="402" width="298.2144554264736" height="247.0082304979697" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 4" />
+<text x="2" y="420" font-family="sans-serif" font-size="11" font-weight="600" fill="#64748b">APPLICATION</text>
+<rect x="59.107227713236796" y="721.0082304979696" width="160" height="150" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 4" />
+<text x="71.1072277132368" y="739.0082304979696" font-family="sans-serif" font-size="11" font-weight="600" fill="#64748b">DATA</text>
+<polyline points="139.1072277132368,108 139.1072277132368,180 139.1072277132368,208" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="139.1072277132368,244 139.1072277132368,266" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="132.5760204843861,302 122.41636479506283,302 122.41636479506283,330 96.29153587966012,330 96.29153587966012,402 85.40619049824232,402 85.40619049824232,432" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="107.0135305428636,468 170.07590815300162,468 170.07590815300162,513.458025410871 178.07590815300162,513.458025410871" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="82.29502191724043,468 116.68697435511697,468 116.68697435511697,649.0082304979696 130.3671289465121,649.0082304979696 130.3671289465121,721.0082304979696 135.687189065388,721.0082304979696 135.687189065388,749.0082304979696" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="81.76606754919409,468 110.83884808850175,468 110.83884808850175,649.0082304979696 122.40318520771154,649.0082304979696 122.40318520771154,721.0082304979696 136.21614343343435,721.0082304979696 136.21614343343435,807.0082304979696" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="78.05549350753583,468 78.05549350753583,476 72.81948976185582,476 72.81948976185582,583.0082304979696" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="106.73548632460697,583.0082304979696 163.47896910186662,583.0082304979696 163.47896910186662,549.458025410871 171.47896910186662,549.458025410871" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="201.0863338084448,549.458025410871 172.72491387586987,549.458025410871 172.72491387586987,649.0082304979696 152.2124274037548,649.0082304979696 152.2124274037548,721.0082304979696 144.23534933126558,721.0082304979696 144.23534933126558,749.0082304979696" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="87.1072277132368" y="72" width="104" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="139.1072277132368" y="90" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Customer</text>
+<rect x="87.1072277132368" y="208" width="104" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="139.1072277132368" y="226" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">CDN</text>
+<rect x="87.1072277132368" y="266" width="104" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="139.1072277132368" y="284" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Gateway</text>
+<rect x="26.87498326939165" y="432" width="104" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="78.87498326939165" y="450" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">API</text>
+<rect x="154.2144554264736" y="513.458025410871" width="104" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="206.2144554264736" y="531.458025410871" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Worker</text>
+<rect x="87.1072277132368" y="749.0082304979696" width="104" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="139.1072277132368" y="767.0082304979696" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Postgres</text>
+<rect x="87.1072277132368" y="807.0082304979696" width="104" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="139.1072277132368" y="825.0082304979696" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Redis</text>
+<rect x="20" y="583.0082304979696" width="104" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
+<text x="72" y="601.0082304979696" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Queue</text>
+</g>
+</svg>

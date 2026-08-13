@@ -23,6 +23,8 @@ The supported end-to-end layouts:
   pinned nodes; `RadialLayout` draws concentric rings by depth from a root.
 - `Constrained` — stress layout subject to domain rules: minimum separation
   along an axis, alignment, and containment bands.
+- `Compound` — nested layout groups whose completed child boxes are arranged
+  by their parent, with straight or orthogonal routes across group boundaries.
 
 Placement-independent passes compose with any layout: `Pack` (shelf packing
 for forests and disconnected components), `Overlap` (minimal-movement overlap
@@ -52,11 +54,12 @@ result = Layered.layout(input, settings, Layered.default_run)?
 
 Click a layout to open the example app that generated it.
 
-| Directed flows | Hierarchies |
+| Examples | Examples |
 | --- | --- |
 | [Build pipeline](examples/build_pipeline/main.roc) — layered<br>[![A layered build pipeline](examples/build_pipeline/output.svg)](examples/build_pipeline/main.roc) | [Organization chart](examples/org_chart/main.roc) — tree<br>[![A level-by-level organization chart](examples/org_chart/output.svg)](examples/org_chart/main.roc) |
 | [Service ring](examples/service_ring/main.roc) — circular<br>[![A circular service dependency graph](examples/service_ring/output.svg)](examples/service_ring/main.roc) | [Mind map](examples/mind_map/main.roc) — radial tree<br>[![A radial mind map](examples/mind_map/output.svg)](examples/mind_map/main.roc) |
-| [Collaboration network](examples/collab_network/main.roc) — force-directed<br>[![A force-directed collaboration network](examples/collab_network/output.svg)](examples/collab_network/main.roc) | |
+| [Collaboration network](examples/collab_network/main.roc) — force-directed<br>[![A force-directed collaboration network](examples/collab_network/output.svg)](examples/collab_network/main.roc) | [Incident blast radius](examples/incident_blast_radius/main.roc) — radial graph<br>[![A service outage blast-radius graph](examples/incident_blast_radius/output.svg)](examples/incident_blast_radius/main.roc) |
+| [Cloud deployment](examples/cloud_deployment/main.roc) — compound<br>[![A cloud deployment with nested infrastructure groups](examples/cloud_deployment/output.svg)](examples/cloud_deployment/main.roc) | [Release workflow](examples/release_workflow/main.roc) — constrained<br>[![A release workflow arranged into responsibility lanes](examples/release_workflow/output.svg)](examples/release_workflow/main.roc) |
 
 See the [build-pipeline example](examples/build_pipeline/main.roc) for a
 complete program that writes the result as SVG, the
@@ -64,7 +67,13 @@ complete program that writes the result as SVG, the
 the [mind-map example](examples/mind_map/main.roc) for a radial tree, the
 [service-ring example](examples/service_ring/main.roc) for a circular graph,
 and the [collab-network example](examples/collab_network/main.roc) for a
-force-directed graph with a disconnected component.
+force-directed graph with a disconnected component. The
+[incident blast-radius example](examples/incident_blast_radius/main.roc) uses
+concentric dependency hops, the
+[cloud-deployment example](examples/cloud_deployment/main.roc) composes nested
+infrastructure groups, and the
+[release-workflow example](examples/release_workflow/main.roc) keeps work in
+domain-specific responsibility lanes.
 
 For repeated layouts of the same input and settings, use `Layered.prepare` once
 and pass the result to `Layered.layout_prepared` with `Layered.default_run`.

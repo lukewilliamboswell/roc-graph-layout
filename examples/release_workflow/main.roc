@@ -1,0 +1,149 @@
+#!/usr/bin/env roc
+app [main!] {
+	pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.21.0/4rAQg8kUYZ3Vksr4qMQHpaFYNiHSn9GgS7gVxghd1XYV.tar.zst",
+	layout: "../../package/main.roc",
+	svg: "../svg/main.roc",
+}
+
+import pf.Path
+import pf.Stdout
+import layout.Constrained
+import svg.Svg
+
+## A release workflow split into responsibility lanes. Fixed y bands keep
+## work with Product, Engineering, Security, or Operations; x alignments put
+## concurrent work in the same stage; separations preserve left-to-right
+## progress while stress keeps connected tasks close within those rules.
+labels = [
+	"Release brief",
+	"Plan approved",
+	"Build",
+	"Test",
+	"Threat model",
+	"Security review",
+	"Release approval",
+	"Deploy",
+	"Monitor",
+]
+
+node_size = { width: 116, height: 34 }
+
+nodes = List.repeat(node_size, labels.len())
+
+edges = [
+	{ from: 0, to: 1 },
+	{ from: 1, to: 2 },
+	{ from: 1, to: 4 },
+	{ from: 2, to: 3 },
+	{ from: 3, to: 5 },
+	{ from: 4, to: 5 },
+	{ from: 5, to: 6 },
+	{ from: 6, to: 7 },
+	{ from: 7, to: 8 },
+]
+
+lane_y = { product: 60, engineering: 160, security: 260, operations: 360 }
+
+constraints : List(Constrained.Constraint)
+constraints = [
+	Inside({ axis: Y, nodes: [0, 1, 6], low: lane_y.product, high: lane_y.product }),
+	Inside({ axis: Y, nodes: [2, 3], low: lane_y.engineering, high: lane_y.engineering }),
+	Inside({ axis: Y, nodes: [4, 5], low: lane_y.security, high: lane_y.security }),
+	Inside({ axis: Y, nodes: [7, 8], low: lane_y.operations, high: lane_y.operations }),
+	Align({ axis: X, nodes: [2, 4] }),
+	Align({ axis: X, nodes: [3, 5] }),
+	Separate({ axis: X, first: 0, second: 1, gap: 150 }),
+	Separate({ axis: X, first: 1, second: 2, gap: 150 }),
+	Separate({ axis: X, first: 2, second: 3, gap: 150 }),
+	Separate({ axis: X, first: 3, second: 6, gap: 150 }),
+	Separate({ axis: X, first: 6, second: 7, gap: 150 }),
+	Separate({ axis: X, first: 7, second: 8, gap: 150 }),
+]
+
+padding : F64
+padding = 24
+
+lane_left : F64
+lane_left = 8
+
+lane_height : F64
+lane_height = 72
+
+render_lanes = |width| {
+	lane = |name, y, fill| {
+		top = y + padding - lane_height / 2
+		\\<rect x="${lane_left.to_str()}" y="${top.to_str()}" width="${(width - lane_left * 2).to_str()}" height="${lane_height.to_str()}" rx="6" fill="${fill}" />
+		\\<text x="${(lane_left + 10).to_str()}" y="${(top + 18).to_str()}" font-family="sans-serif" font-size="12" font-weight="600" fill="#475569">${name}</text>
+	}
+	Str.join_with(
+		[
+			lane("PRODUCT", lane_y.product, "#f8fafc"),
+			lane("ENGINEERING", lane_y.engineering, "#f1f5f9"),
+			lane("SECURITY", lane_y.security, "#f8fafc"),
+			lane("OPERATIONS", lane_y.operations, "#f1f5f9"),
+		],
+		"\n",
+	)
+}
+
+render_node = |center, label| {
+	cx = center.x + padding
+	cy = center.y + padding
+	"${Svg.rect_centered(cx, cy, node_size.width, node_size.height, Svg.default_rect_style)}\n${Svg.text_centered(cx, cy, label, Svg.default_text_style)}"
+}
+
+arrow_id = "arrow"
+
+route_style = { ..Svg.default_line_style, marker_end: arrow_id }
+
+render_route = |route|
+	match route {
+		Line(from, to) => Svg.line(from.x + padding, from.y + padding, to.x + padding, to.y + padding, route_style)
+		Polyline(points) => Svg.polyline(points.map(|p| { x: p.x + padding, y: p.y + padding }), route_style)
+		Curves(segments) =>
+			Svg.curves(
+				segments.map(
+					|seg| {
+						from: { x: seg.from.x + padding, y: seg.from.y + padding },
+						ctl_a: { x: seg.ctl_a.x + padding, y: seg.ctl_a.y + padding },
+						ctl_b: { x: seg.ctl_b.x + padding, y: seg.ctl_b.y + padding },
+						to: { x: seg.to.x + padding, y: seg.to.y + padding },
+					},
+				),
+				route_style,
+			)
+		}
+
+render_svg = |result| {
+	total_width = result.bounds.width + padding * 2
+	total_height = 444
+	lanes = render_lanes(total_width)
+	routes = Str.join_with(result.routes.map(render_route), "\n")
+	node_shapes = Str.join_with(result.positions.map_with_index(|p, i| render_node(p, labels.get(i) ?? "")), "\n")
+	x_shift : F64
+	x_shift = 0 - result.bounds.x
+	graph =
+		\\<g transform="translate(${x_shift.to_str()} 0)">
+		\\${routes}
+		\\${node_shapes}
+		\\</g>
+	Svg.square_document(total_width, total_height, Svg.arrow_marker_defs(arrow_id, "#64748b"), Str.join_with([lanes, graph], "\n"))
+}
+
+main! : List(_) => Try({}, _)
+main! = |args| {
+	runtime_zero = args.len().to_f64() * 0
+	input = { graph: { nodes, edges }, constraints }
+	settings = { ..Constrained.default_settings, node_gap: 36 + runtime_zero }
+	match Constrained.layout(input, settings, { ..Constrained.default_run, seed: 11 }) {
+		Err(problems) => Err(LayoutProblems(problems))
+		Ok(result) => {
+			svg = render_svg(result.layout)
+			output = Path.utf8("examples/release_workflow/output.svg")
+			match output.write_utf8!(svg) {
+				Err(problem) => Err(WriteFailed(problem))
+				Ok({}) => Stdout.line!("Laid out a ${labels.len().to_str()}-step release across four responsibility lanes -> ${Path.display(output)}")
+			}
+		}
+	}
+}

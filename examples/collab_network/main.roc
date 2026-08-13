@@ -106,7 +106,7 @@ render_svg = |result| {
 	routes = Str.join_with(result.routes.map(render_route), "\n")
 	body = Str.join_with([routes, rects], "\n")
 
-	Svg.document(total_width, total_height, "", body)
+	Svg.square_document(total_width, total_height, "", body)
 }
 
 main! : List(_) => Try({}, _)
