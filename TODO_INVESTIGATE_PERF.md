@@ -149,6 +149,17 @@ Relevant code: pair generation in `package/Overlap.roc` and `merge_blocks`,
 
 ## H3: Pack copies the growing placement list
 
+**Status (2026-08-14): refuted and resolved.** The placement accumulator keeps
+unique ownership; after the actual fix, a 10,000-box run performs only three
+allocation calls. The triangular allocation count came from sorting instead:
+equal boxes are mapped in ascending source-index order, which already matches
+Pack's deterministic comparator, and the built-in first-pivot quicksort took
+its quadratic worst case. A linear sortedness check now bypasses sorting for
+canonical input while retaining it for arbitrary box orders. At 3,000 boxes
+this reduced the native case from 21.2 seconds, 4,501,502 allocation calls, and
+736,516,720 requested bytes to 0.13 ms, 3 allocation calls, and 508,664 bytes.
+The new 10,000-box case completes in 0.31 ms with 1,576,120 requested bytes.
+
 **Hypothesis.** `state.placements.append(...)` inside the record-valued fold is
 not retaining unique ownership, causing a copy of the growing placement list
 for each box.

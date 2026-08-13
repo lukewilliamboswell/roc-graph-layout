@@ -52,23 +52,35 @@ Pack :: {}.{
 			widest = boxes.fold(0, |acc, box| acc.max(box.width))
 			target_width = (total_area * aspect).sqrt().max(widest)
 
-			sorted = boxes
-				.map_with_index(|box, index| { width: box.width, height: box.height, index })
-				.sort_with(
-					|a, b| {
-						extent_a = a.width.max(a.height)
-						extent_b = b.width.max(b.height)
-						if extent_a > extent_b {
-							LT
-						} else if extent_a < extent_b {
-							GT
-						} else if a.index < b.index {
-							LT
+			indexed = boxes.map_with_index(|box, index| { width: box.width, height: box.height, index })
+			box_order = |a, b| {
+				extent_a = a.width.max(a.height)
+				extent_b = b.width.max(b.height)
+				if extent_a > extent_b {
+					LT
+				} else if extent_a < extent_b {
+					GT
+				} else if a.index < b.index {
+					LT
+				} else {
+					GT
+				}
+			}
+			already_ordered = indexed.fold_with_index(
+				True,
+				|ordered, box, index|
+					ordered
+						and if index == 0 {
+							True
 						} else {
-							GT
-						}
-					},
-				)
+							box_order(indexed.get(index - 1) ?? box, box) != GT
+						},
+			)
+			sorted = if already_ordered {
+				indexed
+			} else {
+				indexed.sort_with(box_order)
+			}
 
 			placed = sorted.fold(
 				{ placements: [], cursor_x: 0, shelf_y: 0, shelf_height: 0, shelf_count: 0 },
