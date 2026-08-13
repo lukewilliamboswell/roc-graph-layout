@@ -56,6 +56,55 @@ LayeredInternals :: {}.{
 		}
 	}
 
+	## Neighbor positions for edges entering `node` from one adjacent layer.
+	incoming_positions : U64, List([Some(U64), None]), List({ from : U64, to : U64 }) -> List(U64)
+	incoming_positions = |node, neighbor_pos, unit_edges|
+		unit_edges.fold(
+			[],
+			|positions, edge| if edge.to == node {
+				match neighbor_pos.get(edge.from) ?? None {
+					Some(position) => positions.append(position)
+					None => positions
+				}
+			} else {
+				positions
+			},
+		)
+
+	## Neighbor positions for edges leaving `node` for one adjacent layer.
+	outgoing_positions : U64, List([Some(U64), None]), List({ from : U64, to : U64 }) -> List(U64)
+	outgoing_positions = |node, neighbor_pos, unit_edges|
+		unit_edges.fold(
+			[],
+			|positions, edge| if edge.from == node {
+				match neighbor_pos.get(edge.to) ?? None {
+					Some(position) => positions.append(position)
+					None => positions
+				}
+			} else {
+				positions
+			},
+		)
+
+	## Crossings between edges incident to adjacent nodes `u` then `v`, before
+	## and after swapping those nodes. Equal neighbor positions share an
+	## endpoint and never count as a crossing in either order.
+	incident_swap_crossings : List(U64), List(U64) -> { before : U64, after : U64 }
+	incident_swap_crossings = |u_neighbors, v_neighbors|
+		u_neighbors.fold(
+			{ before: 0, after: 0 },
+			|state, u_pos| v_neighbors.fold(
+				state,
+				|acc, v_pos| if u_pos > v_pos {
+					{ ..acc, before: acc.before + 1 }
+				} else if u_pos < v_pos {
+					{ ..acc, after: acc.after + 1 }
+				} else {
+					acc
+				},
+			),
+		)
+
 	weighted_slack : List(I64), { from : U64, to : U64, weight : F64, min_span : U64 } -> I64
 	weighted_slack = |ranks, edge| (ranks.get(edge.to) ?? 0) - (ranks.get(edge.from) ?? 0) - edge.min_span.to_i64_wrap()
 
@@ -915,19 +964,26 @@ LayeredInternals :: {}.{
 		if layer.len() < 2 {
 			layer
 		} else {
+			above_pos = LayeredInternals.layer_positions(node_total, above)
+			below_pos = LayeredInternals.layer_positions(node_total, below)
 			LayeredInternals.indices_up_to(layer.len() - 1).fold(
 				layer,
 				|cur, p| {
 					u = cur.get(p) ?? 0
 					v = cur.get(p + 1) ?? 0
-					with_v = cur.set(p, v) ?? cur
-					swapped = with_v.set(p + 1, u) ?? with_v
-					before = LayeredInternals.crossings_between(node_total, above, cur, unit_edges)
-						+ LayeredInternals.crossings_between(node_total, cur, below, unit_edges)
-					after = LayeredInternals.crossings_between(node_total, above, swapped, unit_edges)
-						+ LayeredInternals.crossings_between(node_total, swapped, below, unit_edges)
+					incoming = LayeredInternals.incident_swap_crossings(
+						LayeredInternals.incoming_positions(u, above_pos, unit_edges),
+						LayeredInternals.incoming_positions(v, above_pos, unit_edges),
+					)
+					outgoing = LayeredInternals.incident_swap_crossings(
+						LayeredInternals.outgoing_positions(u, below_pos, unit_edges),
+						LayeredInternals.outgoing_positions(v, below_pos, unit_edges),
+					)
+					before = incoming.before + outgoing.before
+					after = incoming.after + outgoing.after
 					if after < before {
-						swapped
+						with_v = cur.set(p, v) ?? cur
+						with_v.set(p + 1, u) ?? with_v
 					} else {
 						cur
 					}
@@ -1115,7 +1171,6 @@ LayeredInternals :: {}.{
 			Down => LayeredInternals.indices_up_to(layer_count)
 			Up => LayeredInternals.indices_up_to(layer_count).rev()
 		}
-
 		ordered_indices.fold(
 			layers,
 			|acc, layer_index| {
@@ -1143,10 +1198,28 @@ LayeredInternals :: {}.{
 
 						scored = current_layer.map_with_index(
 							|node, pos| {
-								medians = match direction {
-									Down => unit_edges.keep_if(|e| e.to == node).keep_oks(|e| neighbor_pos.get(e.from))
-									Up => unit_edges.keep_if(|e| e.from == node).keep_oks(|e| neighbor_pos.get(e.to))
-								}
+								medians = unit_edges.fold(
+									[],
+									|values, edge|
+										match direction {
+											Down => if edge.to == node {
+												match neighbor_pos.get(edge.from) {
+													Ok(value) => values.append(value)
+													Err(_) => values
+												}
+											} else {
+												values
+											}
+											Up => if edge.from == node {
+												match neighbor_pos.get(edge.to) {
+													Ok(value) => values.append(value)
+													Err(_) => values
+												}
+											} else {
+												values
+											}
+										},
+								)
 								fallback = (old_positions.get(node) ?? 0).to_f64()
 								key = match LayeredInternals.median_of(medians) {
 									Some(m) => m
@@ -1156,24 +1229,38 @@ LayeredInternals :: {}.{
 							},
 						)
 
-						reordered = scored.sort_with(
-							|a, b|
-								if a.key < b.key {
-									LT
-								} else if a.key > b.key {
-									GT
-								} else if a.pos < b.pos {
-									LT
-								} else if a.pos > b.pos {
-									GT
-								} else if a.node < b.node {
-									LT
-								} else if a.node > b.node {
-									GT
-								} else {
-									EQ
-								},
-						).map(|s| s.node)
+						score_order = |a, b|
+							if a.key < b.key {
+								LT
+							} else if a.key > b.key {
+								GT
+							} else if a.pos < b.pos {
+								LT
+							} else if a.pos > b.pos {
+								GT
+							} else if a.node < b.node {
+								LT
+							} else if a.node > b.node {
+								GT
+							} else {
+								EQ
+							}
+						ascending = scored.fold_with_index(
+							True,
+							|ordered, score, index| ordered and (index == 0 or score_order(scored.get(index - 1) ?? score, score) != GT),
+						)
+						descending = scored.fold_with_index(
+							True,
+							|ordered, score, index| ordered and (index == 0 or score_order(scored.get(index - 1) ?? score, score) != LT),
+						)
+						ordered_scores = if ascending {
+							scored
+						} else if descending {
+							scored.rev()
+						} else {
+							scored.sort_with(score_order)
+						}
+						reordered = ordered_scores.map(|s| s.node)
 
 						acc.set(layer_index, reordered) ?? acc
 					}

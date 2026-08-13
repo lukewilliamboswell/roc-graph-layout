@@ -245,6 +245,23 @@ Relevant code: subtree placement and contour merging in `package/Tree.roc`.
 
 ## H5: Layer transpose repeatedly rebuilds quadratic crossing data
 
+**Status (2026-08-14): confirmed and mitigated.** Transpose polishing counted
+every edge pair in both neighboring gaps before and after every candidate
+swap. It now computes the exact before/after delta using only the two swapped
+nodes' incident edges and constructs the swapped layer only when that delta is
+an improvement. The reversed fixture exposed a second independent cost: its
+median scores are reverse-sorted, which is the quadratic case for Roc's
+first-pivot `List.sort_with`. Median sweeps now retain ascending scores, reverse
+descending scores, and call the general sort only for unordered scores.
+
+On the pinned native compiler, the 800-node case fell from 1.86 seconds and
+340,843,007 requested bytes immediately before this change to 1.17 seconds and
+53,880,543 bytes. All layered and layered fuzz tests, plus the native smoke
+suite, pass. Other layered phases still make the overall bands ladder grow
+quadratically; this change specifically removes the repeated full crossing
+rebuild identified by H5. A bounded 200/400/800/1,000-node ladder replaces the
+premature 10,000-node rung in the scale suite.
+
 **Hypothesis.** `crossings_between` constructs full position and edge-pair
 lists and performs a pair scan. `transpose_layer` invokes it before and after
 each adjacent swap for both neighboring layer gaps, multiplying both work and
