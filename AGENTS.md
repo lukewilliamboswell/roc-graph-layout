@@ -78,6 +78,12 @@ lifetime merely because it exists internally.
   equivalent to preparing and then laying out the prepared value.
 - Do not force a two-step ceremony on callers who retain nothing.
 
+## Respect the module boundary the compiler enforces
+
+- Only a module's namesake type is visible to importers. Every public
+  surface, including witness types, is reached through associated items or
+  delegations on the namesake.
+
 ## Keep internals precise and composable
 
 - Use technically correct algorithm names internally even when the public API
@@ -128,6 +134,12 @@ For a public API change or new algorithm:
 
 - format every changed Roc file;
 - run package checking and tests;
+- build and execute at least one NATIVE binary exercising the changed path —
+  the interpreter and native backend can disagree, so `roc check` plus
+  `roc test` alone do not prove the built artifact correct;
+- give every new algorithm a fuzz target asserting its contract (totality,
+  source alignment, determinism, and its family-specific invariants), and
+  distill every corpus crash into a permanent `## fuzz regression:` expect;
 - check affected examples and run at least one end-to-end example;
 - generate `roc docs` and inspect the exposed names, types, and prose;
 - confirm internal helpers and unavailable references do not appear there;
@@ -141,6 +153,20 @@ For a public API change or new algorithm:
 If the full repository task cannot complete because the installed Roc compiler
 does not match the pinned version, still run the individual checks that are
 available and report the version mismatch explicitly.
+
+## Parallel work
+
+When several agents or sessions work concurrently:
+
+- Partition by strict file ownership: each worker modifies exactly the files
+  assigned to it and nothing else.
+- Per-file testing is the isolation boundary: `roc test package/Foo.roc`
+  compiles only that file's import closure, so a worker's runs cannot be
+  broken by a sibling's in-flight edits as long as ownership is disjoint and
+  shared dependencies are finished first.
+- Land shared contracts (types, module APIs) before fanning out consumers of
+  them; the integrator alone edits shared manifests and call sites that span
+  ownership boundaries.
 
 ## Evolve from evidence
 
