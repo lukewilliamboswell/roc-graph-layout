@@ -44,4 +44,6 @@ Run the project checks with:
 ./scripts/all.roc            # check, test, then bundle
 ```
 
-Set `ROC=/path/to/roc` if `roc` isn't already on your `PATH`.
+CI uses the nightly pinned in `.roc-version`. Locally, scripts use `roc` on
+your `PATH`, or the executable path in `ROC`; for example,
+`ROC=../roc/target/release/roc ./scripts/all.roc`.
