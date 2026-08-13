@@ -1241,6 +1241,10 @@ Constrained := [].{
 	## per-axis projection satisfies every rule kind simultaneously, so it is
 	## empty whenever the rules are feasible; only a genuinely infeasible
 	## conflict the bounded analysis could not prove leaves it populated.
+	## Routes are direct boundary-to-boundary connections. When axis-aligned
+	## routes suit the domain better, pass `layout.positions` and the same graph
+	## to `Route.orthogonal`; routing is a separate geometric operation and does
+	## not change the constrained placement.
 	Result : {
 		layout : {
 			positions : List({ x : F64, y : F64 }),

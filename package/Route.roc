@@ -484,12 +484,21 @@ Route :: {}.{
 	EdgeLabel : { edge : U64, width : F64, height : F64 }
 
 	Input : { graph : { nodes : List({ width : F64, height : F64 }), edges : List({ from : U64, to : U64 }) }, positions : List({ x : F64, y : F64 }), ports : List(Port), port_bindings : List(PortBinding), edge_labels : List(EdgeLabel) }
+
+	## `clearance` is the empty space kept around node boxes. `track_gap`
+	## separates parallel edges. `bend_penalty` favors fewer turns over a
+	## shorter path, while `congestion_penalty` favors a distinct corridor over
+	## one already used by earlier edges. All four values use layout units;
+	## zero disables the corresponding spacing or preference.
 	Settings : { clearance : F64, bend_penalty : F64, congestion_penalty : F64, track_gap : F64 }
 	Result : { layout : { positions : List({ x : F64, y : F64 }), routes : List(Geom.Route), bounds : { x : F64, y : F64, width : F64, height : F64 } }, label_anchors : List({ x : F64, y : F64 }) }
 	Problem : [InvalidNodeWidth(U64), InvalidNodeHeight(U64), PositionCountMismatch, InvalidPosition(U64), InvalidEdgeFrom(U64), InvalidEdgeTo(U64), InvalidPortNode(U64), InvalidPortOffset(U64), InvalidBindingEdge(U64), InvalidBindingPort(U64), BindingNodeMismatch(U64), DuplicateEndpointBinding(U64), InvalidLabelEdge(U64), InvalidLabelWidth(U64), InvalidLabelHeight(U64), DuplicateEdgeLabel(U64), InvalidClearance, InvalidBendPenalty, InvalidCongestionPenalty, InvalidTrackGap]
 
 	default_input : Input
 	default_input = { graph: { nodes: [], edges: [] }, positions: [], ports: [], port_bindings: [], edge_labels: [] }
+
+	## Readable default clearance and parallel-edge separation, with modest
+	## preferences for fewer bends and less shared routing.
 	default_settings : Settings
 	default_settings = { clearance: 8, bend_penalty: 16, congestion_penalty: 4, track_gap: 6 }
 

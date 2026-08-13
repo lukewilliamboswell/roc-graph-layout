@@ -4,6 +4,7 @@ import Graph
 import Tree
 import Constrained
 import Route
+import CompoundRouting
 
 ## Recursive composition of layout groups. A group owns nodes directly or
 ## owns completed child groups; child boxes are laid out before their parent.
@@ -345,14 +346,29 @@ Compound := [
 			(Ok(before), Ok(after)) => { x: after.x - before.x, y: after.y - before.y }
 			_ => { x: 0, y: 0 }
 		}
-		groups = placed.groups.map_with_index(
-			|rect, i| if i == 0 {
-				routed.bounds
-			} else { x: rect.x + shift.x, y: rect.y + shift.y, width: rect.width, height: rect.height },
+		placed_groups = placed.groups.map(|rect| { x: rect.x + shift.x, y: rect.y + shift.y, width: rect.width, height: rect.height })
+		stitched_routes = routed.routes.map_with_index(
+			|route, edge_index| {
+				edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
+				CompoundRouting.stitch_route(route, placed_groups.drop_first(1), input.graph.nodes, routed.positions, edge)
+			},
 		)
-		stitched_routes = routed.routes.map(|route| Compound.stitch_route(route, groups.drop_first(1)))
+		raw_label_anchors = input.edge_labels.map(|label| CompoundRouting.route_midpoint(stitched_routes.get(label.edge) ?? Polyline([])))
+		extent = CompoundRouting.drawing_extent(placed.rect, shift, root_spec.padding, input.graph.nodes, routed.positions, stitched_routes, input.edge_labels, raw_label_anchors)
+		normalize = { x: 0 - extent.x, y: 0 - extent.y }
+		move_point = |point| { x: Geom.saturate(point.x + normalize.x), y: Geom.saturate(point.y + normalize.y) }
+		positions_final = routed.positions.map(move_point)
+		routes_final = stitched_routes.map(|route| CompoundRouting.move_route(route, normalize))
+		groups = placed_groups.map_with_index(
+			|rect, i| if i == 0 {
+				{ x: 0, y: 0, width: extent.width, height: extent.height }
+			} else {
+				{ x: Geom.saturate(rect.x + normalize.x), y: Geom.saturate(rect.y + normalize.y), width: rect.width, height: rect.height }
+			},
+		)
+		label_anchors = raw_label_anchors.map(move_point)
 		violations = Compound.port_violations(input.graph.edges, input.ports, input.port_bindings, routed.positions)
-		{ layout: { positions: routed.positions, routes: stitched_routes, bounds: routed.bounds }, groups, label_anchors: routed.label_anchors, port_order_violations: violations }
+		{ layout: { positions: positions_final, routes: routes_final, bounds: { x: 0, y: 0, width: extent.width, height: extent.height } }, groups, label_anchors, port_order_violations: violations }
 	}
 
 	port_violations : List({ from : U64, to : U64 }), List(Route.Port), List(Route.PortBinding), List({ x : F64, y : F64 }) -> List({ node : U64, before_edge : U64, after_edge : U64 })
@@ -396,98 +412,6 @@ Compound := [
 			},
 		),
 	)
-
-	stitch_route : Geom.Route, List({ x : F64, y : F64, width : F64, height : F64 }) -> Geom.Route
-	stitch_route = |route, groups| {
-		points = match route {
-			Line(a, b) => [a, b]
-			Polyline(ps) => ps
-			Curves(segments) => segments.fold([], |acc, segment| acc.concat([segment.from, segment.to]))
-		}
-		match (points.first(), points.last()) {
-			(Ok(from), Ok(to)) => {
-				portals = groups.keep_oks(
-					|rect| {
-						from_inside = Compound.inside_rect(from, rect)
-						to_inside = Compound.inside_rect(to, rect)
-						if from_inside == to_inside {
-							Err({})
-						} else {
-							Ok(
-								Compound.boundary_portal(
-									if from_inside {
-										from
-									} else {
-										to
-									},
-									if from_inside {
-										to
-									} else {
-										from
-									},
-									rect,
-								),
-							)
-						}
-					},
-				).sort_with(
-					|a, b| {
-						ad = Compound.distance_sq(from, a)
-						bd = Compound.distance_sq(from, b)
-						if ad < bd {
-							LT
-						} else if ad > bd {
-							GT
-						} else {
-							EQ
-						}
-					},
-				)
-				if portals.is_empty() {
-					route
-				} else {
-					waypoints = [from].concat(portals).append(to)
-					orthogonal = waypoints.fold_with_index(
-						[],
-						|acc, point, i| match waypoints.get(i + 1) {
-							Ok(next) if point.x != next.x and point.y != next.y => acc.concat([point, { x: next.x, y: point.y }])
-							_ => acc.append(point)
-						},
-					)
-					Polyline(orthogonal)
-				}
-			}
-			_ => route
-		}
-	}
-
-	inside_rect : { x : F64, y : F64 }, { x : F64, y : F64, width : F64, height : F64 } -> Bool
-	inside_rect = |point, rect| point.x >= rect.x and point.x <= rect.x + rect.width and point.y >= rect.y and point.y <= rect.y + rect.height
-
-	distance_sq : { x : F64, y : F64 }, { x : F64, y : F64 } -> F64
-	distance_sq = |a, b| (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)
-
-	boundary_portal : { x : F64, y : F64 }, { x : F64, y : F64 }, { x : F64, y : F64, width : F64, height : F64 } -> { x : F64, y : F64 }
-	boundary_portal = |inside, outside, rect| {
-		dx = outside.x - inside.x
-		dy = outside.y - inside.y
-		tx = if dx > 0 {
-			(rect.x + rect.width - inside.x) / dx
-		} else if dx < 0 {
-			(rect.x - inside.x) / dx
-		} else {
-			1000000000
-		}
-		ty = if dy > 0 {
-			(rect.y + rect.height - inside.y) / dy
-		} else if dy < 0 {
-			(rect.y - inside.y) / dy
-		} else {
-			1000000000
-		}
-		t = tx.min(ty).max(0)
-		{ x: Geom.saturate(inside.x + dx * t), y: Geom.saturate(inside.y + dy * t) }
-	}
 
 	place_group : Compound,
 	List({ width : F64, height : F64 }),
@@ -760,6 +684,56 @@ expect {
 	match Compound.layout(input, Compound.default_run) {
 		Err(problems) => problems.contains(DuplicateMember(0)) and problems.contains(MissingMember(1))
 		Ok(_) => False
+	}
+}
+
+## A sibling group that is not part of an edge's containment path is an
+## obstacle. The final route may touch its boundary but does not enter it.
+expect {
+	base = match Compound.default_group {
+		Group(spec) => spec
+	}
+	left = Group({ ..base, padding: 4, children: [Node(0)] })
+	middle = Group({ ..base, padding: 20, children: [Node(1)] })
+	right = Group({ ..base, padding: 4, children: [Node(2)] })
+	root = Group({ ..base, padding: 4, gap: 8, children: [Nested(left), Nested(middle), Nested(right)], algorithm: Rows })
+	input = { graph: { nodes: List.repeat({ width: 10, height: 10 }, 3), edges: [{ from: 0, to: 2 }] }, ports: [], port_bindings: [], edge_labels: [], root }
+	match Compound.layout(input, Compound.default_run) {
+		Ok(result) => match (result.groups.get(2), result.layout.routes.get(0)) {
+			(Ok(rect), Ok(route)) => {
+				box = { min_x: rect.x, min_y: rect.y, max_x: rect.x + rect.width, max_y: rect.y + rect.height }
+				points = CompoundRouting.route_points(route)
+				points.fold_with_index(
+					True,
+					|clear, point, i| match points.get(i + 1) {
+						Ok(next) => clear and !CompoundRouting.segment_hits_box(point, next, box)
+						Err(_) => clear
+					},
+				)
+			}
+			_ => False
+		}
+		Err(_) => False
+	}
+}
+
+## Route growth expands the root without moving a child outside it, and every
+## output uses the same normalized coordinate system.
+expect {
+	base = match Compound.default_group {
+		Group(spec) => spec
+	}
+	left = Group({ ..base, padding: 4, children: [Node(0)] })
+	middle = Group({ ..base, padding: 20, children: [Node(1)] })
+	right = Group({ ..base, padding: 4, children: [Node(2)] })
+	root = Group({ ..base, padding: 4, gap: 8, children: [Nested(left), Nested(middle), Nested(right)], algorithm: Rows })
+	input = { graph: { nodes: List.repeat({ width: 10, height: 10 }, 3), edges: [{ from: 0, to: 2 }] }, ports: [], port_bindings: [], edge_labels: [], root }
+	match Compound.layout(input, Compound.default_run) {
+		Ok(result) => match result.groups.first() {
+			Ok(outer) => result.groups.drop_first(1).all(|child| child.x >= outer.x and child.y >= outer.y and child.x + child.width <= outer.x + outer.width and child.y + child.height <= outer.y + outer.height) and outer == result.layout.bounds
+			Err(_) => False
+		}
+		Err(_) => False
 	}
 }
 

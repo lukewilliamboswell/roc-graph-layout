@@ -17,10 +17,16 @@ test = |bytes| {
 			height: (byte_at(bytes, i * 2 + 2) % 50).to_f64(),
 		},
 	)
-	children = List.repeat(0, count).map_with_index(|_, i| Node(i))
 	base = group_spec(Compound.default_group)
+	children = List.repeat(0, count).map_with_index(|_, i| Nested(Group({ ..base, padding: (byte_at(bytes, 34 + i) % 8).to_f64(), children: [Node(i)] })))
 	root = Group({ ..base, children, gap: (byte_at(bytes, 30) % 20).to_f64() })
-	input = { graph: { nodes, edges: [] }, ports: [], port_bindings: [], edge_labels: [], root }
+	edge_count = if count == 0 {
+		0
+	} else {
+		(byte_at(bytes, 31) % 12).to_u64()
+	}
+	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 48 + i * 2).to_u64() % count, to: byte_at(bytes, 49 + i * 2).to_u64() % count })
+	input = { graph: { nodes, edges }, ports: [], port_bindings: [], edge_labels: [], root }
 	result = Compound.layout(input, Compound.default_run)
 	repeated = Compound.layout(input, Compound.default_run)
 	match result {
@@ -32,15 +38,36 @@ test = |bytes| {
 				else if layout.layout.positions.len() != count {
 					crash "compound layout lost source alignment"
 				}
-					else if layout.groups.is_empty() {
-						crash "compound layout omitted its root"
+					else if layout.layout.routes.len() != edges.len() {
+						crash "compound routing lost source alignment"
 					}
-						else if !layout.layout.positions.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y)) {
-							crash "compound layout returned non-finite geometry"
+						else if layout.groups.is_empty() {
+							crash "compound layout omitted its root"
 						}
-							else {
-								Fuzz.keep
+							else if !layout.layout.positions.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y)) {
+								crash "compound layout returned non-finite geometry"
 							}
+								else if !layout.layout.routes.all(
+									|route| match route {
+										Line(a, b) => F64.is_finite(a.x) and F64.is_finite(a.y) and F64.is_finite(b.x) and F64.is_finite(b.y)
+										Polyline(points) => points.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y)) and points.fold_with_index(
+											True,
+											|orthogonal, p, i| match points.get(i + 1) {
+												Ok(next) => orthogonal and (p.x == next.x or p.y == next.y)
+												Err(_) => orthogonal
+											},
+										)
+										Curves(_) => False
+									},
+								) {
+									crash "compound routing returned invalid geometry"
+								}
+									else if !layout.groups.drop_first(1).all(|child| child.x >= 0 and child.y >= 0 and child.x + child.width <= layout.layout.bounds.width and child.y + child.height <= layout.layout.bounds.height) {
+										crash "compound root does not contain its children"
+									}
+										else {
+											Fuzz.keep
+										}
 		}
 }
 

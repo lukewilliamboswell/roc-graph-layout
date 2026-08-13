@@ -8,12 +8,15 @@ app [main!] {
 import pf.Path
 import pf.Stdout
 import layout.Constrained
+import layout.Route
 import svg.Svg
 
 ## A release workflow split into responsibility lanes. Fixed y bands keep
 ## work with Product, Engineering, Security, or Operations; x alignments put
 ## concurrent work in the same stage; separations preserve left-to-right
-## progress while stress keeps connected tasks close within those rules.
+## progress while stress keeps connected tasks close within those rules. A
+## separate orthogonal routing pass turns that placement into square lane
+## crossings without making routing a Constrained setting.
 labels = [
 	"Release brief",
 	"Plan approved",
@@ -69,7 +72,7 @@ lane_left = 8
 lane_height : F64
 lane_height = 72
 
-render_lanes = |width| {
+render_lanes = |width, centers| {
 	lane = |name, y, fill| {
 		top = y + padding - lane_height / 2
 		\\<rect x="${lane_left.to_str()}" y="${top.to_str()}" width="${(width - lane_left * 2).to_str()}" height="${lane_height.to_str()}" rx="6" fill="${fill}" />
@@ -77,10 +80,10 @@ render_lanes = |width| {
 	}
 	Str.join_with(
 		[
-			lane("PRODUCT", lane_y.product, "#f8fafc"),
-			lane("ENGINEERING", lane_y.engineering, "#f1f5f9"),
-			lane("SECURITY", lane_y.security, "#f8fafc"),
-			lane("OPERATIONS", lane_y.operations, "#f1f5f9"),
+			lane("PRODUCT", centers.product, "#f8fafc"),
+			lane("ENGINEERING", centers.engineering, "#f1f5f9"),
+			lane("SECURITY", centers.security, "#f8fafc"),
+			lane("OPERATIONS", centers.operations, "#f1f5f9"),
 		],
 		"\n",
 	)
@@ -116,18 +119,17 @@ render_route = |route|
 
 render_svg = |result| {
 	total_width = result.bounds.width + padding * 2
-	total_height = 444
-	lanes = render_lanes(total_width)
+	total_height = result.bounds.height + padding * 2
+	centers = {
+		product: (result.positions.get(0) ?? { x: 0, y: 0 }).y,
+		engineering: (result.positions.get(2) ?? { x: 0, y: 0 }).y,
+		security: (result.positions.get(4) ?? { x: 0, y: 0 }).y,
+		operations: (result.positions.get(7) ?? { x: 0, y: 0 }).y,
+	}
+	lanes = render_lanes(total_width, centers)
 	routes = Str.join_with(result.routes.map(render_route), "\n")
 	node_shapes = Str.join_with(result.positions.map_with_index(|p, i| render_node(p, labels.get(i) ?? "")), "\n")
-	x_shift : F64
-	x_shift = 0 - result.bounds.x
-	graph =
-		\\<g transform="translate(${x_shift.to_str()} 0)">
-		\\${routes}
-		\\${node_shapes}
-		\\</g>
-	Svg.square_document(total_width, total_height, Svg.arrow_marker_defs(arrow_id, "#64748b"), Str.join_with([lanes, graph], "\n"))
+	Svg.square_document(total_width, total_height, Svg.arrow_marker_defs(arrow_id, "#64748b"), Str.join_with([lanes, routes, node_shapes], "\n"))
 }
 
 main! : List(_) => Try({}, _)
@@ -137,12 +139,15 @@ main! = |args| {
 	settings = { ..Constrained.default_settings, node_gap: 36 + runtime_zero }
 	match Constrained.layout(input, settings, { ..Constrained.default_run, seed: 11 }) {
 		Err(problems) => Err(LayoutProblems(problems))
-		Ok(result) => {
-			svg = render_svg(result.layout)
-			output = Path.utf8("examples/release_workflow/output.svg")
-			match output.write_utf8!(svg) {
-				Err(problem) => Err(WriteFailed(problem))
-				Ok({}) => Stdout.line!("Laid out a ${labels.len().to_str()}-step release across four responsibility lanes -> ${Path.display(output)}")
+		Ok(result) => match Route.orthogonal({ ..Route.default_input, graph: { nodes, edges }, positions: result.layout.positions }, Route.default_settings) {
+			Err(problems) => Err(RouteProblems(problems))
+			Ok(routed) => {
+				svg = render_svg(routed.layout)
+				output = Path.utf8("examples/release_workflow/output.svg")
+				match output.write_utf8!(svg) {
+					Err(problem) => Err(WriteFailed(problem))
+					Ok({}) => Stdout.line!("Laid out a ${labels.len().to_str()}-step release across four responsibility lanes -> ${Path.display(output)}")
+				}
 			}
 		}
 	}
