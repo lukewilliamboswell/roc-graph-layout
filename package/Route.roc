@@ -547,13 +547,18 @@ expect {
 expect {
 	input = { ..Route.default_input, graph: { nodes: [{ width: 7, height: 7 }, { width: 7, height: 7 }, { width: 7, height: 7 }, { width: 7, height: 7 }, { width: 7, height: 7 }, { width: 7, height: 7 }, { width: 7, height: 7 }], edges: [{ from: 5, to: 5 }, { from: 0, to: 0 }, { from: 0, to: 0 }, { from: 0, to: 0 }] }, positions: [{ x: 53, y: 53 }, { x: 53, y: 53 }, { x: 53, y: 53 }, { x: 53, y: 53 }, { x: 53, y: 53 }, { x: 53, y: 53 }, { x: 53, y: 53 }] }
 	match Route.orthogonal(input, Route.default_settings) {
-		Ok(result) => result.layout.routes.all(|route| match route {
-			Polyline(points) => points.fold_with_index(True, |ok, a, i| match points.get(i + 1) {
-				Ok(b) => ok and (a.x == b.x or a.y == b.y)
-				Err(_) => ok
-			})
-			_ => False
-		})
+		Ok(result) => result.layout.routes.all(
+			|route| match route {
+				Polyline(points) => points.fold_with_index(
+					True,
+					|ok, a, i| match points.get(i + 1) {
+						Ok(b) => ok and (a.x == b.x or a.y == b.y)
+						Err(_) => ok
+					},
+				)
+				_ => False
+			},
+		)
 		Err(_) => False
 	}
 }
