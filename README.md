@@ -1,10 +1,14 @@
 # roc-graph-layout
 
-A Roc package for graph layout algorithms. Early scaffold — API not yet designed.
+A Roc package for deterministic, renderer-independent graph layout algorithms.
+The API is an early executable scaffold based on [`design.md`](design.md).
 
-Currently exposes a single placeholder module, `Foo`, to validate the package
-structure and CI. Real modules will replace it as the layout algorithms take
-shape.
+The package currently exposes naive deterministic baselines for the four layout
+families: `Tree.tidy`, `Layered.sweep`, `Graph.force`, and
+`Constrained.stress`. The remaining algorithm names and the shared compound,
+packing, overlap, routing, and metrics layers are scaffolded with implementation
+plans in their module documentation. These APIs are intentionally provisional;
+the TODOs describe the path to the build/run witness contract in the design.
 
 ## Tasks
 
