@@ -19,14 +19,14 @@ test = |bytes| {
 	)
 	base = group_spec(Compound.default_group)
 	children = List.repeat(0, count).map_with_index(|_, i| Nested(Group({ ..base, padding: (byte_at(bytes, 34 + i) % 8).to_f64(), children: [Node(i)] })))
-	root = Group({ ..base, children, gap: (byte_at(bytes, 30) % 20).to_f64() })
+	root = Group({ ..base, children, algorithm: Rows({ gap: (byte_at(bytes, 30) % 20).to_f64() }) })
 	edge_count = if count == 0 {
 		0
 	} else {
 		(byte_at(bytes, 31) % 12).to_u64()
 	}
 	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 48 + i * 2).to_u64() % count, to: byte_at(bytes, 49 + i * 2).to_u64() % count })
-	input = { graph: { nodes, edges }, ports: [], port_bindings: [], edge_labels: [], root }
+	input = { graph: { nodes, edges }, ports: [], port_bindings: [], edge_labels: [], root, routing: Compound.default_routing }
 	result = Compound.layout(input, Compound.default_run)
 	repeated = Compound.layout(input, Compound.default_run)
 	match result {

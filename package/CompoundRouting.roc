@@ -3,8 +3,34 @@ import Route
 
 ## Internal portal-leg routing and normalization for Compound.
 CompoundRouting :: {}.{
-	stitch_route : Geom.Route, List({ x : F64, y : F64, width : F64, height : F64 }), List({ width : F64, height : F64 }), List({ x : F64, y : F64 }), { from : U64, to : U64 } -> Geom.Route
-	stitch_route = |route, groups, nodes, positions, edge| {
+	straight_route : U64, { from : U64, to : U64 }, List({ width : F64, height : F64 }), List({ x : F64, y : F64 }), List(Route.Port), List(Route.PortBinding) -> Geom.Route
+	straight_route = |edge_index, edge, nodes, positions, ports, bindings| {
+		point = |endpoint, node, other| match bindings.find_first(|binding| binding.edge == edge_index and binding.endpoint == endpoint) {
+			Ok(binding) => match ports.get(binding.port) {
+				Ok(port) => {
+					center = positions.get(node) ?? { x: 0, y: 0 }
+					size = nodes.get(node) ?? { width: 0, height: 0 }
+					match port.side {
+						Top => { x: center.x - size.width / 2 + size.width * port.offset, y: center.y - size.height / 2 }
+						Right => { x: center.x + size.width / 2, y: center.y - size.height / 2 + size.height * port.offset }
+						Bottom => { x: center.x - size.width / 2 + size.width * port.offset, y: center.y + size.height / 2 }
+						Left => { x: center.x - size.width / 2, y: center.y - size.height / 2 + size.height * port.offset }
+					}
+				}
+				Err(_) => { x: 0, y: 0 }
+			}
+			Err(_) => {
+				center = positions.get(node) ?? { x: 0, y: 0 }
+				size = nodes.get(node) ?? { width: 0, height: 0 }
+				other_center = positions.get(other) ?? center
+				Geom.clip_to_node(center, size, other_center)
+			}
+		}
+		Line(point(From, edge.from, edge.to), point(To, edge.to, edge.from))
+	}
+
+	stitch_route : Geom.Route, List({ x : F64, y : F64, width : F64, height : F64 }), List({ width : F64, height : F64 }), List({ x : F64, y : F64 }), { from : U64, to : U64 }, Route.Settings -> Geom.Route
+	stitch_route = |route, groups, nodes, positions, edge, settings| {
 		points = match route {
 			Line(a, b) => [a, b]
 			Polyline(ps) => ps
@@ -64,7 +90,7 @@ CompoundRouting :: {}.{
 					orthogonal = waypoints.fold_with_index(
 						[],
 						|acc, point, i| match waypoints.get(i + 1) {
-							Ok(next) => acc.concat(CompoundRouting.route_leg(point, next, obstacles, edge.from, edge.to, groups.len()))
+							Ok(next) => acc.concat(CompoundRouting.route_leg(point, next, obstacles, edge.from, edge.to, groups.len(), settings.clearance))
 							Err(_) => acc.append(point)
 						},
 					)
@@ -100,8 +126,8 @@ CompoundRouting :: {}.{
 		{ x: Geom.saturate(inside.x + dx * t), y: Geom.saturate(inside.y + dy * t) }
 	}
 
-	route_leg : { x : F64, y : F64 }, { x : F64, y : F64 }, List({ min_x : F64, min_y : F64, max_x : F64, max_y : F64 }), U64, U64, U64 -> List({ x : F64, y : F64 })
-	route_leg = |from, to, obstacles, from_node, to_node, group_count| {
+	route_leg : { x : F64, y : F64 }, { x : F64, y : F64 }, List({ min_x : F64, min_y : F64, max_x : F64, max_y : F64 }), U64, U64, U64, F64 -> List({ x : F64, y : F64 })
+	route_leg = |from, to, obstacles, from_node, to_node, group_count, clearance| {
 		clear = |points| points.fold_with_index(
 			True,
 			|ok, a, i| match points.get(i + 1) {
@@ -123,7 +149,7 @@ CompoundRouting :: {}.{
 		} else if clear(vh) {
 			vh.drop_last(1)
 		} else {
-			margin = Route.default_settings.clearance
+			margin = clearance
 			top = obstacles.fold(from.y.min(to.y), |value, box| value.min(box.min_y - margin))
 			bottom = obstacles.fold(from.y.max(to.y), |value, box| value.max(box.max_y + margin))
 			left = obstacles.fold(from.x.min(to.x), |value, box| value.min(box.min_x - margin))

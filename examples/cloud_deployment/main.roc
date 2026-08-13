@@ -40,9 +40,8 @@ group_defaults = match Compound.default_group {
 edge_group = Group({
 	..group_defaults,
 	children: [Node(1), Node(2)],
-	algorithm: Columns,
+	algorithm: Columns({ gap: 22 }),
 	padding: 28,
-	gap: 22,
 })
 
 application_group = Group({
@@ -57,17 +56,16 @@ application_group = Group({
 			max_iterations: 200,
 			tolerance: 0.0001,
 		},
+		pins: [],
 	}),
 	padding: 30,
-	gap: 24,
 })
 
 data_group = Group({
 	..group_defaults,
 	children: [Node(5), Node(6)],
-	algorithm: Columns,
+	algorithm: Columns({ gap: 22 }),
 	padding: 28,
-	gap: 22,
 })
 
 root = Group({
@@ -75,7 +73,6 @@ root = Group({
 	children: [Node(0), Nested(edge_group), Nested(application_group), Nested(data_group)],
 	algorithm: LayeredSweep({ settings: { ..Layered.default_settings, node_gap: 34, layer_gap: 72 }, edge_weights: [], min_spans: [] }),
 	padding: 34,
-	routing: Orthogonal,
 })
 
 input : Compound.Input
@@ -85,6 +82,7 @@ input = {
 	port_bindings: [],
 	edge_labels: [],
 	root,
+	routing: Compound.default_routing,
 }
 
 padding = 20

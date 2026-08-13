@@ -16,39 +16,44 @@ Compound := [
 			padding : F64,
 			min_width : F64,
 			min_height : F64,
-			gap : F64,
-			routing : [Straight, Orthogonal],
-			pins : List({ node : U64, x : F64, y : F64 }),
-			bands : List({ axis : [X, Y], nodes : List(U64), low : F64, high : F64 }),
 		},
 	),
 ].{
 
-	## A layout family selected for one group. The selector is deliberately
-	## semantic: implementation-specific helper phases do not appear here.
+	## A layout family selected for one group. Rows and Columns expose only the
+	## gap between adjacent completed children. Other variants reuse their
+	## family's settings. Force, stress, and constrained pins identify global
+	## nodes and use coordinates local to this group. Constrained rules likewise
+	## identify global nodes; the group applies each rule to the direct child
+	## containing that node. Put a rule in the lowest group that owns all of its
+	## referenced nodes.
 	Algorithm : [
-		Rows,
-		Columns,
+		Rows({ gap : F64 }),
+		Columns({ gap : F64 }),
 		LayeredSweep({ settings : Layered.Settings, edge_weights : List({ edge : U64, weight : F64 }), min_spans : List({ edge : U64, span : U64 }) }),
 		LayeredExact({ settings : Layered.ExactSettings, edge_weights : List({ edge : U64, weight : F64 }), min_spans : List({ edge : U64, span : U64 }) }),
 		GraphCircular(Graph.CircularSettings),
-		GraphForce({ settings : { node_gap : F64, repulsion : F64, gravity : F64, opening_angle : F64, max_iterations : U64, tolerance : F64 } }),
-		GraphStress({ settings : { node_gap : F64, mode : [Exact, Pivots(U64)], max_iterations : U64, tolerance : F64 } }),
+		GraphForce({ settings : { node_gap : F64, repulsion : F64, gravity : F64, opening_angle : F64, max_iterations : U64, tolerance : F64 }, pins : List({ node : U64, x : F64, y : F64 }) }),
+		GraphStress({ settings : { node_gap : F64, mode : [Exact, Pivots(U64)], max_iterations : U64, tolerance : F64 }, pins : List({ node : U64, x : F64, y : F64 }) }),
 		GraphRadial({ root : [Auto, Node(U64)], ring_gap : F64, node_gap : F64, start_angle : F64, winding : [Clockwise, CounterClockwise] }),
 		TreeTidy(Tree.Settings),
 		TreeRadial(Tree.RadialSettings),
-		ConstrainedStress({ settings : { node_gap : F64, max_iterations : U64, tolerance : F64 }, constraints : List(Constrained.Constraint) }),
+		ConstrainedStress({ settings : { node_gap : F64, max_iterations : U64, tolerance : F64 }, constraints : List(Constrained.Constraint), pins : List({ node : U64, x : F64, y : F64 }) }),
 	]
 
-	## Routing at one containment level. Straight joins centers through group
-	## boundaries; Orthogonal uses deterministic axis-aligned portal segments.
-	Routing : [Straight, Orthogonal]
+	## Routing for the complete drawing. Straight connects node boundaries
+	## directly. Orthogonal accepts the same visible spacing and path preferences
+	## as `Route.orthogonal` and additionally respects group boundaries.
+	Routing : [Straight, Orthogonal(Route.Settings)]
 
-	## A recursive group. Node references are global node indices. Pins and
-	## bands use coordinates local to this group; an ancestor may translate the
-	## completed group without changing those local relationships.
+	## A recursive group. Node references are global node indices. Padding and
+	## minimum dimensions apply to every algorithm; algorithm-specific data lives
+	## in the selected `Algorithm` variant.
 	GroupSpec : Compound
 
+	## The complete graph, recursive ownership tree, routing choice, and optional
+	## edge attachment/label data. Every graph node must occur exactly once in
+	## `root`. Routing applies after every group has placed its children.
 	Input : {
 		graph : {
 			nodes : List({ width : F64, height : F64 }),
@@ -58,12 +63,16 @@ Compound := [
 		port_bindings : List(Route.PortBinding),
 		edge_labels : List(Route.EdgeLabel),
 		root : Compound,
+		routing : Routing,
 	}
 
 	## The seed selects deterministic variants for force/stress groups. Hints
 	## are global-node aligned; a full finite list seeds child proxy placement.
 	RunArgs : { seed : U32, hints : List({ x : F64, y : F64 }) }
 
+	## All independently detectable input, group, algorithm, constraint, and
+	## routing problems. Group indices use root-first preorder; pin and
+	## constraint indices refer to their algorithm payload lists.
 	Problem : [
 		InvalidNodeWidth(U64),
 		InvalidNodeHeight(U64),
@@ -78,15 +87,15 @@ Compound := [
 		InvalidGap(U64),
 		MissingPin(U64, U64),
 		InvalidPin(U64, U64),
-		MissingBandNode(U64, U64),
-		InvalidBand(U64, U64),
+		MissingConstraintNode(U64, U64, U64),
 		InvalidGroupAlgorithm(U64),
 		InvalidTreeTopology(U64),
-		InvalidRouteMetadata,
-		UnsupportedBands(U64),
-		UnsupportedLayeredMetadata(U64),
+		RouteProblem(Route.Problem),
 	]
 
+	## Index-aligned node and edge geometry plus root-first group rectangles.
+	## The root rectangle equals `layout.bounds` and contains every child group,
+	## route, and label box.
 	Result : {
 		layout : {
 			positions : List({ x : F64, y : F64 }),
@@ -100,22 +109,27 @@ Compound := [
 		port_order_violations : List({ node : U64, before_edge : U64, after_edge : U64 }),
 	}
 
+	## An empty row group with 24 units between children and 16 units of padding.
+	## Replace its fields by record update when building each recursive group.
 	default_group : Compound
 	default_group = Group({
 		children: [],
-		algorithm: Rows,
+		algorithm: Rows({ gap: 24 }),
 		padding: 16,
 		min_width: 0,
 		min_height: 0,
-		gap: 24,
-		routing: Orthogonal,
-		pins: [],
-		bands: [],
 	})
 
-	default_input : Input
-	default_input = { graph: { nodes: [], edges: [] }, ports: [], port_bindings: [], edge_labels: [], root: Compound.default_group }
+	## Default deterministic orthogonal routing. Replace or record-update it on
+	## `Input` when the whole drawing needs different routing.
+	default_routing : Routing
+	default_routing = Orthogonal(Route.default_settings)
 
+	## Empty graph and group with default orthogonal routing.
+	default_input : Input
+	default_input = { graph: { nodes: [], edges: [] }, ports: [], port_bindings: [], edge_labels: [], root: Compound.default_group, routing: Compound.default_routing }
+
+	## Fixed seed and no position hints.
 	default_run : RunArgs
 	default_run = { seed: 0, hints: [] }
 
@@ -124,14 +138,16 @@ Compound := [
 	## retain global node and edge order; group rectangles use root preorder.
 	layout : Input, RunArgs -> [Ok(Result), Err(List(Problem))]
 	layout = |input, args| {
-		problems = Compound.problems(input)
+		problems = CompoundInternals.problems(input)
 		if problems.is_empty() {
-			Ok(Compound.place(input, args))
+			Ok(CompoundInternals.place(input, args))
 		} else {
 			Err(problems)
 		}
 	}
+}
 
+CompoundInternals :: {}.{
 	problems : Input -> List(Problem)
 	problems = |input| {
 		node_count = input.graph.nodes.len()
@@ -165,8 +181,7 @@ Compound := [
 				List.concat(start, end)
 			},
 		).join()
-		has_metadata = !input.ports.is_empty() or !input.port_bindings.is_empty() or !input.edge_labels.is_empty()
-		walked = Compound.check_group(input.root, node_count, input.graph.edges, has_metadata, 0)
+		walked = CompoundInternals.check_group(input.root, node_count, input.graph.edges, 0)
 		membership = List.repeat(0, node_count).map_with_index(
 			|_, node| {
 				count = walked.members.fold(
@@ -186,15 +201,24 @@ Compound := [
 				}
 			},
 		).join()
-		route_problem = match Route.prepare({ graph: input.graph, positions: List.repeat({ x: 0, y: 0 }, node_count), ports: input.ports, port_bindings: input.port_bindings, edge_labels: input.edge_labels }, Route.default_settings) {
+		route_settings = match input.routing {
+			Straight => Route.default_settings
+			Orthogonal(settings) => settings
+		}
+		route_problem = match Route.prepare({ graph: input.graph, positions: List.repeat({ x: 0, y: 0 }, node_count), ports: input.ports, port_bindings: input.port_bindings, edge_labels: input.edge_labels }, route_settings) {
 			Ok(_) => []
-			Err(_) => [InvalidRouteMetadata]
+			Err(problems) => problems.keep_oks(
+				|problem| match problem {
+					InvalidNodeWidth(_) | InvalidNodeHeight(_) | PositionCountMismatch | InvalidPosition(_) | InvalidEdgeFrom(_) | InvalidEdgeTo(_) => Err({})
+					_ => Ok(RouteProblem(problem))
+				},
+			)
 		}
 		[node_problems, edge_problems, walked.problems, membership, route_problem].join()
 	}
 
-	check_group : Compound, U64, List({ from : U64, to : U64 }), Bool, U64 -> { members : List(U64), problems : List(Problem), next : U64 }
-	check_group = |group_value, node_count, edges, has_metadata, group_index| {
+	check_group : Compound, U64, List({ from : U64, to : U64 }), U64 -> { members : List(U64), problems : List(Problem), next : U64 }
+	check_group = |group_value, node_count, edges, group_index| {
 		group = match group_value {
 			Group(spec) => spec
 		}
@@ -214,7 +238,10 @@ Compound := [
 			} else {
 				[InvalidMinimumHeight(group_index)]
 			},
-			if F64.is_finite(group.gap) and group.gap >= 0 {
+			if match group.algorithm {
+				Rows(payload) | Columns(payload) => F64.is_finite(payload.gap) and payload.gap >= 0
+				_ => True
+			} {
 				[]
 			} else {
 				[InvalidGap(group_index)]
@@ -234,12 +261,22 @@ Compound := [
 						{ members: state.members.append(node), problems: List.concat(state.problems, missing), next: state.next }
 					}
 					Nested(nested) => {
-						checked = Compound.check_group(nested, node_count, edges, has_metadata, state.next)
+						checked = CompoundInternals.check_group(nested, node_count, edges, state.next)
 						{ members: List.concat(state.members, checked.members), problems: List.concat(state.problems, checked.problems), next: checked.next }
 					}
 				},
 		)
-		pin_problems = group.pins.map_with_index(
+		pins = match group.algorithm {
+			GraphForce(payload) => payload.pins
+			GraphStress(payload) => payload.pins
+			ConstrainedStress(payload) => payload.pins
+			_ => []
+		}
+		constraints = match group.algorithm {
+			ConstrainedStress(payload) => payload.constraints
+			_ => []
+		}
+		pin_problems = pins.map_with_index(
 			|pin, i|
 				if pin.node >= node_count or !children_checked.members.contains(pin.node) {
 					[MissingPin(group_index, i)]
@@ -249,68 +286,41 @@ Compound := [
 					[]
 				},
 		).join()
-		band_problems = group.bands.map_with_index(
-			|band, i| {
-				invalid = if F64.is_finite(band.low) and F64.is_finite(band.high) and band.low <= band.high {
-					[]
-				} else {
-					[InvalidBand(group_index, i)]
-				}
-				missing = band.nodes.map(
+		constraint_problems = constraints.map_with_index(
+			|constraint, i| {
+				CompoundInternals.constraint_nodes(constraint).map(
 					|node| if node < node_count and children_checked.members.contains(node) {
 						[]
 					} else {
-						[MissingBandNode(group_index, i)]
+						[MissingConstraintNode(group_index, i, node)]
 					},
 				).join()
-				List.concat(invalid, missing)
 			},
 		).join()
-		partitions = group.children.map(|child| Compound.members_of(child))
+		partitions = group.children.map(|child| CompoundInternals.members_of(child))
 		local_edges = edges.keep_oks(
-			|edge| match (Compound.owner_members(partitions, edge.from), Compound.owner_members(partitions, edge.to)) {
+			|edge| match (CompoundInternals.owner_members(partitions, edge.from), CompoundInternals.owner_members(partitions, edge.to)) {
 				(Some(from), Some(to)) if from != to => Ok({ from, to })
 				_ => Err({})
 			},
 		)
 		tree_problem = match group.algorithm {
-			TreeTidy(_) | TreeRadial(_) if !Compound.is_tree(partitions.len(), local_edges) => [InvalidTreeTopology(group_index)]
+			TreeTidy(_) | TreeRadial(_) if !CompoundInternals.is_tree(partitions.len(), local_edges) => [InvalidTreeTopology(group_index)]
 			_ => []
 		}
-		band_support_problem = match group.algorithm {
-			ConstrainedStress(_) => []
-			_ if !group.bands.is_empty() => [UnsupportedBands(group_index)]
-			_ => []
-		}
-		metadata_problem = match group.algorithm {
-			LayeredSweep(_) | LayeredExact(_) if has_metadata => [UnsupportedLayeredMetadata(group_index)]
-			_ => []
-		}
-		local_bands = group.bands.map(
-			|band| {
-				axis: band.axis,
-				nodes: band.nodes.keep_oks(
-					|node| match Compound.owner_members(partitions, node) {
-						Some(owner) => Ok(owner)
-						None => Err({})
-					},
-				),
-				low: band.low,
-				high: band.high,
-			},
-		)
-		algorithm_check = Compound.algorithm_positions(group.algorithm, List.repeat({ width: 0, height: 0 }, partitions.len()), local_edges, group, [], [], local_bands, 0)
+		local_constraints = constraints.keep_oks(|constraint| CompoundInternals.local_constraint(constraint, partitions))
+		algorithm_check = CompoundInternals.algorithm_positions(group.algorithm, List.repeat({ width: 0, height: 0 }, partitions.len()), local_edges, [], [], local_constraints, 0)
 		algorithm_problem = if algorithm_check.valid {
 			[]
 		} else {
 			[InvalidGroupAlgorithm(group_index)]
 		}
-		{ members: children_checked.members, problems: [children_checked.problems, pin_problems, band_problems, tree_problem, band_support_problem, metadata_problem, algorithm_problem].join(), next: children_checked.next }
+		{ members: children_checked.members, problems: [children_checked.problems, pin_problems, constraint_problems, tree_problem, algorithm_problem].join(), next: children_checked.next }
 	}
 
 	place : Input, RunArgs -> Result
 	place = |input, args| {
-		placed = Compound.place_group(input.root, input.graph.nodes, input.graph.edges, args.hints, args.seed, 0)
+		placed = CompoundInternals.place_group(input.root, input.graph.nodes, input.graph.edges, args.hints, args.seed, 0)
 		root_spec = match input.root {
 			Group(spec) => spec
 		}
@@ -323,36 +333,29 @@ Compound := [
 				}
 			},
 		)
-		straight_routes = input.graph.edges.map(
-			|edge| {
-				from = positions.get(edge.from) ?? { x: 0, y: 0 }
-				to = positions.get(edge.to) ?? { x: 0, y: 0 }
-				if root_spec.routing == Orthogonal and from.x != to.x and from.y != to.y {
-					Polyline([from, { x: to.x, y: from.y }, to])
-				} else {
-					Line(from, to)
+		straight_routes = input.graph.edges.map_with_index(|edge, edge_index| CompoundRouting.straight_route(edge_index, edge, input.graph.nodes, positions, input.ports, input.port_bindings))
+		routed = match input.routing {
+			Orthogonal(settings) if !input.graph.nodes.is_empty() =>
+				match Route.orthogonal({ graph: input.graph, positions, ports: input.ports, port_bindings: input.port_bindings, edge_labels: input.edge_labels }, settings) {
+					Ok(result) => { positions: result.layout.positions, routes: result.layout.routes, bounds: result.layout.bounds, label_anchors: result.label_anchors }
+					Err(_) => { positions, routes: straight_routes, bounds: placed.rect, label_anchors: [] }
 				}
-			},
-		)
-		routed = if root_spec.routing == Orthogonal and !input.graph.nodes.is_empty() {
-			match Route.orthogonal({ graph: input.graph, positions, ports: input.ports, port_bindings: input.port_bindings, edge_labels: input.edge_labels }, Route.default_settings) {
-				Ok(result) => { positions: result.layout.positions, routes: result.layout.routes, bounds: result.layout.bounds, label_anchors: result.label_anchors }
-				Err(_) => { positions, routes: straight_routes, bounds: placed.rect, label_anchors: [] }
-			}
-		} else {
-			{ positions, routes: straight_routes, bounds: placed.rect, label_anchors: [] }
+			_ => { positions, routes: straight_routes, bounds: placed.rect, label_anchors: [] }
 		}
 		shift = match (positions.first(), routed.positions.first()) {
 			(Ok(before), Ok(after)) => { x: after.x - before.x, y: after.y - before.y }
 			_ => { x: 0, y: 0 }
 		}
 		placed_groups = placed.groups.map(|rect| { x: rect.x + shift.x, y: rect.y + shift.y, width: rect.width, height: rect.height })
-		stitched_routes = routed.routes.map_with_index(
-			|route, edge_index| {
-				edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
-				CompoundRouting.stitch_route(route, placed_groups.drop_first(1), input.graph.nodes, routed.positions, edge)
-			},
-		)
+		stitched_routes = match input.routing {
+			Straight => routed.routes
+			Orthogonal(settings) => routed.routes.map_with_index(
+				|route, edge_index| {
+					edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
+					CompoundRouting.stitch_route(route, placed_groups.drop_first(1), input.graph.nodes, routed.positions, edge, settings)
+				},
+			)
+		}
 		raw_label_anchors = input.edge_labels.map(|label| CompoundRouting.route_midpoint(stitched_routes.get(label.edge) ?? Polyline([])))
 		extent = CompoundRouting.drawing_extent(placed.rect, shift, root_spec.padding, input.graph.nodes, routed.positions, stitched_routes, input.edge_labels, raw_label_anchors)
 		normalize = { x: 0 - extent.x, y: 0 - extent.y }
@@ -367,7 +370,7 @@ Compound := [
 			},
 		)
 		label_anchors = raw_label_anchors.map(move_point)
-		violations = Compound.port_violations(input.graph.edges, input.ports, input.port_bindings, routed.positions)
+		violations = CompoundInternals.port_violations(input.graph.edges, input.ports, input.port_bindings, routed.positions)
 		{ layout: { positions: positions_final, routes: routes_final, bounds: { x: 0, y: 0, width: extent.width, height: extent.height } }, groups, label_anchors, port_order_violations: violations }
 	}
 
@@ -435,15 +438,15 @@ Compound := [
 						{ nodes: [{ node, x: size.width / 2, y: size.height / 2 }], groups: [], members: [node], width: size.width, height: size.height }
 					}
 					Nested(nested) => {
-						child_placed = Compound.place_group(nested, sizes, edges, hints, seed, depth + 1)
+						child_placed = CompoundInternals.place_group(nested, sizes, edges, hints, seed, depth + 1)
 						{ nodes: child_placed.nodes, groups: child_placed.groups, members: child_placed.nodes.map(|p| p.node), width: child_placed.rect.width, height: child_placed.rect.height }
 					}
 				},
 		)
 		local_edges = edges.keep_oks(
 			|edge| {
-				from = Compound.owner_index(items, edge.from)
-				to = Compound.owner_index(items, edge.to)
+				from = CompoundInternals.owner_index(items, edge.from)
+				to = CompoundInternals.owner_index(items, edge.to)
 				match (from, to) {
 					(Some(a), Some(b)) if a != b => Ok({ from: a, to: b })
 					_ => Err({})
@@ -451,32 +454,31 @@ Compound := [
 			},
 		)
 		proxy_nodes = items.map(|item| { width: item.width, height: item.height })
-		local_hints = items.map(|item| Compound.member_hint(item.members, hints))
-		local_pins = group.pins.keep_oks(
-			|pin| match Compound.owner_index(items, pin.node) {
+		local_hints = items.map(|item| CompoundInternals.member_hint(item.members, hints))
+		pins = match group.algorithm {
+			GraphForce(payload) => payload.pins
+			GraphStress(payload) => payload.pins
+			ConstrainedStress(payload) => payload.pins
+			_ => []
+		}
+		constraints = match group.algorithm {
+			ConstrainedStress(payload) => payload.constraints
+			_ => []
+		}
+		local_pins = pins.keep_oks(
+			|pin| match CompoundInternals.owner_index(items, pin.node) {
 				Some(node) => Ok({ node, x: pin.x, y: pin.y })
 				None => Err({})
 			},
 		)
-		local_bands = group.bands.map(
-			|band| {
-				axis: band.axis,
-				nodes: band.nodes.keep_oks(
-					|node| match Compound.owner_index(items, node) {
-						Some(owner) => Ok(owner)
-						None => Err({})
-					},
-				),
-				low: band.low,
-				high: band.high,
-			},
-		)
+		partitions = items.map(|item| item.members)
+		local_constraints = constraints.keep_oks(|constraint| CompoundInternals.local_constraint(constraint, partitions))
 		usable_hints = if hints.len() == sizes.len() and local_hints.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y)) {
 			local_hints
 		} else {
 			[]
 		}
-		proxy_positions = Compound.algorithm_positions(group.algorithm, proxy_nodes, local_edges, group, usable_hints, local_pins, local_bands, seed).positions
+		proxy_positions = CompoundInternals.algorithm_positions(group.algorithm, proxy_nodes, local_edges, usable_hints, local_pins, local_constraints, seed).positions
 		laid = items.map_with_index(
 			|item, i| {
 				position = proxy_positions.get(i) ?? { x: item.width / 2, y: item.height / 2 }
@@ -504,12 +506,12 @@ Compound := [
 		{ nodes: centered_nodes, groups: List.concat([root_rect], centered_children), rect: root_rect }
 	}
 
-	algorithm_positions : Compound.Algorithm, List({ width : F64, height : F64 }), List({ from : U64, to : U64 }), { gap : F64, .. }, List({ x : F64, y : F64 }), List({ node : U64, x : F64, y : F64 }), List({ axis : [X, Y], nodes : List(U64), low : F64, high : F64 }), U32 -> { positions : List({ x : F64, y : F64 }), valid : Bool }
-	algorithm_positions = |algorithm, nodes, edges, group, hints, pins, bands, seed| {
-		fallback = |vertical| Compound.linear_positions(nodes, group.gap, vertical)
+	algorithm_positions : Compound.Algorithm, List({ width : F64, height : F64 }), List({ from : U64, to : U64 }), List({ x : F64, y : F64 }), List({ node : U64, x : F64, y : F64 }), List(Constrained.Constraint), U32 -> { positions : List({ x : F64, y : F64 }), valid : Bool }
+	algorithm_positions = |algorithm, nodes, edges, hints, pins, constraints, seed| {
+		fallback = |vertical| CompoundInternals.linear_positions(nodes, 24, vertical)
 		match algorithm {
-			Rows => { positions: fallback(False), valid: True }
-			Columns => { positions: fallback(True), valid: True }
+			Rows(payload) => { positions: CompoundInternals.linear_positions(nodes, payload.gap, False), valid: True }
+			Columns(payload) => { positions: CompoundInternals.linear_positions(nodes, payload.gap, True), valid: True }
 			LayeredSweep(payload) =>
 				match Layered.layout({ graph: { nodes, edges }, edge_weights: payload.edge_weights, min_spans: payload.min_spans, ports: [], port_bindings: [], edge_labels: [] }, payload.settings, { hints: hints }) {
 					Ok(result) => { positions: result.layout.positions, valid: True }
@@ -545,30 +547,29 @@ Compound := [
 					Err(_) => { positions: fallback(False), valid: False }
 				}
 			TreeTidy(settings) => {
-				if !Compound.is_tree(nodes.len(), edges) {
+				if !CompoundInternals.is_tree(nodes.len(), edges) {
 					{ positions: fallback(False), valid: False }
 				} else {
-					root = Compound.tree_root(nodes.len(), edges)
-					match Tree.layout(Compound.tree_from(root, nodes, edges), settings) {
-						Ok(result) => { positions: Compound.unorder_tree(result.layout.positions, Compound.tree_preorder(root, edges), nodes.len()), valid: True }
+					root = CompoundInternals.tree_root(nodes.len(), edges)
+					match Tree.layout(CompoundInternals.tree_from(root, nodes, edges), settings) {
+						Ok(result) => { positions: CompoundInternals.unorder_tree(result.layout.positions, CompoundInternals.tree_preorder(root, edges), nodes.len()), valid: True }
 						Err(_) => { positions: fallback(False), valid: False }
 					}
 				}
 			}
 			TreeRadial(settings) => {
-				if !Compound.is_tree(nodes.len(), edges) {
+				if !CompoundInternals.is_tree(nodes.len(), edges) {
 					{ positions: fallback(False), valid: False }
 				} else {
-					root = Compound.tree_root(nodes.len(), edges)
-					match Tree.layout_radial(Compound.tree_from(root, nodes, edges), settings) {
-						Ok(result) => { positions: Compound.unorder_tree(result.layout.positions, Compound.tree_preorder(root, edges), nodes.len()), valid: True }
+					root = CompoundInternals.tree_root(nodes.len(), edges)
+					match Tree.layout_radial(CompoundInternals.tree_from(root, nodes, edges), settings) {
+						Ok(result) => { positions: CompoundInternals.unorder_tree(result.layout.positions, CompoundInternals.tree_preorder(root, edges), nodes.len()), valid: True }
 						Err(_) => { positions: fallback(False), valid: False }
 					}
 				}
 			}
 			ConstrainedStress(payload) => {
 				settings = { node_gap: payload.settings.node_gap, max_iterations: payload.settings.max_iterations, tolerance: payload.settings.tolerance, pins }
-				constraints = List.concat(payload.constraints, bands.map(|band| Inside(band)))
 				match Constrained.layout({ graph: { nodes, edges }, constraints }, settings, { seed, hints }) {
 					Ok(result) => { positions: result.layout.positions, valid: True }
 					Err(_) => { positions: fallback(False), valid: False }
@@ -600,7 +601,48 @@ Compound := [
 	members_of : [Node(U64), Nested(Compound)] -> List(U64)
 	members_of = |child| match child {
 		Node(node) => [node]
-		Nested(Group(spec)) => spec.children.map(|nested| Compound.members_of(nested)).join()
+		Nested(Group(spec)) => spec.children.map(|nested| CompoundInternals.members_of(nested)).join()
+	}
+
+	constraint_nodes : Constrained.Constraint -> List(U64)
+	constraint_nodes = |constraint| match constraint {
+		Separate(payload) => [payload.first, payload.second]
+		Align(payload) => payload.nodes
+		Inside(payload) => payload.nodes
+	}
+
+	local_constraint : Constrained.Constraint, List(List(U64)) -> [Ok(Constrained.Constraint), Err({})]
+	local_constraint = |constraint, partitions| match constraint {
+		Separate(payload) => match (CompoundInternals.owner_members(partitions, payload.first), CompoundInternals.owner_members(partitions, payload.second)) {
+			(Some(first), Some(second)) => Ok(Separate({ ..payload, first, second }))
+			_ => Err({})
+		}
+		Align(payload) => {
+			nodes = payload.nodes.keep_oks(
+				|node| match CompoundInternals.owner_members(partitions, node) {
+					Some(owner) => Ok(owner)
+					None => Err({})
+				},
+			)
+			if nodes.len() == payload.nodes.len() {
+				Ok(Align({ nodes, axis: payload.axis }))
+			} else {
+				Err({})
+			}
+		}
+		Inside(payload) => {
+			nodes = payload.nodes.keep_oks(
+				|node| match CompoundInternals.owner_members(partitions, node) {
+					Some(owner) => Ok(owner)
+					None => Err({})
+				},
+			)
+			if nodes.len() == payload.nodes.len() {
+				Ok(Inside({ ..payload, nodes }))
+			} else {
+				Err({})
+			}
+		}
 	}
 
 	owner_members : List(List(U64)), U64 -> [Some(U64), None]
@@ -634,11 +676,11 @@ Compound := [
 	tree_from : U64, List({ width : F64, height : F64 }), List({ from : U64, to : U64 }) -> Tree.Spec
 	tree_from = |node, nodes, edges| {
 		size = nodes.get(node) ?? { width: 0, height: 0 }
-		{ width: size.width, height: size.height, children: edges.keep_if(|edge| edge.from == node).map(|edge| Compound.tree_from(edge.to, nodes, edges)) }
+		{ width: size.width, height: size.height, children: edges.keep_if(|edge| edge.from == node).map(|edge| CompoundInternals.tree_from(edge.to, nodes, edges)) }
 	}
 
 	tree_preorder : U64, List({ from : U64, to : U64 }) -> List(U64)
-	tree_preorder = |node, edges| [node].concat(edges.keep_if(|edge| edge.from == node).map(|edge| Compound.tree_preorder(edge.to, edges)).join())
+	tree_preorder = |node, edges| [node].concat(edges.keep_if(|edge| edge.from == node).map(|edge| CompoundInternals.tree_preorder(edge.to, edges)).join())
 
 	unorder_tree : List({ x : F64, y : F64 }), List(U64), U64 -> List({ x : F64, y : F64 })
 	unorder_tree = |positions, order, count| List.repeat({ x: 0, y: 0 }, count).map_with_index(
@@ -674,15 +716,48 @@ expect Compound.layout(Compound.default_input, Compound.default_run) == Ok({
 	port_order_violations: [],
 })
 
+## Routing settings are validated through the shared Route vocabulary instead
+## of being collapsed into one opaque metadata problem.
+expect {
+	input = { ..Compound.default_input, routing: Orthogonal({ ..Route.default_settings, clearance: 0 - 1.0 }) }
+	Compound.layout(input, Compound.default_run) == Err([RouteProblem(InvalidClearance)])
+}
+
+## Row and column spacing belongs to the algorithms that consume it.
+expect {
+	base = match Compound.default_group {
+		Group(spec) => spec
+	}
+	root = Group({ ..base, algorithm: Rows({ gap: 0 - 1.0 }) })
+	match Compound.layout({ ..Compound.default_input, root }, Compound.default_run) {
+		Err(problems) => problems.contains(InvalidGap(0))
+		Ok(_) => False
+	}
+}
+
 ## Membership is exact: missing and duplicate nodes are both reported.
 expect {
 	base = match Compound.default_group {
 		Group(spec) => spec
 	}
 	group = Group({ ..base, children: [Node(0), Node(0)] })
-	input = { graph: { nodes: [{ width: 2, height: 2 }, { width: 2, height: 2 }], edges: [] }, ports: [], port_bindings: [], edge_labels: [], root: group }
+	input = { graph: { nodes: [{ width: 2, height: 2 }, { width: 2, height: 2 }], edges: [] }, ports: [], port_bindings: [], edge_labels: [], root: group, routing: Orthogonal(Route.default_settings) }
 	match Compound.layout(input, Compound.default_run) {
 		Err(problems) => problems.contains(DuplicateMember(0)) and problems.contains(MissingMember(1))
+		Ok(_) => False
+	}
+}
+
+## Constraint references use global node identities and report the exact
+## group, constraint, and missing node.
+expect {
+	base = match Compound.default_group {
+		Group(spec) => spec
+	}
+	root = Group({ ..base, children: [Node(0)], algorithm: ConstrainedStress({ settings: { node_gap: 1, max_iterations: 10, tolerance: 0.001 }, constraints: [Align({ axis: X, nodes: [0, 1] })], pins: [] }) })
+	input = { ..Compound.default_input, graph: { nodes: [{ width: 1, height: 1 }], edges: [] }, root, routing: Straight }
+	match Compound.layout(input, Compound.default_run) {
+		Err(problems) => problems.contains(MissingConstraintNode(0, 0, 1))
 		Ok(_) => False
 	}
 }
@@ -696,8 +771,8 @@ expect {
 	left = Group({ ..base, padding: 4, children: [Node(0)] })
 	middle = Group({ ..base, padding: 20, children: [Node(1)] })
 	right = Group({ ..base, padding: 4, children: [Node(2)] })
-	root = Group({ ..base, padding: 4, gap: 8, children: [Nested(left), Nested(middle), Nested(right)], algorithm: Rows })
-	input = { graph: { nodes: List.repeat({ width: 10, height: 10 }, 3), edges: [{ from: 0, to: 2 }] }, ports: [], port_bindings: [], edge_labels: [], root }
+	root = Group({ ..base, padding: 4, children: [Nested(left), Nested(middle), Nested(right)], algorithm: Rows({ gap: 8 }) })
+	input = { graph: { nodes: List.repeat({ width: 10, height: 10 }, 3), edges: [{ from: 0, to: 2 }] }, ports: [], port_bindings: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
 	match Compound.layout(input, Compound.default_run) {
 		Ok(result) => match (result.groups.get(2), result.layout.routes.get(0)) {
 			(Ok(rect), Ok(route)) => {
@@ -726,8 +801,8 @@ expect {
 	left = Group({ ..base, padding: 4, children: [Node(0)] })
 	middle = Group({ ..base, padding: 20, children: [Node(1)] })
 	right = Group({ ..base, padding: 4, children: [Node(2)] })
-	root = Group({ ..base, padding: 4, gap: 8, children: [Nested(left), Nested(middle), Nested(right)], algorithm: Rows })
-	input = { graph: { nodes: List.repeat({ width: 10, height: 10 }, 3), edges: [{ from: 0, to: 2 }] }, ports: [], port_bindings: [], edge_labels: [], root }
+	root = Group({ ..base, padding: 4, children: [Nested(left), Nested(middle), Nested(right)], algorithm: Rows({ gap: 8 }) })
+	input = { graph: { nodes: List.repeat({ width: 10, height: 10 }, 3), edges: [{ from: 0, to: 2 }] }, ports: [], port_bindings: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
 	match Compound.layout(input, Compound.default_run) {
 		Ok(result) => match result.groups.first() {
 			Ok(outer) => result.groups.drop_first(1).all(|child| child.x >= outer.x and child.y >= outer.y and child.x + child.width <= outer.x + outer.width and child.y + child.height <= outer.y + outer.height) and outer == result.layout.bounds
@@ -737,19 +812,18 @@ expect {
 	}
 }
 
-## Bands are never ignored: unsupported families reject them, while
-## constrained stress consumes them as local Inside rules.
+## Domain constraints exist only on constrained stress. Their node references
+## use global identities and are projected onto this group's direct children.
 expect {
 	base = match Compound.default_group {
 		Group(spec) => spec
 	}
-	band = { axis: X, nodes: [0], low: 0, high: 10 }
-	rows = Group({ ..base, children: [Node(0)], bands: [band] })
-	constrained = Group({ ..base, children: [Node(0)], bands: [band], algorithm: ConstrainedStress({ settings: { node_gap: 1, max_iterations: 10, tolerance: 0.001 }, constraints: [] }) })
-	input = { graph: { nodes: [{ width: 1, height: 1 }], edges: [] }, ports: [], port_bindings: [], edge_labels: [], root: rows }
-	match (Compound.layout(input, Compound.default_run), Compound.layout({ ..input, root: constrained }, Compound.default_run)) {
-		(Err(problems), Ok(_)) => problems.contains(UnsupportedBands(0))
-		_ => False
+	band = Inside({ axis: X, nodes: [0], low: 0, high: 10 })
+	constrained = Group({ ..base, children: [Node(0)], algorithm: ConstrainedStress({ settings: { node_gap: 1, max_iterations: 10, tolerance: 0.001 }, constraints: [band], pins: [] }) })
+	input = { graph: { nodes: [{ width: 1, height: 1 }], edges: [] }, ports: [], port_bindings: [], edge_labels: [], root: constrained, routing: Straight }
+	match Compound.layout(input, Compound.default_run) {
+		Ok(_) => True
+		Err(_) => False
 	}
 }
 
@@ -760,7 +834,7 @@ expect {
 	}
 	child = Group({ ..base, padding: 2, children: [Node(0)] })
 	root = Group({ ..base, children: [Nested(child), Node(1)] })
-	input = { graph: { nodes: List.repeat({ width: 2, height: 2 }, 2), edges: [{ from: 0, to: 1 }] }, ports: [], port_bindings: [], edge_labels: [], root }
+	input = { graph: { nodes: List.repeat({ width: 2, height: 2 }, 2), edges: [{ from: 0, to: 1 }] }, ports: [], port_bindings: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
 	match Compound.layout(input, Compound.default_run) {
 		Ok(result) => match (result.groups.get(1), result.layout.routes.get(0)) {
 			(Ok(rect), Ok(Polyline(points))) => points.any(|point| point.x == rect.x or point.x == rect.x + rect.width or point.y == rect.y or point.y == rect.y + rect.height)
@@ -775,16 +849,24 @@ expect {
 	base = match Compound.default_group {
 		Group(spec) => spec
 	}
-	root = Group({ ..base, children: [Node(0), Node(1), Node(2)], routing: Straight })
+	root = Group({ ..base, children: [Node(0), Node(1), Node(2)] })
 	input = {
 		graph: { nodes: List.repeat({ width: 2, height: 2 }, 3), edges: [{ from: 0, to: 2 }, { from: 0, to: 1 }] },
 		ports: [{ node: 0, side: Top, offset: 0 }, { node: 0, side: Top, offset: 1 }],
 		port_bindings: [{ edge: 0, endpoint: From, port: 0 }, { edge: 1, endpoint: From, port: 1 }],
 		edge_labels: [],
 		root,
+		routing: Straight,
 	}
 	match Compound.layout(input, Compound.default_run) {
-		Ok(result) => result.port_order_violations == [{ node: 0, before_edge: 0, after_edge: 1 }]
+		Ok(result) => {
+			from = result.layout.positions.get(0) ?? { x: 0, y: 0 }
+			first_uses_port = match result.layout.routes.get(0) {
+				Ok(Line(start, _)) => start == { x: from.x - 1, y: from.y - 1 }
+				_ => False
+			}
+			first_uses_port and result.port_order_violations == [{ node: 0, before_edge: 0, after_edge: 1 }]
+		}
 		Err(_) => False
 	}
 }
@@ -796,7 +878,7 @@ expect {
 		Group(spec) => spec
 	}
 	root = Group({ ..base, children: [Node(0)], algorithm: GraphCircular({ ..Graph.default_circular_settings, node_gap: -1 }) })
-	input = { graph: { nodes: [{ width: 1, height: 1 }], edges: [] }, ports: [], port_bindings: [], edge_labels: [], root }
+	input = { graph: { nodes: [{ width: 1, height: 1 }], edges: [] }, ports: [], port_bindings: [], edge_labels: [], root, routing: Straight }
 	match Compound.layout(input, Compound.default_run) {
 		Err(problems) => problems.contains(InvalidGroupAlgorithm(0))
 		Ok(_) => False
@@ -810,7 +892,7 @@ expect {
 		Group(spec) => spec
 	}
 	root = Group({ ..base, children: [Node(0), Node(1)], algorithm: TreeTidy(Tree.default_settings) })
-	input = { graph: { nodes: List.repeat({ width: 1, height: 1 }, 2), edges: [] }, ports: [], port_bindings: [], edge_labels: [], root }
+	input = { graph: { nodes: List.repeat({ width: 1, height: 1 }, 2), edges: [] }, ports: [], port_bindings: [], edge_labels: [], root, routing: Straight }
 	match Compound.layout(input, Compound.default_run) {
 		Err(problems) => problems.contains(InvalidTreeTopology(0))
 		Ok(_) => False
@@ -824,7 +906,7 @@ expect {
 	}
 	child = Group({ ..base, padding: 2, children: [Node(1)] })
 	root = Group({ ..base, padding: 3, children: [Node(0), Nested(child)] })
-	input = { graph: { nodes: [{ width: 4, height: 4 }, { width: 6, height: 2 }], edges: [{ from: 0, to: 1 }] }, ports: [], port_bindings: [], edge_labels: [], root }
+	input = { graph: { nodes: [{ width: 4, height: 4 }, { width: 6, height: 2 }], edges: [{ from: 0, to: 1 }] }, ports: [], port_bindings: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
 	match Compound.layout(input, Compound.default_run) {
 		Ok(result) => result.layout.positions.len() == 2 and result.layout.routes.len() == 1 and result.groups.len() == 2 and result.groups.get(0) == Ok(result.layout.bounds)
 		Err(_) => False
