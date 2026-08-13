@@ -131,22 +131,26 @@ Quadtree :: {}.{
 	## further points instead of splitting.
 	insert_at : List(Cell), U64, U64, F64, F64, U64 -> List(Cell)
 	insert_at = |cells, cell_idx, point_idx, x, y, depth| {
+		# Every update index is established from this store or from the four
+		# children just appended to it. The empty fallbacks are unreachable;
+		# unlike `?? cells`, they do not retain an alias to the growing store
+		# and force `List.set` to copy it on every recursive update.
 		cell = cells.get(cell_idx) ?? Quadtree.empty_cell(0, 0, 0)
 		first_child = cell.children.get(0) ?? Quadtree.no_index
 		if cell.mass == 0 {
 			# Empty leaf: the point takes up residence.
 			claimed = { ..cell, mass: 1, com_x: x, com_y: y, point: point_idx }
-			cells.set(cell_idx, claimed) ?? cells
+			cells.set(cell_idx, claimed) ?? []
 		} else if first_child != Quadtree.no_index {
 			# Internal cell: fold the point into the aggregate, descend.
 			q = Quadtree.quadrant_of(cell, x, y)
 			child_idx = cell.children.get(q) ?? Quadtree.no_index
-			updated = cells.set(cell_idx, Quadtree.absorb(cell, x, y)) ?? cells
+			updated = cells.set(cell_idx, Quadtree.absorb(cell, x, y)) ?? []
 			Quadtree.insert_at(updated, child_idx, point_idx, x, y, depth + 1)
 		} else if depth >= Quadtree.depth_cap {
 			# Occupied leaf at the depth cap: coincident or near-coincident
 			# points aggregate here rather than splitting forever.
-			cells.set(cell_idx, Quadtree.absorb(cell, x, y)) ?? cells
+			cells.set(cell_idx, Quadtree.absorb(cell, x, y)) ?? []
 		} else {
 			# Occupied leaf below the cap: split into four children, move
 			# the resident point down (a mass-1 leaf's com is that point,
@@ -171,9 +175,9 @@ Quadtree :: {}.{
 				point: cell.point,
 			}
 			split =
-				(with_children.set(cell_idx, as_internal) ?? with_children)
+				(with_children.set(cell_idx, as_internal) ?? [])
 					.set(old_child_idx, resident)
-					?? with_children
+					?? []
 			Quadtree.insert_at(split, cell_idx, point_idx, x, y, depth)
 		}
 	}

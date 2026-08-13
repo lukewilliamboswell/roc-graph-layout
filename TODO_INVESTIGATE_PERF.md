@@ -48,6 +48,21 @@ making normal benchmark runs unusable.
 
 ## H1: Force refinement loses unique ownership of node-sized lists
 
+**Status (2026-08-14): narrowed and mitigated.** Focused rewrites of the
+spring accumulator and position construction did not materially change
+requested bytes, refuting those two suspected call sites. The dominant alias
+was in `Quadtree.insert_at`: `List.set(...) ?? cells` retained the pre-update
+flat cell store through recursive insertion and forced repeated copies. Using
+an unreachable empty fallback preserved geometry while reducing the 3,000-node
+star from 2,395,816,472 to 148,846,040 requested bytes (93.8%) and about 322 ms
+to 30 ms on the reference setup. Allocation remained deterministic and the
+native smoke suite passed.
+
+The remaining growth is still superlinear because recursive insertion updates
+the growing flat cell store at every visited tree level. Treat a different
+quadtree construction strategy as a separate follow-up; H1's proposed force
+fold ownership mechanism is resolved.
+
 **Hypothesis.** A force refinement iteration repeatedly copies one or more
 node-sized lists. In particular, the position fold both captures the original
 `positions` list and threads `st.positions`, while the spring fold performs two
