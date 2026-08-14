@@ -45,7 +45,7 @@ jobs:
           VERSION: ${{ steps.release.outputs.release_version }}
         run: |
           roc scripts/bundle.roc dist
-          ROC_DOCS_URL_ROOT="/${{ github.event.repository.name }}/docs/$VERSION" roc docs package/main.roc --output generated-docs
+          ROC_DOCS_URL_ROOT="/${{ github.event.repository.name }}/docs/$VERSION" roc docs package/main.roc --output=generated-docs
           sed -i "s/<html lang=\"en\">/<html lang=\"en\" data-release=\"$VERSION\">/" playground/www/index.html
           tar -czf docs.tar.gz -C generated-docs .
       - name: Prepare package bundle metadata
