@@ -15,13 +15,13 @@
 <rect x="8" y="305" width="1068.2244376353744" height="72" rx="6" fill="#f1f5f9" />
 <text x="18" y="323" font-family="sans-serif" font-size="12" font-weight="600" fill="#475569">OPERATIONS</text>
 <polyline points="139.99999999999997,41 173.99999999999997,41" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<polyline points="257.5,58 348.5,58 348.5,124 356.5,124" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<polyline points="244.74999999999997,58 244.74999999999997,216 369.25,216 369.25,224" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="290,41 316,41 316,141 324,141" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="231.99999999999997,58 231.99999999999997,216 382,216 382,224" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
 <polyline points="440,141 493.66465507534815,141" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<polyline points="551.6646550753482,158 551.6646550753482,224" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="551.6646550753482,158 551.6646550753482,166 548.6646550753482,166 548.6646550753482,224" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
 <polyline points="440,241 493.66465507534815,241" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<polyline points="564.4146550753482,224 564.4146550753482,216 688.9146550753482,216 688.9146550753482,58" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<polyline points="710.1646550753482,58 710.1646550753482,66 843.1646550753482,66 843.1646550753482,324" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="554.6646550753482,224 554.6646550753482,216 698.6646550753482,216 698.6646550753482,58" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="704.6646550753482,58 704.6646550753482,66 851.6646550753482,66 851.6646550753482,324" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
 <polyline points="909.6646550753482,341 944.2244376353744,341" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
 <rect x="23.99999999999997" y="24" width="116" height="34" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
 <text x="81.99999999999997" y="41" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Release brief</text>
