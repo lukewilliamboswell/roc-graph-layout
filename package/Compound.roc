@@ -48,8 +48,10 @@ Compound := [
 
 	## Routing for the complete drawing. Straight connects node boundaries
 	## directly. Orthogonal accepts the same visible spacing and path preferences
-	## as `Route.layout` and additionally respects group boundaries. Routes cross
-	## attached group sides perpendicularly and do not follow the group outline.
+	## as `Route.layout` and additionally reserves parent-layout corridor space
+	## from cross-group edge demand. Every crossed group boundary receives one
+	## perpendicular portal; sparse group attachments override its side or exact
+	## position.
 	Routing : [Straight, Orthogonal(Route.Settings)]
 
 	## A caller-visible item used by a layered group rule. Nodes use global graph
@@ -215,6 +217,74 @@ Compound := [
 }
 
 CompoundInternals :: {}.{
+	zero_count : U64
+	zero_count = 0
+
+	routing_load : Compound, List({ from : U64, to : U64 }) -> U64
+	routing_load = |group_value, edges| {
+		members = CompoundInternals.members_of(Nested(group_value))
+		edges.keep_if(|edge| members.contains(edge.from) != members.contains(edge.to)).len()
+	}
+
+	reserve_algorithm_corridor : Compound.Algorithm, F64 -> Compound.Algorithm
+	reserve_algorithm_corridor = |algorithm, amount| if amount == 0 {
+		algorithm
+	} else {
+		match algorithm {
+			Rows(payload) => Rows({ gap: payload.gap + amount })
+			Columns(payload) => Columns({ gap: payload.gap + amount })
+			LayeredSweep(payload) => LayeredSweep({ ..payload, settings: { ..payload.settings, layer_gap: payload.settings.layer_gap + amount } })
+			LayeredExact(payload) => LayeredExact({ ..payload, settings: { ..payload.settings, layer_gap: payload.settings.layer_gap + amount } })
+			GraphCircular(settings) => GraphCircular({ ..settings, node_gap: settings.node_gap + amount })
+			GraphForce(payload) => GraphForce({ ..payload, settings: { ..payload.settings, node_gap: payload.settings.node_gap + amount } })
+			GraphStress(payload) => GraphStress({ ..payload, settings: { ..payload.settings, node_gap: payload.settings.node_gap + amount } })
+			GraphRadial(payload) => GraphRadial({ ..payload, node_gap: payload.node_gap + amount })
+			TreeTidy(settings) => TreeTidy({ ..settings, sibling_gap: settings.sibling_gap + amount, subtree_gap: settings.subtree_gap + amount, level_gap: settings.level_gap + amount })
+			TreeRadial(settings) => TreeRadial({ ..settings, sibling_gap: settings.sibling_gap + amount, subtree_gap: settings.subtree_gap + amount, ring_gap: settings.ring_gap + amount })
+			ConstrainedStress(payload) => ConstrainedStress({ ..payload, settings: { ..payload.settings, node_gap: payload.settings.node_gap + amount } })
+		}
+	}
+
+	reserve_routing : Compound, List({ from : U64, to : U64 }), Route.Settings -> Compound
+	reserve_routing = |group_value, edges, settings| {
+		group = match group_value {
+			Group(spec) => spec
+		}
+		children = group.children.map(
+			|child| match child {
+				Node(node) => Node(node)
+				Nested(nested) => Nested(CompoundInternals.reserve_routing(nested, edges, settings))
+			},
+		)
+		max_child_load = children.fold(
+			0,
+			|largest, child| match child {
+				Node(_) => largest
+				Nested(nested) => largest.max(CompoundInternals.routing_load(nested, edges))
+			},
+		)
+		own_load = CompoundInternals.routing_load(group_value, edges)
+		corridor : F64
+		corridor = if max_child_load == CompoundInternals.zero_count {
+			0
+		} else {
+			settings.obstacle_gap + max_child_load.to_f64() * settings.edge_gap
+		}
+		capacity : F64
+		capacity = if own_load == CompoundInternals.zero_count {
+			0
+		} else {
+			(own_load + 1).to_f64() * settings.edge_gap
+		}
+		Group({
+			..group,
+			children,
+			algorithm: CompoundInternals.reserve_algorithm_corridor(group.algorithm, corridor),
+			min_width: group.min_width.max(capacity),
+			min_height: group.min_height.max(capacity),
+		})
+	}
+
 	problems : Input -> List(Problem)
 	problems = |input| {
 		node_count = input.graph.nodes.len()
@@ -528,8 +598,12 @@ CompoundInternals :: {}.{
 
 	place : Input, RunArgs -> Result
 	place = |input, args| {
-		placed = CompoundInternals.place_group(input.root, input.graph.nodes, input.graph.edges, args.hints, args.seed, 0)
-		root_spec = match input.root {
+		prepared_root = match input.routing {
+			Straight => input.root
+			Orthogonal(settings) => CompoundInternals.reserve_routing(input.root, input.graph.edges, settings)
+		}
+		placed = CompoundInternals.place_group(prepared_root, input.graph.nodes, input.graph.edges, args.hints, args.seed, 0)
+		root_spec = match prepared_root {
 			Group(spec) => spec
 		}
 		positions = List.repeat({ x: 0, y: 0 }, input.graph.nodes.len()).map_with_index(

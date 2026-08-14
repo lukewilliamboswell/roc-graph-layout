@@ -149,7 +149,7 @@ run_layout = |mode, draft, config| {
 	}
 }
 
-route_settings = { obstacle_gap: 8, bend_penalty: 16, shared_path_penalty: 4, edge_gap: 6 }
+route_settings = { ..Layered.default_settings.routing, obstacle_gap: 8, bend_penalty: 16, shared_path_penalty: 4, edge_gap: 6 }
 
 make_drawing = |doc, layout_, groups| { labels: doc.labels, nodes: doc.graph.nodes, routes: layout_.routes, positions: layout_.positions, bounds: layout_.bounds, groups, result: geometry_str(layout_) }
 
@@ -157,7 +157,7 @@ layout_error = |errors| Err(["Layout rejected the input or settings (${errors.le
 
 run_layered = |doc, config| {
 	input_ = { ..Layered.default_input, graph: doc.graph }
-	settings = { node_gap: config.node_gap, layer_gap: config.layer_gap, routing: route_settings, direction: config.direction, max_sweeps: config.sweeps }
+	settings = { ..Layered.default_settings, node_gap: config.node_gap, layer_gap: config.layer_gap, routing: route_settings, direction: config.direction, max_sweeps: config.sweeps }
 	match Layered.layout(input_, settings, Layered.default_run) {
 		Err(errors) => Err(errors.map(Layered.problem_to_str))
 		Ok(result) => Ok(make_drawing(doc, result.layout, []))

@@ -77,24 +77,24 @@ input : Compound.Input
 input = {
 	graph: { nodes, edges },
 	attachments: [
-		{ edge: 4, endpoint: From, attachment: Fixed({ side: Right, offset: 0.30 }) },
-		{ edge: 5, endpoint: From, attachment: Fixed({ side: Right, offset: 0.52 }) },
-		{ edge: 6, endpoint: From, attachment: Fixed({ side: Right, offset: 0.76 }) },
+		{ edge: 4, endpoint: From, attachment: On(Right) },
+		{ edge: 5, endpoint: From, attachment: On(Right) },
+		{ edge: 6, endpoint: From, attachment: On(Right) },
 	],
 	boundaries: [],
 	# Groups use root-first preorder: PRODUCTION=0, EDGE=1,
-	# APPLICATION=2, DATA=3. Distinct side offsets reserve intentional portals
-	# for traffic that crosses those boundaries.
+	# APPLICATION=2, DATA=3. Side-only attachments leave port order and spacing
+	# to the router while retaining the diagram's left-to-right flow.
 	group_attachments: [
-		{ edge: 0, group: 1, attachment: Fixed({ side: Left, offset: 0.55 }) },
-		{ edge: 2, group: 1, attachment: Fixed({ side: Right, offset: 0.55 }) },
-		{ edge: 2, group: 2, attachment: Fixed({ side: Left, offset: 0.42 }) },
-		{ edge: 4, group: 2, attachment: Fixed({ side: Right, offset: 0.36 }) },
-		{ edge: 4, group: 3, attachment: Fixed({ side: Left, offset: 0.38 }) },
-		{ edge: 5, group: 2, attachment: Fixed({ side: Right, offset: 0.58 }) },
-		{ edge: 5, group: 3, attachment: Fixed({ side: Left, offset: 0.72 }) },
-		{ edge: 8, group: 2, attachment: Fixed({ side: Right, offset: 0.78 }) },
-		{ edge: 8, group: 3, attachment: Fixed({ side: Left, offset: 0.52 }) },
+		{ edge: 0, group: 1, attachment: On(Left) },
+		{ edge: 2, group: 1, attachment: On(Right) },
+		{ edge: 2, group: 2, attachment: On(Left) },
+		{ edge: 4, group: 2, attachment: On(Right) },
+		{ edge: 4, group: 3, attachment: On(Left) },
+		{ edge: 5, group: 2, attachment: On(Right) },
+		{ edge: 5, group: 3, attachment: On(Left) },
+		{ edge: 8, group: 2, attachment: On(Right) },
+		{ edge: 8, group: 3, attachment: On(Left) },
 	],
 	edge_labels: [
 		{ edge: 0, width: 42, height: 16, placement: Center },

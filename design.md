@@ -914,15 +914,14 @@ parallel-edge fanning and self-loop stubs are the universal default
 ([Data model](#data-model)); bound ports replace the clip point, and label boxes keep their
 clearance ([Data model](#data-model)). Above that, an orthogonal router works over any
 placement: build
-an axis-aligned visibility structure over the node boxes, route each
-edge by shortest path with a per-bend penalty, process edges in
-deterministic order with a congestion cost so bundles spread, then
-nudge coincident segments apart into parallel tracks. Routing over a
-fixed placement — rather than jointly optimizing placement and routes —
-is a deliberate boundary: joint optimization is a research-grade
-pipeline with brittle quality cliffs, while routing-over-placement
-composes with every algorithm and covers the diagrams that actually want
-orthogonal edges (boxes-and-arrows over layered placement). A bend
+an axis-aligned visibility structure over the node boxes, assign flexible
+ports in crossing-minimizing order, choose initial paths for every edge,
+then run a bounded deterministic improvement sweep before nudging coincident
+segments into parallel tracks. `Route` remains placement-independent and does
+not move caller geometry. `Compound`, which owns placement, feeds busy group
+sides back as proxy spacing so parent algorithms reserve usable corridors.
+This keeps the geometric family boundary while avoiding the quality cliff of
+forcing routing alone to compensate for insufficient inter-group space. A bend
 should exist only to avoid a node or to merge a reading; the bend
 penalty is that principle made into arithmetic.
 
