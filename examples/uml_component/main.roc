@@ -48,10 +48,10 @@ input = {
 	edge_labels: label_specs,
 	# Group indices are root-first: CLIENT=1, SERVICES=2, DATA=3.
 	group_attachments: [
-		{ edge: 0, group: 1, attachment: Fixed({ side: Right, offset: 0.55 }) },
-		{ edge: 0, group: 2, attachment: Fixed({ side: Left, offset: 0.38 }) },
-		{ edge: 2, group: 2, attachment: Fixed({ side: Right, offset: 0.70 }) },
-		{ edge: 2, group: 3, attachment: Fixed({ side: Left, offset: 0.55 }) },
+		{ edge: 0, group: 1, attachment: On(Right) },
+		{ edge: 0, group: 2, attachment: On(Left) },
+		{ edge: 2, group: 2, attachment: On(Right) },
+		{ edge: 2, group: 3, attachment: On(Left) },
 	],
 	root,
 	routing: Compound.default_routing,

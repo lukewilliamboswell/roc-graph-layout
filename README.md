@@ -33,10 +33,13 @@ displacement, for comparing layouts by measurement).
 
 `Route.layout` adds deterministic orthogonal routes to any already-positioned
 graph. It searches rectilinear corridors around sized nodes and unrelated
-groups, accepts sparse automatic, side-only, or fixed endpoint attachments,
-places size-only edge labels, and reports the selected attachments and group
-boundary crossings in source order. Layered and Compound use this router by
-default.
+groups, jointly distributes flexible ports, revisits interacting routes, and
+nudges shared corridors into stable lanes. `Automatic` chooses a side and
+position, `On(side)` fixes only the side, and `Fixed` preserves an exact
+offset. Every containment boundary receives one perpendicular portal, with
+sparse group attachments acting as overrides. Selected attachments and group
+crossings remain source-aligned. Layered and Compound use this router by
+default; Compound also reserves extra parent-layout space for busy boundaries.
 
 ## Example
 

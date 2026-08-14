@@ -11,6 +11,27 @@ binary, and one fresh process per sample. Times are useful for scale trends but
 will vary by machine. Allocation counts and requested-byte growth are the more
 important signals here.
 
+## Routing-quality pipeline control (2026-08-14)
+
+Native optimized `route run generated disjoint` measurements after flexible
+portal assignment, bounded joint sweeps, and lane nudging:
+
+| edges | elapsed | allocation calls | requested bytes | peak extra bytes |
+|---:|---:|---:|---:|---:|
+| 100 | 7.0 ms | 717 | 2.62 MB | 30.8 KB |
+| 300 | 31.5 ms | 2,117 | 31.4 MB | 83.6 KB |
+| 1,000 | 233.9 ms | 7,017 | 371.3 MB | 279.6 KB |
+
+The disjoint control confirmed bounded live memory and roughly linear
+allocation-call growth, but cumulative requested bytes remain superlinear.
+Replacing per-endpoint side-bucket reconstruction with flat node-side count and
+rank tables reduced the 1,000-edge control from 9,015 to 7,017 allocation calls
+and from 250.8 ms to 233.9 ms; it did not materially change requested bytes.
+That narrows the remaining traffic to repeated route/segment list construction,
+including the current lane peer scans, rather than portal counting. A future
+phase-level control should isolate nudging from visibility routing before naming
+the dominant source.
+
 ## Reproducing the measurements
 
 Set `ROC` to the compiler pinned by `.roc-version`, build the harness by running
