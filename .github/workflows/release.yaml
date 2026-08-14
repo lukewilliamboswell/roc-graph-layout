@@ -38,8 +38,6 @@ jobs:
         with:
           version: nightly-new-compiler
           nightly-tag: ${{ env.ROC_NIGHTLY_TAG }}
-      - name: Verify release source
-        run: ROC=roc roc scripts/all.roc
       - name: Build release assets
         env:
           VERSION: ${{ steps.release.outputs.release_version }}
@@ -52,7 +50,7 @@ jobs:
         uses: roc-lang/release-package/actions/prepare-bundles@af2f0cd8662874b825ff3917f4286e793ba18c55
         with:
           bundle_glob: dist/*.tar.zst
-          test_os_json: '[]'
+          test_os_json: '["ubuntu-latest"]'
       - name: Assemble versioned Pages site
         env:
           GH_TOKEN: ${{ github.token }}
