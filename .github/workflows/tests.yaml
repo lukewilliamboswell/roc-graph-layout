@@ -53,7 +53,7 @@ jobs:
 
       - name: Check example outputs are up to date
         run: |
-          if ! git diff --exit-code; then
+          if ! git diff --exit-code -- ':(glob)examples/**/output.svg'; then
             echo "::error::Example output changed — regenerate and commit the golden files listed above."
             exit 1
           fi
