@@ -2,6 +2,7 @@ app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/re
 
 import fuzz.Fuzz
 import Layered
+import Route
 
 byte_at : List(U8), U64 -> U8
 byte_at = |bytes, index| bytes.get(index) ?? 0
@@ -35,11 +36,7 @@ test = |bytes| {
 		..Layered.default_settings,
 		node_gap: (byte_at(bytes, 45) % 32).to_f64(),
 		layer_gap: (byte_at(bytes, 46) % 64).to_f64(),
-		route_style: if byte_at(bytes, 47) % 2 == 0 {
-			Straight
-		} else {
-			Curved
-		},
+		routing: { ..Route.default_settings, bend_penalty: (byte_at(bytes, 47) % 32).to_f64() },
 	}
 
 	match Layered.prepare(input, settings) {

@@ -31,6 +31,13 @@ for forests and disconnected components), `Overlap` (minimal-movement overlap
 removal), and `Metrics` (crossings, bends, stress, separation violations, and
 displacement, for comparing layouts by measurement).
 
+`Route.layout` adds deterministic orthogonal routes to any already-positioned
+graph. It searches rectilinear corridors around sized nodes and unrelated
+groups, accepts sparse automatic, side-only, or fixed endpoint attachments,
+places size-only edge labels, and reports the selected attachments and group
+boundary crossings in source order. Layered and Compound use this router by
+default.
+
 ## Example
 
 ```roc

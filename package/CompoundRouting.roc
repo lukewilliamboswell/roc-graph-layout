@@ -1,23 +1,28 @@
 import Geom
 import Route
 
-## Internal portal-leg routing and normalization for Compound.
+## Internal straight-route and normalization utilities for Compound.
 CompoundRouting :: {}.{
-	straight_route : U64, { from : U64, to : U64 }, List({ width : F64, height : F64 }), List({ x : F64, y : F64 }), List(Route.Port), List(Route.PortBinding) -> Geom.Route
-	straight_route = |edge_index, edge, nodes, positions, ports, bindings| {
-		point = |endpoint, node, other| match bindings.find_first(|binding| binding.edge == edge_index and binding.endpoint == endpoint) {
-			Ok(binding) => match ports.get(binding.port) {
-				Ok(port) => {
-					center = positions.get(node) ?? { x: 0, y: 0 }
-					size = nodes.get(node) ?? { width: 0, height: 0 }
-					match port.side {
-						Top => { x: center.x - size.width / 2 + size.width * port.offset, y: center.y - size.height / 2 }
-						Right => { x: center.x + size.width / 2, y: center.y - size.height / 2 + size.height * port.offset }
-						Bottom => { x: center.x - size.width / 2 + size.width * port.offset, y: center.y + size.height / 2 }
-						Left => { x: center.x - size.width / 2, y: center.y - size.height / 2 + size.height * port.offset }
+	straight_route : U64, { from : U64, to : U64 }, List({ width : F64, height : F64 }), List({ x : F64, y : F64 }), List(Route.AttachmentRule) -> Geom.Route
+	straight_route = |edge_index, edge, nodes, positions, attachments| {
+		point = |endpoint, node, other| match attachments.find_first(|rule| rule.edge == edge_index and rule.endpoint == endpoint) {
+			Ok(rule) => {
+				center = positions.get(node) ?? { x: 0, y: 0 }
+				size = nodes.get(node) ?? { width: 0, height: 0 }
+				attachment = match rule.attachment {
+					Fixed(payload) => payload
+					On(side) => { side, offset: 0.5 }
+					Automatic => { side: Top, offset: 0.5 }
+				}
+				match rule.attachment {
+					Automatic => Geom.clip_to_node(center, size, positions.get(other) ?? center)
+					_ => match attachment.side {
+						Top => { x: center.x - size.width / 2 + size.width * attachment.offset, y: center.y - size.height / 2 }
+						Right => { x: center.x + size.width / 2, y: center.y - size.height / 2 + size.height * attachment.offset }
+						Bottom => { x: center.x - size.width / 2 + size.width * attachment.offset, y: center.y + size.height / 2 }
+						Left => { x: center.x - size.width / 2, y: center.y - size.height / 2 + size.height * attachment.offset }
 					}
 				}
-				Err(_) => { x: 0, y: 0 }
 			}
 			Err(_) => {
 				center = positions.get(node) ?? { x: 0, y: 0 }
@@ -90,7 +95,7 @@ CompoundRouting :: {}.{
 					orthogonal = waypoints.fold_with_index(
 						[],
 						|acc, point, i| match waypoints.get(i + 1) {
-							Ok(next) => acc.concat(CompoundRouting.route_leg(point, next, obstacles, edge.from, edge.to, groups.len(), settings.clearance))
+							Ok(next) => acc.concat(CompoundRouting.route_leg(point, next, obstacles, edge.from, edge.to, groups.len(), settings.obstacle_gap))
 							Err(_) => acc.append(point)
 						},
 					)

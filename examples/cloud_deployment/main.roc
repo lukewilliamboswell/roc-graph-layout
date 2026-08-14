@@ -78,8 +78,7 @@ root = Group({
 input : Compound.Input
 input = {
 	graph: { nodes, edges },
-	ports: [],
-	port_bindings: [],
+	attachments: [],
 	edge_labels: [],
 	root,
 	routing: Compound.default_routing,

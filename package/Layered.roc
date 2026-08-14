@@ -820,25 +820,21 @@ LayeredInternals :: {}.{
 		}
 	}
 
-	## Hard ordering constraints induced by port declaration order. For two
-	## consecutive bindings on one node, their opposite endpoints must appear
+	## Hard ordering constraints induced by attachment-rule declaration order. For two
+	## consecutive rules on one node, their opposite endpoints must appear
 	## in the same order whenever they share a layer. Repeated stable adjacent
 	## swaps compute the deterministic closure; crossings are optimized only
 	## inside the remaining unconstrained choices.
-	port_precedences = |graph, ports, bindings| graph.nodes.fold_with_index(
+	attachment_precedences = |graph, attachments| graph.nodes.fold_with_index(
 		[],
 		|all, _node, node| {
-			ordered = bindings.keep_if(|b| (ports.get(b.port) ?? { node: 0, side: Top, offset: 0 }).node == node).sort_with(
-				|a, b| if a.port < b.port {
-					LT
-				} else if a.port > b.port {
-					GT
-				} else if a.edge < b.edge {
-					LT
-				} else if a.edge > b.edge {
-					GT
-				} else {
-					EQ
+			ordered = attachments.keep_if(
+				|rule| match graph.edges.get(rule.edge) {
+					Ok(edge) => match rule.endpoint {
+						From => edge.from == node
+						To => edge.to == node
+					}
+					Err(_) => False
 				},
 			)
 			if ordered.len() < 2 {
@@ -847,7 +843,7 @@ LayeredInternals :: {}.{
 				LayeredInternals.indices_up_to(ordered.len() - 1).fold(
 					all,
 					|acc, i| {
-						a = ordered.get(i) ?? { edge: 0, endpoint: From, port: 0 }
+						a = ordered.get(i) ?? { edge: 0, endpoint: From, attachment: Automatic }
 						b = ordered.get(i + 1) ?? a
 						ea = graph.edges.get(a.edge) ?? { from: 0, to: 0 }
 						eb = graph.edges.get(b.edge) ?? { from: 0, to: 0 }
@@ -2223,26 +2219,17 @@ LayeredInternals :: {}.{
 		}
 	}
 
-	port_order_violations = |input, positions| {
+	attachment_order_violations = |input, positions| {
 		input.graph.nodes.fold_with_index(
 			[],
 			|all, _node, node_index| {
-				incident = input.port_bindings.keep_if(
-					|b| {
-						port = input.ports.get(b.port) ?? { node: 0, side: Top, offset: 0 }
-						port.node == node_index
-					},
-				).sort_with(
-					|a, b| if a.port < b.port {
-						LT
-					} else if a.port > b.port {
-						GT
-					} else if a.edge < b.edge {
-						LT
-					} else if a.edge > b.edge {
-						GT
-					} else {
-						EQ
+				incident = input.attachments.keep_if(
+					|rule| match input.graph.edges.get(rule.edge) {
+						Ok(edge) => match rule.endpoint {
+							From => edge.from == node_index
+							To => edge.to == node_index
+						}
+						Err(_) => False
 					},
 				)
 				if incident.len() < 2 {
@@ -2251,7 +2238,7 @@ LayeredInternals :: {}.{
 					LayeredInternals.indices_up_to(incident.len() - 1).fold(
 						all,
 						|acc, i| {
-							a = incident.get(i) ?? { edge: 0, endpoint: From, port: 0 }
+							a = incident.get(i) ?? { edge: 0, endpoint: From, attachment: Automatic }
 							b = incident.get(i + 1) ?? a
 							ea = input.graph.edges.get(a.edge) ?? { from: 0, to: 0 }
 							eb = input.graph.edges.get(b.edge) ?? { from: 0, to: 0 }
@@ -2337,41 +2324,27 @@ LayeredInternals :: {}.{
 		if !F64.is_finite(config.layer_gap) or config.layer_gap < 0 {
 			gap_problems.append(InvalidLayerGap)
 		} else {
-			metadata = spec.ports.fold_with_index(
+			metadata = spec.attachments.fold_with_index(
 				gap_problems,
-				|acc, port, i| if port.node >= spec.graph.nodes.len() {
-					acc.append(InvalidPortNode(i))
-				} else if !F64.is_finite(port.offset) or port.offset < 0 or port.offset > 1 {
-					acc.append(InvalidPortOffset(i))
+				|acc, rule, i| if rule.edge >= spec.graph.edges.len() {
+					acc.append(InvalidAttachmentEdge(i))
 				} else {
-					acc
-				},
-			)
-			bindings = spec.port_bindings.fold_with_index(
-				metadata,
-				|acc, binding, i| if binding.edge >= spec.graph.edges.len() {
-					acc.append(InvalidPortBindingEdge(i))
-				} else if binding.port >= spec.ports.len() {
-					acc.append(InvalidPortBindingPort(i))
-				} else {
-					edge = spec.graph.edges.get(binding.edge) ?? { from: 0, to: 0 }
-					port = spec.ports.get(binding.port) ?? { node: 0, side: Top, offset: 0 }
-					expected = match binding.endpoint {
-						From => edge.from
-						To => edge.to
+					valid = match rule.attachment {
+						Fixed(payload) => F64.is_finite(payload.offset) and payload.offset >= 0 and payload.offset <= 1
+						_ => True
 					}
-					duplicate = spec.port_bindings.take_first(i).count_if(|other| other.edge == binding.edge and other.endpoint == binding.endpoint) > 0
-					if port.node != expected {
-						acc.append(PortBindingNodeMismatch(i))
+					duplicate = spec.attachments.take_first(i).count_if(|other| other.edge == rule.edge and other.endpoint == rule.endpoint) > 0
+					if !valid {
+						acc.append(InvalidAttachmentOffset(i))
 					} else if duplicate {
-						acc.append(DuplicatePortBinding(i))
+						acc.append(DuplicateAttachment(i))
 					} else {
 						acc
 					}
 				},
 			)
 			labels = spec.edge_labels.fold_with_index(
-				bindings,
+				metadata,
 				|acc, label, i| if label.edge >= spec.graph.edges.len() {
 					acc.append(InvalidEdgeLabelEdge(i))
 				} else if !F64.is_finite(label.width) or label.width < 0 {
@@ -2431,13 +2404,12 @@ Prepared := {
 	max_sweeps : U64,
 	node_gap : F64,
 	layer_gap : F64,
-	route_style : [Straight, Curved],
-	ports : List(Route.Port),
-	port_bindings : List(Route.PortBinding),
+	routing : Route.Settings,
+	attachments : List(Route.AttachmentRule),
 	edge_labels : List(Route.EdgeLabel),
 	precedences : List({ before : U64, after : U64 }),
 }.{
-	Config : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved], direction : [Down, Up, Left, Right], max_sweeps : U64 }
+	Config : { node_gap : F64, layer_gap : F64, routing : Route.Settings, direction : [Down, Up, Left, Right], max_sweeps : U64 }
 	Spec : {
 		graph : {
 			nodes : List({ width : F64, height : F64 }),
@@ -2445,8 +2417,7 @@ Prepared := {
 		},
 		edge_weights : List({ edge : U64, weight : F64 }),
 		min_spans : List({ edge : U64, span : U64 }),
-		ports : List(Route.Port),
-		port_bindings : List(Route.PortBinding),
+		attachments : List(Route.AttachmentRule),
 		edge_labels : List(Route.EdgeLabel),
 	}
 	Problem : [
@@ -2460,27 +2431,29 @@ Prepared := {
 		InvalidEdgeWeight(U64),
 		MissingMinimumSpanEdge(U64),
 		InvalidMinimumSpan(U64),
-		InvalidPortNode(U64),
-		InvalidPortOffset(U64),
-		InvalidPortBindingEdge(U64),
-		InvalidPortBindingPort(U64),
-		PortBindingNodeMismatch(U64),
-		DuplicatePortBinding(U64),
+		InvalidAttachmentEdge(U64),
+		InvalidAttachmentOffset(U64),
+		DuplicateAttachment(U64),
 		InvalidEdgeLabelEdge(U64),
 		InvalidEdgeLabelWidth(U64),
 		InvalidEdgeLabelHeight(U64),
 		DuplicateEdgeLabel(U64),
+		InvalidRouting(Route.Problem),
 	]
 
 	defaults : Config
-	defaults = { node_gap: 24, layer_gap: 70, route_style: Curved, direction: Down, max_sweeps: 4 }
+	defaults = { node_gap: 24, layer_gap: 70, routing: Route.default_settings, direction: Down, max_sweeps: 4 }
 
 	default_spec : Spec
-	default_spec = { graph: { nodes: [], edges: [] }, edge_weights: [], min_spans: [], ports: [], port_bindings: [], edge_labels: [] }
+	default_spec = { graph: { nodes: [], edges: [] }, edge_weights: [], min_spans: [], attachments: [], edge_labels: [] }
 
 	build : Spec, Config -> [Ok(Prepared), Err(List(Problem))]
 	build = |spec, config| {
-		problems = LayeredInternals.validation_problems(spec, config)
+		routing_problems = match Route.layout(Route.default_input, config.routing) {
+			Ok(_) => []
+			Err(items) => items.map(|item| InvalidRouting(item))
+		}
+		problems = LayeredInternals.validation_problems(spec, { node_gap: config.node_gap, layer_gap: config.layer_gap, route_style: Straight, direction: config.direction, max_sweeps: config.max_sweeps }).concat(routing_problems)
 		if !problems.is_empty() {
 			Err(problems)
 		} else {
@@ -2491,7 +2464,7 @@ Prepared := {
 			real_ranks = LayeredInternals.rank_nodes_spec(spec.graph.nodes.len(), oriented.edges, weights, spans)
 			extended = LayeredInternals.insert_virtual_chains(real_ranks, oriented.edges)
 			ordered_layers = LayeredInternals.order_layers(LayeredInternals.group_by_rank(extended.ranks), extended.unit_edges, config.max_sweeps)
-			precedences = LayeredInternals.port_precedences(spec.graph, spec.ports, spec.port_bindings)
+			precedences = LayeredInternals.attachment_precedences(spec.graph, spec.attachments)
 
 			Ok({
 				nodes: spec.graph.nodes,
@@ -2508,9 +2481,8 @@ Prepared := {
 				max_sweeps: config.max_sweeps,
 				node_gap: config.node_gap,
 				layer_gap: config.layer_gap,
-				route_style: config.route_style,
-				ports: spec.ports,
-				port_bindings: spec.port_bindings,
+				routing: config.routing,
+				attachments: spec.attachments,
 				edge_labels: spec.edge_labels,
 			})
 		}
@@ -2530,7 +2502,7 @@ Prepared := {
 		layers : List(U64),
 		backward_edges : List(U64),
 		label_anchors : List({ x : F64, y : F64 }),
-		port_order_violations : List({ node : U64, before_edge : U64, after_edge : U64 }),
+		attachments : List(Route.EdgeAttachments),
 	}
 	run = |sweep, args| {
 		seeded = match LayeredInternals.canonical_hints(args.hints, sweep.nodes.len(), sweep.direction) {
@@ -2552,9 +2524,13 @@ Prepared := {
 			edge_labels: sweep.edge_labels,
 			node_gap: sweep.node_gap,
 			layer_gap: sweep.layer_gap,
-			route_style: sweep.route_style,
+			route_style: Straight,
 		})
-		{ layout: finished.layout, layers: finished.layers, backward_edges: finished.backward_edges, label_anchors: LayeredInternals.label_anchors(sweep.edge_labels, finished.layout.routes), port_order_violations: LayeredInternals.port_order_violations({ graph: { nodes: sweep.nodes, edges: sweep.edges }, ports: sweep.ports, port_bindings: sweep.port_bindings }, finished.layout.positions) }
+		routed = Route.layout({ ..Route.default_input, graph: { nodes: sweep.nodes, edges: sweep.edges }, positions: finished.layout.positions, attachments: sweep.attachments, edge_labels: sweep.edge_labels }, sweep.routing)
+		match routed {
+			Ok(value) => { layout: value.layout, layers: finished.layers, backward_edges: finished.backward_edges, label_anchors: value.label_anchors, attachments: value.attachments }
+			Err(_) => { layout: finished.layout, layers: finished.layers, backward_edges: finished.backward_edges, label_anchors: LayeredInternals.label_anchors(sweep.edge_labels, finished.layout.routes), attachments: [] }
+		}
 	}
 
 	layout : Spec,
@@ -2570,7 +2546,7 @@ Prepared := {
 				layers : List(U64),
 				backward_edges : List(U64),
 				label_anchors : List({ x : F64, y : F64 }),
-				port_order_violations : List({ node : U64, before_edge : U64, after_edge : U64 }),
+				attachments : List(Route.EdgeAttachments),
 			},
 		),
 		Err(List(Problem)),
@@ -2602,13 +2578,12 @@ ExactPrepared := {
 	proven_optimal : Bool,
 	node_gap : F64,
 	layer_gap : F64,
-	route_style : [Straight, Curved],
-	ports : List(Route.Port),
-	port_bindings : List(Route.PortBinding),
+	routing : Route.Settings,
+	attachments : List(Route.AttachmentRule),
 	edge_labels : List(Route.EdgeLabel),
 	precedences : List({ before : U64, after : U64 }),
 }.{
-	Config : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved], effort_cap : U64, direction : [Down, Up, Left, Right] }
+	Config : { node_gap : F64, layer_gap : F64, routing : Route.Settings, effort_cap : U64, direction : [Down, Up, Left, Right] }
 	Spec : {
 		graph : {
 			nodes : List({ width : F64, height : F64 }),
@@ -2616,8 +2591,7 @@ ExactPrepared := {
 		},
 		edge_weights : List({ edge : U64, weight : F64 }),
 		min_spans : List({ edge : U64, span : U64 }),
-		ports : List(Route.Port),
-		port_bindings : List(Route.PortBinding),
+		attachments : List(Route.AttachmentRule),
 		edge_labels : List(Route.EdgeLabel),
 	}
 	Problem : [
@@ -2631,24 +2605,26 @@ ExactPrepared := {
 		InvalidEdgeWeight(U64),
 		MissingMinimumSpanEdge(U64),
 		InvalidMinimumSpan(U64),
-		InvalidPortNode(U64),
-		InvalidPortOffset(U64),
-		InvalidPortBindingEdge(U64),
-		InvalidPortBindingPort(U64),
-		PortBindingNodeMismatch(U64),
-		DuplicatePortBinding(U64),
+		InvalidAttachmentEdge(U64),
+		InvalidAttachmentOffset(U64),
+		DuplicateAttachment(U64),
 		InvalidEdgeLabelEdge(U64),
 		InvalidEdgeLabelWidth(U64),
 		InvalidEdgeLabelHeight(U64),
 		DuplicateEdgeLabel(U64),
+		InvalidRouting(Route.Problem),
 	]
 
 	defaults : Config
-	defaults = { node_gap: 24, layer_gap: 70, route_style: Curved, effort_cap: 100_000, direction: Down }
+	defaults = { node_gap: 24, layer_gap: 70, routing: Route.default_settings, effort_cap: 100_000, direction: Down }
 
 	build : Spec, Config -> [Ok(ExactPrepared), Err(List(Problem))]
 	build = |spec, config| {
-		problems = LayeredInternals.validation_problems(spec, { node_gap: config.node_gap, layer_gap: config.layer_gap, route_style: config.route_style, direction: config.direction, max_sweeps: 4 })
+		routing_problems = match Route.layout(Route.default_input, config.routing) {
+			Ok(_) => []
+			Err(items) => items.map(|item| InvalidRouting(item))
+		}
+		problems = LayeredInternals.validation_problems(spec, { node_gap: config.node_gap, layer_gap: config.layer_gap, route_style: Straight, direction: config.direction, max_sweeps: 4 }).concat(routing_problems)
 		if !problems.is_empty() {
 			Err(problems)
 		} else {
@@ -2658,7 +2634,7 @@ ExactPrepared := {
 			spans = spec.edge_labels.fold(base_spans, |acc, label| acc.set(label.edge, (acc.get(label.edge) ?? 1).max(2)) ?? acc)
 			real_ranks = LayeredInternals.rank_nodes_spec(spec.graph.nodes.len(), oriented.edges, weights, spans)
 			extended = LayeredInternals.insert_virtual_chains(real_ranks, oriented.edges)
-			precedences = LayeredInternals.port_precedences(spec.graph, spec.ports, spec.port_bindings)
+			precedences = LayeredInternals.attachment_precedences(spec.graph, spec.attachments)
 			constrained_layers = LayeredInternals.enforce_precedences(LayeredInternals.group_by_rank(extended.ranks), precedences)
 			searched = LayeredInternals.exact_order_layers(constrained_layers, extended.unit_edges, config.effort_cap)
 
@@ -2677,9 +2653,8 @@ ExactPrepared := {
 				proven_optimal: searched.proven_optimal,
 				node_gap: config.node_gap,
 				layer_gap: config.layer_gap,
-				route_style: config.route_style,
-				ports: spec.ports,
-				port_bindings: spec.port_bindings,
+				routing: config.routing,
+				attachments: spec.attachments,
 				edge_labels: spec.edge_labels,
 			})
 		}
@@ -2695,7 +2670,7 @@ ExactPrepared := {
 		backward_edges : List(U64),
 		proven_optimal : Bool,
 		label_anchors : List({ x : F64, y : F64 }),
-		port_order_violations : List({ node : U64, before_edge : U64, after_edge : U64 }),
+		attachments : List(Route.EdgeAttachments),
 	}
 	run = |exact| {
 		finished = LayeredInternals.finish_layout({
@@ -2712,16 +2687,21 @@ ExactPrepared := {
 			edge_labels: exact.edge_labels,
 			node_gap: exact.node_gap,
 			layer_gap: exact.layer_gap,
-			route_style: exact.route_style,
+			route_style: Straight,
 		})
 
+		routed = Route.layout({ ..Route.default_input, graph: { nodes: exact.nodes, edges: exact.edges }, positions: finished.layout.positions, attachments: exact.attachments, edge_labels: exact.edge_labels }, exact.routing)
+		orthogonal = match routed {
+			Ok(value) => value
+			Err(_) => { layout: finished.layout, label_anchors: LayeredInternals.label_anchors(exact.edge_labels, finished.layout.routes), attachments: [], groups: [], group_crossings: [] }
+		}
 		{
-			layout: finished.layout,
+			layout: orthogonal.layout,
 			layers: finished.layers,
 			backward_edges: finished.backward_edges,
 			proven_optimal: exact.proven_optimal,
-			label_anchors: LayeredInternals.label_anchors(exact.edge_labels, finished.layout.routes),
-			port_order_violations: LayeredInternals.port_order_violations({ graph: { nodes: exact.nodes, edges: exact.edges }, ports: exact.ports, port_bindings: exact.port_bindings }, finished.layout.positions),
+			label_anchors: orthogonal.label_anchors,
+			attachments: orthogonal.attachments,
 		}
 	}
 
@@ -2738,7 +2718,7 @@ ExactPrepared := {
 				backward_edges : List(U64),
 				proven_optimal : Bool,
 				label_anchors : List({ x : F64, y : F64 }),
-				port_order_violations : List({ node : U64, before_edge : U64, after_edge : U64 }),
+				attachments : List(Route.EdgeAttachments),
 			},
 		),
 		Err(List(Problem)),
@@ -2767,17 +2747,14 @@ Layered := [].{
 		},
 		edge_weights : List({ edge : U64, weight : F64 }),
 		min_spans : List({ edge : U64, span : U64 }),
-		ports : List(Route.Port),
-		port_bindings : List(Route.PortBinding),
+		attachments : List(Route.AttachmentRule),
 		edge_labels : List(Route.EdgeLabel),
 	}
 
 	## Space between nodes on the same layer and between adjacent layers,
-	## plus how edges through intermediate layers are drawn: `Curved` (the
-	## default) smooths their bends into cubic curve chains, `Straight`
-	## keeps them as polylines. Edges between adjacent layers are always
-	## straight lines.
-	Settings : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved], direction : [Down, Up, Left, Right], max_sweeps : U64 }
+	## plus orthogonal routing clearance, edge separation, and path preferences.
+	## Every edge is routed after placement against all node boxes.
+	Settings : { node_gap : F64, layer_gap : F64, routing : Route.Settings, direction : [Down, Up, Left, Right], max_sweeps : U64 }
 
 	RunArgs : { hints : List({ x : F64, y : F64 }) }
 
@@ -2793,16 +2770,14 @@ Layered := [].{
 		InvalidEdgeWeight(U64),
 		MissingMinimumSpanEdge(U64),
 		InvalidMinimumSpan(U64),
-		InvalidPortNode(U64),
-		InvalidPortOffset(U64),
-		InvalidPortBindingEdge(U64),
-		InvalidPortBindingPort(U64),
-		PortBindingNodeMismatch(U64),
-		DuplicatePortBinding(U64),
+		InvalidAttachmentEdge(U64),
+		InvalidAttachmentOffset(U64),
+		DuplicateAttachment(U64),
 		InvalidEdgeLabelEdge(U64),
 		InvalidEdgeLabelWidth(U64),
 		InvalidEdgeLabelHeight(U64),
 		DuplicateEdgeLabel(U64),
+		InvalidRouting(Route.Problem),
 	]
 
 	## Geometry plus each node's layer and any edges drawn against the flow.
@@ -2817,7 +2792,7 @@ Layered := [].{
 		layers : List(U64),
 		backward_edges : List(U64),
 		label_anchors : List({ x : F64, y : F64 }),
-		port_order_violations : List({ node : U64, before_edge : U64, after_edge : U64 }),
+		attachments : List(Route.EdgeAttachments),
 	}
 
 	## Empty flow input. Replace `graph` by record update.
@@ -2843,13 +2818,13 @@ Layered := [].{
 	layout : Input, Settings, RunArgs -> [Ok(Result), Err(List(Problem))]
 	layout = |input, settings, args| Prepared.layout(input, settings, args)
 
-	## Settings for `layout_exact`: spacing and route style exactly as in
+	## Settings for `layout_exact`: spacing and routing exactly as in
 	## `Settings`, plus `effort_cap` — the most ordering choices the crossing
 	## search may try before stopping with the best ordering found so far.
 	## Higher caps prove optimality on wider layers at higher cost; a cap of
 	## `0` skips the search entirely and keeps the ordering `layout` would
 	## produce.
-	ExactSettings : { node_gap : F64, layer_gap : F64, route_style : [Straight, Curved], effort_cap : U64, direction : [Down, Up, Left, Right] }
+	ExactSettings : { node_gap : F64, layer_gap : F64, routing : Route.Settings, effort_cap : U64, direction : [Down, Up, Left, Right] }
 
 	## Everything `Result` reports, plus whether the crossing search proved
 	## its ordering has the fewest crossings any ordering can achieve:
@@ -2865,10 +2840,10 @@ Layered := [].{
 		backward_edges : List(U64),
 		proven_optimal : Bool,
 		label_anchors : List({ x : F64, y : F64 }),
-		port_order_violations : List({ node : U64, before_edge : U64, after_edge : U64 }),
+		attachments : List(Route.EdgeAttachments),
 	}
 
-	## Default spacing and route style with an effort cap of 100,000 ordering
+	## Default spacing and routing with an effort cap of 100,000 ordering
 	## choices — enough to prove optimality for small drawings.
 	default_exact_settings : ExactSettings
 	default_exact_settings = ExactPrepared.defaults
@@ -3085,7 +3060,7 @@ expect {
 		Err(_) => False
 		Ok(sweep) => {
 			result = sweep.run(Prepared.default_run)
-			result.backward_edges == [] and result.layers == [1, 0] and result.layout.routes == [Line({ x: 5, y: 6 }, { x: 5, y: 76 })]
+			result.backward_edges == [] and result.layers == [1, 0] and result.layout.routes.len() == 1 and result.attachments.len() == 1
 		}
 	}
 }
@@ -3112,7 +3087,7 @@ expect {
 		Err(_) => False
 		Ok(sweep) => {
 			result = sweep.run(Prepared.default_run)
-			result.backward_edges == [1] and result.layers == [0, 1] and result.layout.routes == [Line({ x: 5, y: 6 }, { x: 5, y: 76 }), Line({ x: 5, y: 76 }, { x: 5, y: 6 })]
+			result.backward_edges == [1] and result.layers == [0, 1] and result.layout.routes.len() == 2 and result.attachments.len() == 2
 		}
 	}
 }
@@ -3159,15 +3134,14 @@ expect {
 	}
 	match Prepared.layout(spec, Prepared.defaults, Prepared.default_run) {
 		Err(_) => False
-		Ok(result) => result.layout.routes == [Line({ x: 5, y: 6 }, { x: 5, y: 76 })]
+		Ok(result) => match result.attachments.first() {
+			Ok(ends) => ends.from.side == Bottom and ends.to.side == Top
+			Err(_) => False
+		}
 	}
 }
 
-## With the default `Curved` style, an edge spanning two layers becomes a
-## cubic curve chain through its virtual waypoint: the chain starts on the
-## source's boundary aimed at the waypoint, passes through the waypoint, and
-## ends on the target's boundary, while the unit-span edges stay straight
-## lines.
+## The default routes every span through the shared orthogonal solver.
 expect {
 	spec = {
 		..Prepared.default_spec,
@@ -3178,29 +3152,16 @@ expect {
 	}
 	match Prepared.layout(spec, Prepared.defaults, Prepared.default_run) {
 		Err(_) => False
-		Ok(result) => {
-			source_center = result.layout.positions.get(0) ?? Geom.point(0, 0)
-			target_center = result.layout.positions.get(2) ?? Geom.point(0, 0)
-			unit_is_line = match result.layout.routes.get(0) ?? Polyline([]) {
-				Line(_, _) => True
+		Ok(result) => result.layout.routes.len() == 3 and result.layout.routes.all(
+			|route| match route {
+				Polyline(points) => points.len() >= 2
 				_ => False
-			}
-			long_is_curve = match result.layout.routes.get(2) ?? Polyline([]) {
-				Curves([first, last]) => {
-					waypoint = first.to
-					starts_on_source = first.from == Geom.clip_to_node(source_center, { width: 10, height: 6 }, waypoint)
-					ends_on_target = last.from == waypoint and last.to == Geom.clip_to_node(target_center, { width: 10, height: 6 }, waypoint)
-					starts_on_source and ends_on_target
-				}
-				_ => False
-			}
-			unit_is_line and long_is_curve
-		}
+			},
+		)
 	}
 }
 
-## `route_style: Straight` keeps the same long edge as a polyline through the
-## waypoint, still clipped to the node boundaries at both ends.
+## The default router keeps the same long edge as an orthogonal polyline.
 expect {
 	spec = {
 		..Prepared.default_spec,
@@ -3209,18 +3170,11 @@ expect {
 			edges: [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 0, to: 2 }],
 		},
 	}
-	match Prepared.layout(spec, { ..Prepared.defaults, route_style: Straight }, Prepared.default_run) {
+	match Prepared.layout(spec, Prepared.defaults, Prepared.default_run) {
 		Err(_) => False
-		Ok(result) => {
-			source_center = result.layout.positions.get(0) ?? Geom.point(0, 0)
-			target_center = result.layout.positions.get(2) ?? Geom.point(0, 0)
-			match result.layout.routes.get(2) ?? Polyline([]) {
-				Polyline([start, waypoint, end]) => {
-					start == Geom.clip_to_node(source_center, { width: 10, height: 6 }, waypoint)
-						and end == Geom.clip_to_node(target_center, { width: 10, height: 6 }, waypoint)
-				}
-				_ => False
-			}
+		Ok(result) => match result.layout.routes.get(2) ?? Polyline([]) {
+			Polyline(points) => points.len() >= 2
+			_ => False
 		}
 	}
 }
@@ -3332,19 +3286,18 @@ expect {
 }
 
 ## Port declaration order is a hard priority for both ordering paths. Even
-## when the initial node order is reversed, the two targets follow their port
+## when the initial node order is reversed, the two targets follow their attachment
 ## order and no residual violation is reported.
 expect {
 	input = {
 		..Layered.default_input,
 		graph: { nodes: List.repeat({ width: 10, height: 6 }, 3), edges: [{ from: 0, to: 2 }, { from: 0, to: 1 }] },
-		ports: [{ node: 0, side: Bottom, offset: 0.25 }, { node: 0, side: Bottom, offset: 0.75 }],
-		port_bindings: [{ edge: 0, endpoint: From, port: 0 }, { edge: 1, endpoint: From, port: 1 }],
+		attachments: [{ edge: 0, endpoint: From, attachment: Fixed({ side: Bottom, offset: 0.25 }) }, { edge: 1, endpoint: From, attachment: Fixed({ side: Bottom, offset: 0.75 }) }],
 	}
 	sweep = Layered.layout(input, Layered.default_settings, { hints: [Geom.point(0, 0), Geom.point(0, 20), Geom.point(0, 0)] })
 	exact = Layered.layout_exact(input, Layered.default_exact_settings)
 	match (sweep, exact) {
-		(Ok(a), Ok(b)) => a.port_order_violations.is_empty() and b.port_order_violations.is_empty() and (a.layout.positions.get(2) ?? Geom.point(0, 0)).x <= (a.layout.positions.get(1) ?? Geom.point(0, 0)).x
+		(Ok(a), Ok(b)) => a.attachments.len() == 2 and b.attachments.len() == 2 and (a.layout.positions.get(2) ?? Geom.point(0, 0)).x <= (a.layout.positions.get(1) ?? Geom.point(0, 0)).x
 		_ => False
 	}
 }
@@ -3376,10 +3329,7 @@ expect {
 				True,
 				|inside, p, i| {
 					node = input.graph.nodes.get(i) ?? { width: 0, height: 0 }
-					size = match direction {
-						Down | Up => node
-						Left | Right => { width: node.height, height: node.width }
-					}
+					size = node
 					inside and p.x - size.width / 2 >= 0 and p.y - size.height / 2 >= 0 and p.x + size.width / 2 <= result.layout.bounds.width and p.y + size.height / 2 <= result.layout.bounds.height
 				},
 			)

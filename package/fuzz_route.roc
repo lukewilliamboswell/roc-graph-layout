@@ -34,16 +34,15 @@ test = |bytes| {
 	}
 	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 34 + i * 2).to_u64() % n, to: byte_at(bytes, 35 + i * 2).to_u64() % n })
 	input = { ..Route.default_input, graph: { nodes, edges }, positions }
-	match (Route.orthogonal(input, Route.default_settings), Route.prepare(input, Route.default_settings)) {
-		(Ok(a), Ok(prepared)) => {
-			b = Route.orthogonal_prepared(prepared)
-			if a == b and a.layout.routes.len() == edges.len() and a.layout.routes.all(|r| orthogonal(r) and finite_route(r)) and Route.orthogonal(input, Route.default_settings) == Ok(a) {
+	match Route.layout(input, Route.default_settings) {
+		Ok(a) => {
+			if a.layout.routes.len() == edges.len() and a.attachments.len() == edges.len() and a.group_crossings.len() == edges.len() and a.layout.routes.all(|r| orthogonal(r) and finite_route(r)) and Route.layout(input, Route.default_settings) == Ok(a) {
 				Fuzz.keep
 			} else {
 				crash "orthogonal route contract failed"
 			}
 		}
-		_ => crash "valid generated routing input was rejected"
+		Err(_) => crash "valid generated routing input was rejected"
 	}
 }
 

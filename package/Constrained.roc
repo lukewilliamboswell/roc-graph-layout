@@ -1243,7 +1243,7 @@ Constrained := [].{
 	## conflict the bounded analysis could not prove leaves it populated.
 	## Routes are direct boundary-to-boundary connections. When axis-aligned
 	## routes suit the domain better, pass `layout.positions` and the same graph
-	## to `Route.orthogonal`; routing is a separate geometric operation and does
+	## to `Route.layout`; routing is a separate geometric operation and does
 	## not change the constrained placement.
 	Result : {
 		layout : {

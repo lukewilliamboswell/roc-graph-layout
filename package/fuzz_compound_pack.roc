@@ -26,7 +26,7 @@ test = |bytes| {
 		(byte_at(bytes, 31) % 12).to_u64()
 	}
 	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 48 + i * 2).to_u64() % count, to: byte_at(bytes, 49 + i * 2).to_u64() % count })
-	input = { graph: { nodes, edges }, ports: [], port_bindings: [], edge_labels: [], root, routing: Compound.default_routing }
+	input = { graph: { nodes, edges }, attachments: [], edge_labels: [], root, routing: Compound.default_routing }
 	result = Compound.layout(input, Compound.default_run)
 	repeated = Compound.layout(input, Compound.default_run)
 	match result {

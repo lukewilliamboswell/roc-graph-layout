@@ -139,7 +139,7 @@ main! = |args| {
 	settings = { ..Constrained.default_settings, node_gap: 36 + runtime_zero }
 	match Constrained.layout(input, settings, { ..Constrained.default_run, seed: 11 }) {
 		Err(problems) => Err(LayoutProblems(problems))
-		Ok(result) => match Route.orthogonal({ ..Route.default_input, graph: { nodes, edges }, positions: result.layout.positions }, Route.default_settings) {
+		Ok(result) => match Route.layout({ ..Route.default_input, graph: { nodes, edges }, positions: result.layout.positions }, Route.default_settings) {
 			Err(problems) => Err(RouteProblems(problems))
 			Ok(routed) => {
 				svg = render_svg(routed.layout)
