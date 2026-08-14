@@ -6,6 +6,10 @@ rendered. Positions are node centers; routes are straight lines, polylines, or
 chains of smooth cubic curves, and their endpoints attach to node box
 boundaries so arrowheads land on the box.
 
+**[Try the layouts in the browser](https://lukewilliamboswell.github.io/roc-graph-layout/)**
+— edit the graph data and settings, inspect the generated SVG and geometry, or
+browse the [versioned API documentation](https://lukewilliamboswell.github.io/roc-graph-layout/docs/).
+
 The supported end-to-end layouts:
 
 - `Layered` — directed flows such as dependencies, pipelines, and process
