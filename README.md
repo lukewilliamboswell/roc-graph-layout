@@ -6,6 +6,10 @@ rendered. Positions are node centers; routes are straight lines, polylines, or
 chains of smooth cubic curves, and their endpoints attach to node box
 boundaries so arrowheads land on the box.
 
+**[Try the layouts in the browser](https://lukewilliamboswell.github.io/roc-graph-layout/)**
+— edit the graph data and settings, inspect the generated SVG and geometry, or
+browse the [versioned API documentation](https://lukewilliamboswell.github.io/roc-graph-layout/docs/).
+
 The supported end-to-end layouts:
 
 - `Layered` — directed flows such as dependencies, pipelines, and process
@@ -67,6 +71,7 @@ Click a layout to open the example app that generated it.
 | [Service ring](examples/service_ring/main.roc) — circular<br>[![A circular service dependency graph](examples/service_ring/output.svg)](examples/service_ring/main.roc) | [Mind map](examples/mind_map/main.roc) — radial tree<br>[![A radial mind map](examples/mind_map/output.svg)](examples/mind_map/main.roc) |
 | [Collaboration network](examples/collab_network/main.roc) — force-directed<br>[![A force-directed collaboration network](examples/collab_network/output.svg)](examples/collab_network/main.roc) | [Incident blast radius](examples/incident_blast_radius/main.roc) — radial graph<br>[![A service outage blast-radius graph](examples/incident_blast_radius/output.svg)](examples/incident_blast_radius/main.roc) |
 | [Cloud deployment](examples/cloud_deployment/main.roc) — compound<br>[![A cloud deployment with nested infrastructure groups](examples/cloud_deployment/output.svg)](examples/cloud_deployment/main.roc) | [Release workflow](examples/release_workflow/main.roc) — constrained<br>[![A release workflow arranged into responsibility lanes](examples/release_workflow/output.svg)](examples/release_workflow/main.roc) |
+| [Transit network](examples/transit_network/main.roc) — stress<br>[![A transit network whose drawn distances reflect network distance](examples/transit_network/output.svg)](examples/transit_network/main.roc) | |
 | [UML component diagram](examples/uml_component/main.roc) — compound<br>[![A UML component diagram with nested packages](examples/uml_component/output.svg)](examples/uml_component/main.roc) | [UML class diagram](examples/uml_class/main.roc) — layered and routed<br>[![A UML class diagram with shared inheritance routing](examples/uml_class/output.svg)](examples/uml_class/main.roc) |
 
 See the [build-pipeline example](examples/build_pipeline/main.roc) for a
@@ -81,7 +86,10 @@ concentric dependency hops, the
 [cloud-deployment example](examples/cloud_deployment/main.roc) composes nested
 infrastructure groups, and the
 [release-workflow example](examples/release_workflow/main.roc) keeps work in
-domain-specific responsibility lanes.
+domain-specific responsibility lanes. The
+[transit-network example](examples/transit_network/main.roc) shares its plain
+graph fixture with the browser playground and uses stress layout so drawn
+distance reflects network distance.
 
 For repeated layouts of the same input and settings, use `Layered.prepare` once
 and pass the result to `Layered.layout_prepared` with `Layered.default_run`.
@@ -97,6 +105,16 @@ Run the project checks with:
 ./scripts/bundle.roc [DIR]   # default DIR is dist
 ./scripts/all.roc            # check, test, then bundle
 ```
+
+QA the browser playground from its vendored release assets with:
+
+```sh
+python3 scripts/serve.py
+# open http://127.0.0.1:8000/
+```
+
+Pass `--port 8080` (or another port) if 8000 is already in use. This serves
+the checked-in Wasm and matching Joy runtime; it does not rebuild them.
 
 CI uses the nightly pinned in `.roc-version`. Locally, scripts use `roc` on
 your `PATH`, or the executable path in `ROC`; for example,

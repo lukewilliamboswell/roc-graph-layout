@@ -166,7 +166,7 @@ run_case! = |family, operation, source, fixture, n, seed| {
 	} else if family == "compound" {
 		boxes = List.repeat({ width: 24, height: 16 }, n)
 		children = List.repeat(0, n).map_with_index(|_, i| Node(i))
-		root = Group({ children, algorithm: Rows({ gap: 4 }), padding: 16, min_width: 0, min_height: 0 })
+		root = Group({ children, algorithm: Rows({ gap: 4 }), insets: Compound.uniform_insets(16), header: None, min_width: 0, min_height: 0 })
 		input = { ..Compound.default_input, graph: { nodes: boxes, edges: [] }, root }
 		_ = Measure.start!({})
 		result = Compound.layout(input, Compound.default_run)
