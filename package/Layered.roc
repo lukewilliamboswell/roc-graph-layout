@@ -2613,7 +2613,7 @@ Prepared := {
 		order_constraints : List({ before : U64, after : U64 }),
 		non_ranking_edges : List(U64),
 	}
-	Problem : [
+	Problem := [
 		InvalidNodeWidth(U64),
 		InvalidNodeHeight(U64),
 		MissingEdgeStart(U64, U64),
@@ -2643,7 +2643,43 @@ Prepared := {
 		MissingNonRankingEdge(U64, U64),
 		DuplicateNonRankingEdge(U64),
 		InvalidRouting(Route.Problem),
-	]
+	].{
+
+		## Turn one typed problem into a short explanation for a person reading a
+		## log or error message. List positions and referenced values start at zero.
+		to_str : Problem -> Str
+		to_str = |problem| match problem {
+			InvalidNodeWidth(node) => "Node ${node.to_str()} has a width that is negative or not a finite number."
+			InvalidNodeHeight(node) => "Node ${node.to_str()} has a height that is negative or not a finite number."
+			MissingEdgeStart(edge, node) => "Edge ${edge.to_str()} refers to source node ${node.to_str()}, which does not exist."
+			MissingEdgeEnd(edge, node) => "Edge ${edge.to_str()} refers to target node ${node.to_str()}, which does not exist."
+			InvalidNodeGap => "The node gap must be a finite number that is zero or greater."
+			InvalidLayerGap => "The layer gap must be a finite number that is zero or greater."
+			MissingEdgeWeightEdge(edge) => "An edge-weight setting refers to edge ${edge.to_str()}, which does not exist."
+			InvalidEdgeWeight(edge) => "The weight for edge ${edge.to_str()} must be a finite number that is zero or greater."
+			NonRankingEdgeWeight(item, edge) => "Edge-weight setting ${item.to_str()} refers to non-ranking edge ${edge.to_str()}, so it cannot affect layer assignment."
+			MissingMinimumSpanEdge(edge) => "A minimum-span setting refers to edge ${edge.to_str()}, which does not exist."
+			InvalidMinimumSpan(edge) => "The minimum span for edge ${edge.to_str()} must be at least one layer."
+			NonRankingMinimumSpan(item, edge) => "Minimum-span setting ${item.to_str()} refers to non-ranking edge ${edge.to_str()}, so it cannot affect layer assignment."
+			InvalidAttachmentEdge(item) => "Attachment rule ${item.to_str()} refers to an edge that does not exist."
+			InvalidAttachmentOffset(item) => "Attachment rule ${item.to_str()} has an offset outside the range from 0 to 1."
+			DuplicateAttachment(item) => "Attachment rule ${item.to_str()} repeats a rule for the same end of an edge."
+			InvalidBoundaryNode(item) => "Boundary rule ${item.to_str()} refers to a node that does not exist."
+			DuplicateBoundary(item) => "Boundary rule ${item.to_str()} repeats a rule for the same node."
+			InvalidEdgeLabelEdge(item) => "Edge label ${item.to_str()} refers to an edge that does not exist."
+			InvalidEdgeLabelWidth(item) => "Edge label ${item.to_str()} has a width that is negative or not finite."
+			InvalidEdgeLabelHeight(item) => "Edge label ${item.to_str()} has a height that is negative or not finite."
+			MissingLayerConstraintNode(item, node) => "Layer constraint ${item.to_str()} refers to node ${node.to_str()}, which does not exist."
+			InvalidLayerConstraintSpan(item) => "Layer constraint ${item.to_str()} has a minimum span smaller than one."
+			ConflictingLayerConstraints => "The layer constraints conflict with each other or with the graph's directed flow."
+			MissingOrderConstraintNode(item, node) => "Order constraint ${item.to_str()} refers to node ${node.to_str()}, which does not exist."
+			OrderConstraintAcrossLayers(item) => "Order constraint ${item.to_str()} names nodes that do not share a layer."
+			ConflictingOrderConstraints => "The order constraints conflict with each other or with endpoint attachment order."
+			MissingNonRankingEdge(item, edge) => "Non-ranking edge entry ${item.to_str()} refers to edge ${edge.to_str()}, which does not exist."
+			DuplicateNonRankingEdge(item) => "Non-ranking edge entry ${item.to_str()} repeats an earlier edge."
+			InvalidRouting(route_problem) => "Routing settings are invalid: ${route_problem.to_str()}"
+		}
+	}
 
 	defaults : Config
 	defaults = { node_gap: 24, layer_gap: 70, routing: Route.default_settings, direction: Down, max_sweeps: 4 }
@@ -2740,6 +2776,8 @@ Prepared := {
 	}
 
 	RunArgs : { hints : List({ x : F64, y : F64 }), stability : [Reflow, PreserveOrder] }
+
+	## Reflow for best layout quality without previous-position hints.
 	default_run : RunArgs
 	default_run = { hints: [], stability: Reflow }
 
@@ -2893,6 +2931,41 @@ ExactPrepared := {
 		DuplicateNonRankingEdge(U64),
 		InvalidRouting(Route.Problem),
 	]
+
+	## Turn one typed problem into a short explanation for a person reading a
+	## log or error message. List positions and referenced values start at zero.
+	problem_to_str : Problem -> Str
+	problem_to_str = |problem| match problem {
+		InvalidNodeWidth(node) => "Node ${node.to_str()} has a width that is negative or not a finite number."
+		InvalidNodeHeight(node) => "Node ${node.to_str()} has a height that is negative or not a finite number."
+		MissingEdgeStart(edge, node) => "Edge ${edge.to_str()} refers to source node ${node.to_str()}, which does not exist."
+		MissingEdgeEnd(edge, node) => "Edge ${edge.to_str()} refers to target node ${node.to_str()}, which does not exist."
+		InvalidNodeGap => "The node gap must be a finite number that is zero or greater."
+		InvalidLayerGap => "The layer gap must be a finite number that is zero or greater."
+		MissingEdgeWeightEdge(edge) => "An edge-weight setting refers to edge ${edge.to_str()}, which does not exist."
+		InvalidEdgeWeight(edge) => "The weight for edge ${edge.to_str()} must be a finite number that is zero or greater."
+		NonRankingEdgeWeight(item, edge) => "Edge-weight setting ${item.to_str()} refers to non-ranking edge ${edge.to_str()}, so it cannot affect layer assignment."
+		MissingMinimumSpanEdge(edge) => "A minimum-span setting refers to edge ${edge.to_str()}, which does not exist."
+		InvalidMinimumSpan(edge) => "The minimum span for edge ${edge.to_str()} must be at least one layer."
+		NonRankingMinimumSpan(item, edge) => "Minimum-span setting ${item.to_str()} refers to non-ranking edge ${edge.to_str()}, so it cannot affect layer assignment."
+		InvalidAttachmentEdge(item) => "Attachment rule ${item.to_str()} refers to an edge that does not exist."
+		InvalidAttachmentOffset(item) => "Attachment rule ${item.to_str()} has an offset outside the range from 0 to 1."
+		DuplicateAttachment(item) => "Attachment rule ${item.to_str()} repeats a rule for the same end of an edge."
+		InvalidBoundaryNode(item) => "Boundary rule ${item.to_str()} refers to a node that does not exist."
+		DuplicateBoundary(item) => "Boundary rule ${item.to_str()} repeats a rule for the same node."
+		InvalidEdgeLabelEdge(item) => "Edge label ${item.to_str()} refers to an edge that does not exist."
+		InvalidEdgeLabelWidth(item) => "Edge label ${item.to_str()} has a width that is negative or not finite."
+		InvalidEdgeLabelHeight(item) => "Edge label ${item.to_str()} has a height that is negative or not finite."
+		MissingLayerConstraintNode(item, node) => "Layer constraint ${item.to_str()} refers to node ${node.to_str()}, which does not exist."
+		InvalidLayerConstraintSpan(item) => "Layer constraint ${item.to_str()} has a minimum span smaller than one."
+		ConflictingLayerConstraints => "The layer constraints conflict with each other or with the graph's directed flow."
+		MissingOrderConstraintNode(item, node) => "Order constraint ${item.to_str()} refers to node ${node.to_str()}, which does not exist."
+		OrderConstraintAcrossLayers(item) => "Order constraint ${item.to_str()} names nodes that do not share a layer."
+		ConflictingOrderConstraints => "The order constraints conflict with each other or with endpoint attachment order."
+		MissingNonRankingEdge(item, edge) => "Non-ranking edge entry ${item.to_str()} refers to edge ${edge.to_str()}, which does not exist."
+		DuplicateNonRankingEdge(item) => "Non-ranking edge entry ${item.to_str()} repeats an earlier edge."
+		InvalidRouting(route_problem) => "Routing settings are invalid: ${route_problem.to_str()}"
+	}
 
 	defaults : Config
 	defaults = { node_gap: 24, layer_gap: 70, routing: Route.default_settings, effort_cap: 100_000, direction: Down }
@@ -3149,6 +3222,11 @@ Layered := [].{
 		InvalidRouting(Route.Problem),
 	]
 
+	## Explain one validation problem in plain language. Numbers identify
+	## zero-based positions or referenced values as stated in each message.
+	problem_to_str : Problem -> Str
+	problem_to_str = |problem| ExactPrepared.problem_to_str(problem)
+
 	## Geometry plus each node's layer and any edges drawn against the flow.
 	## Positions hold node centers; route endpoints lie on the source and
 	## target node boundaries.
@@ -3172,6 +3250,7 @@ Layered := [].{
 	default_settings : Settings
 	default_settings = Prepared.defaults
 
+	## Reflow for best layout quality without previous-position hints.
 	default_run : RunArgs
 	default_run = Prepared.default_run
 
@@ -3736,6 +3815,12 @@ expect {
 	}
 	Layered.prepare(input, Layered.default_settings) == Err([NonRankingEdgeWeight(0, 0), NonRankingMinimumSpan(0, 0)])
 }
+
+## Public problem text distinguishes a sparse-list position from the node or
+## edge value it references and delegates nested routing details.
+expect Layered.problem_to_str(MissingLayerConstraintNode(3, 12)) == "Layer constraint 3 refers to node 12, which does not exist."
+expect Layered.problem_to_str(NonRankingMinimumSpan(2, 7)) == "Minimum-span setting 2 refers to non-ranking edge 7, so it cannot affect layer assignment."
+expect Layered.problem_to_str(InvalidRouting(InvalidEdgeGap)) == "Routing settings are invalid: The edge gap must be a finite number that is zero or greater."
 
 ## Relationship names and endpoint roles may coexist on one edge. Only the
 ## center label reserves a layer; anchors stay label-input aligned.

@@ -65,7 +65,10 @@ Compound := [
 
 	## The complete graph, recursive ownership tree, routing choice, and optional
 	## edge attachment/label data. Every graph node must occur exactly once in
-	## `root`. Routing applies after every group has placed its children.
+	## `root`. Boundary rules use global node indices. Group attachments use the
+	## same root-first preorder as `Result.groups`; group 0 is the drawing's outer
+	## boundary and cannot be an attachment target. Routing applies after every
+	## group has placed its children, and group attachments require Orthogonal.
 	Input : {
 		graph : {
 			nodes : List({ width : F64, height : F64 }),
@@ -73,6 +76,7 @@ Compound := [
 		},
 		attachments : List(Route.AttachmentRule),
 		group_attachments : List(Route.GroupAttachmentRule),
+		boundaries : List(Route.BoundaryRule),
 		edge_labels : List(Route.EdgeLabel),
 		root : Compound,
 		routing : Routing,
@@ -101,6 +105,7 @@ Compound := [
 		InvalidGroupAttachmentOffset(U64),
 		DuplicateGroupAttachment(U64),
 		GroupAttachmentNotBoundary(U64),
+		GroupAttachmentNeedsOrthogonal(U64),
 		HeaderAttachmentConflict(U64, U64),
 		InvalidMinimumWidth(U64),
 		InvalidMinimumHeight(U64),
@@ -162,7 +167,7 @@ Compound := [
 
 	## Empty graph and group with default orthogonal routing.
 	default_input : Input
-	default_input = { graph: { nodes: [], edges: [] }, attachments: [], group_attachments: [], edge_labels: [], root: Compound.default_group, routing: Compound.default_routing }
+	default_input = { graph: { nodes: [], edges: [] }, attachments: [], group_attachments: [], boundaries: [], edge_labels: [], root: Compound.default_group, routing: Compound.default_routing }
 
 	## Fixed seed and no position hints.
 	default_run : RunArgs
@@ -263,6 +268,10 @@ CompoundInternals :: {}.{
 				}
 			},
 		)
+		group_attachment_routing_problems = match input.routing {
+			Straight => input.group_attachments.map_with_index(|_, i| GroupAttachmentNeedsOrthogonal(i))
+			Orthogonal(_) => []
+		}
 		membership = List.repeat(0, node_count).map_with_index(
 			|_, node| {
 				count = walked.members.fold(
@@ -317,7 +326,7 @@ CompoundInternals :: {}.{
 				},
 			)
 		}
-		route_problem = match Route.layout({ graph: input.graph, positions: List.repeat({ x: 0, y: 0 }, node_count), groups: [], memberships: [], attachments: input.attachments, boundaries: [], group_attachments: [], edge_labels: input.edge_labels }, route_settings) {
+		route_problem = match Route.layout({ graph: input.graph, positions: List.repeat({ x: 0, y: 0 }, node_count), groups: [], memberships: [], attachments: input.attachments, boundaries: input.boundaries, group_attachments: [], edge_labels: input.edge_labels }, route_settings) {
 			Ok(_) => []
 			Err(problems) => problems.keep_oks(
 				|problem| match problem {
@@ -326,7 +335,7 @@ CompoundInternals :: {}.{
 				},
 			)
 		}
-		[node_problems, edge_problems, walked.problems, membership, root_attachment_problems, group_attachment_problems, header_attachment_problems, route_problem].join()
+		[node_problems, edge_problems, walked.problems, membership, root_attachment_problems, group_attachment_problems, group_attachment_routing_problems, header_attachment_problems, route_problem].join()
 	}
 
 	check_group : Compound, U64, List({ from : U64, to : U64 }), U64 -> { members : List(U64), problems : List(Problem), next : U64 }
@@ -525,7 +534,7 @@ CompoundInternals :: {}.{
 		)
 		routed = match input.routing {
 			Orthogonal(settings) if !input.graph.nodes.is_empty() =>
-				match Route.layout({ graph: route_graph, positions: route_positions, groups: route_groups, memberships, attachments: input.attachments, boundaries: [], group_attachments: route_group_attachments, edge_labels: input.edge_labels }, settings) {
+				match Route.layout({ graph: route_graph, positions: route_positions, groups: route_groups, memberships, attachments: input.attachments, boundaries: input.boundaries, group_attachments: route_group_attachments, edge_labels: input.edge_labels }, settings) {
 					Ok(result) => { positions: result.layout.positions.drop_last(header_obstacles.len()), routes: result.layout.routes, bounds: result.layout.bounds, label_anchors: result.label_anchors, attachments: result.attachments, group_crossings: result.group_crossings }
 					Err(_) => { positions, routes: straight_routes, bounds: placed.rect, label_anchors: [], attachments: [], group_crossings: List.repeat([], input.graph.edges.len()) }
 				}
@@ -1011,7 +1020,7 @@ expect {
 		Group(spec) => spec
 	}
 	group = Group({ ..base, children: [Node(0), Node(0)] })
-	input = { graph: { nodes: [{ width: 2, height: 2 }, { width: 2, height: 2 }], edges: [] }, attachments: [], group_attachments: [], edge_labels: [], root: group, routing: Orthogonal(Route.default_settings) }
+	input = { graph: { nodes: [{ width: 2, height: 2 }, { width: 2, height: 2 }], edges: [] }, attachments: [], group_attachments: [], boundaries: [], edge_labels: [], root: group, routing: Orthogonal(Route.default_settings) }
 	match Compound.layout(input, Compound.default_run) {
 		Err(problems) => problems.contains(DuplicateMember(0)) and problems.contains(MissingMember(1))
 		Ok(_) => False
@@ -1042,7 +1051,7 @@ expect {
 	middle = Group({ ..base, insets: Compound.uniform_insets(20), children: [Node(1)] })
 	right = Group({ ..base, insets: Compound.uniform_insets(4), children: [Node(2)] })
 	root = Group({ ..base, insets: Compound.uniform_insets(4), children: [Nested(left), Nested(middle), Nested(right)], algorithm: Rows({ gap: 8 }) })
-	input = { graph: { nodes: List.repeat({ width: 10, height: 10 }, 3), edges: [{ from: 0, to: 2 }] }, attachments: [], group_attachments: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
+	input = { graph: { nodes: List.repeat({ width: 10, height: 10 }, 3), edges: [{ from: 0, to: 2 }] }, attachments: [], group_attachments: [], boundaries: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
 	match Compound.layout(input, Compound.default_run) {
 		Ok(result) => match (result.groups.get(2), result.layout.routes.get(0)) {
 			(Ok(geometry), Ok(route)) => {
@@ -1073,7 +1082,7 @@ expect {
 	middle = Group({ ..base, insets: Compound.uniform_insets(20), children: [Node(1)] })
 	right = Group({ ..base, insets: Compound.uniform_insets(4), children: [Node(2)] })
 	root = Group({ ..base, insets: Compound.uniform_insets(4), children: [Nested(left), Nested(middle), Nested(right)], algorithm: Rows({ gap: 8 }) })
-	input = { graph: { nodes: List.repeat({ width: 10, height: 10 }, 3), edges: [{ from: 0, to: 2 }] }, attachments: [], group_attachments: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
+	input = { graph: { nodes: List.repeat({ width: 10, height: 10 }, 3), edges: [{ from: 0, to: 2 }] }, attachments: [], group_attachments: [], boundaries: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
 	match Compound.layout(input, Compound.default_run) {
 		Ok(result) => match result.groups.first() {
 			Ok(outer) => result.groups.drop_first(1).all(|child| child.rect.x >= outer.rect.x and child.rect.y >= outer.rect.y and child.rect.x + child.rect.width <= outer.rect.x + outer.rect.width and child.rect.y + child.rect.height <= outer.rect.y + outer.rect.height) and outer.rect == result.layout.bounds
@@ -1091,7 +1100,7 @@ expect {
 	}
 	band = Inside({ axis: X, nodes: [0], low: 0, high: 10 })
 	constrained = Group({ ..base, children: [Node(0)], algorithm: ConstrainedStress({ settings: { node_gap: 1, max_iterations: 10, tolerance: 0.001 }, constraints: [band], pins: [] }) })
-	input = { graph: { nodes: [{ width: 1, height: 1 }], edges: [] }, attachments: [], group_attachments: [], edge_labels: [], root: constrained, routing: Straight }
+	input = { graph: { nodes: [{ width: 1, height: 1 }], edges: [] }, attachments: [], group_attachments: [], boundaries: [], edge_labels: [], root: constrained, routing: Straight }
 	match Compound.layout(input, Compound.default_run) {
 		Ok(_) => True
 		Err(_) => False
@@ -1105,7 +1114,7 @@ expect {
 	}
 	child = Group({ ..base, insets: Compound.uniform_insets(2), children: [Node(0)] })
 	root = Group({ ..base, children: [Nested(child), Node(1)] })
-	input = { graph: { nodes: List.repeat({ width: 2, height: 2 }, 2), edges: [{ from: 0, to: 1 }] }, attachments: [], group_attachments: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
+	input = { graph: { nodes: List.repeat({ width: 2, height: 2 }, 2), edges: [{ from: 0, to: 1 }] }, attachments: [], group_attachments: [], boundaries: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
 	match Compound.layout(input, Compound.default_run) {
 		Ok(result) => match (result.groups.get(1), result.group_crossings.get(0)) {
 			(Ok(geometry), Ok(crossings)) => {
@@ -1136,6 +1145,41 @@ expect {
 	}
 }
 
+## Straight routes reject group attachments instead of silently ignoring them.
+expect {
+	base = match Compound.default_group {
+		Group(spec) => spec
+	}
+	child = Group({ ..base, children: [Node(0)] })
+	root = Group({ ..base, children: [Nested(child), Node(1)] })
+	input = { ..Compound.default_input, graph: { nodes: List.repeat({ width: 10, height: 10 }, 2), edges: [{ from: 0, to: 1 }] }, root, routing: Straight, group_attachments: [{ edge: 0, group: 1, attachment: On(Right) }] }
+	match Compound.layout(input, Compound.default_run) {
+		Err(problems) => problems.contains(GroupAttachmentNeedsOrthogonal(0))
+		Ok(_) => False
+	}
+}
+
+## Sparse node boundaries are forwarded to the shared router.
+expect {
+	base = match Compound.default_group {
+		Group(spec) => spec
+	}
+	root = Group({ ..base, children: [Node(0), Node(1)], algorithm: Rows({ gap: 40 }) })
+	input = { ..Compound.default_input, graph: { nodes: [{ width: 20, height: 10 }, { width: 10, height: 10 }], edges: [{ from: 0, to: 1 }] }, root, boundaries: [{ node: 0, outline: Ellipse }] }
+	match Compound.layout(input, Compound.default_run) {
+		Ok(result) => match result.attachments.first() {
+			Ok(ends) => {
+				center = result.layout.positions.first() ?? { x: 0, y: 0 }
+				dx = ends.from.point.x - center.x
+				dy = ends.from.point.y - center.y
+				((dx * dx) / 100 + (dy * dy) / 25 - 1).abs() < 0.000001
+			}
+			Err(_) => False
+		}
+		Err(_) => False
+	}
+}
+
 ## Port-order violations retain global node and edge identities.
 expect {
 	base = match Compound.default_group {
@@ -1146,6 +1190,7 @@ expect {
 		graph: { nodes: List.repeat({ width: 2, height: 2 }, 3), edges: [{ from: 0, to: 2 }, { from: 0, to: 1 }] },
 		attachments: [{ edge: 0, endpoint: From, attachment: Fixed({ side: Top, offset: 0 }) }, { edge: 1, endpoint: From, attachment: Fixed({ side: Top, offset: 1 }) }],
 		group_attachments: [],
+		boundaries: [],
 		edge_labels: [],
 		root,
 		routing: Straight,
@@ -1170,7 +1215,7 @@ expect {
 		Group(spec) => spec
 	}
 	root = Group({ ..base, children: [Node(0)], algorithm: GraphCircular({ ..Graph.default_circular_settings, node_gap: -1 }) })
-	input = { graph: { nodes: [{ width: 1, height: 1 }], edges: [] }, attachments: [], group_attachments: [], edge_labels: [], root, routing: Straight }
+	input = { graph: { nodes: [{ width: 1, height: 1 }], edges: [] }, attachments: [], group_attachments: [], boundaries: [], edge_labels: [], root, routing: Straight }
 	match Compound.layout(input, Compound.default_run) {
 		Err(problems) => problems.contains(InvalidGroupAlgorithm(0))
 		Ok(_) => False
@@ -1184,7 +1229,7 @@ expect {
 		Group(spec) => spec
 	}
 	root = Group({ ..base, children: [Node(0), Node(1)], algorithm: TreeTidy(Tree.default_settings) })
-	input = { graph: { nodes: List.repeat({ width: 1, height: 1 }, 2), edges: [] }, attachments: [], group_attachments: [], edge_labels: [], root, routing: Straight }
+	input = { graph: { nodes: List.repeat({ width: 1, height: 1 }, 2), edges: [] }, attachments: [], group_attachments: [], boundaries: [], edge_labels: [], root, routing: Straight }
 	match Compound.layout(input, Compound.default_run) {
 		Err(problems) => problems.contains(InvalidTreeTopology(0))
 		Ok(_) => False
@@ -1198,7 +1243,7 @@ expect {
 	}
 	child = Group({ ..base, insets: Compound.uniform_insets(2), children: [Node(1)] })
 	root = Group({ ..base, insets: Compound.uniform_insets(3), children: [Node(0), Nested(child)] })
-	input = { graph: { nodes: [{ width: 4, height: 4 }, { width: 6, height: 2 }], edges: [{ from: 0, to: 1 }] }, attachments: [], group_attachments: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
+	input = { graph: { nodes: [{ width: 4, height: 4 }, { width: 6, height: 2 }], edges: [{ from: 0, to: 1 }] }, attachments: [], group_attachments: [], boundaries: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
 	match Compound.layout(input, Compound.default_run) {
 		Ok(result) => result.layout.positions.len() == 2 and result.layout.routes.len() == 1 and result.groups.len() == 2 and match result.groups.get(0) {
 			Ok(geometry) => geometry.rect == result.layout.bounds

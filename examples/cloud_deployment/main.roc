@@ -83,6 +83,7 @@ input : Compound.Input
 input = {
 	graph: { nodes, edges },
 	attachments: [],
+	boundaries: [],
 	group_attachments: [],
 	edge_labels: [],
 	root,
