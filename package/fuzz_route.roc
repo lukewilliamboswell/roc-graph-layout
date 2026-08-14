@@ -72,6 +72,33 @@ test = |bytes| {
 		(byte_at(bytes, 33) % 12).to_u64()
 	}
 	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 34 + i * 2).to_u64() % n, to: byte_at(bytes, 35 + i * 2).to_u64() % n })
+	groups = if n == 0 {
+		[]
+	} else {
+		center = positions.first() ?? { x: 0, y: 0 }
+		size = nodes.first() ?? { width: 0, height: 0 }
+		[
+			{ rect: { x: center.x - size.width / 2 - 30, y: center.y - size.height / 2 - 30, width: size.width + 60, height: size.height + 60 }, parent: Root },
+			{ rect: { x: center.x - size.width / 2 - 15, y: center.y - size.height / 2 - 15, width: size.width + 30, height: size.height + 30 }, parent: Parent(0) },
+		]
+	}
+	memberships = if n == 0 {
+		[]
+	} else {
+		[{ node: 0, group: 1 }]
+	}
+	group_attachments = edges.map_with_index(
+		|edge, edge_index| if (edge.from == 0) != (edge.to == 0) {
+			offset_a = (byte_at(bytes, 155 + edge_index) % 101).to_f64() / 100
+			offset_b = (byte_at(bytes, 167 + edge_index) % 101).to_f64() / 100
+			[
+				{ edge: edge_index, group: 0, attachment: Fixed({ side: side_at(byte_at(bytes, 179 + edge_index)), offset: offset_a }) },
+				{ edge: edge_index, group: 1, attachment: Fixed({ side: side_at(byte_at(bytes, 191 + edge_index)), offset: offset_b }) },
+			]
+		} else {
+			[]
+		},
+	).join()
 	boundaries = List.repeat({}, n).map_with_index(|_, i| i).keep_if(|i| byte_at(bytes, 58 + i) % 2 == 1).map(|node| { node, outline: Ellipse })
 	attachments = edges.map_with_index(
 		|_, edge| {
@@ -110,13 +137,42 @@ test = |bytes| {
 			{ edge, width: (byte_at(bytes, 137 + i) % 41).to_f64(), height: (byte_at(bytes, 146 + i) % 21).to_f64(), placement }
 		},
 	)
-	input = { ..Route.default_input, graph: { nodes, edges }, positions, boundaries, attachments, edge_labels }
+	input = { ..Route.default_input, graph: { nodes, edges }, positions, groups, memberships, group_attachments, boundaries, attachments, edge_labels }
+	invalid = { ..input, group_attachments: [{ edge: edge_count, group: groups.len(), attachment: Fixed({ side: Top, offset: 2 }) }] }
+	invalid_ok = match Route.layout(invalid, Route.default_settings) {
+		Err(problems) => {
+			found = problems.fold(
+				{ edge: False, group: False, offset: False },
+				|state, problem| match problem {
+					InvalidGroupAttachmentEdge(0) => { ..state, edge: True }
+					InvalidGroupAttachmentGroup(0) => { ..state, group: True }
+					InvalidGroupAttachmentOffset(0) => { ..state, offset: True }
+					_ => state
+				},
+			)
+			found.edge and found.group and found.offset
+		}
+		Ok(_) => False
+	}
 	match Route.layout(input, Route.default_settings) {
 		Ok(a) => {
 			aligned = a.layout.routes.len() == edges.len() and a.attachments.len() == edges.len() and a.group_crossings.len() == edges.len() and a.label_anchors.len() == edge_labels.len()
-			finite = a.layout.routes.all(|r| orthogonal(r) and finite_route(r)) and a.layout.positions.all(finite_point) and a.label_anchors.all(finite_point) and a.attachments.all(|ends| finite_point(ends.from.point) and finite_point(ends.to.point)) and F64.is_finite(a.layout.bounds.width) and F64.is_finite(a.layout.bounds.height)
+			finite_crossings = a.group_crossings.join().all(|crossing| finite_point(crossing.point) and F64.is_finite(crossing.offset) and crossing.offset >= 0 and crossing.offset <= 1)
+			finite = a.layout.routes.all(|r| orthogonal(r) and finite_route(r)) and a.layout.positions.all(finite_point) and a.label_anchors.all(finite_point) and a.attachments.all(|ends| finite_point(ends.from.point) and finite_point(ends.to.point)) and finite_crossings and F64.is_finite(a.layout.bounds.width) and F64.is_finite(a.layout.bounds.height)
 			ellipses = edges.fold_with_index(True, |ok, edge, i| ok and ellipse_attachment(i, From, edge, input, a) and ellipse_attachment(i, To, edge, input, a))
-			if aligned and finite and ellipses and Route.layout(input, Route.default_settings) == Ok(a) {
+			portals = group_attachments.all(
+				|rule| {
+					crossings = (a.group_crossings.get(rule.edge) ?? []).keep_if(|crossing| crossing.group == rule.group)
+					match crossings.first() {
+						Ok(crossing) => crossings.len() == 1 and match rule.attachment {
+							Fixed(selected) => crossing.side == selected.side and (crossing.offset - selected.offset).abs() < 0.000001
+							_ => True
+						}
+						Err(_) => False
+					}
+				},
+			)
+			if invalid_ok and aligned and finite and ellipses and portals and Route.layout(input, Route.default_settings) == Ok(a) {
 				Fuzz.keep
 			} else {
 				crash "route geometry contract failed"
@@ -126,4 +182,4 @@ test = |bytes| {
 	}
 }
 
-target = Fuzz.target_with({ name: "graph-layout-route", generator: Fuzz.list(Fuzz.u8, 160), test, show: |input| Str.inspect(input) })
+target = Fuzz.target_with({ name: "graph-layout-route", generator: Fuzz.list(Fuzz.u8, 208), test, show: |input| Str.inspect(input) })

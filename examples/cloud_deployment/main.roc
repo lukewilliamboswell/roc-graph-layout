@@ -83,6 +83,7 @@ input : Compound.Input
 input = {
 	graph: { nodes, edges },
 	attachments: [],
+	group_attachments: [],
 	edge_labels: [],
 	root,
 	routing: Compound.default_routing,

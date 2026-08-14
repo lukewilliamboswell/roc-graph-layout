@@ -811,9 +811,9 @@ LayeredInternals :: {}.{
 				hints.map(
 					|p| match direction {
 						Down => p
-						Up => Geom.point(0 - p.x, 0 - p.y)
-						Right => Geom.point(p.y, 0 - p.x)
-						Left => Geom.point(0 - p.y, p.x)
+						Up => Geom.point(p.x, 0 - p.y)
+						Right => Geom.point(p.y, p.x)
+						Left => Geom.point(p.y, 0 - p.x)
 					},
 				),
 			)
@@ -890,6 +890,12 @@ LayeredInternals :: {}.{
 
 	explicit_precedences = |rules| rules.map(|rule| { before: rule.before, after: rule.after })
 
+	## Public ordering follows the displayed cross-axis, which is the canonical
+	## x axis for every direction transform.
+	canonical_precedences = |rules, direction| match direction {
+		Down | Up | Right | Left => rules
+	}
+
 	precedences_hold = |layers, precedences| precedences.all(
 		|rule| layers.all(
 			|layer| {
@@ -901,6 +907,40 @@ LayeredInternals :: {}.{
 				}
 			},
 		),
+	)
+
+	## Whether `to` is reachable from `from` in the precedence graph. The
+	## node-sized bound is sufficient for a simple path and makes malformed
+	## cyclic input total.
+	precedence_reaches = |node_count, precedences, from, to| {
+		walked = LayeredInternals.indices_up_to(node_count).fold(
+			{ reached: [from], found: from == to },
+			|state, _| if state.found {
+				state
+			} else {
+				next = precedences.fold(
+					state.reached,
+					|seen, rule| if seen.contains(rule.before) and !seen.contains(rule.after) {
+						seen.append(rule.after)
+					} else {
+						seen
+					},
+				)
+				{ reached: next, found: next.contains(to) }
+			},
+		)
+		walked.found
+	}
+
+	## Stability is best-effort. Add each hint-derived relationship only when
+	## it cannot contradict the hard relationships proven during preparation.
+	compatible_precedences = |node_count, hard, preferred| preferred.fold(
+		hard,
+		|accepted, rule| if rule.before == rule.after or LayeredInternals.precedence_reaches(node_count, accepted, rule.after, rule.before) {
+			accepted
+		} else {
+			accepted.append(rule)
+		},
 	)
 
 	## Hard ordering constraints induced by attachment-rule declaration order. For two
@@ -2504,22 +2544,26 @@ LayeredInternals :: {}.{
 					acc
 				},
 			)
-			spec.edge_weights.fold(
+			spec.edge_weights.fold_with_index(
 				non_ranking,
-				|acc, item| if item.edge >= spec.graph.edges.len() {
+				|acc, item, index| if item.edge >= spec.graph.edges.len() {
 					acc.append(MissingEdgeWeightEdge(item.edge))
 				} else if !F64.is_finite(item.weight) or item.weight < 0 {
 					acc.append(InvalidEdgeWeight(item.edge))
+				} else if spec.non_ranking_edges.contains(item.edge) {
+					acc.append(NonRankingEdgeWeight(index, item.edge))
 				} else {
 					acc
 				},
 			).concat(
-				spec.min_spans.fold(
+				spec.min_spans.fold_with_index(
 					[],
-					|acc, item| if item.edge >= spec.graph.edges.len() {
+					|acc, item, index| if item.edge >= spec.graph.edges.len() {
 						acc.append(MissingMinimumSpanEdge(item.edge))
 					} else if item.span < 1 {
 						acc.append(InvalidMinimumSpan(item.edge))
+					} else if spec.non_ranking_edges.contains(item.edge) {
+						acc.append(NonRankingMinimumSpan(index, item.edge))
 					} else {
 						acc
 					},
@@ -2578,8 +2622,10 @@ Prepared := {
 		InvalidLayerGap,
 		MissingEdgeWeightEdge(U64),
 		InvalidEdgeWeight(U64),
+		NonRankingEdgeWeight(U64, U64),
 		MissingMinimumSpanEdge(U64),
 		InvalidMinimumSpan(U64),
+		NonRankingMinimumSpan(U64, U64),
 		InvalidAttachmentEdge(U64),
 		InvalidAttachmentOffset(U64),
 		DuplicateAttachment(U64),
@@ -2652,7 +2698,7 @@ Prepared := {
 			} else {
 				extended = LayeredInternals.insert_virtual_chains(real_ranks, oriented_edges)
 				ordered_layers = LayeredInternals.order_layers(LayeredInternals.group_by_rank(extended.ranks), extended.unit_edges, config.max_sweeps)
-				precedences = LayeredInternals.attachment_precedences(spec.graph, spec.attachments).concat(LayeredInternals.explicit_precedences(spec.order_constraints))
+				precedences = LayeredInternals.canonical_precedences(LayeredInternals.attachment_precedences(spec.graph, spec.attachments).concat(LayeredInternals.explicit_precedences(spec.order_constraints)), config.direction)
 				order_problems = spec.order_constraints.fold_with_index(
 					[],
 					|acc, rule, i| if (real_ranks.get(rule.before) ?? 0) != (real_ranks.get(rule.after) ?? 0) {
@@ -2725,7 +2771,7 @@ Prepared := {
 			).join()
 			_ => []
 		}
-		precedences = sweep.precedences.concat(stable)
+		precedences = LayeredInternals.compatible_precedences(sweep.extended_ranks.len(), sweep.precedences, stable)
 		ordered = LayeredInternals.enforce_precedences(LayeredInternals.order_layers(LayeredInternals.enforce_precedences(seeded, precedences), sweep.unit_edges, sweep.max_sweeps), precedences)
 		finished = LayeredInternals.finish_layout({
 			nodes: sweep.nodes,
@@ -2825,8 +2871,10 @@ ExactPrepared := {
 		InvalidLayerGap,
 		MissingEdgeWeightEdge(U64),
 		InvalidEdgeWeight(U64),
+		NonRankingEdgeWeight(U64, U64),
 		MissingMinimumSpanEdge(U64),
 		InvalidMinimumSpan(U64),
+		NonRankingMinimumSpan(U64, U64),
 		InvalidAttachmentEdge(U64),
 		InvalidAttachmentOffset(U64),
 		DuplicateAttachment(U64),
@@ -2895,7 +2943,7 @@ ExactPrepared := {
 				Err([ConflictingLayerConstraints])
 			} else {
 				extended = LayeredInternals.insert_virtual_chains(real_ranks, oriented_edges)
-				precedences = LayeredInternals.attachment_precedences(spec.graph, spec.attachments).concat(LayeredInternals.explicit_precedences(spec.order_constraints))
+				precedences = LayeredInternals.canonical_precedences(LayeredInternals.attachment_precedences(spec.graph, spec.attachments).concat(LayeredInternals.explicit_precedences(spec.order_constraints)), config.direction)
 				order_problems = spec.order_constraints.fold_with_index(
 					[],
 					|acc, rule, i| if (real_ranks.get(rule.before) ?? 0) != (real_ranks.get(rule.after) ?? 0) {
@@ -2912,6 +2960,15 @@ ExactPrepared := {
 				} else {
 					constrained_layers = legal_layers
 					searched = LayeredInternals.exact_order_layers(constrained_layers, extended.unit_edges, config.effort_cap)
+					exact_legal = LayeredInternals.enforce_precedences(searched.layers, precedences)
+					sweep_legal = LayeredInternals.enforce_precedences(LayeredInternals.order_layers(constrained_layers, extended.unit_edges, 4), precedences)
+					exact_cost = LayeredInternals.total_crossings(extended.ranks.len(), exact_legal, extended.unit_edges)
+					sweep_cost = LayeredInternals.total_crossings(extended.ranks.len(), sweep_legal, extended.unit_edges)
+					chosen = if exact_cost <= sweep_cost {
+						exact_legal
+					} else {
+						sweep_legal
+					}
 
 					Ok({
 						nodes: spec.graph.nodes,
@@ -2922,7 +2979,7 @@ ExactPrepared := {
 						extended_ranks: extended.ranks,
 						chains: extended.chains,
 						unit_edges: extended.unit_edges,
-						ordered_layers: LayeredInternals.enforce_precedences(searched.layers, precedences),
+						ordered_layers: chosen,
 						precedences,
 						direction: config.direction,
 						# The current exhaustive search enumerates unconstrained permutations;
@@ -3028,7 +3085,9 @@ Layered := [].{
 	## `graph`; the sparse lists add labels, endpoint geometry, or authored
 	## placement. Layer constraints describe flow-relative rows, order
 	## constraints arrange nodes that share a row, and non-ranking edges are
-	## routed without influencing rows or cycle breaking.
+	## routed without influencing rows or cycle breaking. In an order
+	## constraint, `before` means visually left of `after` for vertical flow and
+	## visually above it for horizontal flow, regardless of direction.
 	Input : {
 		graph : {
 			nodes : List({ width : F64, height : F64 }),
@@ -3050,10 +3109,14 @@ Layered := [].{
 	Settings : { node_gap : F64, layer_gap : F64, routing : Route.Settings, direction : [Down, Up, Left, Right], max_sweeps : U64 }
 
 	## Per-layout choices. `PreserveOrder` treats a complete finite hint list as
-	## the previous drawing and keeps its within-layer order wherever possible.
+	## the previous drawing and keeps its within-layer order wherever possible;
+	## authored order constraints always take priority.
 	RunArgs : { hints : List({ x : F64, y : F64 }), stability : [Reflow, PreserveOrder] }
 
-	## Invalid sizes, spacing, or edge endpoints found while checking input.
+	## Invalid sizes, spacing, references, or authored relationships found while
+	## checking input. `NonRankingEdgeWeight` and
+	## `NonRankingMinimumSpan` report the sparse setting index followed by its
+	## edge index.
 	Problem : [
 		InvalidNodeWidth(U64),
 		InvalidNodeHeight(U64),
@@ -3063,8 +3126,10 @@ Layered := [].{
 		InvalidLayerGap,
 		MissingEdgeWeightEdge(U64),
 		InvalidEdgeWeight(U64),
+		NonRankingEdgeWeight(U64, U64),
 		MissingMinimumSpanEdge(U64),
 		InvalidMinimumSpan(U64),
+		NonRankingMinimumSpan(U64, U64),
 		InvalidAttachmentEdge(U64),
 		InvalidAttachmentOffset(U64),
 		DuplicateAttachment(U64),
@@ -3617,6 +3682,59 @@ expect {
 		Ok(result) => result.layers == [0, 1, 2] and result.backward_edges == [] and result.layout.routes.len() == 3
 		Err(_) => False
 	}
+}
+
+## Authored order is stronger than edit-to-edit stability. Reversed previous
+## positions cannot overturn the prepared rule.
+expect {
+	input = {
+		..Layered.default_input,
+		graph: { nodes: List.repeat({ width: 10, height: 6 }, 2), edges: [] },
+		layer_constraints: [SameLayer({ first: 0, second: 1 })],
+		order_constraints: [{ before: 0, after: 1 }],
+	}
+	args = { hints: [Geom.point(100, 0), Geom.point(0, 0)], stability: PreserveOrder }
+	match Layered.layout(input, Layered.default_settings, args) {
+		Ok(result) => (result.layout.positions.get(0) ?? Geom.point(0, 0)).x < (result.layout.positions.get(1) ?? Geom.point(0, 0)).x
+		Err(_) => False
+	}
+}
+
+## `before` always follows the visible cross-axis: left-to-right for vertical
+## flow and top-to-bottom for horizontal flow.
+expect {
+	input = {
+		..Layered.default_input,
+		graph: { nodes: List.repeat({ width: 10, height: 6 }, 2), edges: [] },
+		layer_constraints: [SameLayer({ first: 0, second: 1 })],
+		order_constraints: [{ before: 0, after: 1 }],
+	}
+	[Down, Up, Right, Left].all(
+		|direction| match Layered.layout(input, { ..Layered.default_settings, direction }, Layered.default_run) {
+			Err(_) => False
+			Ok(result) => {
+				a = result.layout.positions.get(0) ?? Geom.point(0, 0)
+				b = result.layout.positions.get(1) ?? Geom.point(0, 0)
+				match direction {
+					Down | Up => a.x < b.x
+					Right | Left => a.y < b.y
+				}
+			}
+		},
+	)
+}
+
+## Ranking settings on a non-ranking edge are contradictory and identify both
+## the sparse-list item and the edge.
+expect {
+	input = {
+		..Layered.default_input,
+		graph: { nodes: List.repeat({ width: 10, height: 6 }, 2), edges: [{ from: 0, to: 1 }] },
+		non_ranking_edges: [0],
+		edge_weights: [{ edge: 0, weight: 2 }],
+		min_spans: [{ edge: 0, span: 2 }],
+	}
+	Layered.prepare(input, Layered.default_settings) == Err([NonRankingEdgeWeight(0, 0), NonRankingMinimumSpan(0, 0)])
 }
 
 ## Relationship names and endpoint roles may coexist on one edge. Only the

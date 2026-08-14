@@ -72,7 +72,7 @@ test = |bytes| {
 		(byte_at(bytes, 31) % 12).to_u64()
 	}
 	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 48 + i * 2).to_u64() % count, to: byte_at(bytes, 49 + i * 2).to_u64() % count })
-	input = { graph: { nodes, edges }, attachments: [], edge_labels: [], root, routing: Compound.default_routing }
+	input = { graph: { nodes, edges }, attachments: [], group_attachments: [], edge_labels: [], root, routing: Compound.default_routing }
 	result = Compound.layout(input, Compound.default_run)
 	repeated = Compound.layout(input, Compound.default_run)
 	match result {
@@ -90,7 +90,7 @@ test = |bytes| {
 						else if layout.groups.len() != count + 1 {
 							crash "compound group geometry lost preorder alignment"
 						}
-							else if !layout.layout.positions.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y)) or !finite_rect(layout.layout.bounds) or !layout.attachments.all(|ends| F64.is_finite(ends.from.point.x) and F64.is_finite(ends.from.point.y) and F64.is_finite(ends.to.point.x) and F64.is_finite(ends.to.point.y)) or !layout.group_crossings.join().all(|crossing| F64.is_finite(crossing.point.x) and F64.is_finite(crossing.point.y)) {
+							else if !layout.layout.positions.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y)) or !finite_rect(layout.layout.bounds) or !layout.attachments.all(|ends| F64.is_finite(ends.from.point.x) and F64.is_finite(ends.from.point.y) and F64.is_finite(ends.to.point.x) and F64.is_finite(ends.to.point.y)) or !layout.group_crossings.join().all(|crossing| F64.is_finite(crossing.point.x) and F64.is_finite(crossing.point.y) and F64.is_finite(crossing.offset) and crossing.offset >= 0 and crossing.offset <= 1) {
 								crash "compound layout returned non-finite geometry"
 							}
 								else if !layout.layout.routes.all(

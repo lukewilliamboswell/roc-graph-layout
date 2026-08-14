@@ -129,8 +129,52 @@ RouteInternals :: {}.{
 				}
 			},
 		)
-		p6 = input.edge_labels.fold_with_index(
+		p5d = input.group_attachments.fold_with_index(
 			p5c,
+			|acc, rule, i| {
+				edge_valid = rule.edge < input.graph.edges.len()
+				group_valid = rule.group < input.groups.len()
+				a = if edge_valid {
+					acc
+				} else {
+					acc.append(InvalidGroupAttachmentEdge(i))
+				}
+				b = if group_valid {
+					a
+				} else {
+					a.append(InvalidGroupAttachmentGroup(i))
+				}
+				valid_fixed = match rule.attachment {
+					Fixed(payload) => F64.is_finite(payload.offset) and payload.offset >= 0 and payload.offset <= 1
+					_ => True
+				}
+				c = if valid_fixed {
+					b
+				} else {
+					b.append(InvalidGroupAttachmentOffset(i))
+				}
+				duplicate = input.group_attachments.fold_with_index(False, |found, other, j| found or (j < i and other.edge == rule.edge and other.group == rule.group))
+				d = if duplicate {
+					c.append(DuplicateGroupAttachment(i))
+				} else {
+					c
+				}
+				if edge_valid and group_valid {
+					edge = input.graph.edges.get(rule.edge) ?? { from: 0, to: 0 }
+					from_inside = RouteInternals.node_in_group(edge.from, rule.group, input)
+					to_inside = RouteInternals.node_in_group(edge.to, rule.group, input)
+					if from_inside != to_inside {
+						d
+					} else {
+						d.append(GroupAttachmentNotBoundary(i))
+					}
+				} else {
+					d
+				}
+			},
+		)
+		p6 = input.edge_labels.fold_with_index(
+			p5d,
 			|acc, label, i| {
 				a = if label.edge < input.graph.edges.len() {
 					acc
@@ -176,6 +220,11 @@ RouteInternals :: {}.{
 	attachment_rule = |edge, endpoint, rules| match rules.find_first(|rule| rule.edge == edge and rule.endpoint == endpoint) {
 		Ok(rule) => rule.attachment
 		Err(_) => Automatic
+	}
+
+	node_in_group = |node, group, input| match input.memberships.find_first(|membership| membership.node == node) {
+		Ok(membership) => RouteInternals.group_in_chain(membership.group, group, input.groups, input.groups.len() + 1)
+		Err(_) => False
 	}
 
 	boundary_outline = |node, rules| match rules.find_first(|rule| rule.node == node) {
@@ -270,6 +319,92 @@ RouteInternals :: {}.{
 				{ point, outward, side }
 			}
 		}
+	}
+
+	group_chain = |group, groups, acc, fuel| if fuel == 0 {
+		acc
+	} else {
+		next = acc.append(group)
+		match groups.get(group) {
+			Ok(item) => match item.parent {
+				Root => next
+				Parent(parent) => RouteInternals.group_chain(parent, groups, next, fuel - 1)
+			}
+			Err(_) => next
+		}
+	}
+
+	node_chain = |node, input| match input.memberships.find_first(|membership| membership.node == node) {
+		Ok(membership) => RouteInternals.group_chain(membership.group, input.groups, [], input.groups.len() + 1)
+		Err(_) => []
+	}
+
+	portal_on_group = |rule, toward, input| {
+		group = input.groups.get(rule.group) ?? { rect: Geom.empty_bounds, parent: Root }
+		rect = group.rect
+		center = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }
+		size = { width: rect.width, height: rect.height }
+		selected = match rule.attachment {
+			Fixed(payload) => RouteInternals.fixed_point(center, size, payload.side, payload.offset, Rectangle)
+			On(side) => RouteInternals.fixed_point(center, size, side, 0.5, Rectangle)
+			Automatic => {
+				point = Geom.clip_to_node(center, size, toward)
+				dx = point.x - center.x
+				dy = point.y - center.y
+				side = if dx.abs() >= dy.abs() {
+					if dx < 0 {
+						Left
+					} else {
+						Right
+					}
+				} else if dy < 0 {
+					Top
+				} else {
+					Bottom
+				}
+				outward = match side {
+					Top => { x: 0, y: 0 - 1.0 }
+					Right => { x: 1, y: 0 }
+					Bottom => { x: 0, y: 1 }
+					Left => { x: 0 - 1.0, y: 0 }
+				}
+				{ point, outward, side }
+			}
+		}
+		offset = match selected.side {
+			Top => if rect.width == 0 {
+				0
+			} else {
+				(selected.point.x - rect.x) / rect.width
+			}
+			Bottom => if rect.width == 0 {
+				0
+			} else {
+				(selected.point.x - rect.x) / rect.width
+			}
+			Left => if rect.height == 0 {
+				0
+			} else {
+				(selected.point.y - rect.y) / rect.height
+			}
+			Right => if rect.height == 0 {
+				0
+			} else {
+				(selected.point.y - rect.y) / rect.height
+			}
+		}
+		{ group: rule.group, point: selected.point, side: selected.side, offset }
+	}
+
+	edge_portals = |edge_index, edge, input| {
+		from_chain = RouteInternals.node_chain(edge.from, input)
+		to_chain_inner = RouteInternals.node_chain(edge.to, input)
+		to_chain = to_chain_inner.fold([], |acc, group| [group].concat(acc))
+		from_rules = from_chain.keep_oks(|group| input.group_attachments.find_first(|rule| rule.edge == edge_index and rule.group == group))
+		to_rules = to_chain.keep_oks(|group| input.group_attachments.find_first(|rule| rule.edge == edge_index and rule.group == group))
+		from_toward = input.positions.get(edge.to) ?? { x: 0, y: 0 }
+		to_toward = input.positions.get(edge.from) ?? { x: 0, y: 0 }
+		from_rules.map(|rule| RouteInternals.portal_on_group(rule, from_toward, input)).concat(to_rules.map(|rule| RouteInternals.portal_on_group(rule, to_toward, input)))
 	}
 
 	simplify : List({ x : F64, y : F64 }) -> List({ x : F64, y : F64 })
@@ -508,10 +643,38 @@ RouteInternals :: {}.{
 		},
 	)
 
+	route_leg : { x : F64, y : F64 }, { x : F64, y : F64 }, List({ min_x : F64, min_y : F64, max_x : F64, max_y : F64 }), Route.Settings, List(Geom.Route) -> List({ x : F64, y : F64 })
+	route_leg = |start, finish, boxes, settings, prior| {
+		hv = [start, { x: finish.x, y: start.y }, finish]
+		vh = [start, { x: start.x, y: finish.y }, finish]
+		hv_clear = RouteInternals.path_visible(hv, boxes)
+		vh_clear = RouteInternals.path_visible(vh, boxes)
+		if hv_clear and vh_clear {
+			if RouteInternals.path_cost(hv, prior, settings) <= RouteInternals.path_cost(vh, prior, settings) {
+				hv
+			} else {
+				vh
+			}
+		} else if hv_clear {
+			hv
+		} else if vh_clear {
+			vh
+		} else {
+			searched = RouteInternals.shortest_grid(start, finish, boxes, settings, prior)
+			if searched.is_empty() {
+				exterior_y = boxes.fold(start.y.min(finish.y), |top, box| top.min(box.min_y)) - settings.edge_gap
+				[start, { x: start.x, y: exterior_y }, { x: finish.x, y: exterior_y }, finish]
+			} else {
+				searched
+			}
+		}
+	}
+
 	route_one : U64, { from : U64, to : U64 }, Route.Input, Route.Settings, { rank : U64, count : U64 }, List(Geom.Route) -> Geom.Route
 	route_one = |index, edge, input, settings, fan, prior| {
 		a = RouteInternals.terminal(index, From, edge, input)
 		b = RouteInternals.terminal(index, To, edge, input)
+		portals = RouteInternals.edge_portals(index, edge, input)
 		track = (fan.rank.to_f64() - (fan.count - 1).to_f64() / 2) * settings.edge_gap
 		if edge.from == edge.to {
 			# A rectangular exterior loop; bound ports still determine its first and last point.
@@ -524,7 +687,7 @@ RouteInternals :: {}.{
 			# Going through one shared exterior lane keeps every segment
 			# axis-aligned even when both unbound endpoints coincide.
 			Polyline(RouteInternals.simplify([a.point, ap, { x: ap.x, y: lane }, { x: bp.x, y: lane }, bp, b.point]))
-		} else {
+		} else if portals.is_empty() {
 			ap = { x: a.point.x + a.outward.x * settings.obstacle_gap, y: a.point.y + a.outward.y * settings.obstacle_gap }
 			bp = { x: b.point.x + b.outward.x * settings.obstacle_gap, y: b.point.y + b.outward.y * settings.obstacle_gap }
 			hv = [a.point, ap, { x: bp.x, y: ap.y + track }, bp, b.point]
@@ -552,6 +715,19 @@ RouteInternals :: {}.{
 				}
 			}
 			Polyline(RouteInternals.simplify(chosen))
+		} else {
+			ap = { x: a.point.x + a.outward.x * settings.obstacle_gap, y: a.point.y + a.outward.y * settings.obstacle_gap }
+			bp = { x: b.point.x + b.outward.x * settings.obstacle_gap, y: b.point.y + b.outward.y * settings.obstacle_gap }
+			boxes = RouteInternals.obstacles(input, settings, edge.from, edge.to)
+			through = portals.fold(
+				{ points: [a.point, ap], current: ap },
+				|state, portal| {
+					leg = RouteInternals.route_leg(state.current, portal.point, boxes, settings, prior)
+					{ points: state.points.concat(leg.drop_first(1)), current: portal.point }
+				},
+			)
+			last_leg = RouteInternals.route_leg(through.current, bp, boxes, settings, prior)
+			Polyline(RouteInternals.simplify(through.points.concat(last_leg.drop_first(1)).append(b.point)))
 		}
 	}
 
@@ -646,6 +822,41 @@ RouteInternals :: {}.{
 		[]
 	}
 
+	crossing_at = |group, rect, point| {
+		side = if point.y == rect.y {
+			Top
+		} else if point.x == rect.x + rect.width {
+			Right
+		} else if point.y == rect.y + rect.height {
+			Bottom
+		} else {
+			Left
+		}
+		offset = match side {
+			Top => if rect.width == 0 {
+				0
+			} else {
+				(point.x - rect.x) / rect.width
+			}
+			Bottom => if rect.width == 0 {
+				0
+			} else {
+				(point.x - rect.x) / rect.width
+			}
+			Left => if rect.height == 0 {
+				0
+			} else {
+				(point.y - rect.y) / rect.height
+			}
+			Right => if rect.height == 0 {
+				0
+			} else {
+				(point.y - rect.y) / rect.height
+			}
+		}
+		{ group, point, side, offset }
+	}
+
 	route_crossings = |route, groups| {
 		points = RouteInternals.route_points(route)
 		groups.fold_with_index(
@@ -653,7 +864,14 @@ RouteInternals :: {}.{
 			|acc, group, group_index| points.fold_with_index(
 				acc,
 				|found, a, i| match points.get(i + 1) {
-					Ok(b) => found.concat(RouteInternals.segment_crossings(a, b, group.rect).map(|point| { group: group_index, point }))
+					Ok(b) => RouteInternals.segment_crossings(a, b, group.rect).fold(
+						found,
+						|crossings, point| if crossings.any(|crossing| crossing.group == group_index and crossing.point == point) {
+							crossings
+						} else {
+							crossings.append(RouteInternals.crossing_at(group_index, group.rect, point))
+						},
+					)
 					Err(_) => found
 				},
 			),
@@ -724,7 +942,18 @@ RouteInternals :: {}.{
 				{ from: { point: shift(from.point), side: from.side }, to: { point: shift(to.point), side: to.side } }
 			},
 		)
-		group_crossings = raw_routes.map(|route| RouteInternals.route_crossings(route, input.groups).map(|crossing| { group: crossing.group, point: shift(crossing.point) }))
+		group_crossings = raw_routes.map_with_index(
+			|route, edge_index| {
+				edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
+				portals = RouteInternals.edge_portals(edge_index, edge, input)
+				RouteInternals.route_crossings(route, input.groups).map(
+					|crossing| {
+						selected = portals.find_first(|portal| portal.group == crossing.group and portal.point == crossing.point) ?? crossing
+						{ ..selected, point: shift(selected.point) }
+					},
+				)
+			},
+		)
 		groups = input.groups.map(|group| { x: Geom.saturate(group.rect.x + dx), y: Geom.saturate(group.rect.y + dy), width: group.rect.width, height: group.rect.height })
 		{ layout: { positions: input.positions.map(shift), routes: raw_routes.map(shift_route), bounds: { ..Geom.empty_bounds, width: Geom.saturate(box.max_x - box.min_x), height: Geom.saturate(box.max_y - box.min_y) } }, groups, label_anchors: raw_labels.map(shift), attachments, group_crossings }
 	}
@@ -741,6 +970,12 @@ RouteInternals :: {}.{
 ## Nodes use their rectangular size as their boundary by default. A sparse
 ## boundary rule makes attachment points follow an ellipse inside the same
 ## sized box; routing still treats that box as the node's obstacle.
+##
+## A sparse group attachment constrains where a cross-group edge crosses one
+## boundary. Automatic chooses a side facing the other endpoint, `On` chooses
+## the middle of one side, and `Fixed` chooses a normalized offset along it.
+## Nested constraints are crossed in ancestry order and every resulting leg
+## is routed around obstacles.
 Route :: {}.{
 	Side : [Top, Right, Bottom, Left]
 	Endpoint : [From, To]
@@ -750,10 +985,11 @@ Route :: {}.{
 	BoundaryRule : { node : U64, outline : Outline }
 	Group : { rect : Geom.Rect, parent : [Root, Parent(U64)] }
 	Membership : { node : U64, group : U64 }
+	GroupAttachmentRule : { edge : U64, group : U64, attachment : Attachment }
 	LabelPlacement : [Center, Near(Endpoint)]
 	EdgeLabel : { edge : U64, width : F64, height : F64, placement : LabelPlacement }
 
-	Input : { graph : { nodes : List({ width : F64, height : F64 }), edges : List({ from : U64, to : U64 }) }, positions : List({ x : F64, y : F64 }), groups : List(Group), memberships : List(Membership), attachments : List(AttachmentRule), boundaries : List(BoundaryRule), edge_labels : List(EdgeLabel) }
+	Input : { graph : { nodes : List({ width : F64, height : F64 }), edges : List({ from : U64, to : U64 }) }, positions : List({ x : F64, y : F64 }), groups : List(Group), memberships : List(Membership), attachments : List(AttachmentRule), group_attachments : List(GroupAttachmentRule), boundaries : List(BoundaryRule), edge_labels : List(EdgeLabel) }
 
 	## `obstacle_gap` is the empty space kept around node and group boxes. `edge_gap`
 	## separates parallel edges. `bend_penalty` favors fewer turns over a
@@ -763,9 +999,9 @@ Route :: {}.{
 	Settings : { obstacle_gap : F64, bend_penalty : F64, shared_path_penalty : F64, edge_gap : F64 }
 	SelectedAttachment : { point : Geom.Point, side : Side }
 	EdgeAttachments : { from : SelectedAttachment, to : SelectedAttachment }
-	GroupCrossing : { group : U64, point : Geom.Point }
+	GroupCrossing : { group : U64, point : Geom.Point, side : Side, offset : F64 }
 	Result : { layout : { positions : List(Geom.Point), routes : List(Geom.Route), bounds : Geom.Rect }, groups : List(Geom.Rect), label_anchors : List(Geom.Point), attachments : List(EdgeAttachments), group_crossings : List(List(GroupCrossing)) }
-	Problem := [InvalidNodeWidth(U64), InvalidNodeHeight(U64), PositionCountMismatch, InvalidPosition(U64), InvalidEdgeFrom(U64), InvalidEdgeTo(U64), InvalidAttachmentEdge(U64), InvalidAttachmentOffset(U64), DuplicateAttachment(U64), InvalidGroupRect(U64), InvalidGroupParent(U64), InvalidMembershipNode(U64), InvalidMembershipGroup(U64), DuplicateMembership(U64), InvalidBoundaryNode(U64), DuplicateBoundary(U64), InvalidLabelEdge(U64), InvalidLabelWidth(U64), InvalidLabelHeight(U64), InvalidObstacleGap, InvalidBendPenalty, InvalidSharedPathPenalty, InvalidEdgeGap].{
+	Problem := [InvalidNodeWidth(U64), InvalidNodeHeight(U64), PositionCountMismatch, InvalidPosition(U64), InvalidEdgeFrom(U64), InvalidEdgeTo(U64), InvalidAttachmentEdge(U64), InvalidAttachmentOffset(U64), DuplicateAttachment(U64), InvalidGroupRect(U64), InvalidGroupParent(U64), InvalidMembershipNode(U64), InvalidMembershipGroup(U64), DuplicateMembership(U64), InvalidBoundaryNode(U64), DuplicateBoundary(U64), InvalidGroupAttachmentEdge(U64), InvalidGroupAttachmentGroup(U64), InvalidGroupAttachmentOffset(U64), DuplicateGroupAttachment(U64), GroupAttachmentNotBoundary(U64), InvalidLabelEdge(U64), InvalidLabelWidth(U64), InvalidLabelHeight(U64), InvalidObstacleGap, InvalidBendPenalty, InvalidSharedPathPenalty, InvalidEdgeGap].{
 
 		## Turn one typed problem into a short explanation for a person reading a
 		## log or error message. Numbers identify positions in the corresponding
@@ -788,6 +1024,11 @@ Route :: {}.{
 			DuplicateMembership(membership) => "Membership ${membership.to_str()} assigns a node that was already assigned to a group."
 			InvalidBoundaryNode(rule) => "Boundary rule ${rule.to_str()} refers to a node that does not exist."
 			DuplicateBoundary(rule) => "Boundary rule ${rule.to_str()} repeats a rule for the same node."
+			InvalidGroupAttachmentEdge(rule) => "Group attachment ${rule.to_str()} refers to an edge that does not exist."
+			InvalidGroupAttachmentGroup(rule) => "Group attachment ${rule.to_str()} refers to a group that does not exist."
+			InvalidGroupAttachmentOffset(rule) => "Group attachment ${rule.to_str()} has an offset outside the range from 0 to 1."
+			DuplicateGroupAttachment(rule) => "Group attachment ${rule.to_str()} repeats a rule for the same edge and group."
+			GroupAttachmentNotBoundary(rule) => "Group attachment ${rule.to_str()} must name a group containing exactly one end of its edge."
 			InvalidLabelEdge(label) => "Edge label ${label.to_str()} refers to an edge that does not exist."
 			InvalidLabelWidth(label) => "Edge label ${label.to_str()} has a width that is negative or not finite."
 			InvalidLabelHeight(label) => "Edge label ${label.to_str()} has a height that is negative or not finite."
@@ -799,7 +1040,7 @@ Route :: {}.{
 	}
 
 	default_input : Input
-	default_input = { graph: { nodes: [], edges: [] }, positions: [], groups: [], memberships: [], attachments: [], boundaries: [], edge_labels: [] }
+	default_input = { graph: { nodes: [], edges: [] }, positions: [], groups: [], memberships: [], attachments: [], group_attachments: [], boundaries: [], edge_labels: [] }
 
 	## Readable default clearance and parallel-edge separation, with modest
 	## preferences for fewer bends and less shared routing.
@@ -829,6 +1070,83 @@ expect {
 	input = { ..Route.default_input, graph: { nodes: [{ width: 10, height: 10 }, { width: 10, height: 10 }], edges: [{ from: 0, to: 1 }] }, positions: [{ x: 0, y: 0 }, { x: 40, y: 20 }], attachments: [{ edge: 0, endpoint: From, attachment: Fixed({ side: Right, offset: 0.5 }) }], edge_labels: [{ edge: 0, width: 8, height: 4, placement: Center }] }
 	match Route.layout(input, Route.default_settings) {
 		Ok(result) => result.layout.routes.len() == 1 and result.label_anchors.len() == 1
+		Err(_) => False
+	}
+}
+
+## Nested group attachments are applied in ancestry order even when their
+## sparse rules arrive in the opposite order. Each selected portal is retained
+## as a route point and reported with its side and normalized offset.
+expect {
+	input = {
+		..Route.default_input,
+		graph: { nodes: [{ width: 10, height: 10 }, { width: 10, height: 10 }, { width: 10, height: 10 }], edges: [{ from: 0, to: 1 }] },
+		positions: [{ x: 30, y: 40 }, { x: 150, y: 40 }, { x: 85, y: 50 }],
+		groups: [{ rect: { x: 0, y: 0, width: 100, height: 100 }, parent: Root }, { rect: { x: 10, y: 10, width: 60, height: 60 }, parent: Parent(0) }],
+		memberships: [{ node: 0, group: 1 }],
+		group_attachments: [{ edge: 0, group: 0, attachment: Fixed({ side: Right, offset: 0.75 }) }, { edge: 0, group: 1, attachment: Fixed({ side: Right, offset: 0.25 }) }],
+	}
+	match Route.layout(input, Route.default_settings) {
+		Err(_) => False
+		Ok(result) => match result.layout.routes.first() {
+			Ok(Polyline(points)) => {
+				outer = result.groups.get(0) ?? Geom.empty_bounds
+				inner = result.groups.get(1) ?? Geom.empty_bounds
+				inner_portal = { x: inner.x + inner.width, y: inner.y + inner.height * 0.25 }
+				outer_portal = { x: outer.x + outer.width, y: outer.y + outer.height * 0.75 }
+				inner_index = points.find_first_index(|point| point == inner_portal)
+				outer_index = points.find_first_index(|point| point == outer_portal)
+				inner_crossing = (result.group_crossings.first() ?? []).find_first(|crossing| crossing.group == 1 and crossing.point == inner_portal)
+				outer_crossing = (result.group_crossings.first() ?? []).find_first(|crossing| crossing.group == 0 and crossing.point == outer_portal)
+				blocker = result.layout.positions.get(2) ?? { x: 0, y: 0 }
+				blocker_box = { min_x: blocker.x - 5 - Route.default_settings.obstacle_gap, min_y: blocker.y - 5 - Route.default_settings.obstacle_gap, max_x: blocker.x + 5 + Route.default_settings.obstacle_gap, max_y: blocker.y + 5 + Route.default_settings.obstacle_gap }
+				clear = points.fold_with_index(
+					True,
+					|ok, point, i| match points.get(i + 1) {
+						Ok(next) => ok and RouteInternals.segment_hits(point, next, blocker_box) == False
+						Err(_) => ok
+					},
+				)
+				match (inner_index, outer_index, inner_crossing, outer_crossing) {
+					(Ok(a), Ok(b), Ok(ic), Ok(oc)) => clear and a < b and ic.side == Right and ic.offset == 0.25 and oc.side == Right and oc.offset == 0.75
+					_ => False
+				}
+			}
+			_ => False
+		}
+	}
+}
+
+## All independent group-attachment problems are reported in sparse-rule
+## order, including a valid group that does not separate the edge endpoints.
+expect {
+	input = {
+		..Route.default_input,
+		graph: { nodes: [{ width: 1, height: 1 }, { width: 1, height: 1 }], edges: [{ from: 0, to: 1 }] },
+		positions: [{ x: 0, y: 0 }, { x: 1, y: 1 }],
+		groups: [{ rect: { x: 0, y: 0, width: 10, height: 10 }, parent: Root }],
+		memberships: [{ node: 0, group: 0 }, { node: 1, group: 0 }],
+		group_attachments: [{ edge: 9, group: 9, attachment: Fixed({ side: Top, offset: 2 }) }, { edge: 0, group: 0, attachment: Automatic }, { edge: 0, group: 0, attachment: On(Left) }],
+	}
+	Route.layout(input, Route.default_settings) == Err([InvalidGroupAttachmentEdge(0), InvalidGroupAttachmentGroup(0), InvalidGroupAttachmentOffset(0), GroupAttachmentNotBoundary(1), DuplicateGroupAttachment(2), GroupAttachmentNotBoundary(2)])
+}
+
+## A degenerate group boundary still has a finite, defined portal. An offset
+## along a zero-length side is reported as zero.
+expect {
+	input = {
+		..Route.default_input,
+		graph: { nodes: [{ width: 0, height: 0 }, { width: 0, height: 0 }], edges: [{ from: 0, to: 1 }] },
+		positions: [{ x: 0, y: 0 }, { x: 20, y: 20 }],
+		groups: [{ rect: { x: 5, y: 5, width: 0, height: 10 }, parent: Root }],
+		memberships: [{ node: 0, group: 0 }],
+		group_attachments: [{ edge: 0, group: 0, attachment: Fixed({ side: Top, offset: 0.7 }) }],
+	}
+	match Route.layout(input, Route.default_settings) {
+		Ok(result) => match (result.group_crossings.first() ?? []).find_first(|crossing| crossing.group == 0) {
+			Ok(crossing) => crossing.side == Top and crossing.offset == 0 and F64.is_finite(crossing.point.x) and F64.is_finite(crossing.point.y)
+			Err(_) => False
+		}
 		Err(_) => False
 	}
 }

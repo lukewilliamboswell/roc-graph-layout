@@ -238,14 +238,46 @@ CompoundRouting :: {}.{
 		Curves(segments) => segments.fold([], |points, segment| points.concat([segment.from, segment.ctl_a, segment.ctl_b, segment.to]))
 	}
 
-	route_midpoint = |route| {
+	route_anchor = |route, placement| {
 		points = CompoundRouting.route_points(route)
-		first = points.get((points.len() - 1) / 2) ?? { x: 0, y: 0 }
-		second = points.get(points.len() / 2) ?? first
-		{ x: (first.x + second.x) / 2, y: (first.y + second.y) / 2 }
+		total = points.fold_with_index(
+			0,
+			|length, point, i| match points.get(i + 1) {
+				Ok(next) => length + ((next.x - point.x) * (next.x - point.x) + (next.y - point.y) * (next.y - point.y)).sqrt()
+				Err(_) => length
+			},
+		)
+		fraction = match placement {
+			Center => 0.5
+			Near(From) => 0.15
+			Near(To) => 0.85
+		}
+		CompoundRouting.point_along(points, total * fraction, 0, points.len() + 1)
 	}
 
-	drawing_extent = |root, shift, insets, nodes, positions, routes, labels, anchors| {
+	point_along = |points, remaining, index, fuel| if fuel == 0 {
+		points.last() ?? { x: 0, y: 0 }
+	} else {
+		a = points.get(index) ?? { x: 0, y: 0 }
+		match points.get(index + 1) {
+			Err(_) => a
+			Ok(b) => {
+				length = ((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y)).sqrt()
+				if remaining <= length {
+					ratio = if length == 0 {
+						0
+					} else {
+						remaining / length
+					}
+					{ x: a.x + (b.x - a.x) * ratio, y: a.y + (b.y - a.y) * ratio }
+				} else {
+					CompoundRouting.point_along(points, remaining - length, index + 1, fuel - 1)
+				}
+			}
+		}
+	}
+
+	drawing_extent = |root, shift, nodes, positions, routes, labels, anchors| {
 		start = { min_x: root.x + shift.x, min_y: root.y + shift.y, max_x: root.x + shift.x + root.width, max_y: root.y + shift.y + root.height }
 		with_nodes = positions.fold_with_index(
 			start,
@@ -254,12 +286,12 @@ CompoundRouting :: {}.{
 				{ min_x: box.min_x.min(point.x - size.width / 2), min_y: box.min_y.min(point.y - size.height / 2), max_x: box.max_x.max(point.x + size.width / 2), max_y: box.max_y.max(point.y + size.height / 2) }
 			},
 		)
-		with_routes = routes.fold(with_nodes, |bounds, route| CompoundRouting.route_points(route).fold(bounds, |current, point| { min_x: current.min_x.min(point.x - insets.left), min_y: current.min_y.min(point.y - insets.top), max_x: current.max_x.max(point.x + insets.right), max_y: current.max_y.max(point.y + insets.bottom) }))
+		with_routes = routes.fold(with_nodes, |bounds, route| CompoundRouting.route_points(route).fold(bounds, |current, point| { min_x: current.min_x.min(point.x), min_y: current.min_y.min(point.y), max_x: current.max_x.max(point.x), max_y: current.max_y.max(point.y) }))
 		box = labels.fold_with_index(
 			with_routes,
 			|bounds, label, index| {
 				anchor = anchors.get(index) ?? { x: 0, y: 0 }
-				{ min_x: bounds.min_x.min(anchor.x - label.width / 2 - insets.left), min_y: bounds.min_y.min(anchor.y - label.height / 2 - insets.top), max_x: bounds.max_x.max(anchor.x + label.width / 2 + insets.right), max_y: bounds.max_y.max(anchor.y + label.height / 2 + insets.bottom) }
+				{ min_x: bounds.min_x.min(anchor.x - label.width / 2), min_y: bounds.min_y.min(anchor.y - label.height / 2), max_x: bounds.max_x.max(anchor.x + label.width / 2), max_y: bounds.max_y.max(anchor.y + label.height / 2) }
 			},
 		)
 		{ x: box.min_x, y: box.min_y, width: Geom.saturate(box.max_x - box.min_x), height: Geom.saturate(box.max_y - box.min_y) }
