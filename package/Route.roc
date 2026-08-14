@@ -113,8 +113,24 @@ RouteInternals :: {}.{
 				}
 			},
 		)
-		p6 = input.edge_labels.fold_with_index(
+		p5c = input.boundaries.fold_with_index(
 			p5b,
+			|acc, rule, i| {
+				a = if rule.node < input.graph.nodes.len() {
+					acc
+				} else {
+					acc.append(InvalidBoundaryNode(i))
+				}
+				duplicate = input.boundaries.fold_with_index(False, |found, other, j| found or (j < i and other.node == rule.node))
+				if duplicate {
+					a.append(DuplicateBoundary(i))
+				} else {
+					a
+				}
+			},
+		)
+		p6 = input.edge_labels.fold_with_index(
+			p5c,
 			|acc, label, i| {
 				a = if label.edge < input.graph.edges.len() {
 					acc
@@ -131,12 +147,7 @@ RouteInternals :: {}.{
 				} else {
 					b.append(InvalidLabelHeight(i))
 				}
-				duplicate = input.edge_labels.fold_with_index(False, |found, other, j| found or (j < i and other.edge == label.edge))
-				if duplicate {
-					c.append(DuplicateEdgeLabel(i))
-				} else {
-					c
-				}
+				c
 			},
 		)
 		p7 = if F64.is_finite(settings.obstacle_gap) and settings.obstacle_gap >= 0 {
@@ -167,11 +178,40 @@ RouteInternals :: {}.{
 		Err(_) => Automatic
 	}
 
-	fixed_point = |center, size, side, offset| match side {
-		Top => { point: { x: center.x - size.width / 2 + size.width * offset, y: center.y - size.height / 2 }, outward: { x: 0, y: 0 - 1.0 }, side }
-		Right => { point: { x: center.x + size.width / 2, y: center.y - size.height / 2 + size.height * offset }, outward: { x: 1, y: 0 }, side }
-		Bottom => { point: { x: center.x - size.width / 2 + size.width * offset, y: center.y + size.height / 2 }, outward: { x: 0, y: 1 }, side }
-		Left => { point: { x: center.x - size.width / 2, y: center.y - size.height / 2 + size.height * offset }, outward: { x: 0 - 1.0, y: 0 }, side }
+	boundary_outline = |node, rules| match rules.find_first(|rule| rule.node == node) {
+		Ok(rule) => rule.outline
+		Err(_) => Rectangle
+	}
+
+	fixed_point : { x : F64, y : F64 }, { width : F64, height : F64 }, Route.Side, F64, Route.Outline -> { point : { x : F64, y : F64 }, outward : { x : F64, y : F64 }, side : Route.Side }
+	fixed_point = |center, size, side, offset, node_outline| {
+		x_radius = size.width / 2
+		y_radius = size.height / 2
+		along = offset * 2 - 1
+		curve = (1 - along * along).max(0).sqrt()
+		match (node_outline, side) {
+			(Rectangle, Top) => { point: { x: center.x - x_radius + size.width * offset, y: center.y - y_radius }, outward: { x: 0, y: 0 - 1.0 }, side }
+			(Rectangle, Right) => { point: { x: center.x + x_radius, y: center.y - y_radius + size.height * offset }, outward: { x: 1, y: 0 }, side }
+			(Rectangle, Bottom) => { point: { x: center.x - x_radius + size.width * offset, y: center.y + y_radius }, outward: { x: 0, y: 1 }, side }
+			(Rectangle, Left) => { point: { x: center.x - x_radius, y: center.y - y_radius + size.height * offset }, outward: { x: 0 - 1.0, y: 0 }, side }
+			(Ellipse, Top) => { point: { x: center.x + x_radius * along, y: center.y - y_radius * curve }, outward: { x: 0, y: 0 - 1.0 }, side }
+			(Ellipse, Right) => { point: { x: center.x + x_radius * curve, y: center.y + y_radius * along }, outward: { x: 1, y: 0 }, side }
+			(Ellipse, Bottom) => { point: { x: center.x + x_radius * along, y: center.y + y_radius * curve }, outward: { x: 0, y: 1 }, side }
+			(Ellipse, Left) => { point: { x: center.x - x_radius * curve, y: center.y + y_radius * along }, outward: { x: 0 - 1.0, y: 0 }, side }
+		}
+	}
+
+	clip_ellipse = |center, size, toward| {
+		dx = toward.x - center.x
+		dy = toward.y - center.y
+		rx = size.width / 2
+		ry = size.height / 2
+		if dx == 0 and dy == 0 or rx == 0 or ry == 0 {
+			center
+		} else {
+			scale = 1 / ((dx / rx) * (dx / rx) + (dy / ry) * (dy / ry)).sqrt()
+			{ x: center.x + dx * scale, y: center.y + dy * scale }
+		}
 	}
 
 	terminal : U64, Route.Endpoint, { from : U64, to : U64 }, Route.Input -> { point : { x : F64, y : F64 }, outward : { x : F64, y : F64 }, side : Route.Side }
@@ -182,17 +222,21 @@ RouteInternals :: {}.{
 		}
 		center = input.positions.get(node) ?? { x: 0, y: 0 }
 		size = input.graph.nodes.get(node) ?? { width: 0, height: 0 }
+		node_outline = RouteInternals.boundary_outline(node, input.boundaries)
 		rule = RouteInternals.attachment_rule(edge_index, endpoint, input.attachments)
 		match rule {
-			Fixed(payload) => RouteInternals.fixed_point(center, size, payload.side, payload.offset)
-			On(side) => RouteInternals.fixed_point(center, size, side, 0.5)
+			Fixed(payload) => RouteInternals.fixed_point(center, size, payload.side, payload.offset, node_outline)
+			On(side) => RouteInternals.fixed_point(center, size, side, 0.5, node_outline)
 			Automatic => {
 				other_index = match endpoint {
 					From => edge.to
 					To => edge.from
 				}
 				other = input.positions.get(other_index) ?? center
-				point = Geom.clip_to_node(center, size, other)
+				point = match node_outline {
+					Rectangle => Geom.clip_to_node(center, size, other)
+					Ellipse => RouteInternals.clip_ellipse(center, size, other)
+				}
 				dx = point.x - center.x
 				dy = point.y - center.y
 				outward = if dx.abs() >= dy.abs() {
@@ -550,15 +594,47 @@ RouteInternals :: {}.{
 			Curves(ss) => ss.fold([], |acc, s| acc.concat([s.from, s.ctl_a, s.ctl_b, s.to]))
 		}
 
-	midpoint : Geom.Route -> { x : F64, y : F64 }
-	midpoint = |route| {
+	point_along = |points, remaining, index, fuel| if fuel == 0 {
+		points.last() ?? { x: 0, y: 0 }
+	} else {
+		a = points.get(index) ?? { x: 0, y: 0 }
+		match points.get(index + 1) {
+			Err(_) => a
+			Ok(b) => {
+				length = (b.x - a.x).abs() + (b.y - a.y).abs()
+				if remaining <= length {
+					ratio = if length == 0 {
+						0
+					} else {
+						remaining / length
+					}
+					{ x: a.x + (b.x - a.x) * ratio, y: a.y + (b.y - a.y) * ratio }
+				} else {
+					RouteInternals.point_along(points, remaining - length, index + 1, fuel - 1)
+				}
+			}
+		}
+	}
+
+	anchor_for : Geom.Route, Route.LabelPlacement -> { x : F64, y : F64 }
+	anchor_for = |route, placement| {
 		ps = RouteInternals.route_points(route)
 		if ps.is_empty() {
 			{ x: 0, y: 0 }
 		} else {
-			a = ps.get((ps.len() - 1) / 2) ?? { x: 0, y: 0 }
-			b = ps.get(ps.len() / 2) ?? a
-			{ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
+			total = ps.fold_with_index(
+				0,
+				|length, a, i| match ps.get(i + 1) {
+					Ok(b) => length + (b.x - a.x).abs() + (b.y - a.y).abs()
+					Err(_) => length
+				},
+			)
+			fraction = match placement {
+				Center => 0.5
+				Near(From) => 0.15
+				Near(To) => 0.85
+			}
+			RouteInternals.point_along(ps, total * fraction, 0, ps.len() + 1)
 		}
 	}
 
@@ -591,12 +667,20 @@ RouteInternals :: {}.{
 		placed_labels = input.edge_labels.fold(
 			[],
 			|placed, label| {
-				base = RouteInternals.midpoint(raw_routes.get(label.edge) ?? Polyline([]))
+				base = RouteInternals.anchor_for(raw_routes.get(label.edge) ?? Polyline([]), label.placement)
 				step = label.height / 2 + settings.obstacle_gap + settings.edge_gap
 				candidates = [base, { x: base.x, y: base.y - step }, { x: base.x, y: base.y + step }, { x: base.x - label.width / 2 - step, y: base.y }, { x: base.x + label.width / 2 + step, y: base.y }]
 				point = candidates.find_first(|p| RouteInternals.label_clear(p, label, input, settings, placed, raw_routes)) ?? {
-					top = input.positions.fold(base.y, |m, p| m.min(p.y)) - label.height / 2 - settings.obstacle_gap - settings.edge_gap * (placed.len() + 1).to_f64()
-					{ x: base.x, y: top }
+					node_top = input.positions.fold_with_index(
+						base.y,
+						|top, p, i| {
+							node = input.graph.nodes.get(i) ?? { width: 0, height: 0 }
+							top.min(p.y - node.height / 2)
+						},
+					)
+					route_top = raw_routes.fold(node_top, |top, route| RouteInternals.route_points(route).fold(top, |m, p| m.min(p.y)))
+					clear_top = placed.fold(route_top, |top, old| top.min(old.point.y - old.height / 2 - settings.obstacle_gap))
+					{ x: base.x, y: clear_top - label.height / 2 - settings.obstacle_gap - settings.edge_gap }
 				}
 				placed.append({ point, width: label.width, height: label.height })
 			},
@@ -649,18 +733,27 @@ RouteInternals :: {}.{
 ## Placement-independent routing for an already positioned, sized graph.
 ## `layout` produces deterministic axis-aligned polylines, honors sparse
 ## attachment rules, separates parallel edges into stable tracks, gives
-## self-loops exterior rectangular paths, and returns one anchor per sparse
-## edge label.
+## self-loops exterior paths, and returns one anchor for every sparse edge
+## label in label input order. Labels may be centered on an edge or placed
+## near either end, so relationship names, roles, and multiplicities can be
+## positioned without putting text or styling into the geometry API.
+##
+## Nodes use their rectangular size as their boundary by default. A sparse
+## boundary rule makes attachment points follow an ellipse inside the same
+## sized box; routing still treats that box as the node's obstacle.
 Route :: {}.{
 	Side : [Top, Right, Bottom, Left]
 	Endpoint : [From, To]
 	Attachment : [Automatic, On(Side), Fixed({ side : Side, offset : F64 })]
 	AttachmentRule : { edge : U64, endpoint : Endpoint, attachment : Attachment }
+	Outline : [Rectangle, Ellipse]
+	BoundaryRule : { node : U64, outline : Outline }
 	Group : { rect : Geom.Rect, parent : [Root, Parent(U64)] }
 	Membership : { node : U64, group : U64 }
-	EdgeLabel : { edge : U64, width : F64, height : F64 }
+	LabelPlacement : [Center, Near(Endpoint)]
+	EdgeLabel : { edge : U64, width : F64, height : F64, placement : LabelPlacement }
 
-	Input : { graph : { nodes : List({ width : F64, height : F64 }), edges : List({ from : U64, to : U64 }) }, positions : List({ x : F64, y : F64 }), groups : List(Group), memberships : List(Membership), attachments : List(AttachmentRule), edge_labels : List(EdgeLabel) }
+	Input : { graph : { nodes : List({ width : F64, height : F64 }), edges : List({ from : U64, to : U64 }) }, positions : List({ x : F64, y : F64 }), groups : List(Group), memberships : List(Membership), attachments : List(AttachmentRule), boundaries : List(BoundaryRule), edge_labels : List(EdgeLabel) }
 
 	## `obstacle_gap` is the empty space kept around node and group boxes. `edge_gap`
 	## separates parallel edges. `bend_penalty` favors fewer turns over a
@@ -672,7 +765,7 @@ Route :: {}.{
 	EdgeAttachments : { from : SelectedAttachment, to : SelectedAttachment }
 	GroupCrossing : { group : U64, point : Geom.Point }
 	Result : { layout : { positions : List(Geom.Point), routes : List(Geom.Route), bounds : Geom.Rect }, groups : List(Geom.Rect), label_anchors : List(Geom.Point), attachments : List(EdgeAttachments), group_crossings : List(List(GroupCrossing)) }
-	Problem := [InvalidNodeWidth(U64), InvalidNodeHeight(U64), PositionCountMismatch, InvalidPosition(U64), InvalidEdgeFrom(U64), InvalidEdgeTo(U64), InvalidAttachmentEdge(U64), InvalidAttachmentOffset(U64), DuplicateAttachment(U64), InvalidGroupRect(U64), InvalidGroupParent(U64), InvalidMembershipNode(U64), InvalidMembershipGroup(U64), DuplicateMembership(U64), InvalidLabelEdge(U64), InvalidLabelWidth(U64), InvalidLabelHeight(U64), DuplicateEdgeLabel(U64), InvalidObstacleGap, InvalidBendPenalty, InvalidSharedPathPenalty, InvalidEdgeGap].{
+	Problem := [InvalidNodeWidth(U64), InvalidNodeHeight(U64), PositionCountMismatch, InvalidPosition(U64), InvalidEdgeFrom(U64), InvalidEdgeTo(U64), InvalidAttachmentEdge(U64), InvalidAttachmentOffset(U64), DuplicateAttachment(U64), InvalidGroupRect(U64), InvalidGroupParent(U64), InvalidMembershipNode(U64), InvalidMembershipGroup(U64), DuplicateMembership(U64), InvalidBoundaryNode(U64), DuplicateBoundary(U64), InvalidLabelEdge(U64), InvalidLabelWidth(U64), InvalidLabelHeight(U64), InvalidObstacleGap, InvalidBendPenalty, InvalidSharedPathPenalty, InvalidEdgeGap].{
 
 		## Turn one typed problem into a short explanation for a person reading a
 		## log or error message. Numbers identify positions in the corresponding
@@ -693,10 +786,11 @@ Route :: {}.{
 			InvalidMembershipNode(membership) => "Membership ${membership.to_str()} refers to a node that does not exist."
 			InvalidMembershipGroup(membership) => "Membership ${membership.to_str()} refers to a group that does not exist."
 			DuplicateMembership(membership) => "Membership ${membership.to_str()} assigns a node that was already assigned to a group."
+			InvalidBoundaryNode(rule) => "Boundary rule ${rule.to_str()} refers to a node that does not exist."
+			DuplicateBoundary(rule) => "Boundary rule ${rule.to_str()} repeats a rule for the same node."
 			InvalidLabelEdge(label) => "Edge label ${label.to_str()} refers to an edge that does not exist."
 			InvalidLabelWidth(label) => "Edge label ${label.to_str()} has a width that is negative or not finite."
 			InvalidLabelHeight(label) => "Edge label ${label.to_str()} has a height that is negative or not finite."
-			DuplicateEdgeLabel(label) => "Edge label ${label.to_str()} repeats a label for the same edge."
 			InvalidObstacleGap => "The obstacle gap must be a finite number that is zero or greater."
 			InvalidBendPenalty => "The bend penalty must be a finite number that is zero or greater."
 			InvalidSharedPathPenalty => "The shared-path penalty must be a finite number that is zero or greater."
@@ -705,7 +799,7 @@ Route :: {}.{
 	}
 
 	default_input : Input
-	default_input = { graph: { nodes: [], edges: [] }, positions: [], groups: [], memberships: [], attachments: [], edge_labels: [] }
+	default_input = { graph: { nodes: [], edges: [] }, positions: [], groups: [], memberships: [], attachments: [], boundaries: [], edge_labels: [] }
 
 	## Readable default clearance and parallel-edge separation, with modest
 	## preferences for fewer bends and less shared routing.
@@ -732,7 +826,7 @@ expect {
 expect Route.layout(Route.default_input, Route.default_settings) == Ok({ layout: { positions: [], routes: [], bounds: Geom.empty_bounds }, groups: [], label_anchors: [], attachments: [], group_crossings: [] })
 
 expect {
-	input = { ..Route.default_input, graph: { nodes: [{ width: 10, height: 10 }, { width: 10, height: 10 }], edges: [{ from: 0, to: 1 }] }, positions: [{ x: 0, y: 0 }, { x: 40, y: 20 }], attachments: [{ edge: 0, endpoint: From, attachment: Fixed({ side: Right, offset: 0.5 }) }], edge_labels: [{ edge: 0, width: 8, height: 4 }] }
+	input = { ..Route.default_input, graph: { nodes: [{ width: 10, height: 10 }, { width: 10, height: 10 }], edges: [{ from: 0, to: 1 }] }, positions: [{ x: 0, y: 0 }, { x: 40, y: 20 }], attachments: [{ edge: 0, endpoint: From, attachment: Fixed({ side: Right, offset: 0.5 }) }], edge_labels: [{ edge: 0, width: 8, height: 4, placement: Center }] }
 	match Route.layout(input, Route.default_settings) {
 		Ok(result) => result.layout.routes.len() == 1 and result.label_anchors.len() == 1
 		Err(_) => False
@@ -755,7 +849,7 @@ expect {
 
 ## Two labels on crossing routes are placed in distinct clear boxes.
 expect {
-	input = { ..Route.default_input, graph: { nodes: [{ width: 8, height: 8 }, { width: 8, height: 8 }, { width: 8, height: 8 }, { width: 8, height: 8 }], edges: [{ from: 0, to: 1 }, { from: 2, to: 3 }] }, positions: [{ x: 0, y: 0 }, { x: 60, y: 60 }, { x: 0, y: 60 }, { x: 60, y: 0 }], edge_labels: [{ edge: 0, width: 20, height: 10 }, { edge: 1, width: 20, height: 10 }] }
+	input = { ..Route.default_input, graph: { nodes: [{ width: 8, height: 8 }, { width: 8, height: 8 }, { width: 8, height: 8 }, { width: 8, height: 8 }], edges: [{ from: 0, to: 1 }, { from: 2, to: 3 }] }, positions: [{ x: 0, y: 0 }, { x: 60, y: 60 }, { x: 0, y: 60 }, { x: 60, y: 0 }], edge_labels: [{ edge: 0, width: 20, height: 10, placement: Center }, { edge: 1, width: 20, height: 10, placement: Center }] }
 	match Route.layout(input, Route.default_settings) {
 		Ok(result) =>
 			match (result.label_anchors.get(0), result.label_anchors.get(1)) {
@@ -764,6 +858,53 @@ expect {
 			}
 		Err(_) => False
 	}
+}
+
+## Several labels may describe one edge. Their anchors remain aligned with
+## label input order, and endpoint roles choose opposite parts of the route.
+expect {
+	input = { ..Route.default_input, graph: { nodes: [{ width: 10, height: 10 }, { width: 10, height: 10 }], edges: [{ from: 0, to: 1 }] }, positions: [{ x: 0, y: 0 }, { x: 200, y: 0 }], edge_labels: [{ edge: 0, width: 12, height: 6, placement: Near(From) }, { edge: 0, width: 24, height: 8, placement: Center }, { edge: 0, width: 12, height: 6, placement: Near(To) }] }
+	match Route.layout(input, Route.default_settings) {
+		Ok(result) => match (result.label_anchors.get(0), result.label_anchors.get(1), result.label_anchors.get(2)) {
+			(Ok(from_label), Ok(center_label), Ok(to_label)) => from_label.x < center_label.x and center_label.x < to_label.x
+			_ => False
+		}
+		Err(_) => False
+	}
+}
+
+## Ellipse attachments follow the curved boundary for automatic and fixed
+## endpoints while keeping a cardinal departure side for orthogonal routing.
+expect {
+	input = { ..Route.default_input, graph: { nodes: [{ width: 20, height: 10 }, { width: 10, height: 10 }], edges: [{ from: 0, to: 1 }] }, positions: [{ x: 0, y: 0 }, { x: 40, y: 20 }], boundaries: [{ node: 0, outline: Ellipse }], attachments: [{ edge: 0, endpoint: From, attachment: Fixed({ side: Right, offset: 0.75 }) }] }
+	match Route.layout(input, Route.default_settings) {
+		Ok(result) => match result.attachments.first() {
+			Ok(ends) => {
+				local_x = ends.from.point.x - (result.layout.positions.first() ?? Geom.point(0, 0)).x
+				local_y = ends.from.point.y - (result.layout.positions.first() ?? Geom.point(0, 0)).y
+				(local_x * local_x) / 100 + (local_y * local_y) / 25 > 0.999999 and (local_x * local_x) / 100 + (local_y * local_y) / 25 < 1.000001 and ends.from.side == Right
+			}
+			Err(_) => False
+		}
+		Err(_) => False
+	}
+}
+
+## Side-only and automatic ellipse attachments use the same declared outline.
+expect {
+	base = { ..Route.default_input, graph: { nodes: [{ width: 20, height: 10 }, { width: 10, height: 10 }], edges: [{ from: 0, to: 1 }] }, positions: [{ x: 0, y: 0 }, { x: 40, y: 20 }], boundaries: [{ node: 0, outline: Ellipse }] }
+	edge = base.graph.edges.first() ?? { from: 0, to: 1 }
+	automatic = RouteInternals.terminal(0, From, edge, base)
+	on_top = RouteInternals.terminal(0, From, edge, { ..base, attachments: [{ edge: 0, endpoint: From, attachment: On(Top) }] })
+	automatic_value = (automatic.point.x * automatic.point.x) / 100 + (automatic.point.y * automatic.point.y) / 25
+	automatic_value > 0.999999 and automatic_value < 1.000001 and on_top.point == { x: 0, y: 0 - 5.0 } and on_top.side == Top
+}
+
+## Boundary problems are aggregated and identify positions in the sparse
+## rule list, including a repeated rule for an otherwise valid node.
+expect {
+	input = { ..Route.default_input, graph: { nodes: [{ width: 10, height: 10 }], edges: [] }, positions: [{ x: 0, y: 0 }], boundaries: [{ node: 4, outline: Ellipse }, { node: 0, outline: Ellipse }, { node: 0, outline: Rectangle }] }
+	Route.layout(input, Route.default_settings) == Err([InvalidBoundaryNode(0), DuplicateBoundary(2)])
 }
 
 ## A valid corridor that needs more than one dogleg is found around an

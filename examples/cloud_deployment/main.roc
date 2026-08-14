@@ -41,7 +41,8 @@ edge_group = Group({
 	..group_defaults,
 	children: [Node(1), Node(2)],
 	algorithm: Columns({ gap: 22 }),
-	padding: 28,
+	insets: { top: 12, right: 28, bottom: 28, left: 28 },
+	header: Reserve({ height: 28 }),
 })
 
 application_group = Group({
@@ -58,21 +59,24 @@ application_group = Group({
 		},
 		pins: [],
 	}),
-	padding: 30,
+	insets: { top: 14, right: 30, bottom: 30, left: 30 },
+	header: Reserve({ height: 28 }),
 })
 
 data_group = Group({
 	..group_defaults,
 	children: [Node(5), Node(6)],
 	algorithm: Columns({ gap: 22 }),
-	padding: 28,
+	insets: { top: 12, right: 28, bottom: 28, left: 28 },
+	header: Reserve({ height: 28 }),
 })
 
 root = Group({
 	..group_defaults,
 	children: [Node(0), Nested(edge_group), Nested(application_group), Nested(data_group)],
 	algorithm: LayeredSweep({ settings: { ..Layered.default_settings, node_gap: 34, layer_gap: 72 }, edge_weights: [], min_spans: [] }),
-	padding: 34,
+	insets: { top: 14, right: 34, bottom: 34, left: 34 },
+	header: Reserve({ height: 30 }),
 })
 
 input : Compound.Input
@@ -88,7 +92,8 @@ padding = 20
 
 group_names = ["PRODUCTION", "EDGE", "APPLICATION", "DATA"]
 
-render_group = |rect, index| {
+render_group = |geometry, index| {
+	rect = geometry.rect
 	x = rect.x + padding
 	y = rect.y + padding
 	name = group_names.get(index) ?? ""
@@ -102,8 +107,15 @@ render_group = |rect, index| {
 	} else {
 		"#94a3b8"
 	}
-	\\<rect x="${x.to_str()}" y="${y.to_str()}" width="${rect.width.to_str()}" height="${rect.height.to_str()}" rx="10" fill="${fill}" stroke="${stroke}" stroke-width="1.5" stroke-dasharray="6 4" />
-	\\<text x="${(x + 12).to_str()}" y="${(y + 18).to_str()}" font-family="sans-serif" font-size="11" font-weight="600" fill="#64748b">${name}</text>
+	header = match geometry.header {
+		None => ""
+		Some(header_rect) => {
+			header_y = header_rect.y + padding
+			\\<line x1="${x.to_str()}" y1="${(header_y + header_rect.height).to_str()}" x2="${(x + rect.width).to_str()}" y2="${(header_y + header_rect.height).to_str()}" stroke="${stroke}" stroke-width="1" />
+			\\<text x="${(x + 12).to_str()}" y="${(header_y + header_rect.height / 2).to_str()}" dominant-baseline="middle" font-family="sans-serif" font-size="11" font-weight="600" fill="#64748b">${name}</text>
+		}
+	}
+	"<rect x=\"${x.to_str()}\" y=\"${y.to_str()}\" width=\"${rect.width.to_str()}\" height=\"${rect.height.to_str()}\" rx=\"10\" fill=\"${fill}\" stroke=\"${stroke}\" stroke-width=\"1.5\" stroke-dasharray=\"6 4\" />\n${header}"
 }
 
 render_node = |center, label| {

@@ -245,7 +245,7 @@ CompoundRouting :: {}.{
 		{ x: (first.x + second.x) / 2, y: (first.y + second.y) / 2 }
 	}
 
-	drawing_extent = |root, shift, padding, nodes, positions, routes, labels, anchors| {
+	drawing_extent = |root, shift, insets, nodes, positions, routes, labels, anchors| {
 		start = { min_x: root.x + shift.x, min_y: root.y + shift.y, max_x: root.x + shift.x + root.width, max_y: root.y + shift.y + root.height }
 		with_nodes = positions.fold_with_index(
 			start,
@@ -254,12 +254,12 @@ CompoundRouting :: {}.{
 				{ min_x: box.min_x.min(point.x - size.width / 2), min_y: box.min_y.min(point.y - size.height / 2), max_x: box.max_x.max(point.x + size.width / 2), max_y: box.max_y.max(point.y + size.height / 2) }
 			},
 		)
-		with_routes = routes.fold(with_nodes, |bounds, route| CompoundRouting.route_points(route).fold(bounds, |current, point| { min_x: current.min_x.min(point.x - padding), min_y: current.min_y.min(point.y - padding), max_x: current.max_x.max(point.x + padding), max_y: current.max_y.max(point.y + padding) }))
+		with_routes = routes.fold(with_nodes, |bounds, route| CompoundRouting.route_points(route).fold(bounds, |current, point| { min_x: current.min_x.min(point.x - insets.left), min_y: current.min_y.min(point.y - insets.top), max_x: current.max_x.max(point.x + insets.right), max_y: current.max_y.max(point.y + insets.bottom) }))
 		box = labels.fold_with_index(
 			with_routes,
 			|bounds, label, index| {
 				anchor = anchors.get(index) ?? { x: 0, y: 0 }
-				{ min_x: bounds.min_x.min(anchor.x - label.width / 2 - padding), min_y: bounds.min_y.min(anchor.y - label.height / 2 - padding), max_x: bounds.max_x.max(anchor.x + label.width / 2 + padding), max_y: bounds.max_y.max(anchor.y + label.height / 2 + padding) }
+				{ min_x: bounds.min_x.min(anchor.x - label.width / 2 - insets.left), min_y: bounds.min_y.min(anchor.y - label.height / 2 - insets.top), max_x: bounds.max_x.max(anchor.x + label.width / 2 + insets.right), max_y: bounds.max_y.max(anchor.y + label.height / 2 + insets.bottom) }
 			},
 		)
 		{ x: box.min_x, y: box.min_y, width: Geom.saturate(box.max_x - box.min_x), height: Geom.saturate(box.max_y - box.min_y) }

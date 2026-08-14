@@ -23,6 +23,45 @@ finite_route = |route| match route {
 	Curves(_) => False
 }
 
+finite_point = |point| F64.is_finite(point.x) and F64.is_finite(point.y)
+
+side_at = |byte| match byte % 4 {
+	0 => Top
+	1 => Right
+	2 => Bottom
+	_ => Left
+}
+
+ellipse_attachment = |edge_index, endpoint, edge, input, result| {
+	node = match endpoint {
+		From => edge.from
+		To => edge.to
+	}
+	is_ellipse = input.boundaries.any(|rule| rule.node == node and rule.outline == Ellipse)
+	size = input.graph.nodes.get(node) ?? { width: 0, height: 0 }
+	center = result.layout.positions.get(node) ?? { x: 0, y: 0 }
+	ends = result.attachments.get(edge_index) ?? { from: { point: center, side: Top }, to: { point: center, side: Top } }
+	selected = match endpoint {
+		From => ends.from
+		To => ends.to
+	}
+	other_node = match endpoint {
+		From => edge.to
+		To => edge.from
+	}
+	other = result.layout.positions.get(other_node) ?? center
+	has_rule = input.attachments.any(|rule| rule.edge == edge_index and rule.endpoint == endpoint)
+	should_touch = is_ellipse and size.width > 0 and size.height > 0 and (has_rule or other != center)
+	if should_touch {
+		dx = selected.point.x - center.x
+		dy = selected.point.y - center.y
+		value = (dx * dx) / ((size.width / 2) * (size.width / 2)) + (dy * dy) / ((size.height / 2) * (size.height / 2))
+		F64.is_finite(value) and value > 0.99999 and value < 1.00001
+	} else {
+		True
+	}
+}
+
 test = |bytes| {
 	n = (byte_at(bytes, 0) % 8).to_u64()
 	nodes = List.repeat({ width: 0.0, height: 0.0 }, n).map_with_index(|_, i| { width: (byte_at(bytes, 1 + i) % 31).to_f64(), height: (byte_at(bytes, 9 + i) % 31).to_f64() })
@@ -33,17 +72,58 @@ test = |bytes| {
 		(byte_at(bytes, 33) % 12).to_u64()
 	}
 	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 34 + i * 2).to_u64() % n, to: byte_at(bytes, 35 + i * 2).to_u64() % n })
-	input = { ..Route.default_input, graph: { nodes, edges }, positions }
+	boundaries = List.repeat({}, n).map_with_index(|_, i| i).keep_if(|i| byte_at(bytes, 58 + i) % 2 == 1).map(|node| { node, outline: Ellipse })
+	attachments = edges.map_with_index(
+		|_, edge| {
+			choice = byte_at(bytes, 70 + edge) % 3
+			if choice == 0 {
+				[]
+			} else if choice == 1 {
+				[{ edge, endpoint: From, attachment: On(side_at(byte_at(bytes, 82 + edge))) }]
+			} else {
+				offset = (byte_at(bytes, 94 + edge) % 101).to_f64() / 100
+				[{ edge, endpoint: From, attachment: Fixed({ side: side_at(byte_at(bytes, 106 + edge)), offset }) }]
+			}
+		},
+	).join()
+	label_count = if edge_count == 0 {
+		0
+	} else {
+		3 + (byte_at(bytes, 118) % 6).to_u64()
+	}
+	edge_labels = List.repeat({}, label_count).map_with_index(
+		|_, i| {
+			placement = match if i < 3 {
+				i
+			} else {
+				(byte_at(bytes, 119 + i) % 3).to_u64()
+			} {
+				0 => Center
+				1 => Near(From)
+				_ => Near(To)
+			}
+			edge = if i < 3 {
+				0
+			} else {
+				byte_at(bytes, 128 + i).to_u64() % edge_count
+			}
+			{ edge, width: (byte_at(bytes, 137 + i) % 41).to_f64(), height: (byte_at(bytes, 146 + i) % 21).to_f64(), placement }
+		},
+	)
+	input = { ..Route.default_input, graph: { nodes, edges }, positions, boundaries, attachments, edge_labels }
 	match Route.layout(input, Route.default_settings) {
 		Ok(a) => {
-			if a.layout.routes.len() == edges.len() and a.attachments.len() == edges.len() and a.group_crossings.len() == edges.len() and a.layout.routes.all(|r| orthogonal(r) and finite_route(r)) and Route.layout(input, Route.default_settings) == Ok(a) {
+			aligned = a.layout.routes.len() == edges.len() and a.attachments.len() == edges.len() and a.group_crossings.len() == edges.len() and a.label_anchors.len() == edge_labels.len()
+			finite = a.layout.routes.all(|r| orthogonal(r) and finite_route(r)) and a.layout.positions.all(finite_point) and a.label_anchors.all(finite_point) and a.attachments.all(|ends| finite_point(ends.from.point) and finite_point(ends.to.point)) and F64.is_finite(a.layout.bounds.width) and F64.is_finite(a.layout.bounds.height)
+			ellipses = edges.fold_with_index(True, |ok, edge, i| ok and ellipse_attachment(i, From, edge, input, a) and ellipse_attachment(i, To, edge, input, a))
+			if aligned and finite and ellipses and Route.layout(input, Route.default_settings) == Ok(a) {
 				Fuzz.keep
 			} else {
-				crash "orthogonal route contract failed"
+				crash "route geometry contract failed"
 			}
 		}
 		Err(_) => crash "valid generated routing input was rejected"
 	}
 }
 
-target = Fuzz.target_with({ name: "graph-layout-route", generator: Fuzz.list(Fuzz.u8, 64), test, show: |input| Str.inspect(input) })
+target = Fuzz.target_with({ name: "graph-layout-route", generator: Fuzz.list(Fuzz.u8, 160), test, show: |input| Str.inspect(input) })

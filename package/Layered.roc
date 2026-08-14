@@ -820,6 +820,89 @@ LayeredInternals :: {}.{
 		}
 	}
 
+	## Applies caller-facing layer relationships as bounded lower-bound
+	## relaxations. Graph edges and `BeforeLayer` rules establish flow; same,
+	## first, and last rules add zero-span relationships. The caller-facing
+	## validation below rejects a result that cannot satisfy every rule.
+	constrain_ranks = |node_count, edges, min_spans, initial, constraints| {
+		cap = (node_count + constraints.len() + 1) * (node_count + 1)
+		raw = LayeredInternals.indices_up_to(cap).fold(
+			initial,
+			|ranks, _| {
+				with_edges = edges.fold_with_index(
+					ranks,
+					|acc, edge, i| if edge.from == edge.to {
+						acc
+					} else {
+						wanted = (acc.get(edge.from) ?? 0) + (min_spans.get(i) ?? 1)
+						if wanted > (acc.get(edge.to) ?? 0) {
+							acc.set(edge.to, wanted) ?? []
+						} else {
+							acc
+						}
+					},
+				)
+				constraints.fold(
+					with_edges,
+					|acc, rule| match rule {
+						SameLayer(pair) => {
+							value = (acc.get(pair.first) ?? 0).max(acc.get(pair.second) ?? 0)
+							(acc.set(pair.first, value) ?? []).set(pair.second, value) ?? []
+						}
+						BeforeLayer(item) => {
+							wanted = (acc.get(item.first) ?? 0) + item.minimum_span
+							if wanted > (acc.get(item.second) ?? 0) {
+								acc.set(item.second, wanted) ?? []
+							} else {
+								acc
+							}
+						}
+						FirstLayer(node) => {
+							base = acc.get(node) ?? 0
+							acc.map(|rank| rank.max(base))
+						}
+						LastLayer(node) => {
+							last = acc.fold(0, |highest, rank| highest.max(rank))
+							if last > (acc.get(node) ?? 0) {
+								acc.set(node, last) ?? []
+							} else {
+								acc
+							}
+						}
+					},
+				)
+			},
+		)
+		lowest = raw.fold(raw.first() ?? 0, |acc, rank| acc.min(rank))
+		raw.map(|rank| rank - lowest)
+	}
+
+	layer_constraints_hold = |ranks, constraints| constraints.all(
+		|rule| match rule {
+			SameLayer(pair) => (ranks.get(pair.first) ?? 0) == (ranks.get(pair.second) ?? 0)
+			BeforeLayer(item) => (ranks.get(item.second) ?? 0) >= (ranks.get(item.first) ?? 0) + item.minimum_span
+			FirstLayer(node) => (ranks.get(node) ?? 0) == (ranks.fold(ranks.first() ?? 0, |acc, rank| acc.min(rank)))
+			LastLayer(node) => (ranks.get(node) ?? 0) == (ranks.fold(0, |acc, rank| acc.max(rank)))
+		},
+	)
+
+	ranking_holds = |ranks, edges, min_spans| edges.fold_with_index(True, |valid, edge, i| valid and (edge.from == edge.to or (ranks.get(edge.to) ?? 0) >= (ranks.get(edge.from) ?? 0) + (min_spans.get(i) ?? 1)))
+
+	explicit_precedences = |rules| rules.map(|rule| { before: rule.before, after: rule.after })
+
+	precedences_hold = |layers, precedences| precedences.all(
+		|rule| layers.all(
+			|layer| {
+				before = layer.find_first_index(|node| node == rule.before)
+				after = layer.find_first_index(|node| node == rule.after)
+				match (before, after) {
+					(Ok(a), Ok(b)) => a < b
+					_ => True
+				}
+			},
+		),
+	)
+
 	## Hard ordering constraints induced by attachment-rule declaration order. For two
 	## consecutive rules on one node, their opposite endpoints must appear
 	## in the same order whenever they share a layer. Repeated stable adjacent
@@ -2052,10 +2135,15 @@ LayeredInternals :: {}.{
 		base_heights = prepared.nodes.map(|node| node.height).concat(List.repeat(0, virtual_count))
 		label_sizes = prepared.edge_labels.fold(
 			{ widths: base_widths, heights: base_heights },
-			|state, label| {
-				chain = prepared.chains.get(label.edge) ?? []
-				middle = chain.get(chain.len() // 2) ?? 0
-				{ widths: state.widths.set(middle, label.width) ?? state.widths, heights: state.heights.set(middle, label.height) ?? state.heights }
+			|state, label| match label.placement {
+				Near(_) => state
+				Center => {
+					chain = prepared.chains.get(label.edge) ?? []
+					middle = chain.get(chain.len() // 2) ?? 0
+					width = (state.widths.get(middle) ?? 0).max(label.width)
+					height = (state.heights.get(middle) ?? 0).max(label.height)
+					{ widths: state.widths.set(middle, width) ?? [], heights: state.heights.set(middle, height) ?? [] }
+				}
 			},
 		)
 		widths = label_sizes.widths
@@ -2352,16 +2440,72 @@ LayeredInternals :: {}.{
 				} else if !F64.is_finite(label.height) or label.height < 0 {
 					acc.append(InvalidEdgeLabelHeight(i))
 				} else {
-					duplicate = spec.edge_labels.take_first(i).count_if(|other| other.edge == label.edge) > 0
-					if duplicate {
-						acc.append(DuplicateEdgeLabel(i))
+					acc
+				},
+			)
+			boundaries = spec.boundaries.fold_with_index(
+				labels,
+				|acc, rule, i| if rule.node >= spec.graph.nodes.len() {
+					acc.append(InvalidBoundaryNode(i))
+				} else if spec.boundaries.take_first(i).count_if(|other| other.node == rule.node) > 0 {
+					acc.append(DuplicateBoundary(i))
+				} else {
+					acc
+				},
+			)
+			layer_rules = spec.layer_constraints.fold_with_index(
+				boundaries,
+				|acc, rule, i| match rule {
+					SameLayer(pair) => if pair.first >= spec.graph.nodes.len() {
+						acc.append(MissingLayerConstraintNode(i, pair.first))
+					} else if pair.second >= spec.graph.nodes.len() {
+						acc.append(MissingLayerConstraintNode(i, pair.second))
+					} else {
+						acc
+					}
+					BeforeLayer(item) => if item.minimum_span < 1 {
+						acc.append(InvalidLayerConstraintSpan(i))
+					} else if item.first >= spec.graph.nodes.len() {
+						acc.append(MissingLayerConstraintNode(i, item.first))
+					} else if item.second >= spec.graph.nodes.len() {
+						acc.append(MissingLayerConstraintNode(i, item.second))
+					} else {
+						acc
+					}
+					FirstLayer(node) => if node >= spec.graph.nodes.len() {
+						acc.append(MissingLayerConstraintNode(i, node))
+					} else {
+						acc
+					}
+					LastLayer(node) => if node >= spec.graph.nodes.len() {
+						acc.append(MissingLayerConstraintNode(i, node))
 					} else {
 						acc
 					}
 				},
 			)
+			order_rules = spec.order_constraints.fold_with_index(
+				layer_rules,
+				|acc, rule, i| if rule.before >= spec.graph.nodes.len() {
+					acc.append(MissingOrderConstraintNode(i, rule.before))
+				} else if rule.after >= spec.graph.nodes.len() {
+					acc.append(MissingOrderConstraintNode(i, rule.after))
+				} else {
+					acc
+				},
+			)
+			non_ranking = spec.non_ranking_edges.fold_with_index(
+				order_rules,
+				|acc, edge, i| if edge >= spec.graph.edges.len() {
+					acc.append(MissingNonRankingEdge(i, edge))
+				} else if spec.non_ranking_edges.take_first(i).contains(edge) {
+					acc.append(DuplicateNonRankingEdge(i))
+				} else {
+					acc
+				},
+			)
 			spec.edge_weights.fold(
-				labels,
+				non_ranking,
 				|acc, item| if item.edge >= spec.graph.edges.len() {
 					acc.append(MissingEdgeWeightEdge(item.edge))
 				} else if !F64.is_finite(item.weight) or item.weight < 0 {
@@ -2406,6 +2550,7 @@ Prepared := {
 	layer_gap : F64,
 	routing : Route.Settings,
 	attachments : List(Route.AttachmentRule),
+	boundaries : List(Route.BoundaryRule),
 	edge_labels : List(Route.EdgeLabel),
 	precedences : List({ before : U64, after : U64 }),
 }.{
@@ -2418,7 +2563,11 @@ Prepared := {
 		edge_weights : List({ edge : U64, weight : F64 }),
 		min_spans : List({ edge : U64, span : U64 }),
 		attachments : List(Route.AttachmentRule),
+		boundaries : List(Route.BoundaryRule),
 		edge_labels : List(Route.EdgeLabel),
+		layer_constraints : List(Layered.LayerConstraint),
+		order_constraints : List({ before : U64, after : U64 }),
+		non_ranking_edges : List(U64),
 	}
 	Problem : [
 		InvalidNodeWidth(U64),
@@ -2434,10 +2583,19 @@ Prepared := {
 		InvalidAttachmentEdge(U64),
 		InvalidAttachmentOffset(U64),
 		DuplicateAttachment(U64),
+		InvalidBoundaryNode(U64),
+		DuplicateBoundary(U64),
 		InvalidEdgeLabelEdge(U64),
 		InvalidEdgeLabelWidth(U64),
 		InvalidEdgeLabelHeight(U64),
-		DuplicateEdgeLabel(U64),
+		MissingLayerConstraintNode(U64, U64),
+		InvalidLayerConstraintSpan(U64),
+		ConflictingLayerConstraints,
+		MissingOrderConstraintNode(U64, U64),
+		OrderConstraintAcrossLayers(U64),
+		ConflictingOrderConstraints,
+		MissingNonRankingEdge(U64, U64),
+		DuplicateNonRankingEdge(U64),
 		InvalidRouting(Route.Problem),
 	]
 
@@ -2445,7 +2603,7 @@ Prepared := {
 	defaults = { node_gap: 24, layer_gap: 70, routing: Route.default_settings, direction: Down, max_sweeps: 4 }
 
 	default_spec : Spec
-	default_spec = { graph: { nodes: [], edges: [] }, edge_weights: [], min_spans: [], attachments: [], edge_labels: [] }
+	default_spec = { graph: { nodes: [], edges: [] }, edge_weights: [], min_spans: [], attachments: [], boundaries: [], edge_labels: [], layer_constraints: [], order_constraints: [], non_ranking_edges: [] }
 
 	build : Spec, Config -> [Ok(Prepared), Err(List(Problem))]
 	build = |spec, config| {
@@ -2457,40 +2615,87 @@ Prepared := {
 		if !problems.is_empty() {
 			Err(problems)
 		} else {
-			oriented = LayeredInternals.orient_edges(spec.graph.nodes.len(), spec.graph.edges)
+			active_indices = LayeredInternals.indices_up_to(spec.graph.edges.len()).keep_if(|i| !spec.non_ranking_edges.contains(i))
+			active_edges = active_indices.map(|i| spec.graph.edges.get(i) ?? { from: 0, to: 0 })
+			active_oriented = LayeredInternals.orient_edges(spec.graph.nodes.len(), active_edges)
+			active_reversed = active_indices.fold_with_index(
+				[],
+				|acc, edge, i| if active_oriented.reversed_flags.get(i) ?? False {
+					acc.append(edge)
+				} else {
+					acc
+				},
+			)
+			active_flags = LayeredInternals.indices_up_to(spec.graph.edges.len()).map(|edge| active_reversed.contains(edge))
+			oriented_edges = spec.graph.edges.map_with_index(
+				|edge, i| if active_flags.get(i) ?? False {
+					{ from: edge.to, to: edge.from }
+				} else {
+					edge
+				},
+			)
 			weights = spec.edge_weights.fold(List.repeat(1, spec.graph.edges.len()), |acc, item| acc.set(item.edge, item.weight) ?? acc)
 			base_spans = spec.min_spans.fold(List.repeat(1, spec.graph.edges.len()), |acc, item| acc.set(item.edge, item.span) ?? acc)
-			spans = spec.edge_labels.fold(base_spans, |acc, label| acc.set(label.edge, (acc.get(label.edge) ?? 1).max(2)) ?? acc)
-			real_ranks = LayeredInternals.rank_nodes_spec(spec.graph.nodes.len(), oriented.edges, weights, spans)
-			extended = LayeredInternals.insert_virtual_chains(real_ranks, oriented.edges)
-			ordered_layers = LayeredInternals.order_layers(LayeredInternals.group_by_rank(extended.ranks), extended.unit_edges, config.max_sweeps)
-			precedences = LayeredInternals.attachment_precedences(spec.graph, spec.attachments)
+			spans = spec.edge_labels.fold(
+				base_spans,
+				|acc, label| match label.placement {
+					Center => acc.set(label.edge, (acc.get(label.edge) ?? 1).max(2)) ?? []
+					Near(_) => acc
+				},
+			)
+			active_weights = active_indices.map(|i| weights.get(i) ?? 1)
+			active_spans = active_indices.map(|i| spans.get(i) ?? 1)
+			base_ranks = LayeredInternals.rank_nodes_spec(spec.graph.nodes.len(), active_oriented.edges, active_weights, active_spans)
+			real_ranks = LayeredInternals.constrain_ranks(spec.graph.nodes.len(), active_oriented.edges, active_spans, base_ranks, spec.layer_constraints)
+			if !LayeredInternals.layer_constraints_hold(real_ranks, spec.layer_constraints) or !LayeredInternals.ranking_holds(real_ranks, active_oriented.edges, active_spans) {
+				Err([ConflictingLayerConstraints])
+			} else {
+				extended = LayeredInternals.insert_virtual_chains(real_ranks, oriented_edges)
+				ordered_layers = LayeredInternals.order_layers(LayeredInternals.group_by_rank(extended.ranks), extended.unit_edges, config.max_sweeps)
+				precedences = LayeredInternals.attachment_precedences(spec.graph, spec.attachments).concat(LayeredInternals.explicit_precedences(spec.order_constraints))
+				order_problems = spec.order_constraints.fold_with_index(
+					[],
+					|acc, rule, i| if (real_ranks.get(rule.before) ?? 0) != (real_ranks.get(rule.after) ?? 0) {
+						acc.append(OrderConstraintAcrossLayers(i))
+					} else {
+						acc
+					},
+				)
+				legal_layers = LayeredInternals.enforce_precedences(ordered_layers, precedences)
+				if !order_problems.is_empty() {
+					Err(order_problems)
+				} else if !LayeredInternals.precedences_hold(legal_layers, precedences) {
+					Err([ConflictingOrderConstraints])
+				} else {
 
-			Ok({
-				nodes: spec.graph.nodes,
-				edges: spec.graph.edges,
-				reversed: oriented.reversed,
-				reversed_flags: oriented.reversed_flags,
-				real_ranks,
-				extended_ranks: extended.ranks,
-				chains: extended.chains,
-				unit_edges: extended.unit_edges,
-				ordered_layers,
-				precedences,
-				direction: config.direction,
-				max_sweeps: config.max_sweeps,
-				node_gap: config.node_gap,
-				layer_gap: config.layer_gap,
-				routing: config.routing,
-				attachments: spec.attachments,
-				edge_labels: spec.edge_labels,
-			})
+					Ok({
+						nodes: spec.graph.nodes,
+						edges: spec.graph.edges,
+						reversed: active_reversed,
+						reversed_flags: active_flags,
+						real_ranks,
+						extended_ranks: extended.ranks,
+						chains: extended.chains,
+						unit_edges: extended.unit_edges,
+						ordered_layers,
+						precedences,
+						direction: config.direction,
+						max_sweeps: config.max_sweeps,
+						node_gap: config.node_gap,
+						layer_gap: config.layer_gap,
+						routing: config.routing,
+						attachments: spec.attachments,
+						boundaries: spec.boundaries,
+						edge_labels: spec.edge_labels,
+					})
+				}
+			}
 		}
 	}
 
-	RunArgs : { hints : List({ x : F64, y : F64 }) }
+	RunArgs : { hints : List({ x : F64, y : F64 }), stability : [Reflow, PreserveOrder] }
 	default_run : RunArgs
-	default_run = { hints: [] }
+	default_run = { hints: [], stability: Reflow }
 
 	run : Prepared,
 	RunArgs -> {
@@ -2505,11 +2710,23 @@ Prepared := {
 		attachments : List(Route.EdgeAttachments),
 	}
 	run = |sweep, args| {
-		seeded = match LayeredInternals.canonical_hints(args.hints, sweep.nodes.len(), sweep.direction) {
+		canonical = LayeredInternals.canonical_hints(args.hints, sweep.nodes.len(), sweep.direction)
+		seeded = match canonical {
 			None => LayeredInternals.group_by_rank(sweep.extended_ranks)
 			Some(hints) => LayeredInternals.hinted_layers(LayeredInternals.group_by_rank(sweep.extended_ranks), sweep.chains, hints, sweep.reversed_flags)
 		}
-		ordered = LayeredInternals.enforce_precedences(LayeredInternals.order_layers(LayeredInternals.enforce_precedences(seeded, sweep.precedences), sweep.unit_edges, sweep.max_sweeps), sweep.precedences)
+		stable = match (args.stability, canonical) {
+			(PreserveOrder, Some(_)) => seeded.map(
+				|layer| if layer.len() < 2 {
+					[]
+				} else {
+					LayeredInternals.indices_up_to(layer.len() - 1).map(|i| { before: layer.get(i) ?? 0, after: layer.get(i + 1) ?? 0 })
+				},
+			).join()
+			_ => []
+		}
+		precedences = sweep.precedences.concat(stable)
+		ordered = LayeredInternals.enforce_precedences(LayeredInternals.order_layers(LayeredInternals.enforce_precedences(seeded, precedences), sweep.unit_edges, sweep.max_sweeps), precedences)
 		finished = LayeredInternals.finish_layout({
 			nodes: sweep.nodes,
 			edges: sweep.edges,
@@ -2526,7 +2743,7 @@ Prepared := {
 			layer_gap: sweep.layer_gap,
 			route_style: Straight,
 		})
-		routed = Route.layout({ ..Route.default_input, graph: { nodes: sweep.nodes, edges: sweep.edges }, positions: finished.layout.positions, attachments: sweep.attachments, edge_labels: sweep.edge_labels }, sweep.routing)
+		routed = Route.layout({ ..Route.default_input, graph: { nodes: sweep.nodes, edges: sweep.edges }, positions: finished.layout.positions, attachments: sweep.attachments, boundaries: sweep.boundaries, edge_labels: sweep.edge_labels }, sweep.routing)
 		match routed {
 			Ok(value) => { layout: value.layout, layers: finished.layers, backward_edges: finished.backward_edges, label_anchors: value.label_anchors, attachments: value.attachments }
 			Err(_) => { layout: finished.layout, layers: finished.layers, backward_edges: finished.backward_edges, label_anchors: LayeredInternals.label_anchors(sweep.edge_labels, finished.layout.routes), attachments: [] }
@@ -2580,6 +2797,7 @@ ExactPrepared := {
 	layer_gap : F64,
 	routing : Route.Settings,
 	attachments : List(Route.AttachmentRule),
+	boundaries : List(Route.BoundaryRule),
 	edge_labels : List(Route.EdgeLabel),
 	precedences : List({ before : U64, after : U64 }),
 }.{
@@ -2592,7 +2810,11 @@ ExactPrepared := {
 		edge_weights : List({ edge : U64, weight : F64 }),
 		min_spans : List({ edge : U64, span : U64 }),
 		attachments : List(Route.AttachmentRule),
+		boundaries : List(Route.BoundaryRule),
 		edge_labels : List(Route.EdgeLabel),
+		layer_constraints : List(Layered.LayerConstraint),
+		order_constraints : List({ before : U64, after : U64 }),
+		non_ranking_edges : List(U64),
 	}
 	Problem : [
 		InvalidNodeWidth(U64),
@@ -2608,10 +2830,19 @@ ExactPrepared := {
 		InvalidAttachmentEdge(U64),
 		InvalidAttachmentOffset(U64),
 		DuplicateAttachment(U64),
+		InvalidBoundaryNode(U64),
+		DuplicateBoundary(U64),
 		InvalidEdgeLabelEdge(U64),
 		InvalidEdgeLabelWidth(U64),
 		InvalidEdgeLabelHeight(U64),
-		DuplicateEdgeLabel(U64),
+		MissingLayerConstraintNode(U64, U64),
+		InvalidLayerConstraintSpan(U64),
+		ConflictingLayerConstraints,
+		MissingOrderConstraintNode(U64, U64),
+		OrderConstraintAcrossLayers(U64),
+		ConflictingOrderConstraints,
+		MissingNonRankingEdge(U64, U64),
+		DuplicateNonRankingEdge(U64),
 		InvalidRouting(Route.Problem),
 	]
 
@@ -2628,35 +2859,85 @@ ExactPrepared := {
 		if !problems.is_empty() {
 			Err(problems)
 		} else {
-			oriented = LayeredInternals.orient_edges(spec.graph.nodes.len(), spec.graph.edges)
+			active_indices = LayeredInternals.indices_up_to(spec.graph.edges.len()).keep_if(|i| !spec.non_ranking_edges.contains(i))
+			active_edges = active_indices.map(|i| spec.graph.edges.get(i) ?? { from: 0, to: 0 })
+			active_oriented = LayeredInternals.orient_edges(spec.graph.nodes.len(), active_edges)
+			active_reversed = active_indices.fold_with_index(
+				[],
+				|acc, edge, i| if active_oriented.reversed_flags.get(i) ?? False {
+					acc.append(edge)
+				} else {
+					acc
+				},
+			)
+			active_flags = LayeredInternals.indices_up_to(spec.graph.edges.len()).map(|edge| active_reversed.contains(edge))
+			oriented_edges = spec.graph.edges.map_with_index(
+				|edge, i| if active_flags.get(i) ?? False {
+					{ from: edge.to, to: edge.from }
+				} else {
+					edge
+				},
+			)
 			weights = spec.edge_weights.fold(List.repeat(1, spec.graph.edges.len()), |acc, item| acc.set(item.edge, item.weight) ?? acc)
 			base_spans = spec.min_spans.fold(List.repeat(1, spec.graph.edges.len()), |acc, item| acc.set(item.edge, item.span) ?? acc)
-			spans = spec.edge_labels.fold(base_spans, |acc, label| acc.set(label.edge, (acc.get(label.edge) ?? 1).max(2)) ?? acc)
-			real_ranks = LayeredInternals.rank_nodes_spec(spec.graph.nodes.len(), oriented.edges, weights, spans)
-			extended = LayeredInternals.insert_virtual_chains(real_ranks, oriented.edges)
-			precedences = LayeredInternals.attachment_precedences(spec.graph, spec.attachments)
-			constrained_layers = LayeredInternals.enforce_precedences(LayeredInternals.group_by_rank(extended.ranks), precedences)
-			searched = LayeredInternals.exact_order_layers(constrained_layers, extended.unit_edges, config.effort_cap)
+			spans = spec.edge_labels.fold(
+				base_spans,
+				|acc, label| match label.placement {
+					Center => acc.set(label.edge, (acc.get(label.edge) ?? 1).max(2)) ?? []
+					Near(_) => acc
+				},
+			)
+			active_weights = active_indices.map(|i| weights.get(i) ?? 1)
+			active_spans = active_indices.map(|i| spans.get(i) ?? 1)
+			base_ranks = LayeredInternals.rank_nodes_spec(spec.graph.nodes.len(), active_oriented.edges, active_weights, active_spans)
+			real_ranks = LayeredInternals.constrain_ranks(spec.graph.nodes.len(), active_oriented.edges, active_spans, base_ranks, spec.layer_constraints)
+			if !LayeredInternals.layer_constraints_hold(real_ranks, spec.layer_constraints) or !LayeredInternals.ranking_holds(real_ranks, active_oriented.edges, active_spans) {
+				Err([ConflictingLayerConstraints])
+			} else {
+				extended = LayeredInternals.insert_virtual_chains(real_ranks, oriented_edges)
+				precedences = LayeredInternals.attachment_precedences(spec.graph, spec.attachments).concat(LayeredInternals.explicit_precedences(spec.order_constraints))
+				order_problems = spec.order_constraints.fold_with_index(
+					[],
+					|acc, rule, i| if (real_ranks.get(rule.before) ?? 0) != (real_ranks.get(rule.after) ?? 0) {
+						acc.append(OrderConstraintAcrossLayers(i))
+					} else {
+						acc
+					},
+				)
+				legal_layers = LayeredInternals.enforce_precedences(LayeredInternals.group_by_rank(extended.ranks), precedences)
+				if !order_problems.is_empty() {
+					Err(order_problems)
+				} else if !LayeredInternals.precedences_hold(legal_layers, precedences) {
+					Err([ConflictingOrderConstraints])
+				} else {
+					constrained_layers = legal_layers
+					searched = LayeredInternals.exact_order_layers(constrained_layers, extended.unit_edges, config.effort_cap)
 
-			Ok({
-				nodes: spec.graph.nodes,
-				edges: spec.graph.edges,
-				reversed: oriented.reversed,
-				reversed_flags: oriented.reversed_flags,
-				real_ranks,
-				extended_ranks: extended.ranks,
-				chains: extended.chains,
-				unit_edges: extended.unit_edges,
-				ordered_layers: LayeredInternals.enforce_precedences(searched.layers, precedences),
-				precedences,
-				direction: config.direction,
-				proven_optimal: searched.proven_optimal,
-				node_gap: config.node_gap,
-				layer_gap: config.layer_gap,
-				routing: config.routing,
-				attachments: spec.attachments,
-				edge_labels: spec.edge_labels,
-			})
+					Ok({
+						nodes: spec.graph.nodes,
+						edges: spec.graph.edges,
+						reversed: active_reversed,
+						reversed_flags: active_flags,
+						real_ranks,
+						extended_ranks: extended.ranks,
+						chains: extended.chains,
+						unit_edges: extended.unit_edges,
+						ordered_layers: LayeredInternals.enforce_precedences(searched.layers, precedences),
+						precedences,
+						direction: config.direction,
+						# The current exhaustive search enumerates unconstrained permutations;
+						# post-enforcement is deterministic but cannot certify constrained
+						# optimality until the search enumerates linear extensions directly.
+						proven_optimal: searched.proven_optimal and precedences.is_empty(),
+						node_gap: config.node_gap,
+						layer_gap: config.layer_gap,
+						routing: config.routing,
+						attachments: spec.attachments,
+						boundaries: spec.boundaries,
+						edge_labels: spec.edge_labels,
+					})
+				}
+			}
 		}
 	}
 
@@ -2690,7 +2971,7 @@ ExactPrepared := {
 			route_style: Straight,
 		})
 
-		routed = Route.layout({ ..Route.default_input, graph: { nodes: exact.nodes, edges: exact.edges }, positions: finished.layout.positions, attachments: exact.attachments, edge_labels: exact.edge_labels }, exact.routing)
+		routed = Route.layout({ ..Route.default_input, graph: { nodes: exact.nodes, edges: exact.edges }, positions: finished.layout.positions, attachments: exact.attachments, boundaries: exact.boundaries, edge_labels: exact.edge_labels }, exact.routing)
 		orthogonal = match routed {
 			Ok(value) => value
 			Err(_) => { layout: finished.layout, label_anchors: LayeredInternals.label_anchors(exact.edge_labels, finished.layout.routes), attachments: [], groups: [], group_crossings: [] }
@@ -2739,7 +3020,15 @@ ExactPrepared := {
 ## optimality was proven.
 Layered := [].{
 
-	## Directed flow input for the current exemplar. Edge identity is its index.
+	## Hard relationships between node layers. `BeforeLayer` follows the
+	## selected flow direction, so it has the same meaning for every direction.
+	LayerConstraint : [SameLayer({ first : U64, second : U64 }), BeforeLayer({ first : U64, second : U64, minimum_span : U64 }), FirstLayer(U64), LastLayer(U64)]
+
+	## Directed flow input. Edge identity is its index. Most callers only set
+	## `graph`; the sparse lists add labels, endpoint geometry, or authored
+	## placement. Layer constraints describe flow-relative rows, order
+	## constraints arrange nodes that share a row, and non-ranking edges are
+	## routed without influencing rows or cycle breaking.
 	Input : {
 		graph : {
 			nodes : List({ width : F64, height : F64 }),
@@ -2748,7 +3037,11 @@ Layered := [].{
 		edge_weights : List({ edge : U64, weight : F64 }),
 		min_spans : List({ edge : U64, span : U64 }),
 		attachments : List(Route.AttachmentRule),
+		boundaries : List(Route.BoundaryRule),
 		edge_labels : List(Route.EdgeLabel),
+		layer_constraints : List(LayerConstraint),
+		order_constraints : List({ before : U64, after : U64 }),
+		non_ranking_edges : List(U64),
 	}
 
 	## Space between nodes on the same layer and between adjacent layers,
@@ -2756,7 +3049,9 @@ Layered := [].{
 	## Every edge is routed after placement against all node boxes.
 	Settings : { node_gap : F64, layer_gap : F64, routing : Route.Settings, direction : [Down, Up, Left, Right], max_sweeps : U64 }
 
-	RunArgs : { hints : List({ x : F64, y : F64 }) }
+	## Per-layout choices. `PreserveOrder` treats a complete finite hint list as
+	## the previous drawing and keeps its within-layer order wherever possible.
+	RunArgs : { hints : List({ x : F64, y : F64 }), stability : [Reflow, PreserveOrder] }
 
 	## Invalid sizes, spacing, or edge endpoints found while checking input.
 	Problem : [
@@ -2773,10 +3068,19 @@ Layered := [].{
 		InvalidAttachmentEdge(U64),
 		InvalidAttachmentOffset(U64),
 		DuplicateAttachment(U64),
+		InvalidBoundaryNode(U64),
+		DuplicateBoundary(U64),
 		InvalidEdgeLabelEdge(U64),
 		InvalidEdgeLabelWidth(U64),
 		InvalidEdgeLabelHeight(U64),
-		DuplicateEdgeLabel(U64),
+		MissingLayerConstraintNode(U64, U64),
+		InvalidLayerConstraintSpan(U64),
+		ConflictingLayerConstraints,
+		MissingOrderConstraintNode(U64, U64),
+		OrderConstraintAcrossLayers(U64),
+		ConflictingOrderConstraints,
+		MissingNonRankingEdge(U64, U64),
+		DuplicateNonRankingEdge(U64),
 		InvalidRouting(Route.Problem),
 	]
 
@@ -2829,7 +3133,8 @@ Layered := [].{
 	## Everything `Result` reports, plus whether the crossing search proved
 	## its ordering has the fewest crossings any ordering can achieve:
 	## `True` when the search finished within the effort cap or the ordering
-	## is crossing-free, `False` when the cap stopped the search early.
+	## is crossing-free, `False` when the cap stopped the search early or hard
+	## ordering rules were applied after the unconstrained search.
 	ExactResult : {
 		layout : {
 			positions : List({ x : F64, y : F64 }),
@@ -3285,6 +3590,49 @@ expect {
 	Layered.layout(input, Layered.default_settings, Layered.default_run) == Layered.layout(input, Layered.default_settings, Layered.default_run)
 }
 
+## Caller constraints use flow-relative language and remain hard through the
+## crossing sweeps: nodes 0 and 1 share the first layer in the requested order.
+expect {
+	input = {
+		..Layered.default_input,
+		graph: { nodes: List.repeat({ width: 10, height: 6 }, 3), edges: [{ from: 0, to: 2 }, { from: 1, to: 2 }] },
+		layer_constraints: [SameLayer({ first: 0, second: 1 }), FirstLayer(0)],
+		order_constraints: [{ before: 1, after: 0 }],
+	}
+	match Layered.layout(input, Layered.default_settings, Layered.default_run) {
+		Ok(result) => result.layers == [0, 0, 1] and (result.layout.positions.get(1) ?? Geom.point(0, 0)).x <= (result.layout.positions.get(0) ?? Geom.point(0, 0)).x
+		Err(_) => False
+	}
+}
+
+## A non-ranking relationship is still routed in source order but does not
+## make the active flow cyclic or appear among the reversed edges.
+expect {
+	input = {
+		..Layered.default_input,
+		graph: { nodes: List.repeat({ width: 10, height: 6 }, 3), edges: [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 2, to: 0 }] },
+		non_ranking_edges: [2],
+	}
+	match Layered.layout(input, Layered.default_settings, Layered.default_run) {
+		Ok(result) => result.layers == [0, 1, 2] and result.backward_edges == [] and result.layout.routes.len() == 3
+		Err(_) => False
+	}
+}
+
+## Relationship names and endpoint roles may coexist on one edge. Only the
+## center label reserves a layer; anchors stay label-input aligned.
+expect {
+	input = {
+		..Layered.default_input,
+		graph: { nodes: List.repeat({ width: 10, height: 6 }, 2), edges: [{ from: 0, to: 1 }] },
+		edge_labels: [{ edge: 0, width: 50, height: 12, placement: Center }, { edge: 0, width: 10, height: 6, placement: Near(To) }],
+	}
+	match Layered.layout(input, Layered.default_settings, Layered.default_run) {
+		Ok(result) => result.layers == [0, 2] and result.label_anchors.len() == 2
+		Err(_) => False
+	}
+}
+
 ## Port declaration order is a hard priority for both ordering paths. Even
 ## when the initial node order is reversed, the two targets follow their attachment
 ## order and no residual violation is reported.
@@ -3294,7 +3642,7 @@ expect {
 		graph: { nodes: List.repeat({ width: 10, height: 6 }, 3), edges: [{ from: 0, to: 2 }, { from: 0, to: 1 }] },
 		attachments: [{ edge: 0, endpoint: From, attachment: Fixed({ side: Bottom, offset: 0.25 }) }, { edge: 1, endpoint: From, attachment: Fixed({ side: Bottom, offset: 0.75 }) }],
 	}
-	sweep = Layered.layout(input, Layered.default_settings, { hints: [Geom.point(0, 0), Geom.point(0, 20), Geom.point(0, 0)] })
+	sweep = Layered.layout(input, Layered.default_settings, { hints: [Geom.point(0, 0), Geom.point(0, 20), Geom.point(0, 0)], stability: Reflow })
 	exact = Layered.layout_exact(input, Layered.default_exact_settings)
 	match (sweep, exact) {
 		(Ok(a), Ok(b)) => a.attachments.len() == 2 and b.attachments.len() == 2 and (a.layout.positions.get(2) ?? Geom.point(0, 0)).x <= (a.layout.positions.get(1) ?? Geom.point(0, 0)).x
@@ -3307,7 +3655,7 @@ expect {
 	input = {
 		..Layered.default_input,
 		graph: { nodes: [{ width: 10, height: 6 }, { width: 10, height: 6 }], edges: [{ from: 0, to: 1 }] },
-		edge_labels: [{ edge: 0, width: 120, height: 30 }],
+		edge_labels: [{ edge: 0, width: 120, height: 30, placement: Center }],
 	}
 	match Layered.layout(input, Layered.default_settings, Layered.default_run) {
 		Ok(result) => result.layers == [0, 2] and result.label_anchors.len() == 1 and result.layout.bounds.width >= 120

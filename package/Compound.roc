@@ -13,7 +13,8 @@ Compound := [
 		{
 			children : List([Node(U64), Nested(Compound)]),
 			algorithm : Compound.Algorithm,
-			padding : F64,
+			insets : Compound.Insets,
+			header : Compound.Header,
 			min_width : F64,
 			min_height : F64,
 		},
@@ -46,9 +47,20 @@ Compound := [
 	## as `Route.layout` and additionally respects group boundaries.
 	Routing : [Straight, Orthogonal(Route.Settings)]
 
-	## A recursive group. Node references are global node indices. Padding and
-	## minimum dimensions apply to every algorithm; algorithm-specific data lives
-	## in the selected `Algorithm` variant.
+	## Empty space reserved between a group's outer boundary and its contents.
+	## Use `uniform_insets` for ordinary boxes, or change individual sides when
+	## a diagram needs asymmetric space.
+	Insets : { top : F64, right : F64, bottom : F64, left : F64 }
+
+	## An optional geometric band reserved at the top of a group. Orthogonal
+	## routes avoid this rectangle, so callers can safely draw a measured title
+	## or other header content there. The top inset separates the bottom of this
+	## band from the group's children.
+	Header : [None, Reserve({ height : F64 })]
+
+	## A recursive group. Node references are global node indices. Insets, header,
+	## and minimum dimensions apply to every algorithm; algorithm-specific data
+	## lives in the selected `Algorithm` variant.
 	GroupSpec : Compound
 
 	## The complete graph, recursive ownership tree, routing choice, and optional
@@ -80,7 +92,8 @@ Compound := [
 		MissingMember(U64),
 		DuplicateMember(U64),
 		MissingGroupNode(U64, U64),
-		InvalidPadding(U64),
+		InvalidInset(U64, Route.Side),
+		InvalidHeaderHeight(U64),
 		InvalidMinimumWidth(U64),
 		InvalidMinimumHeight(U64),
 		InvalidGap(U64),
@@ -92,9 +105,13 @@ Compound := [
 		RouteProblem(Route.Problem),
 	]
 
-	## Index-aligned node and edge geometry plus root-first group rectangles.
-	## The root rectangle equals `layout.bounds` and contains every child group,
-	## route, and label box.
+	## The outer rectangle, child-content rectangle, and optional reserved header
+	## for one group. Group geometry is returned in root-first preorder.
+	GroupGeometry : { rect : Geom.Rect, content : Geom.Rect, header : [None, Some(Geom.Rect)] }
+
+	## Index-aligned node and edge geometry plus root-first group geometry. The
+	## root outer rectangle equals `layout.bounds` and contains every child group,
+	## route, and label box; its content rectangle excludes its insets and header.
 	Result : {
 		layout : {
 			positions : List({ x : F64, y : F64 }),
@@ -103,19 +120,29 @@ Compound := [
 		},
 
 		## Root-first preorder, so parent containment can be checked in one pass.
-		groups : List({ x : F64, y : F64, width : F64, height : F64 }),
+		groups : List(GroupGeometry),
 		label_anchors : List({ x : F64, y : F64 }),
 		attachments : List(Route.EdgeAttachments),
 		group_crossings : List(List(Route.GroupCrossing)),
 	}
 
-	## An empty row group with 24 units between children and 16 units of padding.
+	## Build equal insets on all four sides.
+	uniform_insets : F64 -> Insets
+	uniform_insets = |amount| { top: amount, right: amount, bottom: amount, left: amount }
+
+	## Sixteen layout units on every side.
+	default_insets : Insets
+	default_insets = Compound.uniform_insets(16)
+
+	## An empty row group with 24 units between children, 16-unit insets, and no
+	## reserved header.
 	## Replace its fields by record update when building each recursive group.
 	default_group : Compound
 	default_group = Group({
 		children: [],
 		algorithm: Rows({ gap: 24 }),
-		padding: 16,
+		insets: Compound.default_insets,
+		header: None,
 		min_width: 0,
 		min_height: 0,
 	})
@@ -205,7 +232,7 @@ CompoundInternals :: {}.{
 			Straight => Route.default_settings
 			Orthogonal(settings) => settings
 		}
-		route_problem = match Route.layout({ graph: input.graph, positions: List.repeat({ x: 0, y: 0 }, node_count), groups: [], memberships: [], attachments: input.attachments, edge_labels: input.edge_labels }, route_settings) {
+		route_problem = match Route.layout({ graph: input.graph, positions: List.repeat({ x: 0, y: 0 }, node_count), groups: [], memberships: [], attachments: input.attachments, boundaries: [], edge_labels: input.edge_labels }, route_settings) {
 			Ok(_) => []
 			Err(problems) => problems.keep_oks(
 				|problem| match problem {
@@ -222,12 +249,22 @@ CompoundInternals :: {}.{
 		group = match group_value {
 			Group(spec) => spec
 		}
+		inset_problem = |amount, side| if F64.is_finite(amount) and amount >= 0 {
+			[]
+		} else {
+			[InvalidInset(group_index, side)]
+		}
+		header_problems = match group.header {
+			None => []
+			Reserve({ height }) if F64.is_finite(height) and height >= 0 => []
+			Reserve(_) => [InvalidHeaderHeight(group_index)]
+		}
 		settings = [
-			if F64.is_finite(group.padding) and group.padding >= 0 {
-				[]
-			} else {
-				[InvalidPadding(group_index)]
-			},
+			inset_problem(group.insets.top, Top),
+			inset_problem(group.insets.right, Right),
+			inset_problem(group.insets.bottom, Bottom),
+			inset_problem(group.insets.left, Left),
+			header_problems,
 			if F64.is_finite(group.min_width) and group.min_width >= 0 {
 				[]
 			} else {
@@ -334,7 +371,7 @@ CompoundInternals :: {}.{
 			},
 		)
 		straight_routes = input.graph.edges.map_with_index(|edge, edge_index| CompoundRouting.straight_route(edge_index, edge, input.graph.nodes, positions, input.attachments))
-		route_group_rects = placed.groups.drop_first(1)
+		route_group_rects = placed.groups.drop_first(1).map(|geometry| geometry.rect)
 		route_groups = route_group_rects.map_with_index(
 			|rect, i| {
 				parent = route_group_rects.fold_with_index(
@@ -348,14 +385,26 @@ CompoundInternals :: {}.{
 				{ rect, parent }
 			},
 		)
-		memberships = positions.fold_with_index([], |acc, point, node| match CompoundInternals.innermost_group(point, route_group_rects) {
-			Some(group) => acc.append({ node, group })
-			None => acc
-		})
+		memberships = positions.fold_with_index(
+			[],
+			|acc, point, node| match CompoundInternals.innermost_group(point, route_group_rects) {
+				Some(group) => acc.append({ node, group })
+				None => acc
+			},
+		)
+		header_obstacles = placed.groups.keep_oks(
+			|geometry| match geometry.header {
+				Some(rect) => Ok(rect)
+				None => Err({})
+			},
+		)
+		route_nodes = input.graph.nodes.concat(header_obstacles.map(|rect| { width: rect.width, height: rect.height }))
+		route_positions = positions.concat(header_obstacles.map(|rect| { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }))
+		route_graph = { nodes: route_nodes, edges: input.graph.edges }
 		routed = match input.routing {
 			Orthogonal(settings) if !input.graph.nodes.is_empty() =>
-				match Route.layout({ graph: input.graph, positions, groups: route_groups, memberships, attachments: input.attachments, edge_labels: input.edge_labels }, settings) {
-					Ok(result) => { positions: result.layout.positions, routes: result.layout.routes, bounds: result.layout.bounds, label_anchors: result.label_anchors, attachments: result.attachments, group_crossings: result.group_crossings }
+				match Route.layout({ graph: route_graph, positions: route_positions, groups: route_groups, memberships, attachments: input.attachments, boundaries: [], edge_labels: input.edge_labels }, settings) {
+					Ok(result) => { positions: result.layout.positions.drop_last(header_obstacles.len()), routes: result.layout.routes, bounds: result.layout.bounds, label_anchors: result.label_anchors, attachments: result.attachments, group_crossings: result.group_crossings }
 					Err(_) => { positions, routes: straight_routes, bounds: placed.rect, label_anchors: [], attachments: [], group_crossings: List.repeat([], input.graph.edges.len()) }
 				}
 			_ => { positions, routes: straight_routes, bounds: placed.rect, label_anchors: [], attachments: [], group_crossings: List.repeat([], input.graph.edges.len()) }
@@ -364,10 +413,10 @@ CompoundInternals :: {}.{
 			(Ok(before), Ok(after)) => { x: after.x - before.x, y: after.y - before.y }
 			_ => { x: 0, y: 0 }
 		}
-		placed_groups = placed.groups.map(|rect| { x: rect.x + shift.x, y: rect.y + shift.y, width: rect.width, height: rect.height })
+		placed_groups = placed.groups.map(|geometry| CompoundInternals.move_group_geometry(geometry, shift))
 		stitched_routes = routed.routes
 		raw_label_anchors = input.edge_labels.map(|label| CompoundRouting.route_midpoint(stitched_routes.get(label.edge) ?? Polyline([])))
-		extent = CompoundRouting.drawing_extent(placed.rect, shift, root_spec.padding, input.graph.nodes, routed.positions, stitched_routes, input.edge_labels, raw_label_anchors)
+		extent = CompoundRouting.drawing_extent(placed.rect, shift, root_spec.insets, input.graph.nodes, routed.positions, stitched_routes, input.edge_labels, raw_label_anchors)
 		normalize = { x: 0 - extent.x, y: 0 - extent.y }
 		move_point = |point| { x: Geom.saturate(point.x + normalize.x), y: Geom.saturate(point.y + normalize.y) }
 		positions_final = routed.positions.map(move_point)
@@ -375,10 +424,10 @@ CompoundInternals :: {}.{
 		attachments_final = routed.attachments.map(|ends| { from: { ..ends.from, point: move_point(ends.from.point) }, to: { ..ends.to, point: move_point(ends.to.point) } })
 		group_crossings_final = routed.group_crossings.map(|crossings| crossings.map(|crossing| { ..crossing, point: move_point(crossing.point) }))
 		groups = placed_groups.map_with_index(
-			|rect, i| if i == 0 {
-				{ x: 0, y: 0, width: extent.width, height: extent.height }
+			|geometry, i| if i == 0 {
+				{ ..CompoundInternals.move_group_geometry(geometry, normalize), rect: { x: 0, y: 0, width: extent.width, height: extent.height } }
 			} else {
-				{ x: Geom.saturate(rect.x + normalize.x), y: Geom.saturate(rect.y + normalize.y), width: rect.width, height: rect.height }
+				CompoundInternals.move_group_geometry(geometry, normalize)
 			},
 		)
 		label_anchors = raw_label_anchors.map(move_point)
@@ -403,7 +452,7 @@ CompoundInternals :: {}.{
 	U32,
 	U64 -> {
 		nodes : List({ node : U64, x : F64, y : F64 }),
-		groups : List({ x : F64, y : F64, width : F64, height : F64 }),
+		groups : List(Compound.GroupGeometry),
 		rect : { x : F64, y : F64, width : F64, height : F64 },
 	}
 	place_group = |group_value, sizes, edges, hints, seed, depth| {
@@ -462,11 +511,15 @@ CompoundInternals :: {}.{
 		laid = items.map_with_index(
 			|item, i| {
 				position = proxy_positions.get(i) ?? { x: item.width / 2, y: item.height / 2 }
-				dx = position.x - item.width / 2 + group.padding
-				dy = position.y - item.height / 2 + group.padding
+				header_height = match group.header {
+					None => 0
+					Reserve(payload) => payload.height
+				}
+				dx = position.x - item.width / 2 + group.insets.left
+				dy = position.y - item.height / 2 + group.insets.top + header_height
 				{
 					nodes: item.nodes.map(|p| { node: p.node, x: p.x + dx, y: p.y + dy }),
-					groups: item.groups.map(|r| { x: r.x + dx, y: r.y + dy, width: r.width, height: r.height }),
+					groups: item.groups.map(|geometry| CompoundInternals.move_group_geometry(geometry, { x: dx, y: dy })),
 				}
 			},
 		)
@@ -474,16 +527,38 @@ CompoundInternals :: {}.{
 		laid_groups = laid.map(|item| item.groups).join()
 		content_width = items.map_with_index(|item, i| (proxy_positions.get(i) ?? { x: 0, y: 0 }).x + item.width / 2).fold(0, |a, b| a.max(b))
 		content_height = items.map_with_index(|item, i| (proxy_positions.get(i) ?? { x: 0, y: 0 }).y + item.height / 2).fold(0, |a, b| a.max(b))
-		natural_width = content_width + group.padding * 2
-		natural_height = content_height + group.padding * 2
+		header_height = match group.header {
+			None => 0
+			Reserve(payload) => payload.height
+		}
+		natural_width = content_width + group.insets.left + group.insets.right
+		natural_height = content_height + group.insets.top + header_height + group.insets.bottom
 		width = Geom.saturate(natural_width.max(group.min_width))
 		height = Geom.saturate(natural_height.max(group.min_height))
 		center_dx = (width - natural_width).max(0) / 2
 		center_dy = (height - natural_height).max(0) / 2
 		centered_nodes = laid_nodes.map(|p| { node: p.node, x: Geom.saturate(p.x + center_dx), y: Geom.saturate(p.y + center_dy) })
-		centered_children = laid_groups.map(|r| { x: Geom.saturate(r.x + center_dx), y: Geom.saturate(r.y + center_dy), width: r.width, height: r.height })
+		centered_children = laid_groups.map(|geometry| CompoundInternals.move_group_geometry(geometry, { x: center_dx, y: center_dy }))
 		root_rect = { x: 0, y: 0, width, height }
-		{ nodes: centered_nodes, groups: List.concat([root_rect], centered_children), rect: root_rect }
+		content = { x: group.insets.left, y: group.insets.top + header_height, width: Geom.saturate(width - group.insets.left - group.insets.right), height: Geom.saturate(height - group.insets.top - header_height - group.insets.bottom) }
+		header = match group.header {
+			None => None
+			Reserve(_) => Some({ x: 0, y: 0, width, height: header_height })
+		}
+		root_geometry = { rect: root_rect, content, header }
+		{ nodes: centered_nodes, groups: List.concat([root_geometry], centered_children), rect: root_rect }
+	}
+
+	move_group_geometry = |geometry, delta| {
+		move_rect = |rect| { x: Geom.saturate(rect.x + delta.x), y: Geom.saturate(rect.y + delta.y), width: rect.width, height: rect.height }
+		{
+			rect: move_rect(geometry.rect),
+			content: move_rect(geometry.content),
+			header: match geometry.header {
+				None => None
+				Some(rect) => Some(move_rect(rect))
+			},
+		}
 	}
 
 	algorithm_positions : Compound.Algorithm, List({ width : F64, height : F64 }), List({ from : U64, to : U64 }), List({ x : F64, y : F64 }), List({ node : U64, x : F64, y : F64 }), List(Constrained.Constraint), U32 -> { positions : List({ x : F64, y : F64 }), valid : Bool }
@@ -493,12 +568,12 @@ CompoundInternals :: {}.{
 			Rows(payload) => { positions: CompoundInternals.linear_positions(nodes, payload.gap, False), valid: True }
 			Columns(payload) => { positions: CompoundInternals.linear_positions(nodes, payload.gap, True), valid: True }
 			LayeredSweep(payload) =>
-				match Layered.layout({ graph: { nodes, edges }, edge_weights: payload.edge_weights, min_spans: payload.min_spans, attachments: [], edge_labels: [] }, payload.settings, { hints: hints }) {
+				match Layered.layout({ ..Layered.default_input, graph: { nodes, edges }, edge_weights: payload.edge_weights, min_spans: payload.min_spans }, payload.settings, { ..Layered.default_run, hints }) {
 					Ok(result) => { positions: result.layout.positions, valid: True }
 					Err(_) => { positions: fallback(False), valid: False }
 				}
 			LayeredExact(payload) =>
-				match Layered.layout_exact({ graph: { nodes, edges }, edge_weights: payload.edge_weights, min_spans: payload.min_spans, attachments: [], edge_labels: [] }, payload.settings) {
+				match Layered.layout_exact({ ..Layered.default_input, graph: { nodes, edges }, edge_weights: payload.edge_weights, min_spans: payload.min_spans }, payload.settings) {
 					Ok(result) => { positions: result.layout.positions, valid: True }
 					Err(_) => { positions: fallback(False), valid: False }
 				}
@@ -691,11 +766,40 @@ CompoundInternals :: {}.{
 ## Empty recursive input is total.
 expect Compound.layout(Compound.default_input, Compound.default_run) == Ok({
 	layout: { positions: [], routes: [], bounds: { x: 0, y: 0, width: 32, height: 32 } },
-	groups: [{ x: 0, y: 0, width: 32, height: 32 }],
+	groups: [{ rect: { x: 0, y: 0, width: 32, height: 32 }, content: { x: 16, y: 16, width: 0, height: 0 }, header: None }],
 	label_anchors: [],
 	attachments: [],
 	group_crossings: [],
 })
+
+## Insets and header height are independent geometric inputs, so all invalid
+## sides are reported together instead of silently repaired.
+expect {
+	base = match Compound.default_group {
+		Group(spec) => spec
+	}
+	root = Group({ ..base, insets: { top: 0 - 1.0, right: F64.infinity, bottom: 3, left: 0 - 2.0 }, header: Reserve({ height: 0 - 4.0 }) })
+	match Compound.layout({ ..Compound.default_input, root }, Compound.default_run) {
+		Err(problems) => problems.contains(InvalidInset(0, Top)) and problems.contains(InvalidInset(0, Right)) and problems.contains(InvalidInset(0, Left)) and problems.contains(InvalidHeaderHeight(0))
+		Ok(_) => False
+	}
+}
+
+## Asymmetric insets, a reserved header, and minimum dimensions all remain
+## visible in the returned group geometry, including for an empty group.
+expect {
+	base = match Compound.default_group {
+		Group(spec) => spec
+	}
+	root = Group({ ..base, insets: { top: 2, right: 7, bottom: 11, left: 5 }, header: Reserve({ height: 13 }), min_width: 40, min_height: 50 })
+	match Compound.layout({ ..Compound.default_input, root }, Compound.default_run) {
+		Ok(result) => match result.groups.first() {
+			Ok(geometry) => geometry.rect == { x: 0, y: 0, width: 40, height: 50 } and geometry.content == { x: 5, y: 15, width: 28, height: 24 } and geometry.header == Some({ x: 0, y: 0, width: 40, height: 13 })
+			Err(_) => False
+		}
+		Err(_) => False
+	}
+}
 
 ## Routing settings are validated through the shared Route vocabulary instead
 ## of being collapsed into one opaque metadata problem.
@@ -749,14 +853,15 @@ expect {
 	base = match Compound.default_group {
 		Group(spec) => spec
 	}
-	left = Group({ ..base, padding: 4, children: [Node(0)] })
-	middle = Group({ ..base, padding: 20, children: [Node(1)] })
-	right = Group({ ..base, padding: 4, children: [Node(2)] })
-	root = Group({ ..base, padding: 4, children: [Nested(left), Nested(middle), Nested(right)], algorithm: Rows({ gap: 8 }) })
+	left = Group({ ..base, insets: Compound.uniform_insets(4), children: [Node(0)] })
+	middle = Group({ ..base, insets: Compound.uniform_insets(20), children: [Node(1)] })
+	right = Group({ ..base, insets: Compound.uniform_insets(4), children: [Node(2)] })
+	root = Group({ ..base, insets: Compound.uniform_insets(4), children: [Nested(left), Nested(middle), Nested(right)], algorithm: Rows({ gap: 8 }) })
 	input = { graph: { nodes: List.repeat({ width: 10, height: 10 }, 3), edges: [{ from: 0, to: 2 }] }, attachments: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
 	match Compound.layout(input, Compound.default_run) {
 		Ok(result) => match (result.groups.get(2), result.layout.routes.get(0)) {
-			(Ok(rect), Ok(route)) => {
+			(Ok(geometry), Ok(route)) => {
+				rect = geometry.rect
 				box = { min_x: rect.x, min_y: rect.y, max_x: rect.x + rect.width, max_y: rect.y + rect.height }
 				points = CompoundRouting.route_points(route)
 				points.fold_with_index(
@@ -779,14 +884,14 @@ expect {
 	base = match Compound.default_group {
 		Group(spec) => spec
 	}
-	left = Group({ ..base, padding: 4, children: [Node(0)] })
-	middle = Group({ ..base, padding: 20, children: [Node(1)] })
-	right = Group({ ..base, padding: 4, children: [Node(2)] })
-	root = Group({ ..base, padding: 4, children: [Nested(left), Nested(middle), Nested(right)], algorithm: Rows({ gap: 8 }) })
+	left = Group({ ..base, insets: Compound.uniform_insets(4), children: [Node(0)] })
+	middle = Group({ ..base, insets: Compound.uniform_insets(20), children: [Node(1)] })
+	right = Group({ ..base, insets: Compound.uniform_insets(4), children: [Node(2)] })
+	root = Group({ ..base, insets: Compound.uniform_insets(4), children: [Nested(left), Nested(middle), Nested(right)], algorithm: Rows({ gap: 8 }) })
 	input = { graph: { nodes: List.repeat({ width: 10, height: 10 }, 3), edges: [{ from: 0, to: 2 }] }, attachments: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
 	match Compound.layout(input, Compound.default_run) {
 		Ok(result) => match result.groups.first() {
-			Ok(outer) => result.groups.drop_first(1).all(|child| child.x >= outer.x and child.y >= outer.y and child.x + child.width <= outer.x + outer.width and child.y + child.height <= outer.y + outer.height) and outer == result.layout.bounds
+			Ok(outer) => result.groups.drop_first(1).all(|child| child.rect.x >= outer.rect.x and child.rect.y >= outer.rect.y and child.rect.x + child.rect.width <= outer.rect.x + outer.rect.width and child.rect.y + child.rect.height <= outer.rect.y + outer.rect.height) and outer.rect == result.layout.bounds
 			Err(_) => False
 		}
 		Err(_) => False
@@ -813,12 +918,15 @@ expect {
 	base = match Compound.default_group {
 		Group(spec) => spec
 	}
-	child = Group({ ..base, padding: 2, children: [Node(0)] })
+	child = Group({ ..base, insets: Compound.uniform_insets(2), children: [Node(0)] })
 	root = Group({ ..base, children: [Nested(child), Node(1)] })
 	input = { graph: { nodes: List.repeat({ width: 2, height: 2 }, 2), edges: [{ from: 0, to: 1 }] }, attachments: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
 	match Compound.layout(input, Compound.default_run) {
 		Ok(result) => match (result.groups.get(1), result.group_crossings.get(0)) {
-			(Ok(rect), Ok(crossings)) => crossings.any(|crossing| crossing.group == 0 and (crossing.point.x == rect.x or crossing.point.x == rect.x + rect.width or crossing.point.y == rect.y or crossing.point.y == rect.y + rect.height))
+			(Ok(geometry), Ok(crossings)) => {
+				rect = geometry.rect
+				crossings.any(|crossing| crossing.group == 0 and (crossing.point.x == rect.x or crossing.point.x == rect.x + rect.width or crossing.point.y == rect.y or crossing.point.y == rect.y + rect.height))
+			}
 			_ => False
 		}
 		Err(_) => False
@@ -884,11 +992,14 @@ expect {
 	base = match Compound.default_group {
 		Group(spec) => spec
 	}
-	child = Group({ ..base, padding: 2, children: [Node(1)] })
-	root = Group({ ..base, padding: 3, children: [Node(0), Nested(child)] })
+	child = Group({ ..base, insets: Compound.uniform_insets(2), children: [Node(1)] })
+	root = Group({ ..base, insets: Compound.uniform_insets(3), children: [Node(0), Nested(child)] })
 	input = { graph: { nodes: [{ width: 4, height: 4 }, { width: 6, height: 2 }], edges: [{ from: 0, to: 1 }] }, attachments: [], edge_labels: [], root, routing: Orthogonal(Route.default_settings) }
 	match Compound.layout(input, Compound.default_run) {
-		Ok(result) => result.layout.positions.len() == 2 and result.layout.routes.len() == 1 and result.groups.len() == 2 and result.groups.get(0) == Ok(result.layout.bounds)
+		Ok(result) => result.layout.positions.len() == 2 and result.layout.routes.len() == 1 and result.groups.len() == 2 and match result.groups.get(0) {
+			Ok(geometry) => geometry.rect == result.layout.bounds
+			Err(_) => False
+		}
 		Err(_) => False
 	}
 }
