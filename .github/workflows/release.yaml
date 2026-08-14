@@ -1,0 +1,97 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: Release version, for example 1.2.0 or 1.2.0-rc1
+        required: true
+        type: string
+permissions: {}
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Validate release request
+        id: release
+        uses: roc-lang/release-package/actions/validate-release@af2f0cd8662874b825ff3917f4286e793ba18c55
+        with:
+          release_version: ${{ inputs.release_version }}
+          dry_run: false
+          github_token: ${{ github.token }}
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29
+        with: { version: 0.16.0, use-cache: false }
+      - name: Read pinned Roc version
+        run: printf 'ROC_NIGHTLY_TAG=%s\n' "$(sed -n '1p' .roc-version)" >> "$GITHUB_ENV"
+      - uses: roc-lang/setup-roc@cbe782d6f165b89c87d99f50a59ac4f5f73b4427
+        with:
+          version: nightly-new-compiler
+          nightly-tag: ${{ env.ROC_NIGHTLY_TAG }}
+      - name: Verify release source
+        run: ROC=roc roc scripts/all.roc
+      - name: Build release assets
+        env:
+          VERSION: ${{ steps.release.outputs.release_version }}
+        run: |
+          roc scripts/bundle.roc dist
+          ROC_DOCS_URL_ROOT="/${{ github.event.repository.name }}/docs/$VERSION" roc docs package/main.roc --output generated-docs
+          sed -i "s/<html lang=\"en\">/<html lang=\"en\" data-release=\"$VERSION\">/" playground/www/index.html
+          tar -czf docs.tar.gz -C generated-docs .
+      - name: Prepare package bundle metadata
+        uses: roc-lang/release-package/actions/prepare-bundles@af2f0cd8662874b825ff3917f4286e793ba18c55
+        with:
+          bundle_glob: dist/*.tar.zst
+          test_os_json: '[]'
+      - name: Assemble versioned Pages site
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.release.outputs.release_version }}
+        run: |
+          mkdir -p site/docs
+          gh release list --limit 100 --json tagName,isDraft --jq '.[] | select(.isDraft == false) | .tagName' | while read -r tag; do
+            mkdir -p "site/docs/$tag"
+            if gh release download "$tag" --pattern docs.tar.gz --dir /tmp >/dev/null 2>&1; then
+              tar -xzf /tmp/docs.tar.gz -C "site/docs/$tag"
+              rm -f /tmp/docs.tar.gz
+            fi
+          done
+          cp -R playground/www/. site/
+          mkdir -p "site/docs/$VERSION"
+          cp -R generated-docs/. "site/docs/$VERSION/"
+          touch site/.nojekyll
+          if [[ "$VERSION" != *-* ]]; then
+            printf '<!doctype html><meta http-equiv="refresh" content="0; url=./%s/"><link rel="canonical" href="./%s/">' "$VERSION" "$VERSION" > site/docs/index.html
+          elif [[ ! -f site/docs/index.html ]]; then
+            printf '<!doctype html><title>API documentation</title><p>No stable documentation release is available yet.</p>' > site/docs/index.html
+          fi
+      - name: Make release notes
+        uses: roc-lang/release-package/actions/make-release-notes@af2f0cd8662874b825ff3917f4286e793ba18c55
+        with:
+          release_version: ${{ steps.release.outputs.release_version }}
+          target: ${{ github.sha }}
+          docs_url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/docs/${{ steps.release.outputs.docs_version }}/
+          github_token: ${{ github.token }}
+      - name: Publish package release
+        uses: roc-lang/release-package/actions/publish-release@af2f0cd8662874b825ff3917f4286e793ba18c55
+        with:
+          release_version: ${{ steps.release.outputs.release_version }}
+          target: ${{ github.sha }}
+          additional_assets: docs.tar.gz
+          github_token: ${{ github.token }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
