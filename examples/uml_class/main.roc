@@ -89,7 +89,15 @@ main! = |args| match Layered.layout(input, { ..Layered.default_settings, directi
 					),
 					"\n",
 				)
-				labels = Str.join_with(result.label_anchors.map_with_index(|p, i| "<text x=\"${(p.x + padding).to_str()}\" y=\"${(p.y + padding).to_str()}\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"sans-serif\" font-size=\"11\" fill=\"#334155\">${label_text.get(i) ?? ""}</text>"), "\n")
+				labels = Str.join_with(
+					result.label_anchors.map_with_index(
+						|p, i| {
+							spec = label_specs.get(i) ?? { edge: 0, width: 0, height: 0, placement: Center }
+							Svg.edge_label_centered(p.x + padding, p.y + padding, spec.width, spec.height, label_text.get(i) ?? "", { ..Svg.default_text_style, font_size: 11, fill: "#334155" })
+						},
+					),
+					"\n",
+				)
 				doc = Svg.square_document(result.layout.bounds.width + padding * 2, result.layout.bounds.height + padding * 2, Svg.arrow_marker_defs("arrow", "#64748b"), Str.join_with([routes, trunks, shapes, labels], "\n"))
 				output = Path.utf8("examples/uml_class/output.svg")
 				match output.write_utf8!(doc) {

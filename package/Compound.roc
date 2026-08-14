@@ -48,7 +48,8 @@ Compound := [
 
 	## Routing for the complete drawing. Straight connects node boundaries
 	## directly. Orthogonal accepts the same visible spacing and path preferences
-	## as `Route.layout` and additionally respects group boundaries.
+	## as `Route.layout` and additionally respects group boundaries. Routes cross
+	## attached group sides perpendicularly and do not follow the group outline.
 	Routing : [Straight, Orthogonal(Route.Settings)]
 
 	## A caller-visible item used by a layered group rule. Nodes use global graph

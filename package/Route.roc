@@ -463,7 +463,7 @@ RouteInternals :: {}.{
 				(selected.point.y - rect.y) / rect.height
 			}
 		}
-		{ group: rule.group, point: selected.point, side: selected.side, offset }
+		{ group: rule.group, point: selected.point, outward: selected.outward, side: selected.side, offset }
 	}
 
 	edge_portals = |edge_index, edge, input| {
@@ -474,8 +474,50 @@ RouteInternals :: {}.{
 		to_rules = to_chain.keep_oks(|group| input.group_attachments.find_first(|rule| rule.edge == edge_index and rule.group == group))
 		from_toward = input.positions.get(edge.to) ?? { x: 0, y: 0 }
 		to_toward = input.positions.get(edge.from) ?? { x: 0, y: 0 }
-		from_rules.map(|rule| RouteInternals.portal_on_group(rule, from_toward, input)).concat(to_rules.map(|rule| RouteInternals.portal_on_group(rule, to_toward, input)))
+		from_rules.map(
+			|rule| {
+				portal = RouteInternals.portal_on_group(rule, from_toward, input)
+				{ group: portal.group, point: portal.point, outward: portal.outward, side: portal.side, offset: portal.offset, leaving: True }
+			},
+		).concat(
+			to_rules.map(
+				|rule| {
+					portal = RouteInternals.portal_on_group(rule, to_toward, input)
+					{ group: portal.group, point: portal.point, outward: portal.outward, side: portal.side, offset: portal.offset, leaving: False }
+				},
+			),
+		)
 	}
+
+	portal_stops = |portal, gap, input| {
+		group = input.groups.get(portal.group) ?? { rect: Geom.empty_bounds, parent: Root }
+		usable_gap = if group.rect.width == 0 or group.rect.height == 0 {
+			0
+		} else {
+			gap
+		}
+		inside = { x: portal.point.x - portal.outward.x * usable_gap, y: portal.point.y - portal.outward.y * usable_gap }
+		outside = { x: portal.point.x + portal.outward.x * usable_gap, y: portal.point.y + portal.outward.y * usable_gap }
+		if portal.leaving {
+			{ approach: inside, departure: outside }
+		} else {
+			{ approach: outside, departure: inside }
+		}
+	}
+
+	reverse_portals = |portals| portals.fold(
+		[],
+		|acc, portal| [
+			{
+				..portal,
+				leaving: if portal.leaving {
+					False
+				} else {
+					True
+				},
+			},
+		].concat(acc),
+	)
 
 	simplify : List({ x : F64, y : F64 }) -> List({ x : F64, y : F64 })
 	simplify = |points| points.fold(
@@ -489,6 +531,27 @@ RouteInternals :: {}.{
 			} else if acc.len() >= 2 {
 				before = acc.get(acc.len() - 2) ?? last
 				if (before.x == last.x and last.x == p.x) or (before.y == last.y and last.y == p.y) {
+					(acc.drop_last(1)).append(p)
+				} else {
+					acc.append(p)
+				}
+			} else {
+				acc.append(p)
+			}
+		},
+	)
+
+	simplify_preserving = |points, preserved| points.fold(
+		[],
+		|acc, p| if acc.is_empty() {
+			[p]
+		} else {
+			last = acc.get(acc.len() - 1) ?? { x: F64.nan, y: F64.nan }
+			if p == last {
+				acc
+			} else if acc.len() >= 2 {
+				before = acc.get(acc.len() - 2) ?? last
+				if ((before.x == last.x and last.x == p.x) or (before.y == last.y and last.y == p.y)) and !preserved.contains(last) {
 					(acc.drop_last(1)).append(p)
 				} else {
 					acc.append(p)
@@ -805,12 +868,13 @@ RouteInternals :: {}.{
 			through = portals.fold(
 				{ points: [a.point, ap], current: ap },
 				|state, portal| {
-					leg = RouteInternals.route_leg(state.current, portal.point, boxes, settings, prior)
-					{ points: state.points.concat(leg.drop_first(1)), current: portal.point }
+					stops = RouteInternals.portal_stops(portal, settings.obstacle_gap, input)
+					leg = RouteInternals.route_leg(state.current, stops.approach, boxes, settings, prior)
+					{ points: state.points.concat(leg.drop_first(1)).concat([portal.point, stops.departure]), current: stops.departure }
 				},
 			)
 			last_leg = RouteInternals.route_leg(through.current, bp, boxes, settings, prior)
-			Polyline(RouteInternals.simplify(through.points.concat(last_leg.drop_first(1)).append(b.point)))
+			Polyline(RouteInternals.simplify_preserving(through.points.concat(last_leg.drop_first(1)).append(b.point), portals.map(|portal| portal.point)))
 		}
 	}
 
@@ -1093,20 +1157,21 @@ RouteInternals :: {}.{
 		}
 		common_portals = RouteInternals.edge_portals(first_index, first_edge, input).keep_if(|portal| RouteInternals.node_in_group(common_node, portal.group, input))
 		ordered_common = match rule.endpoint {
-			From => common_portals
+			From => RouteInternals.reverse_portals(common_portals)
 			To => common_portals
 		}
 		boxes = RouteInternals.obstacles(input, settings, first_edge.from, first_edge.to)
 		trunk_forward = ordered_common.fold(
 			{ points: [junction], current: junction },
 			|state, portal| {
-				leg = RouteInternals.route_leg(state.current, portal.point, boxes, settings, prior)
-				{ points: state.points.concat(leg.drop_first(1)), current: portal.point }
+				stops = RouteInternals.portal_stops(portal, settings.obstacle_gap, input)
+				leg = RouteInternals.route_leg(state.current, stops.approach, boxes, settings, prior)
+				{ points: state.points.concat(leg.drop_first(1)).concat([portal.point, stops.departure]), current: stops.departure }
 			},
 		)
 		approach = { x: common_terminal.point.x + common_terminal.outward.x * settings.obstacle_gap, y: common_terminal.point.y + common_terminal.outward.y * settings.obstacle_gap }
 		last = RouteInternals.route_leg(trunk_forward.current, approach, boxes, settings, prior)
-		trunk_points = RouteInternals.simplify(trunk_forward.points.concat(last.drop_first(1)).append(common_terminal.point))
+		trunk_points = RouteInternals.simplify_preserving(trunk_forward.points.concat(last.drop_first(1)).append(common_terminal.point), ordered_common.map(|portal| portal.point))
 		branches = rule.edges.map(
 			|edge_index| {
 				edge = input.graph.edges.get(edge_index) ?? first_edge
@@ -1115,17 +1180,22 @@ RouteInternals :: {}.{
 					To => From
 				}
 				selected_terminal = RouteInternals.terminal(edge_index, opposite_endpoint, edge, input)
-				portals = RouteInternals.edge_portals(edge_index, edge, input).keep_if(|portal| RouteInternals.node_in_group(common_node, portal.group, input) == False)
+				forward_portals = RouteInternals.edge_portals(edge_index, edge, input).keep_if(|portal| RouteInternals.node_in_group(common_node, portal.group, input) == False)
+				portals = match rule.endpoint {
+					From => RouteInternals.reverse_portals(forward_portals)
+					To => forward_portals
+				}
 				branch_boxes = RouteInternals.obstacles(input, settings, edge.from, edge.to)
 				through = portals.fold(
 					{ points: [selected_terminal.point], current: selected_terminal.point },
 					|state, portal| {
-						leg = RouteInternals.route_leg(state.current, portal.point, branch_boxes, settings, prior)
-						{ points: state.points.concat(leg.drop_first(1)), current: portal.point }
+						stops = RouteInternals.portal_stops(portal, settings.obstacle_gap, input)
+						leg = RouteInternals.route_leg(state.current, stops.approach, branch_boxes, settings, prior)
+						{ points: state.points.concat(leg.drop_first(1)).concat([portal.point, stops.departure]), current: stops.departure }
 					},
 				)
 				final = RouteInternals.route_leg(through.current, junction, branch_boxes, settings, prior)
-				points = RouteInternals.simplify(through.points.concat(final.drop_first(1)))
+				points = RouteInternals.simplify_preserving(through.points.concat(final.drop_first(1)), portals.map(|portal| portal.point))
 				if rule.endpoint == From {
 					Polyline(RouteInternals.reverse_points(points))
 				} else {
@@ -1248,9 +1318,9 @@ RouteInternals :: {}.{
 				edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
 				portals = RouteInternals.edge_portals(edge_index, edge, input)
 				RouteInternals.route_crossings(route, input.groups).map(
-					|crossing| {
-						selected = portals.find_first(|portal| portal.group == crossing.group and portal.point == crossing.point) ?? crossing
-						{ ..selected, point: shift(selected.point) }
+					|crossing| match portals.find_first(|portal| portal.group == crossing.group and portal.point == crossing.point) {
+						Ok(portal) => { group: portal.group, point: shift(portal.point), side: portal.side, offset: portal.offset }
+						Err(_) => { ..crossing, point: shift(crossing.point) }
 					},
 				)
 			},
@@ -1272,7 +1342,9 @@ RouteInternals :: {}.{
 ## self-loops exterior paths, and returns one anchor for every sparse edge
 ## label in label input order. Labels may be centered on an edge or placed
 ## near either end, so relationship names, roles, and multiplicities can be
-## positioned without putting text or styling into the geometry API.
+## positioned without putting text or styling into the geometry API. Group
+## attachments are exact boundary crossings: routes approach and leave them
+## perpendicularly instead of following the group outline.
 ##
 ## Nodes use their rectangular size as their boundary by default. A sparse
 ## boundary rule makes attachment points follow an ellipse inside the same
@@ -1516,8 +1588,15 @@ expect {
 						Err(_) => ok
 					},
 				)
+				crosses_perpendicularly = |index, portal| if index == 0 or index + 1 >= points.len() {
+					False
+				} else {
+					before = points.get(index - 1) ?? portal
+					after = points.get(index + 1) ?? portal
+					before.y == portal.y and after.y == portal.y and before.x < portal.x and after.x > portal.x
+				}
 				match (inner_index, outer_index, inner_crossing, outer_crossing) {
-					(Ok(a), Ok(b), Ok(ic), Ok(oc)) => clear and a < b and ic.side == Right and ic.offset == 0.25 and oc.side == Right and oc.offset == 0.75
+					(Ok(a), Ok(b), Ok(ic), Ok(oc)) => clear and a < b and crosses_perpendicularly(a, inner_portal) and crosses_perpendicularly(b, outer_portal) and ic.side == Right and ic.offset == 0.25 and oc.side == Right and oc.offset == 0.75
 					_ => False
 				}
 			}

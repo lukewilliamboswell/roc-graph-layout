@@ -25,7 +25,7 @@ defaults = match Compound.default_group {
 	Group(spec) => spec
 }
 
-client = Group({ ..defaults, children: [Node(0)], insets: { top: 16, right: 28, bottom: 24, left: 28 }, header: Reserve({ height: 32 }) })
+client = Group({ ..defaults, children: [Node(0)], insets: { top: 16, right: 60, bottom: 24, left: 28 }, header: Reserve({ height: 32 }) })
 
 services = Group({ ..defaults, children: [Node(1), Node(2)], algorithm: Rows({ gap: 34 }), insets: { top: 16, right: 30, bottom: 28, left: 30 }, header: Reserve({ height: 32 }) })
 
@@ -88,7 +88,15 @@ main! = |args| match Compound.layout(input, { ..Compound.default_run, seed: args
 		groups = Str.join_with(result.groups.map_with_index(group_svg), "\n")
 		routes = Str.join_with(result.layout.routes.map(route_svg), "\n")
 		shapes = Str.join_with(result.layout.positions.map_with_index(|p, i| "${Svg.rect_centered(p.x + padding, p.y + padding, 126, 44, Svg.default_rect_style)}\n${Svg.text_centered(p.x + padding, p.y + padding, names.get(i) ?? "", Svg.default_text_style)}"), "\n")
-		labels = Str.join_with(result.label_anchors.map_with_index(|p, i| "<text x=\"${(p.x + padding).to_str()}\" y=\"${(p.y + padding).to_str()}\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"sans-serif\" font-size=\"11\" fill=\"#334155\">${label_text.get(i) ?? ""}</text>"), "\n")
+		labels = Str.join_with(
+			result.label_anchors.map_with_index(
+				|p, i| {
+					spec = label_specs.get(i) ?? { edge: 0, width: 0, height: 0, placement: Center }
+					Svg.edge_label_centered(p.x + padding, p.y + padding, spec.width, spec.height, label_text.get(i) ?? "", { ..Svg.default_text_style, font_size: 11, fill: "#334155" })
+				},
+			),
+			"\n",
+		)
 		doc = Svg.square_document(result.layout.bounds.width + padding * 2, result.layout.bounds.height + padding * 2, Svg.arrow_marker_defs("arrow", "#64748b"), Str.join_with([groups, routes, shapes, labels], "\n"))
 		output = Path.utf8("examples/uml_component/output.svg")
 		match output.write_utf8!(doc) {

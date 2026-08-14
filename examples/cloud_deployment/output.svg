@@ -18,15 +18,15 @@
 <rect x="1070" y="64" width="160" height="162" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 4" />
 <line x1="1070" y1="92" x2="1230" y2="92" stroke="#94a3b8" stroke-width="1" />
 <text x="1082" y="78" dominant-baseline="middle" font-family="sans-serif" font-size="11" font-weight="600" fill="#64748b">DATA</text>
-<polyline points="158,139.46296296296296 242,139.46296296296296 242,153.10000000000002 262,153.10000000000002 262,127.53703703703704 270,127.53703703703704" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="158,139.46296296296296 234,139.46296296296296 234,153.10000000000002 242,153.10000000000002 262,153.10000000000002 262,127.53703703703704 270,127.53703703703704" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
 <polyline points="322,140 322,162" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<polyline points="374,176.3008130081301 402,176.3008130081301 402,153.10000000000002 486,153.10000000000002 486,134.51999999999998 508,134.51999999999998 508,166.1991869918699 516,166.1991869918699" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="374,176.3008130081301 394,176.3008130081301 394,153.10000000000002 402,153.10000000000002 478,153.10000000000002 478,134.51999999999998 486,134.51999999999998 508,134.51999999999998 508,166.1991869918699 516,166.1991869918699" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
 <polyline points="620,162.5 620,165.5 852,165.5 852,162.5" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<polyline points="620,155.3 628,155.3 628,113.5 986,113.5 986,126.66 1070,126.66 1070,125.56 1090,125.56 1090,125.61855670103093 1098,125.61855670103093" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<polyline points="620,163.22 628,163.22 628,188.5 986,188.5 986,155.48 1070,155.48 1070,180.64 1090,180.64 1090,178.43642611683848 1098,178.43642611683848" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="620,155.3 628,155.3 628,113.5 978,113.5 978,126.66 986,126.66 1062,126.66 1062,125.56 1070,125.56 1090,125.56 1090,125.61855670103093 1098,125.61855670103093" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="620,163.22 628,163.22 628,188.5 978,188.5 978,155.48 986,155.48 1062,155.48 1062,180.64 1070,180.64 1090,180.64 1090,178.43642611683848 1098,178.43642611683848" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
 <polyline points="620,171.86 676,171.86 676,146.61904761904762 684,146.61904761904762" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
 <polyline points="788,146.61904761904762 844,146.61904761904762 844,155.38095238095238 852,155.38095238095238" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
-<polyline points="956,153.9390243902439 964,153.9390243902439 964,181.68 986,181.68 986,148.24 1090,148.24 1090,130.5609756097561 1098,130.5609756097561" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
+<polyline points="956,153.9390243902439 964,153.9390243902439 964,181.68 986,181.68 994,181.68 994,148.24 1070,148.24 1090,148.24 1090,130.5609756097561 1098,130.5609756097561" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)" />
 <rect x="54" y="127" width="104" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
 <text x="106" y="145" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Customer</text>
 <rect x="270" y="104" width="104" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
@@ -43,6 +43,7 @@
 <text x="1150" y="180" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Redis</text>
 <rect x="684" y="121.5" width="104" height="36" rx="4" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
 <text x="736" y="139.5" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Queue</text>
+<rect x="212.60000000000002" y="131.46296296296296" width="42" height="16" rx="3" fill="#ffffff" />
 <text x="233.60000000000002" y="139.46296296296296" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="11" fill="#475569">HTTPS</text>
 </g>
 </svg>

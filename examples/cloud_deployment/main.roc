@@ -169,7 +169,15 @@ render_svg = |result| {
 	groups = Str.join_with(result.groups.map_with_index(render_group), "\n")
 	routes = Str.join_with(result.layout.routes.map(render_route), "\n")
 	node_shapes = Str.join_with(result.layout.positions.map_with_index(|p, i| render_node(p, labels.get(i) ?? "")), "\n")
-	edge_labels_svg = Str.join_with(result.label_anchors.map_with_index(|p, i| Svg.text_centered(p.x + padding, p.y + padding, edge_label_text.get(i) ?? "", { ..Svg.default_text_style, font_size: 11, fill: "#475569" })), "\n")
+	edge_labels_svg = Str.join_with(
+		result.label_anchors.map_with_index(
+			|p, i| {
+				spec = input.edge_labels.get(i) ?? { edge: 0, width: 0, height: 0, placement: Center }
+				Svg.edge_label_centered(p.x + padding, p.y + padding, spec.width, spec.height, edge_label_text.get(i) ?? "", { ..Svg.default_text_style, font_size: 11, fill: "#475569" })
+			},
+		),
+		"\n",
+	)
 	body = Str.join_with([groups, routes, node_shapes, edge_labels_svg], "\n")
 	Svg.square_document(content_width, content_height, Svg.arrow_marker_defs(arrow_id, "#64748b"), body)
 }

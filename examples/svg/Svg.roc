@@ -72,6 +72,17 @@ Svg :: {}.{
 	text_centered = |cx, cy, content, style|
 		\\<text x="${cx.to_str()}" y="${cy.to_str()}" text-anchor="${style.anchor}" dominant-baseline="${style.baseline}" font-family="${style.font_family}" font-size="${style.font_size.to_str()}" fill="${style.fill}">${content}</text>
 
+	## Edge-label text on an opaque backing matching the area reserved by the
+	## router, so a route reaches the label cleanly without crossing its text.
+	edge_label_centered : F64, F64, F64, F64, Str, TextStyle -> Str
+	edge_label_centered = |cx, cy, width, height, content, style| {
+		x = cx - width / 2
+		y = cy - height / 2
+
+		\\<rect x="${x.to_str()}" y="${y.to_str()}" width="${width.to_str()}" height="${height.to_str()}" rx="3" fill="#ffffff" />
+		\\${Svg.text_centered(cx, cy, content, style)}
+	}
+
 	line : F64, F64, F64, F64, LineStyle -> Str
 	line = |x1, y1, x2, y2, style| {
 		marker = Svg.marker_attr(style.marker_end)
@@ -134,6 +145,13 @@ Svg :: {}.{
 
 ## A centered rect's top-left corner sits half a size back from its center.
 expect Svg.rect_centered(50, 50, 20, 10, Svg.default_rect_style) == "<rect x=\"40\" y=\"45\" width=\"20\" height=\"10\" rx=\"4\" fill=\"#eef2ff\" stroke=\"#4338ca\" stroke-width=\"2\" />"
+
+## Edge-label backing and text use the reserved geometry and share a center.
+expect
+	Svg.edge_label_centered(50, 50, 20, 10, "yes", Svg.default_text_style)
+		==
+		\\<rect x="40" y="45" width="20" height="10" rx="3" fill="#ffffff" />
+		\\<text x="50" y="50" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">yes</text>
 
 ## A line with no marker omits the marker-end attribute entirely.
 expect Svg.line(0, 0, 10, 10, Svg.default_line_style) == "<line x1=\"0\" y1=\"0\" x2=\"10\" y2=\"10\" stroke=\"#64748b\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" />"

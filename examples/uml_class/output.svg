@@ -21,8 +21,11 @@
 <text x="731" y="206" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">CashPayment</text>
 <ellipse cx="84" cy="198" rx="56" ry="32" fill="#eef2ff" stroke="#4338ca" stroke-width="2" />
 <text x="84" y="198" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="14" fill="#111827">Customer</text>
+<rect x="163.2635739655667" y="191.09875781689342" width="54" height="18" rx="3" fill="#ffffff" />
 <text x="190.2635739655667" y="200.09875781689342" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="11" fill="#334155">uses</text>
+<rect x="153.0484515947303" y="145.09875781689342" width="18" height="18" rx="3" fill="#ffffff" />
 <text x="162.0484515947303" y="154.09875781689342" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="11" fill="#334155">1</text>
+<rect x="212.5324769291122" y="145.09875781689342" width="26" height="18" rx="3" fill="#ffffff" />
 <text x="225.5324769291122" y="154.09875781689342" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="11" fill="#334155">0..*</text>
 </g>
 </svg>

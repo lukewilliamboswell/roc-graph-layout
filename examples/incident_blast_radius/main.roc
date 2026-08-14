@@ -9,6 +9,7 @@ import pf.Path
 import pf.Stdout
 import layout.Geom
 import layout.Graph
+import layout.Route
 import svg.Svg
 
 ## An incident blast-radius view for a payments outage. `Payments` is the
@@ -55,6 +56,10 @@ spec = {
 
 padding = 24
 
+arrow_id = "arrow"
+
+route_style = { ..Svg.default_line_style, marker_end: arrow_id }
+
 render_node = |center, label| {
 	cx = center.x + padding
 	cy = center.y + padding
@@ -65,8 +70,8 @@ render_node = |center, label| {
 
 render_route = |route|
 	match route {
-		Line(from, to) => Svg.line(from.x + padding, from.y + padding, to.x + padding, to.y + padding, Svg.default_line_style)
-		Polyline(points) => Svg.polyline(points.map(|p| { x: p.x + padding, y: p.y + padding }), Svg.default_line_style)
+		Line(from, to) => Svg.line(from.x + padding, from.y + padding, to.x + padding, to.y + padding, route_style)
+		Polyline(points) => Svg.polyline(points.map(|p| { x: p.x + padding, y: p.y + padding }), route_style)
 		Curves(segments) =>
 			Svg.curves(
 				segments.map(
@@ -77,7 +82,7 @@ render_route = |route|
 						to: { x: seg.to.x + padding, y: seg.to.y + padding },
 					},
 				),
-				Svg.default_line_style,
+				route_style,
 			)
 		}
 
@@ -86,7 +91,7 @@ render_svg = |result| {
 	total_height = result.bounds.height + padding * 2
 	nodes = Str.join_with(result.positions.map_with_index(|p, i| render_node(p, labels.get(i) ?? "")), "\n")
 	routes = Str.join_with(result.routes.map(render_route), "\n")
-	Svg.square_document(total_width, total_height, "", Str.join_with([routes, nodes], "\n"))
+	Svg.square_document(total_width, total_height, Svg.arrow_marker_defs(arrow_id, "#64748b"), Str.join_with([routes, nodes], "\n"))
 }
 
 main! : List(_) => Try({}, _)
@@ -95,13 +100,17 @@ main! = |args| {
 	settings = { ..Graph.default_radial_settings, root: Node(0), ring_gap: 72 + runtime_zero, node_gap: 28 }
 	match Graph.layout_radial(spec, settings) {
 		Err(problems) => Err(LayoutProblems(problems))
-		Ok(result) => {
-			svg = render_svg(result.layout)
-			output = Path.utf8("examples/incident_blast_radius/output.svg")
-			match output.write_utf8!(svg) {
-				Err(problem) => Err(WriteFailed(problem))
-				Ok({}) => Stdout.line!("Mapped ${result.rings.len().to_str()} services by incident distance -> ${Path.display(output)}")
+		Ok(result) =>
+			match Route.layout({ ..Route.default_input, graph: spec, positions: result.layout.positions }, Route.default_settings) {
+				Err(problems) => Err(RouteProblems(problems))
+				Ok(routed) => {
+					svg = render_svg(routed.layout)
+					output = Path.utf8("examples/incident_blast_radius/output.svg")
+					match output.write_utf8!(svg) {
+						Err(problem) => Err(WriteFailed(problem))
+						Ok({}) => Stdout.line!("Mapped ${result.rings.len().to_str()} services by incident distance -> ${Path.display(output)}")
+					}
+				}
 			}
 		}
-	}
 }
