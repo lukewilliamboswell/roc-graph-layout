@@ -72,6 +72,22 @@ test = |bytes| {
 		(byte_at(bytes, 33) % 12).to_u64()
 	}
 	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 34 + i * 2).to_u64() % n, to: byte_at(bytes, 35 + i * 2).to_u64() % n })
+	shared_pair = edges.fold_with_index(
+		[],
+		|found, edge, i| if found.is_empty() {
+			match edges.find_first_index(|other| other.to == edge.to and other != edge) {
+				Ok(j) if j != i => [i, j]
+				_ => found
+			}
+		} else {
+			found
+		},
+	)
+	shared_ends = if shared_pair.len() == 2 {
+		[{ edges: shared_pair, endpoint: To, attachment: On(side_at(byte_at(bytes, 207))) }]
+	} else {
+		[]
+	}
 	groups = if n == 0 {
 		[]
 	} else {
@@ -137,7 +153,7 @@ test = |bytes| {
 			{ edge, width: (byte_at(bytes, 137 + i) % 41).to_f64(), height: (byte_at(bytes, 146 + i) % 21).to_f64(), placement }
 		},
 	)
-	input = { ..Route.default_input, graph: { nodes, edges }, positions, groups, memberships, group_attachments, boundaries, attachments, edge_labels }
+	input = { ..Route.default_input, graph: { nodes, edges }, positions, groups, memberships, group_attachments, boundaries, attachments, edge_labels, shared_ends }
 	invalid = { ..input, group_attachments: [{ edge: edge_count, group: groups.len(), attachment: Fixed({ side: Top, offset: 2 }) }] }
 	invalid_ok = match Route.layout(invalid, Route.default_settings) {
 		Err(problems) => {
@@ -156,7 +172,15 @@ test = |bytes| {
 	}
 	match Route.layout(input, Route.default_settings) {
 		Ok(a) => {
-			aligned = a.layout.routes.len() == edges.len() and a.attachments.len() == edges.len() and a.group_crossings.len() == edges.len() and a.label_anchors.len() == edge_labels.len()
+			aligned = a.layout.routes.len() == edges.len() and a.attachments.len() == edges.len() and a.group_crossings.len() == edges.len() and a.label_anchors.len() == edge_labels.len() and a.shared_routes.len() == shared_ends.len()
+			labels_in_bounds = edge_labels.fold_with_index(
+				True,
+				|ok, label, i| {
+					anchor = a.label_anchors.get(i) ?? { x: F64.nan, y: F64.nan }
+					ok and anchor.x - label.width / 2 >= 0 and anchor.y - label.height / 2 >= 0 and anchor.x + label.width / 2 <= a.layout.bounds.width and anchor.y + label.height / 2 <= a.layout.bounds.height
+				},
+			)
+			finite_shared = a.shared_routes.all(|shared| finite_point(shared.junction) and orthogonal(shared.trunk) and finite_route(shared.trunk) and shared.edges.len() >= 2)
 			finite_crossings = a.group_crossings.join().all(|crossing| finite_point(crossing.point) and F64.is_finite(crossing.offset) and crossing.offset >= 0 and crossing.offset <= 1)
 			finite = a.layout.routes.all(|r| orthogonal(r) and finite_route(r)) and a.layout.positions.all(finite_point) and a.label_anchors.all(finite_point) and a.attachments.all(|ends| finite_point(ends.from.point) and finite_point(ends.to.point)) and finite_crossings and F64.is_finite(a.layout.bounds.width) and F64.is_finite(a.layout.bounds.height)
 			ellipses = edges.fold_with_index(True, |ok, edge, i| ok and ellipse_attachment(i, From, edge, input, a) and ellipse_attachment(i, To, edge, input, a))
@@ -172,7 +196,7 @@ test = |bytes| {
 					}
 				},
 			)
-			if invalid_ok and aligned and finite and ellipses and portals and Route.layout(input, Route.default_settings) == Ok(a) {
+			if invalid_ok and aligned and labels_in_bounds and finite and finite_shared and ellipses and portals and Route.layout(input, Route.default_settings) == Ok(a) {
 				Fuzz.keep
 			} else {
 				crash "route geometry contract failed"

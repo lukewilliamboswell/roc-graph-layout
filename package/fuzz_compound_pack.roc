@@ -64,14 +64,24 @@ test = |bytes| {
 	} else {
 		Reserve({ height: (byte_at(bytes, 111) % 17).to_f64() })
 	}
-	root_spec = { ..base, children, algorithm: Rows({ gap: (byte_at(bytes, 30) % 20).to_f64() }), insets: root_insets, header: root_header }
-	root = Group(root_spec)
 	edge_count = if count == 0 {
 		0
 	} else {
 		(byte_at(bytes, 31) % 12).to_u64()
 	}
 	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 48 + i * 2).to_u64() % count, to: byte_at(bytes, 49 + i * 2).to_u64() % count })
+	algorithm = if count >= 2 and byte_at(bytes, 32) % 2 == 0 {
+		LayeredSweep({
+			..Compound.default_layered,
+			same_layers: [{ first: Group(1), second: Group(2) }],
+			sibling_order: [{ before: Node(0), after: Node(1) }],
+			non_ranking_edges: List.repeat(0, edge_count).map_with_index(|_, i| i),
+		})
+	} else {
+		Rows({ gap: (byte_at(bytes, 30) % 20).to_f64() })
+	}
+	root_spec = { ..base, children, algorithm, insets: root_insets, header: root_header }
+	root = Group(root_spec)
 	boundaries = List.repeat({}, count).map_with_index(
 		|_, node| {
 			node,

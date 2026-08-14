@@ -48,17 +48,9 @@ edge_group = Group({
 application_group = Group({
 	..group_defaults,
 	children: [Node(3), Node(4), Node(7)],
-	algorithm: GraphForce({
-		settings: {
-			node_gap: 28,
-			repulsion: 1,
-			gravity: 0.12,
-			opening_angle: 0.8,
-			max_iterations: 200,
-			tolerance: 0.0001,
-		},
-		pins: [],
-	}),
+	# Requests move from the API through the queue to a worker, so this group
+	# has a real directed-flow meaning rather than an arbitrary force layout.
+	algorithm: LayeredSweep({ ..Compound.default_layered, settings: { ..Layered.default_settings, direction: Right, node_gap: 28, layer_gap: 64 } }),
 	insets: { top: 14, right: 30, bottom: 30, left: 30 },
 	header: Reserve({ height: 28 }),
 })
@@ -74,7 +66,9 @@ data_group = Group({
 root = Group({
 	..group_defaults,
 	children: [Node(0), Nested(edge_group), Nested(application_group), Nested(data_group)],
-	algorithm: LayeredSweep({ settings: { ..Layered.default_settings, node_gap: 34, layer_gap: 72 }, edge_weights: [], min_spans: [] }),
+	# The deployment's externally visible request path is left-to-right:
+	# customer, edge, application, then data.
+	algorithm: LayeredSweep({ ..Compound.default_layered, settings: { ..Layered.default_settings, direction: Right, node_gap: 44, layer_gap: 84 } }),
 	insets: { top: 14, right: 34, bottom: 34, left: 34 },
 	header: Reserve({ height: 30 }),
 })
@@ -82,10 +76,29 @@ root = Group({
 input : Compound.Input
 input = {
 	graph: { nodes, edges },
-	attachments: [],
+	attachments: [
+		{ edge: 4, endpoint: From, attachment: Fixed({ side: Right, offset: 0.30 }) },
+		{ edge: 5, endpoint: From, attachment: Fixed({ side: Right, offset: 0.52 }) },
+		{ edge: 6, endpoint: From, attachment: Fixed({ side: Right, offset: 0.76 }) },
+	],
 	boundaries: [],
-	group_attachments: [],
-	edge_labels: [],
+	# Groups use root-first preorder: PRODUCTION=0, EDGE=1,
+	# APPLICATION=2, DATA=3. Distinct side offsets reserve intentional portals
+	# for traffic that crosses those boundaries.
+	group_attachments: [
+		{ edge: 0, group: 1, attachment: Fixed({ side: Left, offset: 0.55 }) },
+		{ edge: 2, group: 1, attachment: Fixed({ side: Right, offset: 0.55 }) },
+		{ edge: 2, group: 2, attachment: Fixed({ side: Left, offset: 0.42 }) },
+		{ edge: 4, group: 2, attachment: Fixed({ side: Right, offset: 0.36 }) },
+		{ edge: 4, group: 3, attachment: Fixed({ side: Left, offset: 0.38 }) },
+		{ edge: 5, group: 2, attachment: Fixed({ side: Right, offset: 0.58 }) },
+		{ edge: 5, group: 3, attachment: Fixed({ side: Left, offset: 0.72 }) },
+		{ edge: 8, group: 2, attachment: Fixed({ side: Right, offset: 0.78 }) },
+		{ edge: 8, group: 3, attachment: Fixed({ side: Left, offset: 0.52 }) },
+	],
+	edge_labels: [
+		{ edge: 0, width: 42, height: 16, placement: Center },
+	],
 	root,
 	routing: Compound.default_routing,
 }
@@ -93,6 +106,8 @@ input = {
 padding = 20
 
 group_names = ["PRODUCTION", "EDGE", "APPLICATION", "DATA"]
+
+edge_label_text = ["HTTPS"]
 
 render_group = |geometry, index| {
 	rect = geometry.rect
@@ -154,7 +169,8 @@ render_svg = |result| {
 	groups = Str.join_with(result.groups.map_with_index(render_group), "\n")
 	routes = Str.join_with(result.layout.routes.map(render_route), "\n")
 	node_shapes = Str.join_with(result.layout.positions.map_with_index(|p, i| render_node(p, labels.get(i) ?? "")), "\n")
-	body = Str.join_with([groups, routes, node_shapes], "\n")
+	edge_labels_svg = Str.join_with(result.label_anchors.map_with_index(|p, i| Svg.text_centered(p.x + padding, p.y + padding, edge_label_text.get(i) ?? "", { ..Svg.default_text_style, font_size: 11, fill: "#475569" })), "\n")
+	body = Str.join_with([groups, routes, node_shapes, edge_labels_svg], "\n")
 	Svg.square_document(content_width, content_height, Svg.arrow_marker_defs(arrow_id, "#64748b"), body)
 }
 

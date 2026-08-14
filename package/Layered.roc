@@ -2171,8 +2171,16 @@ LayeredInternals :: {}.{
 	}
 	finish_layout = |prepared| {
 		virtual_count = prepared.extended_ranks.len() - prepared.nodes.len()
-		base_widths = prepared.nodes.map(|node| node.width).concat(List.repeat(0, virtual_count))
-		base_heights = prepared.nodes.map(|node| node.height).concat(List.repeat(0, virtual_count))
+		# Coordinate assignment always works in the canonical downward
+		# orientation. Horizontal output rotates that geometry, so its canonical
+		# cross-axis width is the displayed height and its canonical layer-axis
+		# height is the displayed width.
+		canonical_nodes = match prepared.direction {
+			Down | Up => prepared.nodes
+			Left | Right => prepared.nodes.map(|node| { width: node.height, height: node.width })
+		}
+		base_widths = canonical_nodes.map(|node| node.width).concat(List.repeat(0, virtual_count))
+		base_heights = canonical_nodes.map(|node| node.height).concat(List.repeat(0, virtual_count))
 		label_sizes = prepared.edge_labels.fold(
 			{ widths: base_widths, heights: base_heights },
 			|state, label| match label.placement {
@@ -2180,8 +2188,12 @@ LayeredInternals :: {}.{
 				Center => {
 					chain = prepared.chains.get(label.edge) ?? []
 					middle = chain.get(chain.len() // 2) ?? 0
-					width = (state.widths.get(middle) ?? 0).max(label.width)
-					height = (state.heights.get(middle) ?? 0).max(label.height)
+					canonical_label = match prepared.direction {
+						Down | Up => { width: label.width, height: label.height }
+						Left | Right => { width: label.height, height: label.width }
+					}
+					width = (state.widths.get(middle) ?? 0).max(canonical_label.width)
+					height = (state.heights.get(middle) ?? 0).max(canonical_label.height)
 					{ widths: state.widths.set(middle, width) ?? [], heights: state.heights.set(middle, height) ?? [] }
 				}
 			},
@@ -2200,8 +2212,8 @@ LayeredInternals :: {}.{
 					points
 				}
 				edge = prepared.edges.get(edge_index) ?? { from: 0, to: 0 }
-				source_size = prepared.nodes.get(edge.from) ?? { width: 0, height: 0 }
-				target_size = prepared.nodes.get(edge.to) ?? { width: 0, height: 0 }
+				source_size = canonical_nodes.get(edge.from) ?? { width: 0, height: 0 }
+				target_size = canonical_nodes.get(edge.to) ?? { width: 0, height: 0 }
 				clipped = LayeredInternals.clip_route_ends(oriented_points, source_size, target_size)
 				LayeredInternals.make_route(clipped, prepared.route_style)
 			},
@@ -2210,7 +2222,7 @@ LayeredInternals :: {}.{
 		max_right = positions.fold_with_index(
 			0,
 			|acc, point, index| {
-				width = (prepared.nodes.get(index) ?? { width: 0, height: 0 }).width
+				width = (canonical_nodes.get(index) ?? { width: 0, height: 0 }).width
 				right = point.x + width / 2
 				if right > acc {
 					right
@@ -2222,7 +2234,7 @@ LayeredInternals :: {}.{
 		max_bottom = positions.fold_with_index(
 			0,
 			|acc, point, index| {
-				height = (prepared.nodes.get(index) ?? { width: 0, height: 0 }).height
+				height = (canonical_nodes.get(index) ?? { width: 0, height: 0 }).height
 				bottom = point.y + height / 2
 				if bottom > acc {
 					bottom
@@ -2304,10 +2316,7 @@ LayeredInternals :: {}.{
 			{ min_x: 0, min_y: 0, max_x: 0, max_y: 0 },
 			|acc, p, i| {
 				node = prepared.nodes.get(i) ?? { width: 0, height: 0 }
-				size = match prepared.direction {
-					Down | Up => node
-					Left | Right => { width: node.height, height: node.width }
-				}
+				size = node
 				{
 					min_x: acc.min_x.min(p.x - size.width / 2),
 					min_y: acc.min_y.min(p.y - size.height / 2),
@@ -3104,7 +3113,7 @@ ExactPrepared := {
 		routed = Route.layout({ ..Route.default_input, graph: { nodes: exact.nodes, edges: exact.edges }, positions: finished.layout.positions, attachments: exact.attachments, boundaries: exact.boundaries, edge_labels: exact.edge_labels }, exact.routing)
 		orthogonal = match routed {
 			Ok(value) => value
-			Err(_) => { layout: finished.layout, label_anchors: LayeredInternals.label_anchors(exact.edge_labels, finished.layout.routes), attachments: [], groups: [], group_crossings: [] }
+			Err(_) => { layout: finished.layout, label_anchors: LayeredInternals.label_anchors(exact.edge_labels, finished.layout.routes), attachments: [], groups: [], group_crossings: [], shared_routes: [] }
 		}
 		{
 			layout: orthogonal.layout,
@@ -3884,6 +3893,37 @@ expect {
 					inside and p.x - size.width / 2 >= 0 and p.y - size.height / 2 >= 0 and p.x + size.width / 2 <= result.layout.bounds.width and p.y + size.height / 2 <= result.layout.bounds.height
 				},
 			)
+		},
+	)
+}
+
+## Horizontal directions reserve displayed widths between layers and displayed
+## heights within a layer. Unequal rectangles therefore keep the requested
+## gaps after canonical coordinates are rotated in either direction.
+expect {
+	input = {
+		..Layered.default_input,
+		graph: {
+			nodes: [{ width: 140, height: 24 }, { width: 70, height: 80 }, { width: 110, height: 36 }],
+			edges: [{ from: 0, to: 2 }, { from: 1, to: 2 }],
+		},
+	}
+	settings = { ..Layered.default_settings, node_gap: 30, layer_gap: 60 }
+	[Right, Left].all(
+		|direction| match Layered.layout(input, { ..settings, direction }, Layered.default_run) {
+			Err(_) => False
+			Ok(result) => {
+				a = result.layout.positions.get(0) ?? Geom.point(0, 0)
+				b = result.layout.positions.get(1) ?? Geom.point(0, 0)
+				c = result.layout.positions.get(2) ?? Geom.point(0, 0)
+				within_gap = (a.y - b.y).abs() >= (24 + 80) / 2 + settings.node_gap
+				layer_gap = match direction {
+					Right => c.x - 110 / 2 - (a.x + 140 / 2) >= settings.layer_gap and c.x - 110 / 2 - (b.x + 70 / 2) >= settings.layer_gap
+					Left => a.x - 140 / 2 - (c.x + 110 / 2) >= settings.layer_gap and b.x - 70 / 2 - (c.x + 110 / 2) >= settings.layer_gap
+					_ => False
+				}
+				within_gap and layer_gap
+			}
 		},
 	)
 }

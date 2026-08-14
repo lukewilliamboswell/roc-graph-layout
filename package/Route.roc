@@ -194,10 +194,80 @@ RouteInternals :: {}.{
 				c
 			},
 		)
+		p6b = input.shared_ends.fold_with_index(
+			p6,
+			|acc, rule, i| {
+				a = if rule.edges.len() >= 2 {
+					acc
+				} else {
+					acc.append(SharedEndNeedsEdges(i))
+				}
+				valid_edges = rule.edges.keep_if(|edge| edge < input.graph.edges.len())
+				b = if valid_edges.len() == rule.edges.len() {
+					a
+				} else {
+					a.append(InvalidSharedEndEdge(i))
+				}
+				duplicate_edge = rule.edges.fold_with_index(False, |found, edge, j| found or rule.edges.take_first(j).contains(edge))
+				c = if duplicate_edge {
+					b.append(DuplicateSharedEndEdge(i))
+				} else {
+					b
+				}
+				valid_attachment = match rule.attachment {
+					Fixed(payload) => F64.is_finite(payload.offset) and payload.offset >= 0 and payload.offset <= 1
+					_ => True
+				}
+				c2 = if valid_attachment {
+					c
+				} else {
+					c.append(InvalidSharedEndAttachmentOffset(i))
+				}
+				common = match valid_edges.first() {
+					Ok(edge_index) => {
+						edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
+						Ok(
+							match rule.endpoint {
+								From => edge.from
+								To => edge.to
+							},
+						)
+					}
+					Err(_) => Err(NoSharedEnd)
+				}
+				same_end = valid_edges.all(
+					|edge_index| {
+						edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
+						node = match rule.endpoint {
+							From => edge.from
+							To => edge.to
+						}
+						common == Ok(node)
+					},
+				)
+				d = if same_end {
+					c2
+				} else {
+					c2.append(SharedEndMismatch(i))
+				}
+				ambiguous_attachment = valid_edges.any(|edge| input.attachments.any(|attachment| attachment.edge == edge and attachment.endpoint == rule.endpoint))
+				e = if ambiguous_attachment == False {
+					d
+				} else {
+					d.append(SharedEndMemberAttachment(i))
+				}
+				overlaps = input.shared_ends.fold_with_index(False, |found, other, j| found or (j < i and rule.edges.any(|edge| other.edges.contains(edge))))
+				if overlaps {
+					e.append(SharedEndOverlap(i))
+				} else {
+					e
+				}
+			},
+		)
 		p7 = if F64.is_finite(settings.obstacle_gap) and settings.obstacle_gap >= 0 {
-			p6
+			p6b
 		} else {
-			p6.append(InvalidObstacleGap)
+			p6b.append(InvalidObstacleGap)
 		}
 		p8 = if F64.is_finite(settings.bend_penalty) and settings.bend_penalty >= 0 {
 			p7
@@ -428,6 +498,19 @@ RouteInternals :: {}.{
 			}
 		},
 	)
+
+	reverse_points = |points| points.fold([], |acc, point| [point].concat(acc))
+
+	join_shared = |branch, trunk, endpoint| {
+		branch_points = RouteInternals.route_points(branch)
+		trunk_points = RouteInternals.route_points(trunk)
+		Polyline(
+			match endpoint {
+				To => RouteInternals.simplify(branch_points.concat(trunk_points.drop_first(1)))
+				From => RouteInternals.simplify(RouteInternals.reverse_points(trunk_points).concat(branch_points.drop_first(1)))
+			},
+		)
+	}
 
 	segment_hits : { x : F64, y : F64 }, { x : F64, y : F64 }, { min_x : F64, min_y : F64, max_x : F64, max_y : F64 } -> Bool
 	segment_hits = |a, b, box| if a.x == b.x {
@@ -814,6 +897,75 @@ RouteInternals :: {}.{
 		}
 	}
 
+	anchor_fraction = |route, fraction| {
+		points = RouteInternals.route_points(route)
+		total = points.fold_with_index(
+			0,
+			|length, a, i| match points.get(i + 1) {
+				Ok(b) => length + (b.x - a.x).abs() + (b.y - a.y).abs()
+				Err(_) => length
+			},
+		)
+		RouteInternals.point_along(points, total * fraction, 0, points.len() + 1)
+	}
+
+	local_label_candidates = |route, base, width, height, settings, rings| {
+		points = RouteInternals.route_points(route)
+		segment = points.fold_with_index(
+			{ horizontal: True, length: 0.0 },
+			|best, a, i| match points.get(i + 1) {
+				Ok(b) => {
+					on_segment = if a.x == b.x {
+						base.x == a.x and base.y >= a.y.min(b.y) and base.y <= a.y.max(b.y)
+					} else if a.y == b.y {
+						base.y == a.y and base.x >= a.x.min(b.x) and base.x <= a.x.max(b.x)
+					} else {
+						False
+					}
+					length = (b.x - a.x).abs() + (b.y - a.y).abs()
+					if on_segment and length > best.length {
+						{ horizontal: a.y == b.y, length }
+					} else {
+						best
+					}
+				}
+				Err(_) => best
+			},
+		)
+		step = if segment.horizontal {
+			height / 2 + settings.obstacle_gap + settings.edge_gap
+		} else {
+			width / 2 + settings.obstacle_gap + settings.edge_gap
+		}
+		normal = rings.map(
+			|ring| {
+				distance = step * ring.to_f64()
+				if segment.horizontal {
+					[{ x: base.x, y: base.y - distance }, { x: base.x, y: base.y + distance }]
+				} else {
+					[{ x: base.x - distance, y: base.y }, { x: base.x + distance, y: base.y }]
+				}
+			},
+		).join()
+		[base].concat(normal)
+	}
+
+	label_candidates = |route, placement, width, height, settings| {
+		fractions = match placement {
+			Near(From) => [0.15, 0.22, 0.30, 0.38, 0.46]
+			Near(To) => [0.85, 0.78, 0.70, 0.62, 0.54]
+			Center => [0.50, 0.42, 0.58, 0.34, 0.66]
+		}
+		local = fractions.map(
+			|fraction| {
+				anchor = RouteInternals.anchor_fraction(route, fraction)
+				RouteInternals.local_label_candidates(route, anchor, width, height, settings, [1, 2])
+			},
+		).join()
+		desired = RouteInternals.anchor_fraction(route, fractions.first() ?? 0.5)
+		local.concat(RouteInternals.local_label_candidates(route, desired, width, height, settings, [3, 4, 5, 6, 7, 8]).drop_first(1))
+	}
+
 	segment_crossings = |a, b, rect| if a.x == b.x {
 		[rect.y, rect.y + rect.height].keep_if(|y| y >= a.y.min(b.y) and y <= a.y.max(b.y) and a.x >= rect.x and a.x <= rect.x + rect.width).map(|y| { x: a.x, y })
 	} else if a.y == b.y {
@@ -878,17 +1030,137 @@ RouteInternals :: {}.{
 		)
 	}
 
+	shared_geometry : Route.SharedEndRule, Route.Input, Route.Settings, List(Geom.Route) -> { junction : Geom.Point, trunk : Geom.Route, branches : List(Geom.Route) }
+	shared_geometry = |rule, input, settings, prior| {
+		first_index = rule.edges.first() ?? 0
+		first_edge = input.graph.edges.get(first_index) ?? { from: 0, to: 0 }
+		common_node = match rule.endpoint {
+			From => first_edge.from
+			To => first_edge.to
+		}
+		common_center = input.positions.get(common_node) ?? { x: 0, y: 0 }
+		common_size = input.graph.nodes.get(common_node) ?? { width: 0, height: 0 }
+		opposite_centers = rule.edges.map(
+			|edge_index| {
+				edge = input.graph.edges.get(edge_index) ?? first_edge
+				node = match rule.endpoint {
+					From => edge.to
+					To => edge.from
+				}
+				input.positions.get(node) ?? common_center
+			},
+		)
+		count = opposite_centers.len().to_f64()
+		centroid = opposite_centers.fold({ x: 0, y: 0 }, |sum, point| { x: sum.x + point.x / count, y: sum.y + point.y / count })
+		automatic_side = if (centroid.x - common_center.x).abs() >= (centroid.y - common_center.y).abs() {
+			if centroid.x < common_center.x {
+				Left
+			} else {
+				Right
+			}
+		} else if centroid.y < common_center.y {
+			Top
+		} else {
+			Bottom
+		}
+		common_outline = RouteInternals.boundary_outline(common_node, input.boundaries)
+		common_terminal = match rule.attachment {
+			Automatic => RouteInternals.fixed_point(common_center, common_size, automatic_side, 0.5, common_outline)
+			On(side) => RouteInternals.fixed_point(common_center, common_size, side, 0.5, common_outline)
+			Fixed(payload) => RouteInternals.fixed_point(common_center, common_size, payload.side, payload.offset, common_outline)
+		}
+		clearance = settings.obstacle_gap + settings.edge_gap
+		junction = if common_terminal.outward.x != 0 {
+			desired = (common_terminal.point.x + centroid.x) / 2
+			{
+				x: if common_terminal.outward.x > 0 {
+					desired.max(common_terminal.point.x + clearance)
+				} else {
+					desired.min(common_terminal.point.x - clearance)
+				},
+				y: common_terminal.point.y,
+			}
+		} else {
+			desired = (common_terminal.point.y + centroid.y) / 2
+			{
+				x: common_terminal.point.x,
+				y: if common_terminal.outward.y > 0 {
+					desired.max(common_terminal.point.y + clearance)
+				} else {
+					desired.min(common_terminal.point.y - clearance)
+				},
+			}
+		}
+		common_portals = RouteInternals.edge_portals(first_index, first_edge, input).keep_if(|portal| RouteInternals.node_in_group(common_node, portal.group, input))
+		ordered_common = match rule.endpoint {
+			From => common_portals
+			To => common_portals
+		}
+		boxes = RouteInternals.obstacles(input, settings, first_edge.from, first_edge.to)
+		trunk_forward = ordered_common.fold(
+			{ points: [junction], current: junction },
+			|state, portal| {
+				leg = RouteInternals.route_leg(state.current, portal.point, boxes, settings, prior)
+				{ points: state.points.concat(leg.drop_first(1)), current: portal.point }
+			},
+		)
+		approach = { x: common_terminal.point.x + common_terminal.outward.x * settings.obstacle_gap, y: common_terminal.point.y + common_terminal.outward.y * settings.obstacle_gap }
+		last = RouteInternals.route_leg(trunk_forward.current, approach, boxes, settings, prior)
+		trunk_points = RouteInternals.simplify(trunk_forward.points.concat(last.drop_first(1)).append(common_terminal.point))
+		branches = rule.edges.map(
+			|edge_index| {
+				edge = input.graph.edges.get(edge_index) ?? first_edge
+				opposite_endpoint = match rule.endpoint {
+					From => To
+					To => From
+				}
+				selected_terminal = RouteInternals.terminal(edge_index, opposite_endpoint, edge, input)
+				portals = RouteInternals.edge_portals(edge_index, edge, input).keep_if(|portal| RouteInternals.node_in_group(common_node, portal.group, input) == False)
+				branch_boxes = RouteInternals.obstacles(input, settings, edge.from, edge.to)
+				through = portals.fold(
+					{ points: [selected_terminal.point], current: selected_terminal.point },
+					|state, portal| {
+						leg = RouteInternals.route_leg(state.current, portal.point, branch_boxes, settings, prior)
+						{ points: state.points.concat(leg.drop_first(1)), current: portal.point }
+					},
+				)
+				final = RouteInternals.route_leg(through.current, junction, branch_boxes, settings, prior)
+				points = RouteInternals.simplify(through.points.concat(final.drop_first(1)))
+				if rule.endpoint == From {
+					Polyline(RouteInternals.reverse_points(points))
+				} else {
+					Polyline(points)
+				}
+			},
+		)
+		{ junction, trunk: Polyline(trunk_points), branches }
+	}
+
 	compute : Route.Input, Route.Settings -> Route.Result
 	compute = |input, settings| {
 		ranks = EdgeRoutes.parallel_ranks(input.graph.edges)
-		raw_routes = input.graph.edges.fold_with_index([], |routes, edge, i| routes.append(RouteInternals.route_one(i, edge, input, settings, ranks.get(i) ?? { rank: 0, count: 1 }, routes)))
+		independent_routes = input.graph.edges.fold_with_index([], |routes, edge, i| routes.append(RouteInternals.route_one(i, edge, input, settings, ranks.get(i) ?? { rank: 0, count: 1 }, routes)))
+		shared = input.shared_ends.fold([], |acc, rule| acc.append(RouteInternals.shared_geometry(rule, input, settings, independent_routes)))
+		raw_routes = input.shared_ends.fold_with_index(
+			independent_routes,
+			|routes, rule, shared_index| {
+				geometry = shared.get(shared_index) ?? { junction: { x: 0, y: 0 }, trunk: Polyline([]), branches: [] }
+				rule.edges.fold_with_index(routes, |updated, edge, branch_index| updated.set(edge, geometry.branches.get(branch_index) ?? Polyline([])) ?? [])
+			},
+		)
+		label_routes = input.shared_ends.fold_with_index(
+			raw_routes,
+			|routes, rule, shared_index| {
+				geometry = shared.get(shared_index) ?? { junction: { x: 0, y: 0 }, trunk: Polyline([]), branches: [] }
+				rule.edges.fold(routes, |updated, edge| updated.set(edge, RouteInternals.join_shared(updated.get(edge) ?? Polyline([]), geometry.trunk, rule.endpoint)) ?? [])
+			},
+		)
 		placed_labels = input.edge_labels.fold(
 			[],
 			|placed, label| {
-				base = RouteInternals.anchor_for(raw_routes.get(label.edge) ?? Polyline([]), label.placement)
-				step = label.height / 2 + settings.obstacle_gap + settings.edge_gap
-				candidates = [base, { x: base.x, y: base.y - step }, { x: base.x, y: base.y + step }, { x: base.x - label.width / 2 - step, y: base.y }, { x: base.x + label.width / 2 + step, y: base.y }]
-				point = candidates.find_first(|p| RouteInternals.label_clear(p, label, input, settings, placed, raw_routes)) ?? {
+				base = RouteInternals.anchor_for(label_routes.get(label.edge) ?? Polyline([]), label.placement)
+				candidates = RouteInternals.label_candidates(label_routes.get(label.edge) ?? Polyline([]), label.placement, label.width, label.height, settings)
+				point = candidates.find_first(|p| RouteInternals.label_clear(p, label, input, settings, placed, label_routes)) ?? {
 					node_top = input.positions.fold_with_index(
 						base.y,
 						|top, p, i| {
@@ -896,7 +1168,7 @@ RouteInternals :: {}.{
 							top.min(p.y - node.height / 2)
 						},
 					)
-					route_top = raw_routes.fold(node_top, |top, route| RouteInternals.route_points(route).fold(top, |m, p| m.min(p.y)))
+					route_top = label_routes.fold(node_top, |top, route| RouteInternals.route_points(route).fold(top, |m, p| m.min(p.y)))
 					clear_top = placed.fold(route_top, |top, old| top.min(old.point.y - old.height / 2 - settings.obstacle_gap))
 					{ x: base.x, y: clear_top - label.height / 2 - settings.obstacle_gap - settings.edge_gap }
 				}
@@ -918,7 +1190,7 @@ RouteInternals :: {}.{
 				{ min_x: box.min_x.min(p.x - n.width / 2), min_y: box.min_y.min(p.y - n.height / 2), max_x: box.max_x.max(p.x + n.width / 2), max_y: box.max_y.max(p.y + n.height / 2) }
 			},
 		)
-		route_box = raw_routes.fold(node_box, |box, route| RouteInternals.route_points(route).fold(box, |b, p| { min_x: b.min_x.min(p.x), min_y: b.min_y.min(p.y), max_x: b.max_x.max(p.x), max_y: b.max_y.max(p.y) }))
+		route_box = raw_routes.concat(shared.map(|item| item.trunk)).fold(node_box, |box, route| RouteInternals.route_points(route).fold(box, |b, p| { min_x: b.min_x.min(p.x), min_y: b.min_y.min(p.y), max_x: b.max_x.max(p.x), max_y: b.max_y.max(p.y) }))
 		box = input.edge_labels.fold_with_index(
 			route_box,
 			|b, label, i| {
@@ -935,11 +1207,40 @@ RouteInternals :: {}.{
 				Polyline(ps) => Polyline(ps.map(shift))
 				Curves(ss) => Curves(ss.map(|s| { from: shift(s.from), ctl_a: shift(s.ctl_a), ctl_b: shift(s.ctl_b), to: shift(s.to) }))
 			}
-		attachments = input.graph.edges.map_with_index(
+		independent_attachments = input.graph.edges.map_with_index(
 			|edge, i| {
 				from = RouteInternals.terminal(i, From, edge, input)
 				to = RouteInternals.terminal(i, To, edge, input)
 				{ from: { point: shift(from.point), side: from.side }, to: { point: shift(to.point), side: to.side } }
+			},
+		)
+		attachments = input.shared_ends.fold_with_index(
+			independent_attachments,
+			|all, rule, shared_index| {
+				geometry = shared.get(shared_index) ?? { junction: { x: 0, y: 0 }, trunk: Polyline([]), branches: [] }
+				trunk_points = RouteInternals.route_points(geometry.trunk)
+				common_point = trunk_points.last() ?? geometry.junction
+				before_common = trunk_points.drop_last(1).last() ?? geometry.junction
+				selected_side = if before_common.x < common_point.x {
+					Left
+				} else if before_common.x > common_point.x {
+					Right
+				} else if before_common.y < common_point.y {
+					Top
+				} else {
+					Bottom
+				}
+				rule.edges.fold(
+					all,
+					|updated, edge_index| {
+						old = updated.get(edge_index) ?? { from: { point: common_point, side: selected_side }, to: { point: common_point, side: selected_side } }
+						next = match rule.endpoint {
+							From => { ..old, from: { point: shift(common_point), side: selected_side } }
+							To => { ..old, to: { point: shift(common_point), side: selected_side } }
+						}
+						updated.set(edge_index, next) ?? []
+					},
+				)
 			},
 		)
 		group_crossings = raw_routes.map_with_index(
@@ -955,7 +1256,13 @@ RouteInternals :: {}.{
 			},
 		)
 		groups = input.groups.map(|group| { x: Geom.saturate(group.rect.x + dx), y: Geom.saturate(group.rect.y + dy), width: group.rect.width, height: group.rect.height })
-		{ layout: { positions: input.positions.map(shift), routes: raw_routes.map(shift_route), bounds: { ..Geom.empty_bounds, width: Geom.saturate(box.max_x - box.min_x), height: Geom.saturate(box.max_y - box.min_y) } }, groups, label_anchors: raw_labels.map(shift), attachments, group_crossings }
+		shared_routes = input.shared_ends.map_with_index(
+			|rule, i| {
+				geometry = shared.get(i) ?? { junction: { x: 0, y: 0 }, trunk: Polyline([]), branches: [] }
+				{ edges: rule.edges, endpoint: rule.endpoint, junction: shift(geometry.junction), trunk: shift_route(geometry.trunk), group_crossings: RouteInternals.route_crossings(geometry.trunk, input.groups).map(|crossing| { ..crossing, point: shift(crossing.point) }) }
+			},
+		)
+		{ layout: { positions: input.positions.map(shift), routes: raw_routes.map(shift_route), bounds: { ..Geom.empty_bounds, width: Geom.saturate(box.max_x - box.min_x), height: Geom.saturate(box.max_y - box.min_y) } }, groups, label_anchors: raw_labels.map(shift), attachments, group_crossings, shared_routes }
 	}
 }
 
@@ -976,6 +1283,14 @@ RouteInternals :: {}.{
 ## the middle of one side, and `Fixed` chooses a normalized offset along it.
 ## Nested constraints are crossed in ancestry order and every resulting leg
 ## is routed around obstacles.
+##
+## A shared-end rule gives two or more edges one intentional junction at a
+## node they have in common and selects the shared trunk's node attachment.
+## Member edges must not repeat an attachment rule at that common end. Their
+## index-aligned edge routes stop at the
+## junction; `shared_routes` contains the single trunk to draw from the
+## junction to the common node. This represents UML generalization and other
+## converging relationships without drawing coincident independent edges.
 Route :: {}.{
 	Side : [Top, Right, Bottom, Left]
 	Endpoint : [From, To]
@@ -988,8 +1303,9 @@ Route :: {}.{
 	GroupAttachmentRule : { edge : U64, group : U64, attachment : Attachment }
 	LabelPlacement : [Center, Near(Endpoint)]
 	EdgeLabel : { edge : U64, width : F64, height : F64, placement : LabelPlacement }
+	SharedEndRule : { edges : List(U64), endpoint : Endpoint, attachment : Attachment }
 
-	Input : { graph : { nodes : List({ width : F64, height : F64 }), edges : List({ from : U64, to : U64 }) }, positions : List({ x : F64, y : F64 }), groups : List(Group), memberships : List(Membership), attachments : List(AttachmentRule), group_attachments : List(GroupAttachmentRule), boundaries : List(BoundaryRule), edge_labels : List(EdgeLabel) }
+	Input : { graph : { nodes : List({ width : F64, height : F64 }), edges : List({ from : U64, to : U64 }) }, positions : List({ x : F64, y : F64 }), groups : List(Group), memberships : List(Membership), attachments : List(AttachmentRule), group_attachments : List(GroupAttachmentRule), boundaries : List(BoundaryRule), edge_labels : List(EdgeLabel), shared_ends : List(SharedEndRule) }
 
 	## `obstacle_gap` is the empty space kept around node and group boxes. `edge_gap`
 	## separates parallel edges. `bend_penalty` favors fewer turns over a
@@ -1000,8 +1316,9 @@ Route :: {}.{
 	SelectedAttachment : { point : Geom.Point, side : Side }
 	EdgeAttachments : { from : SelectedAttachment, to : SelectedAttachment }
 	GroupCrossing : { group : U64, point : Geom.Point, side : Side, offset : F64 }
-	Result : { layout : { positions : List(Geom.Point), routes : List(Geom.Route), bounds : Geom.Rect }, groups : List(Geom.Rect), label_anchors : List(Geom.Point), attachments : List(EdgeAttachments), group_crossings : List(List(GroupCrossing)) }
-	Problem := [InvalidNodeWidth(U64), InvalidNodeHeight(U64), PositionCountMismatch, InvalidPosition(U64), InvalidEdgeFrom(U64), InvalidEdgeTo(U64), InvalidAttachmentEdge(U64), InvalidAttachmentOffset(U64), DuplicateAttachment(U64), InvalidGroupRect(U64), InvalidGroupParent(U64), InvalidMembershipNode(U64), InvalidMembershipGroup(U64), DuplicateMembership(U64), InvalidBoundaryNode(U64), DuplicateBoundary(U64), InvalidGroupAttachmentEdge(U64), InvalidGroupAttachmentGroup(U64), InvalidGroupAttachmentOffset(U64), DuplicateGroupAttachment(U64), GroupAttachmentNotBoundary(U64), InvalidLabelEdge(U64), InvalidLabelWidth(U64), InvalidLabelHeight(U64), InvalidObstacleGap, InvalidBendPenalty, InvalidSharedPathPenalty, InvalidEdgeGap].{
+	SharedRoute : { edges : List(U64), endpoint : Endpoint, junction : Geom.Point, trunk : Geom.Route, group_crossings : List(GroupCrossing) }
+	Result : { layout : { positions : List(Geom.Point), routes : List(Geom.Route), bounds : Geom.Rect }, groups : List(Geom.Rect), label_anchors : List(Geom.Point), attachments : List(EdgeAttachments), group_crossings : List(List(GroupCrossing)), shared_routes : List(SharedRoute) }
+	Problem := [InvalidNodeWidth(U64), InvalidNodeHeight(U64), PositionCountMismatch, InvalidPosition(U64), InvalidEdgeFrom(U64), InvalidEdgeTo(U64), InvalidAttachmentEdge(U64), InvalidAttachmentOffset(U64), DuplicateAttachment(U64), InvalidGroupRect(U64), InvalidGroupParent(U64), InvalidMembershipNode(U64), InvalidMembershipGroup(U64), DuplicateMembership(U64), InvalidBoundaryNode(U64), DuplicateBoundary(U64), InvalidGroupAttachmentEdge(U64), InvalidGroupAttachmentGroup(U64), InvalidGroupAttachmentOffset(U64), DuplicateGroupAttachment(U64), GroupAttachmentNotBoundary(U64), InvalidLabelEdge(U64), InvalidLabelWidth(U64), InvalidLabelHeight(U64), SharedEndNeedsEdges(U64), InvalidSharedEndEdge(U64), DuplicateSharedEndEdge(U64), InvalidSharedEndAttachmentOffset(U64), SharedEndMismatch(U64), SharedEndMemberAttachment(U64), SharedEndOverlap(U64), InvalidObstacleGap, InvalidBendPenalty, InvalidSharedPathPenalty, InvalidEdgeGap].{
 
 		## Turn one typed problem into a short explanation for a person reading a
 		## log or error message. Numbers identify positions in the corresponding
@@ -1032,6 +1349,13 @@ Route :: {}.{
 			InvalidLabelEdge(label) => "Edge label ${label.to_str()} refers to an edge that does not exist."
 			InvalidLabelWidth(label) => "Edge label ${label.to_str()} has a width that is negative or not finite."
 			InvalidLabelHeight(label) => "Edge label ${label.to_str()} has a height that is negative or not finite."
+			SharedEndNeedsEdges(rule) => "Shared end ${rule.to_str()} must contain at least two edges."
+			InvalidSharedEndEdge(rule) => "Shared end ${rule.to_str()} refers to an edge that does not exist."
+			DuplicateSharedEndEdge(rule) => "Shared end ${rule.to_str()} repeats an edge."
+			SharedEndMismatch(rule) => "Every edge in shared end ${rule.to_str()} must have the same node at the selected end."
+			InvalidSharedEndAttachmentOffset(rule) => "Shared end ${rule.to_str()} has an attachment offset outside the range from 0 to 1."
+			SharedEndMemberAttachment(rule) => "Shared end ${rule.to_str()} conflicts with a member edge attachment at the common node; set the attachment on the shared end only."
+			SharedEndOverlap(rule) => "Shared end ${rule.to_str()} contains an edge already used by an earlier shared end."
 			InvalidObstacleGap => "The obstacle gap must be a finite number that is zero or greater."
 			InvalidBendPenalty => "The bend penalty must be a finite number that is zero or greater."
 			InvalidSharedPathPenalty => "The shared-path penalty must be a finite number that is zero or greater."
@@ -1040,7 +1364,7 @@ Route :: {}.{
 	}
 
 	default_input : Input
-	default_input = { graph: { nodes: [], edges: [] }, positions: [], groups: [], memberships: [], attachments: [], group_attachments: [], boundaries: [], edge_labels: [] }
+	default_input = { graph: { nodes: [], edges: [] }, positions: [], groups: [], memberships: [], attachments: [], group_attachments: [], boundaries: [], edge_labels: [], shared_ends: [] }
 
 	## Readable default clearance and parallel-edge separation, with modest
 	## preferences for fewer bends and less shared routing.
@@ -1064,7 +1388,92 @@ expect {
 	problem.to_str() == "Edge 3 refers to a target node that does not exist."
 }
 
-expect Route.layout(Route.default_input, Route.default_settings) == Ok({ layout: { positions: [], routes: [], bounds: Geom.empty_bounds }, groups: [], label_anchors: [], attachments: [], group_crossings: [] })
+expect Route.layout(Route.default_input, Route.default_settings) == Ok({ layout: { positions: [], routes: [], bounds: Geom.empty_bounds }, groups: [], label_anchors: [], attachments: [], group_crossings: [], shared_routes: [] })
+
+## Shared ends return one trunk while their source-aligned branch routes meet
+## at exactly one junction. The default remains opt-in and empty.
+expect {
+	input = {
+		..Route.default_input,
+		graph: { nodes: [{ width: 12, height: 12 }, { width: 12, height: 12 }, { width: 16, height: 12 }], edges: [{ from: 0, to: 2 }, { from: 1, to: 2 }] },
+		positions: [{ x: 0, y: 80 }, { x: 80, y: 80 }, { x: 40, y: 0 }],
+		shared_ends: [{ edges: [0, 1], endpoint: To, attachment: On(Bottom) }],
+	}
+	match Route.layout(input, Route.default_settings) {
+		Ok(result) => match result.shared_routes.first() {
+			Ok(shared) => {
+				branch_ends = result.layout.routes.map(|route| RouteInternals.route_points(route).last())
+				trunk = RouteInternals.route_points(shared.trunk)
+				to_point = match result.attachments.get(0) {
+					Ok(ends) => Ok(ends.to.point)
+					Err(_) => Err(NoAttachment)
+				}
+				final_approach = match (trunk.drop_last(1).last(), trunk.last(), result.attachments.get(0)) {
+					(Ok(before), Ok(at_node), Ok(ends)) => before.x == at_node.x and before.y > at_node.y and ends.to.side == Bottom
+					_ => False
+				}
+				branch_ends == [Ok(shared.junction), Ok(shared.junction)] and trunk.first() == Ok(shared.junction) and trunk.last() == to_point and final_approach
+			}
+			Err(_) => False
+		}
+		Err(_) => False
+	}
+}
+
+## A shared end owns its common attachment. Invalid shared offsets and
+## ambiguous member-edge rules are reported together in shared-rule order.
+expect {
+	input = {
+		..Route.default_input,
+		graph: { nodes: List.repeat({ width: 10, height: 10 }, 3), edges: [{ from: 0, to: 2 }, { from: 1, to: 2 }] },
+		positions: [{ x: 0, y: 40 }, { x: 40, y: 40 }, { x: 20, y: 0 }],
+		attachments: [{ edge: 0, endpoint: To, attachment: On(Bottom) }],
+		shared_ends: [{ edges: [0, 1], endpoint: To, attachment: Fixed({ side: Bottom, offset: 2 }) }],
+	}
+	Route.layout(input, Route.default_settings) == Err([InvalidSharedEndAttachmentOffset(0), SharedEndMemberAttachment(0)])
+}
+
+## Labels on an ordinary association remain near that edge when separate
+## inheritance edges use a shared trunk. Normal candidates expand locally
+## before the final exterior fallback, and label order remains input-aligned.
+expect {
+	input = {
+		..Route.default_input,
+		graph: {
+			nodes: [{ width: 120, height: 48 }, { width: 120, height: 48 }, { width: 120, height: 48 }, { width: 120, height: 48 }, { width: 112, height: 64 }],
+			edges: [{ from: 1, to: 0 }, { from: 2, to: 0 }, { from: 3, to: 0 }, { from: 4, to: 1 }],
+		},
+		positions: [{ x: 220, y: 40 }, { x: 140, y: 240 }, { x: 280, y: 240 }, { x: 420, y: 240 }, { x: 0, y: 240 }],
+		edge_labels: [{ edge: 3, width: 54, height: 18, placement: Center }, { edge: 3, width: 18, height: 18, placement: Near(From) }, { edge: 3, width: 26, height: 18, placement: Near(To) }],
+		shared_ends: [{ edges: [0, 1, 2], endpoint: To, attachment: On(Bottom) }],
+	}
+	match Route.layout(input, Route.default_settings) {
+		Err(_) => False
+		Ok(result) => {
+			association_from = result.layout.positions.get(4) ?? { x: 0, y: 0 }
+			association_to = result.layout.positions.get(1) ?? { x: 0, y: 0 }
+			edge_y = (association_from.y + association_to.y) / 2
+			near_edge = result.label_anchors.all(|anchor| (anchor.y - edge_y).abs() <= 120)
+			association = result.layout.routes.get(3) ?? Polyline([])
+			local = input.edge_labels.fold_with_index(
+				True,
+				|ok, label, i| {
+					anchor = result.label_anchors.get(i) ?? { x: F64.infinity, y: F64.infinity }
+					desired = RouteInternals.anchor_for(association, label.placement)
+					ok and (anchor.x - desired.x).abs() + (anchor.y - desired.y).abs() <= 120
+				},
+			)
+			inside = result.label_anchors.fold_with_index(
+				True,
+				|ok, anchor, i| {
+					label = input.edge_labels.get(i) ?? { edge: 0, width: 0, height: 0, placement: Center }
+					ok and anchor.x - label.width / 2 >= 0 and anchor.y - label.height / 2 >= 0 and anchor.x + label.width / 2 <= result.layout.bounds.width and anchor.y + label.height / 2 <= result.layout.bounds.height
+				},
+			)
+			result.label_anchors.len() == 3 and near_edge and local and inside
+		}
+	}
+}
 
 expect {
 	input = { ..Route.default_input, graph: { nodes: [{ width: 10, height: 10 }, { width: 10, height: 10 }], edges: [{ from: 0, to: 1 }] }, positions: [{ x: 0, y: 0 }, { x: 40, y: 20 }], attachments: [{ edge: 0, endpoint: From, attachment: Fixed({ side: Right, offset: 0.5 }) }], edge_labels: [{ edge: 0, width: 8, height: 4, placement: Center }] }
