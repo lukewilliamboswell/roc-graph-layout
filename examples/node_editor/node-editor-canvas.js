@@ -45,6 +45,8 @@ export class NodeEditorCanvas extends HTMLElement {
       childList:true, subtree:true, attributes:true,
       attributeFilter:['data-points','data-layers','data-arrangement','data-direction','data-x','data-y','data-width','data-height'],
     });
+    this.viewportObserver = new ResizeObserver(() => this.resizeSurface());
+    this.viewportObserver.observe(this.closest('#viewport'));
     const routeSelect=document.querySelector('#route-style');if(routeSelect)routeSelect.value=this.routeStyle;
     this.setTheme(this.theme);
     this.refresh();
@@ -73,6 +75,7 @@ export class NodeEditorCanvas extends HTMLElement {
     document.removeEventListener('click', this.onInspectorClick);
     globalThis.removeEventListener('offline', this.onBrowserOffline);
     globalThis.clearInterval(this.healthTimer);
+    this.viewportObserver?.disconnect();
     this.observer.disconnect();
     this.initialized = false;
   }
@@ -227,11 +230,13 @@ export class NodeEditorCanvas extends HTMLElement {
   }
   resizeSurface() {
     const nodes=this.nodes();
-    if(!nodes.length)return;
-    const maxX=Math.max(...nodes.map(n=>n.x+n.width/2))+240;
-    const maxY=Math.max(...nodes.map(n=>n.y+n.height/2))+180;
-    this.style.width=`${Math.max(1100,maxX)}px`;
-    this.style.height=`${Math.max(720,maxY)}px`;
+    const viewport=this.closest('#viewport');
+    const maxX=nodes.length?Math.max(...nodes.map(n=>n.x+n.width/2))+240:0;
+    const maxY=nodes.length?Math.max(...nodes.map(n=>n.y+n.height/2))+180:0;
+    const visibleWidth=(viewport?.clientWidth??0)/this.viewport.scale+Math.max(0,-this.viewport.x)/this.viewport.scale;
+    const visibleHeight=(viewport?.clientHeight??0)/this.viewport.scale+Math.max(0,-this.viewport.y)/this.viewport.scale;
+    this.style.width=`${Math.max(1100,maxX,visibleWidth)}px`;
+    this.style.height=`${Math.max(720,maxY,visibleHeight)}px`;
     this.applyViewport();
   }
   applyViewport() {
@@ -254,12 +259,6 @@ export class NodeEditorCanvas extends HTMLElement {
   }
 
   pointerDown(event) {
-    const deleteButton=event.target.closest('[data-delete-node]');
-    if(deleteButton){
-      event.stopPropagation();
-      this.requestCommand('delete-node',{node:Number(deleteButton.closest('.node').dataset.nodeId)});
-      return;
-    }
     const resize=event.target.closest('[data-resize-node]');
     if(resize){ this.startResize(event,resize.closest('.node')); return; }
     const port=event.target.closest('.port');
@@ -448,6 +447,8 @@ export class NodeEditorCanvas extends HTMLElement {
     }
   }
   inspectorClicked(event){
+    const deleteNode=event.target.closest?.('[data-delete-node]');
+    if(deleteNode&&confirm('Delete this node and all of its connections?')){this.requestCommand('delete-node',{node:Number(deleteNode.dataset.node)});this.select([]);return;}
     const add=event.target.closest?.('[data-add-port]');
     if(add){this.requestCommand('add-port',{node:Number(add.dataset.node),role:add.dataset.addPort});return;}
     const move=event.target.closest?.('[data-move-port]');

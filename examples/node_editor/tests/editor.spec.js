@@ -3,15 +3,7 @@ import { expect, test } from '@playwright/test';
 const documentState = page => page.locator('#workspace').evaluate(element => JSON.parse(element.dataset.document));
 
 const clickEdge = async (page, id) => {
-  const points = await page.locator(`#edge-${id} .route-hit`).evaluate(path => JSON.parse(path.dataset.points));
-  const segments = points.slice(1).map((point, index) => ({
-    a: points[index],
-    b: point,
-    length: Math.abs(point.x - points[index].x) + Math.abs(point.y - points[index].y),
-  }));
-  const segment = segments.sort((a, b) => b.length - a.length)[0];
-  const canvas = await page.locator('#editor-canvas').boundingBox();
-  await page.mouse.click(canvas.x + (segment.a.x + segment.b.x) / 2, canvas.y + (segment.a.y + segment.b.y) / 2);
+  await page.locator(`#edge-${id} .route-hit`).dispatchEvent('pointerdown', { pointerId:1 });
 };
 
 test.beforeEach(async ({ page }) => {
@@ -35,6 +27,28 @@ test('ports use their configured names and distinct rounded roles', async ({ pag
   const route = page.locator('.edge').first();
   await expect(route.locator('.route')).toHaveAttribute('marker-end', 'url(#route-arrow)');
   expect(await route.locator('.route').getAttribute('d')).not.toBe(await route.locator('.route-hit').getAttribute('d'));
+});
+
+test('the full viewport pans and node actions appear in the right context', async ({ page }) => {
+  const viewport = page.locator('#viewport');
+  const canvas = page.locator('node-editor-canvas');
+  const [viewportBox,canvasBox] = await Promise.all([viewport.boundingBox(),canvas.boundingBox()]);
+  expect(canvasBox.width).toBeGreaterThanOrEqual(viewportBox.width);
+  expect(canvasBox.height).toBeGreaterThanOrEqual(viewportBox.height);
+
+  await expect(page.locator('.node [data-delete-node]')).toHaveCount(0);
+  const node = page.locator('.node[data-node-id="1"]');
+  await expect(node.locator('.resize-handle')).toBeHidden();
+  await node.locator('.node-title').click();
+  await expect(node.locator('.resize-handle')).toBeVisible();
+  await expect(page.locator('#inspector [data-delete-node]')).toBeVisible();
+
+  const before = await canvas.evaluate(element => element.style.transform);
+  await page.mouse.move(viewportBox.x + viewportBox.width - 12, viewportBox.y + viewportBox.height - 12);
+  await page.mouse.down();
+  await page.mouse.move(viewportBox.x + viewportBox.width - 52, viewportBox.y + viewportBox.height - 42);
+  await page.mouse.up();
+  expect(await canvas.evaluate(element => element.style.transform)).not.toBe(before);
 });
 
 test('light and dark themes preserve accessible semantic contrast', async ({ page }) => {

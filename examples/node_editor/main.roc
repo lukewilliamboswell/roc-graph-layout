@@ -991,7 +991,6 @@ node_node = |node| Html.element(
 	[
 		Html.div([Attribute.class("node-title")], [Html.text(node.label)]),
 		Html.div([Attribute.class("ports")], node.ports.map(port_node)),
-		Html.button([Attribute.class("delete"), Attribute.attribute("data-delete-node", ""), Attribute.attribute("aria-label", "Delete ${node.label}")], [Html.text("×")]),
 		Html.div([Attribute.class("resize-handle"), Attribute.attribute("data-resize-node", "")], []),
 	],
 )
@@ -1174,6 +1173,7 @@ inspector_fragment = |document, selected, selected_edges| {
 			Html.h3([], [Html.text("Ports")]),
 			Html.ul([Attribute.class("port-editors")], node.ports.map_with_index(|port, index| port_inspector(document, node, port, index))),
 			Html.div([Attribute.class("add-port-actions")], [Html.button([Attribute.attribute("data-add-port", "input"), Attribute.attribute("data-node", node.id.to_str())], [Html.text("Add input")]), Html.button([Attribute.attribute("data-add-port", "output"), Attribute.attribute("data-node", node.id.to_str())], [Html.text("Add output")])]),
+			Html.div([Attribute.class("destructive-actions")], [Html.button([Attribute.class("danger"), Attribute.attribute("data-delete-node", ""), Attribute.attribute("data-node", node.id.to_str())], [Html.text("Delete node")])]),
 		]
 		_ => [Html.h2([], [Html.text("${nodes.len().to_str()} nodes selected")]), Html.p([], [Html.text("Drag a selected node to move the selection.")])]
 	}
