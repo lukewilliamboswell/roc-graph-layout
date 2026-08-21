@@ -8,7 +8,7 @@ for (const suffix of ['', '-shm', '-wal']) remove(`${database}${suffix}`, { forc
 
 const server = spawn(resolve(directory, 'node-editor'), [], {
   cwd: directory,
-  env: { ...process.env, ROC_GRAPH_LAYOUT_NODE_EDITOR_DB: database },
+  env: { ...process.env, ROC_GRAPH_LAYOUT_NODE_EDITOR_DB: database, ROC_GRAPH_LAYOUT_NODE_EDITOR_PORT: '18080' },
   stdio: ['inherit', 'pipe', 'pipe'],
 });
 

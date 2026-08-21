@@ -412,6 +412,8 @@ export class NodeEditorCanvas extends HTMLElement {
   inspectorClicked(event){
     const add=event.target.closest?.('[data-add-port]');
     if(add){this.requestCommand('add-port',{node:Number(add.dataset.node),role:add.dataset.addPort});return;}
+    const move=event.target.closest?.('[data-move-port]');
+    if(move){const editor=move.closest('.port-editor');this.requestCommand('move-port',{node:Number(editor.dataset.node),port_id:editor.dataset.port,direction:move.dataset.movePort});return;}
     const remove=event.target.closest?.('[data-delete-port]');
     if(remove){const editor=remove.closest('.port-editor');if(confirm('Delete this port and all of its connections?'))this.requestCommand('delete-port',{node:Number(editor.dataset.node),port_id:editor.dataset.port});return;}
     const reevaluate=event.target.closest?.('[data-reevaluate-port]');

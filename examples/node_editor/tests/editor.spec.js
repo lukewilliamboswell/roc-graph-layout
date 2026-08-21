@@ -55,6 +55,9 @@ test('port and connection properties persist through the server and reload', asy
   await added.locator('[data-port-side]').selectOption('left');
   await added.locator('[data-port-label]').blur();
   await expect.poll(async () => (await documentState(page)).nodes.find(item => item.id === 1).ports.length).toBe(3);
+  await expect.poll(async () => (await documentState(page)).nodes.find(item => item.id === 1).ports.at(-1).label).toBe('Failure');
+  await added.getByRole('button', { name: 'Move port up' }).click();
+  await expect.poll(async () => (await documentState(page)).nodes.find(item => item.id === 1).ports[1].label).toBe('Failure');
 
   await clickEdge(page, 1);
   await expect(page.locator('.edge-editor')).toBeVisible();
@@ -71,6 +74,7 @@ test('port and connection properties persist through the server and reload', asy
   const persisted = await documentState(page);
   const port = persisted.nodes.find(item => item.id === 1).ports.find(item => item.label === 'Failure');
   expect(port.side).toBe('left');
+  expect(persisted.nodes.find(item => item.id === 1).ports[1].id).toBe(port.id);
   expect(persisted.edges.find(item => item.id === 1)).toMatchObject({ label: 'approved', color: '#22aa88' });
 });
 

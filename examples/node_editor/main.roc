@@ -103,7 +103,12 @@ init! = || {
 	Sqlite.execute!({ db, query: "CREATE TABLE IF NOT EXISTS workspace (id INTEGER PRIMARY KEY CHECK (id = 1), revision INTEGER NOT NULL, document TEXT NOT NULL);", params: {} }) ? |err| InitFailed(Str.inspect(err))
 	initial_json = Json.to_str_try(initial_document) ? |err| InitFailed(Str.inspect(err))
 	Sqlite.execute!({ db, query: "INSERT OR IGNORE INTO workspace (id, revision, document) VALUES (1, 0, :document);", params: { document: initial_json } }) ? |err| InitFailed(Str.inspect(err))
-	Ok({ config: Server.with_request_body_limit(Server.default_config, Datastar.default_signals_limit_bytes), context: db })
+	port = match Env.var_str!("ROC_GRAPH_LAYOUT_NODE_EDITOR_PORT") {
+		Ok(value) => U16.from_str(value) ? |_| InitFailed("ROC_GRAPH_LAYOUT_NODE_EDITOR_PORT must be an integer from 0 through 65535.")
+		Err(_) => 8000
+	}
+	config = Server.with_request_body_limit(Server.default_config, Datastar.default_signals_limit_bytes).with_listen({ host: "127.0.0.1", port })
+	Ok({ config, context: db })
 }
 
 respond! : Server.Request, Context => Try(Server.Outcome, [ServerErr(Str), ..])
@@ -303,6 +308,16 @@ apply_command = |document, kind, p| {
 		port = { id: port_id, label: if p.role == "input" { "Input" } else { "Output" }, role: p.role, side: "auto", resolved_side: if p.role == "input" { "left" } else { "right" }, offset: 0.5 }
 		next = { ..document, next_port_id: document.next_port_id + 1, nodes: document.nodes.map(|node| if node.id == p.node { { ..node, ports: node.ports.append(port) } } else { node }) }
 		{ document: free(redistribute_ports(next)), message: if found { "Port added." } else { "The node cannot accept another port." }, accepted: found }
+	} else if kind == "move-port" and ["up", "down"].contains(p.direction) {
+		found = document.nodes.any(|node| node.id == p.node and node.ports.any(|port| port.id == p.port_id))
+		moved_nodes = document.nodes.map(
+			|node| if node.id == p.node {
+				{ ..node, ports: move_port(node.ports, p.port_id, p.direction) }
+			} else {
+				node
+			},
+		)
+		{ document: free(redistribute_ports({ ..document, nodes: moved_nodes })), message: if found { "Port order updated." } else { "Port not found." }, accepted: found }
 	} else if kind == "update-port" and Str.count_utf8_bytes(p.label) <= 64 and ["input", "output"].contains(p.role) and ["auto", "top", "right", "bottom", "left"].contains(p.side) {
 		found = document.nodes.any(|node| node.id == p.node and node.ports.any(|port| port.id == p.port_id))
 		used = port_connection_count(document, p.node, p.port_id) > 0
@@ -469,6 +484,26 @@ port_connection_count = |document, node_id, port_id| document.edges.fold(
 )
 
 fallback_side = |role| if role == "input" { "left" } else { "right" }
+
+move_port = |ports, port_id, direction| match ports.find_first_index(|port| port.id == port_id) {
+	Err(_) => ports
+	Ok(index) => {
+		target = if direction == "up" and index > 0 {
+			index - 1
+		} else if direction == "down" and index + 1 < ports.len() {
+			index + 1
+		} else {
+			index
+		}
+		if target == index {
+			ports
+		} else {
+			current = ports.get(index) ?? input_port
+			other = ports.get(target) ?? input_port
+			ports.map_with_index(|port, i| if i == index { other } else if i == target { current } else { port })
+		}
+	}
+}
 
 side_toward : { x : F64, y : F64 }, { x : F64, y : F64 }, Str -> Str
 side_toward = |from, to, role| {
@@ -812,7 +847,7 @@ angular_path = |points| match points {
 
 option_node = |value, label, selected| Html.element("option", [Attribute.attribute("value", value)].concat(if selected { [Attribute.attribute("selected", "")] } else { [] }), [Html.text(label)])
 
-port_inspector = |document, node, port| {
+port_inspector = |document, node, port, index| {
 	used = port_connection_count(document, node.id, port.id) > 0
 	role_attributes = [Attribute.attribute("data-port-role", ""), Attribute.attribute("aria-label", "Port role")].concat(if used { [Attribute.attribute("disabled", "")] } else { [] })
 	controls = [
@@ -825,7 +860,14 @@ port_inspector = |document, node, port| {
 	} else {
 		[]
 	}
-	Html.li([Attribute.class("port-editor"), Attribute.attribute("data-node", node.id.to_str()), Attribute.attribute("data-port", port.id)], controls.concat(auto_controls).append(Html.button([Attribute.class("danger small"), Attribute.attribute("data-delete-port", "")], [Html.text("Delete port")])))
+	move_controls = Html.div(
+		[Attribute.class("port-order-actions")],
+		[
+			Html.button([Attribute.class("small"), Attribute.attribute("data-move-port", "up"), Attribute.attribute("aria-label", "Move port up"), Attribute.attribute("title", "Move ${port.label} up")].concat(if index == 0 { [Attribute.attribute("disabled", "")] } else { [] }), [Html.text("↑")]),
+			Html.button([Attribute.class("small"), Attribute.attribute("data-move-port", "down"), Attribute.attribute("aria-label", "Move port down"), Attribute.attribute("title", "Move ${port.label} down")].concat(if index + 1 == node.ports.len() { [Attribute.attribute("disabled", "")] } else { [] }), [Html.text("↓")]),
+		],
+	)
+	Html.li([Attribute.class("port-editor"), Attribute.attribute("data-node", node.id.to_str()), Attribute.attribute("data-port", port.id)], controls.concat(auto_controls).concat([move_controls, Html.button([Attribute.class("danger small"), Attribute.attribute("data-delete-port", "")], [Html.text("Delete port")])]))
 }
 
 edge_inspector = |edge| Html.div(
@@ -852,7 +894,7 @@ inspector_fragment = |document, selected, selected_edges| {
 			Html.label([], [Html.text("Label"), Html.input([Attribute.attribute("value", node.label), Attribute.attribute("data-node-label", node.id.to_str()), Attribute.attribute("maxlength", "120")])]),
 			Html.p([Attribute.class("muted")], [Html.text("${node.width.to_str()} × ${node.height.to_str()} at ${node.x.to_str()}, ${node.y.to_str()}")]),
 			Html.h3([], [Html.text("Ports")]),
-			Html.ul([Attribute.class("port-editors")], node.ports.map(|port| port_inspector(document, node, port))),
+			Html.ul([Attribute.class("port-editors")], node.ports.map_with_index(|port, index| port_inspector(document, node, port, index))),
 			Html.div([Attribute.class("add-port-actions")], [Html.button([Attribute.attribute("data-add-port", "input"), Attribute.attribute("data-node", node.id.to_str())], [Html.text("Add input")]), Html.button([Attribute.attribute("data-add-port", "output"), Attribute.attribute("data-node", node.id.to_str())], [Html.text("Add output")])]),
 		]
 		_ => [Html.h2([], [Html.text("${nodes.len().to_str()} nodes selected")]), Html.p([], [Html.text("Drag a selected node to move the selection.")])]
@@ -988,4 +1030,13 @@ expect {
 	locked = lock_new_connection(document, edge)
 	connected = { ..locked, edges: [edge] }
 	(find_port(locked, 1, "out") ?? output_port).resolved_side == "right" and (find_port(locked, 2, "in") ?? input_port).resolved_side == "left" and !can_add_connection(connected, 1, "out", 2, "in")
+}
+
+## Reordering preserves stable port identities and moves only the requested
+## neighbor, so persisted edges continue to name the same ports.
+expect {
+	ports = [input_port, { ..input_port, id: "alternate", label: "Alternate" }, output_port]
+	moved = move_port(ports, "out", "up")
+	unchanged = move_port(moved, "in", "up")
+	(moved.get(1) ?? input_port).id == "out" and moved.len() == ports.len() and unchanged == moved
 }

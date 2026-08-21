@@ -2,8 +2,8 @@
 
 This native example is a persisted, free-form node editor for exercising node
 placement, explicit arrangement commands, named ports, and obstacle-aware
-routing. Nodes can add named input and output ports, choose fixed or automatic
-sides, and edit connection labels, colors, and label placement in the
+routing. Nodes can add, reorder, and name input and output ports, choose fixed
+or automatic sides, and edit connection labels, colors, and label placement in the
 inspector. Inputs accept one connection while outputs support deterministic
 fan-out. Datastar owns server actions, HTML reconciliation, inspector updates,
 status signals, and the retained workspace stream. One light-DOM custom element
@@ -27,7 +27,9 @@ ROC=/path/to/the/pinned/roc npm run build
 Set `ROC_GRAPH_LAYOUT_NODE_EDITOR_DB` to choose another database path. The
 default is `node_editor.db` in the process's current working directory. Nodes
 store their dimensions as geometry input and can be resized between the
-editor's documented bounds.
+editor's documented bounds. Set `ROC_GRAPH_LAYOUT_NODE_EDITOR_PORT` to choose
+another listening port; the interactive default is 8000 and the browser tests
+use their own port 18080.
 
 The browser console records structured `[node-editor]` events for graph
 actions, direction and route-style changes, connections, drags, server
