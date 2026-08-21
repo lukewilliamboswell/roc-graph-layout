@@ -21,17 +21,20 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('#status')).toHaveText(`Revision ${revision} synchronized.`);
 });
 
-test('ports use their configured names and distinct directional chevrons', async ({ page }) => {
+test('ports use their configured names and distinct rounded roles', async ({ page }) => {
   const request = page.locator('.node[data-node-id="1"]');
   await expect(request.locator('.port-mark')).toHaveText(['A', 'B']);
   await expect(page.locator('.node[data-node-id="3"] .port-mark')).toHaveText(['A', 'B', 'C']);
   const shapes = await request.locator('.port').evaluateAll(ports => ports.map(port => ({
     role: port.dataset.role,
-    clip: getComputedStyle(port, '::before').clipPath,
-    color: getComputedStyle(port, '::before').backgroundColor,
+    radius: getComputedStyle(port).borderRadius,
+    color: getComputedStyle(port).borderColor,
   })));
-  expect(shapes.every(shape => shape.clip !== 'none')).toBe(true);
+  expect(shapes.every(shape => shape.radius !== '0px')).toBe(true);
   expect(shapes.find(shape => shape.role === 'input').color).not.toBe(shapes.find(shape => shape.role === 'output').color);
+  const route = page.locator('.edge').first();
+  await expect(route.locator('.route')).toHaveAttribute('marker-end', 'url(#route-arrow)');
+  expect(await route.locator('.route').getAttribute('d')).not.toBe(await route.locator('.route-hit').getAttribute('d'));
 });
 
 test('a dropped node remains at its exact browser position after the server response', async ({ page }) => {
@@ -55,6 +58,22 @@ test('a dropped node remains at its exact browser position after the server resp
 
   await page.reload();
   await expect.poll(async () => (await documentState(page)).nodes.find(item => item.id === 2).x).toBeCloseTo(movedNode.x, 4);
+});
+
+test('a server disconnect preserves the canvas and pauses mutations', async ({ page }) => {
+  const canvas = page.locator('node-editor-canvas');
+  const nodesBefore = await page.locator('.node').count();
+  await page.route('**/health', route => route.abort());
+  await canvas.evaluate(element => element.checkServer());
+  await expect(page.locator('body')).toHaveAttribute('data-server-state', 'offline');
+  await expect(page.locator('#offline-status')).toBeVisible();
+  await expect(page.locator('#offline-status')).toContainText('changes are paused');
+  expect(await canvas.evaluate(element => element.requestCommand('add-node'))).toBe(false);
+  await expect(page.locator('.node')).toHaveCount(nodesBefore);
+
+  await page.unroute('**/health');
+  await canvas.evaluate(element => element.checkServer());
+  await expect(page.locator('body')).toHaveAttribute('data-server-state', 'online');
 });
 
 test('port and connection properties persist through the server and reload', async ({ page }) => {

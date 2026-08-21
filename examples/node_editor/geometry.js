@@ -4,6 +4,16 @@
   else root.NodeEditorGeometry=api;
 })(globalThis,()=>{
   const cleanPoints=points=>points.filter((point,index)=>index===0||point.x!==points[index-1].x||point.y!==points[index-1].y);
+  function shortenTarget(points,gap=9){
+    const shortened=cleanPoints(points).map(point=>({...point}));
+    if(shortened.length<2)return shortened;
+    const end=shortened[shortened.length-1],previous=shortened[shortened.length-2];
+    const length=Math.abs(end.x-previous.x)+Math.abs(end.y-previous.y);
+    const amount=Math.min(gap,Math.max(0,length-2));
+    if(previous.x===end.x)end.y+=end.y>previous.y?-amount:amount;
+    else if(previous.y===end.y)end.x+=end.x>previous.x?-amount:amount;
+    return cleanPoints(shortened);
+  }
   function routePath(points,style='angular'){
     const clean=cleanPoints(points);
     if(clean.length===0)return '';
@@ -65,5 +75,5 @@
   }
   const displayedNodes=(nodes,drafts)=>nodes.map(node=>({...node,...(drafts.get(node.id)??{})}));
   const responseMatches=(latestOperation,responseOperation)=>latestOperation!==''&&latestOperation===responseOperation;
-  return {cleanPoints,routePath,segmentCrossesNode,clearPreview,previewRoute,portPoint,displayedNodes,responseMatches};
+  return {cleanPoints,shortenTarget,routePath,segmentCrossesNode,clearPreview,previewRoute,portPoint,displayedNodes,responseMatches};
 });

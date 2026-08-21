@@ -21,11 +21,6 @@ import layout.Geom
 import layout.Layered
 import layout.Route
 import layout.StressLayout
-import "index.html" as index_html : List(U8)
-import "node-editor-canvas.js" as canvas_js : List(U8)
-import "geometry.js" as geometry_js : List(U8)
-import "style.css" as style_css : List(U8)
-import "datastar-v1.0.2.js" as datastar_js : List(U8)
 
 Context : Sqlite.Db
 
@@ -71,7 +66,7 @@ output_port = { id: "out", label: "B", role: "output", side: "bottom", resolved_
 
 initial_document : Document
 initial_document = {
-	schema_version: 3,
+	schema_version: 4,
 	next_node_id: 4,
 	next_edge_id: 4,
 	next_port_id: 1,
@@ -107,7 +102,31 @@ init! = || {
 		Ok(value) => U16.from_str(value) ? |_| InitFailed("ROC_GRAPH_LAYOUT_NODE_EDITOR_PORT must be an integer from 0 through 65535.")
 		Err(_) => 8000
 	}
-	config = Server.with_request_body_limit(Server.default_config, Datastar.default_signals_limit_bytes).with_listen({ host: "127.0.0.1", port })
+	asset_path = match Env.var!("ROC_GRAPH_LAYOUT_NODE_EDITOR_ASSETS") {
+		Ok(value) => Path.from_os_str(value)
+		Err(_) => Path.utf8(".")
+	}
+	assets = Server.file_root_with_cache({ id: "node_editor_assets", path: asset_path, cache: Server.no_store })
+	index = Server.relative_file("index.html").map_err(|_| InitFailed("The index asset path is invalid."))?
+	styles = Server.relative_file("style.css").map_err(|_| InitFailed("The stylesheet asset path is invalid."))?
+	datastar = Server.relative_file("datastar-v1.0.2.js").map_err(|_| InitFailed("The Datastar asset path is invalid."))?
+	geometry = Server.relative_file("geometry.js").map_err(|_| InitFailed("The geometry asset path is invalid."))?
+	canvas = Server.relative_file("node-editor-canvas.js").map_err(|_| InitFailed("The canvas asset path is invalid."))?
+	config =
+		Server.with_request_body_limit(Server.default_config, Datastar.default_signals_limit_bytes)
+			.with_listen({ host: "127.0.0.1", port })
+			.with_file_roots([assets])
+			.with_native_routes({
+				files: [
+					Server.static_file({ at: "/", files: assets, relative: index }),
+					Server.static_file({ at: "/style.css", files: assets, relative: styles }),
+					Server.static_file({ at: "/datastar.js", files: assets, relative: datastar }),
+					Server.static_file({ at: "/geometry.js", files: assets, relative: geometry }),
+					Server.static_file({ at: "/node-editor-canvas.js", files: assets, relative: canvas }),
+				],
+				liveness: [],
+				readiness: [],
+			})
 	Ok({ config, context: db })
 }
 
@@ -118,12 +137,8 @@ respond! = |request, db| {
 		_ => ""
 	}
 	match (request.method(), path) {
-		(GET, "/") => Ok(Server.respond(bytes_response(200, "text/html; charset=utf-8", index_html)))
+		(GET, "/health") => Ok(Server.respond(text_response(200, "ok")))
 		(GET, "/routing-gallery") => Ok(Server.respond(bytes_response(200, "text/html; charset=utf-8", Str.to_utf8(routing_gallery()))))
-		(GET, "/datastar.js") => Ok(Server.respond(bytes_response(200, "text/javascript; charset=utf-8", datastar_js)))
-		(GET, "/node-editor-canvas.js") => Ok(Server.respond(bytes_response(200, "text/javascript; charset=utf-8", canvas_js)))
-		(GET, "/geometry.js") => Ok(Server.respond(bytes_response(200, "text/javascript; charset=utf-8", geometry_js)))
-		(GET, "/style.css") => Ok(Server.respond(bytes_response(200, "text/css; charset=utf-8", style_css)))
 		(GET, "/updates") => Ok(Server.stream(Sse.unfold!({ revision: -1, signal_revision: -1, ticks: 0 }, |state| stream_step!(db, state))))
 		(GET, "/inspector") => inspector!(db, request)
 		(POST, "/actions") => action!(db, request)
@@ -305,8 +320,40 @@ apply_command = |document, kind, p| {
 	} else if kind == "add-port" and ["input", "output"].contains(p.role) {
 		found = document.nodes.any(|node| node.id == p.node and node.ports.len() < 16)
 		port_id = "port-${document.next_port_id.to_str()}"
-		next = { ..document, next_port_id: document.next_port_id + 1, nodes: document.nodes.map(|node| if node.id == p.node { { ..node, ports: node.ports.append({ id: port_id, label: port_label(node.ports.len()), role: p.role, side: "auto", resolved_side: if p.role == "input" { "left" } else { "right" }, offset: 0.5 }) } } else { node }) }
-		{ document: free(redistribute_ports(next)), message: if found { "Port added." } else { "The node cannot accept another port." }, accepted: found }
+		next = {
+			..document,
+			next_port_id: document.next_port_id + 1,
+			nodes: document.nodes.map(
+				|node| if node.id == p.node {
+					{
+						..node,
+						ports: node.ports.append({
+							id: port_id,
+							label: port_label(node.ports.len()),
+							role: p.role,
+							side: "auto",
+							resolved_side: if p.role == "input" {
+								"left"
+							} else {
+								"right"
+							},
+							offset: 0.5,
+						}),
+					}
+				} else {
+					node
+				},
+			),
+		}
+		{
+			document: free(redistribute_ports(next)),
+			message: if found {
+				"Port added."
+			} else {
+				"The node cannot accept another port."
+			},
+			accepted: found,
+		}
 	} else if kind == "move-port" and ["up", "down"].contains(p.direction) {
 		found = document.nodes.any(|node| node.id == p.node and node.ports.any(|port| port.id == p.port_id))
 		moved_nodes = document.nodes.map(
@@ -316,7 +363,15 @@ apply_command = |document, kind, p| {
 				node
 			},
 		)
-		{ document: free(redistribute_ports({ ..document, nodes: moved_nodes })), message: if found { "Port order updated." } else { "Port not found." }, accepted: found }
+		{
+			document: free(redistribute_ports({ ..document, nodes: moved_nodes })),
+			message: if found {
+				"Port order updated."
+			} else {
+				"Port not found."
+			},
+			accepted: found,
+		}
 	} else if kind == "update-port" and Str.count_utf8_bytes(p.label) <= 64 and ["input", "output"].contains(p.role) and ["auto", "top", "right", "bottom", "left"].contains(p.side) {
 		found = document.nodes.any(|node| node.id == p.node and node.ports.any(|port| port.id == p.port_id))
 		used = port_connection_count(document, p.node, p.port_id) > 0
@@ -326,21 +381,81 @@ apply_command = |document, kind, p| {
 		}
 		changed_nodes = document.nodes.map(
 			|node| if node.id == p.node {
-				{ ..node, ports: node.ports.map(|port| if port.id == p.port_id {
-					resolved = if p.side == "auto" and port.role != p.role { fallback_side(p.role) } else if p.side == "auto" and port.side != "auto" { side_for_port(document, p.node, p.port_id, p.role) } else if p.side == "auto" { port.resolved_side } else { p.side }
-					{ ..port, label: p.label, role: p.role, side: p.side, resolved_side: resolved }
-				} else { port }) }
-			} else { node },
+				{
+					..node,
+					ports: node.ports.map(
+						|port| if port.id == p.port_id {
+							resolved = if p.side == "auto" and port.role != p.role {
+								fallback_side(p.role)
+							} else if p.side == "auto" and port.side != "auto" {
+								side_for_port(document, p.node, p.port_id, p.role)
+							} else if p.side == "auto" {
+								port.resolved_side
+							} else {
+								p.side
+							}
+							{ ..port, label: p.label, role: p.role, side: p.side, resolved_side: resolved }
+						} else {
+							port
+						},
+					),
+				}
+			} else {
+				node
+			},
 		)
 		next = redistribute_ports({ ..document, nodes: changed_nodes })
-		{ document: free(next), message: if found and role_ok { "Port updated." } else if used { "Disconnect the port before changing its role." } else { "Port not found." }, accepted: found and role_ok }
+		{
+			document: free(next),
+			message: if found and role_ok {
+				"Port updated."
+			} else if used {
+				"Disconnect the port before changing its role."
+			} else {
+				"Port not found."
+			},
+			accepted: found and role_ok,
+		}
 	} else if kind == "reevaluate-port" {
 		found = document.nodes.any(|node| node.id == p.node and node.ports.any(|port| port.id == p.port_id and port.side == "auto"))
-		nodes = document.nodes.map(|node| if node.id == p.node { { ..node, ports: node.ports.map(|port| if port.id == p.port_id and port.side == "auto" { { ..port, resolved_side: side_for_port(document, p.node, p.port_id, port.role) } } else { port }) } } else { node })
-		{ document: free(redistribute_ports({ ..document, nodes })), message: if found { "Automatic side re-evaluated." } else { "Automatic port not found." }, accepted: found }
+		nodes = document.nodes.map(
+			|node| if node.id == p.node {
+				{
+					..node,
+					ports: node.ports.map(
+						|port| if port.id == p.port_id and port.side == "auto" {
+							{ ..port, resolved_side: side_for_port(document, p.node, p.port_id, port.role) }
+						} else {
+							port
+						},
+					),
+				}
+			} else {
+				node
+			},
+		)
+		{
+			document: free(redistribute_ports({ ..document, nodes })),
+			message: if found {
+				"Automatic side re-evaluated."
+			} else {
+				"Automatic port not found."
+			},
+			accepted: found,
+		}
 	} else if kind == "delete-port" {
 		found = document.nodes.any(|node| node.id == p.node and node.ports.any(|port| port.id == p.port_id))
-		next = { ..document, nodes: document.nodes.map(|node| if node.id == p.node { { ..node, ports: node.ports.keep_if(|port| port.id != p.port_id) } } else { node }), edges: document.edges.keep_if(|edge| !(edge.from == p.node and edge.source_port == p.port_id) and !(edge.to == p.node and edge.target_port == p.port_id)) }
+		next = {
+			..document,
+			nodes: document.nodes.map(
+				|node| if node.id == p.node {
+					{ ..node, ports: node.ports.keep_if(|port| port.id != p.port_id) }
+				} else {
+					node
+				},
+			),
+			edges: document.edges.keep_if(|edge| !(edge.from == p.node and edge.source_port == p.port_id) and !(edge.to == p.node and edge.target_port == p.port_id)),
+		}
 		{ document: free(normalize_auto_ports(redistribute_ports(next))), message: "Port and its connections deleted.", accepted: found }
 	} else if kind == "delete-node" {
 		found = document.nodes.any(|node| node.id == p.node)
@@ -352,9 +467,33 @@ apply_command = |document, kind, p| {
 	} else if kind == "update-edge" and Str.count_utf8_bytes(p.label) <= 120 and valid_color(p.color) and ["center", "near-source", "near-target"].contains(p.placement) and finite(p.label_width, p.label_height) and p.label_width >= 0 and p.label_width <= 1200 and p.label_height >= 0 and p.label_height <= 80 {
 		found = document.edges.any(|edge| edge.id == p.edge)
 		old = document.edges.find_first(|edge| edge.id == p.edge)
-		geometry_changed = match old { Ok(edge) => edge.label != p.label or edge.label_placement != p.placement or edge.label_width != p.label_width or edge.label_height != p.label_height, Err(_) => False }
-		next = { ..document, edges: document.edges.map(|edge| if edge.id == p.edge { { ..edge, label: p.label, color: p.color, label_placement: p.placement, label_width: p.label_width, label_height: p.label_height } } else { edge }) }
-		{ document: if geometry_changed { free(next) } else { next }, message: if found { "Connection updated." } else { "Connection not found." }, accepted: found }
+		geometry_changed = match old {
+			Ok(edge) => edge.label != p.label or edge.label_placement != p.placement or edge.label_width != p.label_width or edge.label_height != p.label_height
+			Err(_) => False
+		}
+		next = {
+			..document,
+			edges: document.edges.map(
+				|edge| if edge.id == p.edge {
+					{ ..edge, label: p.label, color: p.color, label_placement: p.placement, label_width: p.label_width, label_height: p.label_height }
+				} else {
+					edge
+				},
+			),
+		}
+		{
+			document: if geometry_changed {
+				free(next)
+			} else {
+				next
+			},
+			message: if found {
+				"Connection updated."
+			} else {
+				"Connection not found."
+			},
+			accepted: found,
+		}
 	} else if kind == "add-edge" and document.edges.len() < 500 and can_add_connection(document, p.from, p.source_port, p.to, p.target_port) {
 		id = document.next_edge_id
 		edge = { id, from: p.from, to: p.to, source_port: p.source_port, target_port: p.target_port, label: "", color: "#7895dd", label_placement: "center", label_width: 0, label_height: 0 }
@@ -429,7 +568,14 @@ make_view = |document, revision, message| {
 	nodes = document.nodes.map(|node| { width: node.width, height: node.height })
 	edges = indexed_edges(document)
 	positions = document.nodes.map(|node| Geom.point(node.x, node.y))
-	labeled = document.edges.fold_with_index([], |found, edge, index| if edge.label.is_empty() { found } else { found.append({ edge, index }) })
+	labeled = document.edges.fold_with_index(
+		[],
+		|found, edge, index| if edge.label.is_empty() {
+			found
+		} else {
+			found.append({ edge, index })
+		},
+	)
 	input = { ..Route.default_input, graph: { nodes, edges }, positions, attachments: attachments(document), edge_labels: route_edge_labels(document), guides: document.guides }
 	routes = match Route.layout(input, Route.default_settings) {
 		Ok(result) => result.layout.routes.map_with_index(
@@ -456,7 +602,11 @@ label_placement = |value| match value {
 
 route_edge_labels = |document| document.edges.fold_with_index(
 	[],
-	|found, edge, index| if edge.label.is_empty() { found } else { found.append({ edge: index, width: edge.label_width, height: edge.label_height, placement: label_placement(edge.label_placement) }) },
+	|found, edge, index| if edge.label.is_empty() {
+		found
+	} else {
+		found.append({ edge: index, width: edge.label_width, height: edge.label_height, placement: label_placement(edge.label_placement) })
+	},
 )
 
 indexed_edges : Document -> List({ from : U64, to : U64 })
@@ -479,10 +629,18 @@ find_port = |document, node_id, port_id| match document.nodes.find_first(|node| 
 port_connection_count : Document, U64, Str -> U64
 port_connection_count = |document, node_id, port_id| document.edges.fold(
 	0.U64,
-	|count, edge| if (edge.from == node_id and edge.source_port == port_id) or (edge.to == node_id and edge.target_port == port_id) { count + 1 } else { count },
+	|count, edge| if (edge.from == node_id and edge.source_port == port_id) or (edge.to == node_id and edge.target_port == port_id) {
+		count + 1
+	} else {
+		count
+	},
 )
 
-fallback_side = |role| if role == "input" { "left" } else { "right" }
+fallback_side = |role| if role == "input" {
+	"left"
+} else {
+	"right"
+}
 
 port_label = |index| ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P"].get(index) ?? "Port"
 
@@ -501,7 +659,15 @@ move_port = |ports, port_id, direction| match ports.find_first_index(|port| port
 		} else {
 			current = ports.get(index) ?? input_port
 			other = ports.get(target) ?? input_port
-			ports.map_with_index(|port, i| if i == index { other } else if i == target { current } else { port })
+			ports.map_with_index(
+				|port, i| if i == index {
+					other
+				} else if i == target {
+					current
+				} else {
+					port
+				},
+			)
 		}
 	}
 }
@@ -513,7 +679,11 @@ side_toward = |from, to, role| {
 	if dx == 0 and dy == 0 {
 		fallback_side(role)
 	} else if dx.abs() >= dy.abs() {
-		if dx < 0 { "left" } else { "right" }
+		if dx < 0 {
+			"left"
+		} else {
+			"right"
+		}
 	} else if dy < 0 {
 		"top"
 	} else {
@@ -528,9 +698,15 @@ side_for_port = |document, node_id, port_id, role| {
 	}
 	neighbors = document.edges.keep_oks(
 		|edge| if edge.from == node_id and edge.source_port == port_id {
-			match document.nodes.find_first(|node| node.id == edge.to) { Ok(node) => Ok({ x: node.x, y: node.y }), Err(_) => Err(NotConnected) }
+			match document.nodes.find_first(|node| node.id == edge.to) {
+				Ok(node) => Ok({ x: node.x, y: node.y })
+				Err(_) => Err(NotConnected)
+			}
 		} else if edge.to == node_id and edge.target_port == port_id {
-			match document.nodes.find_first(|node| node.id == edge.from) { Ok(node) => Ok({ x: node.x, y: node.y }), Err(_) => Err(NotConnected) }
+			match document.nodes.find_first(|node| node.id == edge.from) {
+				Ok(node) => Ok({ x: node.x, y: node.y })
+				Err(_) => Err(NotConnected)
+			}
 		} else {
 			Err(NotConnected)
 		},
@@ -549,11 +725,26 @@ redistribute_ports = |document| {
 		|node| {
 			ports = node.ports.map_with_index(
 				|port, index| {
-					selected_side = if port.side == "auto" { port.resolved_side } else { port.side }
-					same = node.ports.fold_with_index([], |found, other, other_index| {
-						other_side = if other.side == "auto" { other.resolved_side } else { other.side }
-						if other_side == selected_side { found.append(other_index) } else { found }
-					})
+					selected_side = if port.side == "auto" {
+						port.resolved_side
+					} else {
+						port.side
+					}
+					same = node.ports.fold_with_index(
+						[],
+						|found, other, other_index| {
+							other_side = if other.side == "auto" {
+								other.resolved_side
+							} else {
+								other.side
+							}
+							if other_side == selected_side {
+								found.append(other_index)
+							} else {
+								found
+							}
+						},
+					)
 					rank = same.find_first_index(|other_index| other_index == index) ?? 0
 					offset = (rank + 1).to_f64() / (same.len() + 1).to_f64()
 					{ ..port, resolved_side: selected_side, offset }
@@ -567,14 +758,29 @@ redistribute_ports = |document| {
 
 normalize_auto_ports = |document| {
 	nodes = document.nodes.map(
-		|node| { ..node, ports: node.ports.map(|port| if port.side == "auto" and port_connection_count(document, node.id, port.id) == 0 { { ..port, resolved_side: fallback_side(port.role) } } else { port }) },
+		|node| {
+			..node,
+			ports: node.ports.map(
+				|port| if port.side == "auto" and port_connection_count(document, node.id, port.id) == 0 {
+					{ ..port, resolved_side: fallback_side(port.role) }
+				} else {
+					port
+				},
+			),
+		},
 	)
 	redistribute_ports({ ..document, nodes })
 }
 
 lock_new_connection = |document, edge| {
-	from_center = match document.nodes.find_first(|node| node.id == edge.from) { Ok(node) => { x: node.x, y: node.y }, Err(_) => { x: 0, y: 0 } }
-	to_center = match document.nodes.find_first(|node| node.id == edge.to) { Ok(node) => { x: node.x, y: node.y }, Err(_) => { x: 0, y: 0 } }
+	from_center = match document.nodes.find_first(|node| node.id == edge.from) {
+		Ok(node) => { x: node.x, y: node.y }
+		Err(_) => { x: 0, y: 0 }
+	}
+	to_center = match document.nodes.find_first(|node| node.id == edge.to) {
+		Ok(node) => { x: node.x, y: node.y }
+		Err(_) => { x: 0, y: 0 }
+	}
 	nodes = document.nodes.map(
 		|node| {
 			ports = node.ports.map(
@@ -650,13 +856,35 @@ unique_ports = |node| node.ports.fold_with_index(True, |unique, port, i| unique 
 
 input_capacity_ok = |document| document.nodes.all(|node| node.ports.all(|port| port.role != "input" or port_connection_count(document, node.id, port.id) <= 1))
 
+valid_document_shape = |document| document.nodes.len() <= 200 and document.edges.len() <= 500 and document.nodes.all(|node| finite(node.x, node.y) and finite(node.width, node.height) and node.width >= 96 and node.height >= 52 and node.ports.len() <= 16 and node.ports.all(valid_port) and unique_ports(node)) and document.edges.all(|edge| valid_connection(document, edge.from, edge.source_port, edge.to, edge.target_port) and Str.count_utf8_bytes(edge.label) <= 120 and valid_color(edge.color) and ["center", "near-source", "near-target"].contains(edge.label_placement) and finite(edge.label_width, edge.label_height) and edge.label_width >= 0 and edge.label_width <= 1200 and edge.label_height >= 0 and edge.label_height <= 80) and input_capacity_ok(document)
+
 valid_document : Document -> Bool
-valid_document = |document| document.schema_version == 3 and document.nodes.len() <= 200 and document.edges.len() <= 500 and document.nodes.all(|node| finite(node.x, node.y) and finite(node.width, node.height) and node.width >= 96 and node.height >= 52 and node.ports.len() <= 16 and node.ports.all(valid_port) and unique_ports(node)) and document.edges.all(|edge| valid_connection(document, edge.from, edge.source_port, edge.to, edge.target_port) and Str.count_utf8_bytes(edge.label) <= 120 and valid_color(edge.color) and ["center", "near-source", "near-target"].contains(edge.label_placement) and finite(edge.label_width, edge.label_height) and edge.label_width >= 0 and edge.label_width <= 1200 and edge.label_height >= 0 and edge.label_height <= 80) and input_capacity_ok(document)
+valid_document = |document| document.schema_version == 4 and valid_document_shape(document)
+
+migrate_v3 = |old| redistribute_ports({
+	..old,
+	schema_version: 4,
+	nodes: old.nodes.map(
+		|node| {
+			..node,
+			ports: node.ports.map_with_index(
+				|port, index| {
+					..port,
+					label: if ["Input", "Output", "Expedite"].contains(port.label) {
+						port_label(index)
+					} else {
+						port.label
+					},
+				},
+			),
+		},
+	),
+})
 
 migrate_v2 = |old| {
 	base : Document
 	base = {
-		schema_version: 3,
+		schema_version: 4,
 		next_node_id: old.next_node_id,
 		next_edge_id: old.next_edge_id,
 		next_port_id: 1,
@@ -676,7 +904,13 @@ migrate_v2 = |old| {
 				original = find_port(state, old_edge.to, old_edge.target_port) ?? input_port
 				copy_number = port_connection_count(state, old_edge.to, old_edge.target_port) + 1
 				copy = { ..original, id: new_port_id, label: "${original.label} ${copy_number.to_str()}" }
-				nodes = state.nodes.map(|node| if node.id == old_edge.to { { ..node, ports: node.ports.append(copy) } } else { node })
+				nodes = state.nodes.map(
+					|node| if node.id == old_edge.to {
+						{ ..node, ports: node.ports.append(copy) }
+					} else {
+						node
+					},
+				)
 				edge = { id: old_edge.id, from: old_edge.from, to: old_edge.to, source_port: old_edge.source_port, target_port: new_port_id, label: "", color: "#7895dd", label_placement: "center", label_width: 0, label_height: 0 }
 				{ ..state, next_port_id: state.next_port_id + 1, nodes, edges: state.edges.append(edge) }
 			} else {
@@ -694,6 +928,7 @@ decode_document = |text| {
 	current = Json.parse(text)
 	match current {
 		Ok(document) if valid_document(document) => Ok(document)
+		Ok(document) if document.schema_version == 3 and valid_document_shape(document) => Ok(migrate_v3(document))
 		_ => {
 			v2 : Try(V2Document, _)
 			v2 = Json.parse(text)
@@ -768,29 +1003,40 @@ port_node = |port| {
 		_ => "top:${(port.offset * 100).to_str()}%"
 	}
 	Html.button(
-	[
-		Attribute.class("port ${port.role} ${port.resolved_side}"),
-		Attribute.attribute("data-port-id", port.id),
-		Attribute.attribute("data-role", port.role),
-		Attribute.attribute("data-side", port.resolved_side),
-		Attribute.attribute("data-side-mode", port.side),
-		Attribute.attribute("data-offset", port.offset.to_str()),
-		Attribute.attribute("title", "${port.label} · ${port.role}"),
-		Attribute.attribute("aria-label", "${port.label}, ${port.role} port"),
-		Attribute.style(position),
-	],
-	[
-		Html.span(
-			[Attribute.class("port-mark")],
-			[
-				Html.text(
-					port.label,
-				),
-			],
-		),
-		Html.span([Attribute.class("port-label")], [Html.text(if port.role == "input" { "Input" } else { "Output" })]),
-	],
-)
+		[
+			Attribute.class("port ${port.role} ${port.resolved_side}"),
+			Attribute.attribute("data-port-id", port.id),
+			Attribute.attribute("data-role", port.role),
+			Attribute.attribute("data-side", port.resolved_side),
+			Attribute.attribute("data-side-mode", port.side),
+			Attribute.attribute("data-offset", port.offset.to_str()),
+			Attribute.attribute("title", "${port.label} · ${port.role}"),
+			Attribute.attribute("aria-label", "${port.label}, ${port.role} port"),
+			Attribute.style(position),
+		],
+		[
+			Html.span(
+				[Attribute.class("port-mark")],
+				[
+					Html.text(
+						port.label,
+					),
+				],
+			),
+			Html.span(
+				[Attribute.class("port-label")],
+				[
+					Html.text(
+						if port.role == "input" {
+							"Input"
+						} else {
+							"Output"
+						},
+					),
+				],
+			),
+		],
+	)
 }
 
 route_node : RouteView -> Html.Node
@@ -822,7 +1068,7 @@ route_node = |route| {
 arrow_defs = Html.element(
 	"defs",
 	[],
-	[Html.element("marker", [Attribute.id("route-arrow"), Attribute.attribute("viewBox", "0 0 10 10"), Attribute.attribute("refX", "8"), Attribute.attribute("refY", "5"), Attribute.attribute("markerWidth", "6"), Attribute.attribute("markerHeight", "6"), Attribute.attribute("orient", "auto-start-reverse")], [Html.element("path", [Attribute.attribute("d", "M 0 0 L 10 5 L 0 10 z"), Attribute.attribute("fill", "context-stroke")], [])])],
+	[Html.element("marker", [Attribute.id("route-arrow"), Attribute.attribute("viewBox", "0 0 12 12"), Attribute.attribute("refX", "11"), Attribute.attribute("refY", "6"), Attribute.attribute("markerWidth", "8"), Attribute.attribute("markerHeight", "8"), Attribute.attribute("orient", "auto"), Attribute.attribute("markerUnits", "strokeWidth")], [Html.element("path", [Attribute.attribute("d", "M 1 1 L 11 6 L 1 11 z"), Attribute.attribute("fill", "context-stroke")], [])])],
 )
 
 document_json : Document -> Str
@@ -843,11 +1089,27 @@ angular_path = |points| match points {
 	[first, .. as rest] => rest.fold("M ${first.x.to_str()} ${first.y.to_str()}", |path, point| "${path} L ${point.x.to_str()} ${point.y.to_str()}")
 }
 
-option_node = |value, label, selected| Html.element("option", [Attribute.attribute("value", value)].concat(if selected { [Attribute.attribute("selected", "")] } else { [] }), [Html.text(label)])
+option_node = |value, label, selected| Html.element(
+	"option",
+	[Attribute.attribute("value", value)].concat(
+		if selected {
+			[Attribute.attribute("selected", "")]
+		} else {
+			[]
+		},
+	),
+	[Html.text(label)],
+)
 
 port_inspector = |document, node, port, index| {
 	used = port_connection_count(document, node.id, port.id) > 0
-	role_attributes = [Attribute.attribute("data-port-role", ""), Attribute.attribute("aria-label", "Port role")].concat(if used { [Attribute.attribute("disabled", "")] } else { [] })
+	role_attributes = [Attribute.attribute("data-port-role", ""), Attribute.attribute("aria-label", "Port role")].concat(
+		if used {
+			[Attribute.attribute("disabled", "")]
+		} else {
+			[]
+		},
+	)
 	controls = [
 		Html.input([Attribute.attribute("value", port.label), Attribute.attribute("data-port-label", ""), Attribute.attribute("aria-label", "Port label"), Attribute.attribute("maxlength", "64")]),
 		Html.element("select", role_attributes, [option_node("input", "Input", port.role == "input"), option_node("output", "Output", port.role == "output")]),
@@ -861,8 +1123,26 @@ port_inspector = |document, node, port, index| {
 	move_controls = Html.div(
 		[Attribute.class("port-order-actions")],
 		[
-			Html.button([Attribute.class("small"), Attribute.attribute("data-move-port", "up"), Attribute.attribute("aria-label", "Move port up"), Attribute.attribute("title", "Move ${port.label} up")].concat(if index == 0 { [Attribute.attribute("disabled", "")] } else { [] }), [Html.text("↑")]),
-			Html.button([Attribute.class("small"), Attribute.attribute("data-move-port", "down"), Attribute.attribute("aria-label", "Move port down"), Attribute.attribute("title", "Move ${port.label} down")].concat(if index + 1 == node.ports.len() { [Attribute.attribute("disabled", "")] } else { [] }), [Html.text("↓")]),
+			Html.button(
+				[Attribute.class("small"), Attribute.attribute("data-move-port", "up"), Attribute.attribute("aria-label", "Move port up"), Attribute.attribute("title", "Move ${port.label} up")].concat(
+					if index == 0 {
+						[Attribute.attribute("disabled", "")]
+					} else {
+						[]
+					},
+				),
+				[Html.text("↑")],
+			),
+			Html.button(
+				[Attribute.class("small"), Attribute.attribute("data-move-port", "down"), Attribute.attribute("aria-label", "Move port down"), Attribute.attribute("title", "Move ${port.label} down")].concat(
+					if index + 1 == node.ports.len() {
+						[Attribute.attribute("disabled", "")]
+					} else {
+						[]
+					},
+				),
+				[Html.text("↓")],
+			),
 		],
 	)
 	Html.li([Attribute.id("port-editor-${node.id.to_str()}-${port.id}"), Attribute.class("port-editor"), Attribute.attribute("data-node", node.id.to_str()), Attribute.attribute("data-port", port.id)], controls.concat(auto_controls).concat([move_controls, Html.button([Attribute.class("danger small"), Attribute.attribute("data-delete-port", "")], [Html.text("Delete port")])]))
@@ -921,7 +1201,14 @@ gallery_metrics = |routes| routes.fold(
 		own = route.points.fold_with_index(
 			{ bends: 0.U64, length: 0.F64 },
 			|state, point, i| match route.points.get(i + 1) {
-				Ok(next) => { bends: state.bends + if i > 0 { 1 } else { 0 }, length: state.length + (next.x - point.x).abs() + (next.y - point.y).abs() }
+				Ok(next) => {
+					bends: state.bends + if i > 0 {
+						1
+					} else {
+						0
+					},
+					length: state.length + (next.x - point.x).abs() + (next.y - point.y).abs(),
+				}
 				Err(_) => state
 			},
 		)
@@ -937,7 +1224,7 @@ gallery_card = |name, document| {
 }
 
 gallery_document = |nodes, edges| {
-	{ schema_version: 3, next_node_id: nodes.len() + 1, next_edge_id: edges.len() + 1, next_port_id: 1, direction: "down", arrangement: "free", layers: [], guides: [], nodes, edges }
+	{ schema_version: 4, next_node_id: nodes.len() + 1, next_edge_id: edges.len() + 1, next_port_id: 1, direction: "down", arrangement: "free", layers: [], guides: [], nodes, edges }
 }
 
 gallery_edge = |id, from, to, source_port, target_port, color| { id, from, to, source_port, target_port, label: "", color, label_placement: "center", label_width: 0, label_height: 0 }
@@ -1037,4 +1324,18 @@ expect {
 	moved = move_port(ports, "out", "up")
 	unchanged = move_port(moved, "in", "up")
 	(moved.get(1) ?? input_port).id == "out" and moved.len() == ports.len() and unchanged == moved
+}
+
+## Version-three showcase defaults adopt compact alphabetic names without
+## overwriting labels that the user already customized.
+expect {
+	old = {
+		..initial_document,
+		schema_version: 3,
+		nodes: [{ id: 1, label: "Node", x: 0, y: 0, width: 160, height: 64, ports: [{ ..input_port, label: "Input" }, { ..output_port, label: "Custom" }] }],
+		edges: [],
+	}
+	migrated = migrate_v3(old)
+	ports = (migrated.nodes.first() ?? { id: 0, label: "", x: 0, y: 0, width: 0, height: 0, ports: [] }).ports
+	(ports.get(0) ?? input_port).label == "A" and (ports.get(1) ?? output_port).label == "Custom" and valid_document(migrated)
 }

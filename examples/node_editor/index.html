@@ -13,7 +13,8 @@
   <header>
     <div class="brand">
       <strong>Node Editor</strong>
-      <span id="status" data-text="$status">Connecting…</span>
+      <span id="status" role="status" aria-live="polite" data-text="$status">Connecting…</span>
+      <span id="offline-status" role="status">Server unavailable · changes are paused; reconnecting…</span>
     </div>
     <nav aria-label="Editor commands">
       <button data-on:click="document.querySelector('node-editor-canvas')?.requestCommand('add-node')">Add node</button>

@@ -11,8 +11,9 @@ owns only continuous canvas interactions such as dragging, resizing, selection,
 connection previews, panning, and zooming.
 
 ```sh
-roc build examples/node_editor/main.roc --output examples/node_editor/node-editor
-./examples/node_editor/node-editor
+cd examples/node_editor
+roc build main.roc --output node-editor
+./node-editor
 ```
 
 This repository requires the compiler named in its root `.roc-version`. When
@@ -30,6 +31,13 @@ store their dimensions as geometry input and can be resized between the
 editor's documented bounds. Set `ROC_GRAPH_LAYOUT_NODE_EDITOR_PORT` to choose
 another listening port; the interactive default is 8000 and the browser tests
 use their own port 18080.
+
+The browser files are served directly by the platform's native static-file
+service and are not embedded in the Roc executable. Run from this directory,
+or set `ROC_GRAPH_LAYOUT_NODE_EDITOR_ASSETS` to the directory containing
+`index.html`, `style.css`, and the JavaScript assets. CSS and JavaScript edits
+therefore require only a browser reload, not another native build. These demo
+assets use a `no_store` cache policy so every reload reads the current files.
 
 The browser console records structured `[node-editor]` events for graph
 actions, direction and route-style changes, connections, drags, server

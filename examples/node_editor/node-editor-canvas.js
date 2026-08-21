@@ -24,6 +24,8 @@ export class NodeEditorCanvas extends HTMLElement {
     this.onKeyDown = event => this.keyDown(event);
     this.onInspectorChange = event => this.inspectorChanged(event);
     this.onInspectorClick = event => this.inspectorClicked(event);
+    this.onBrowserOffline = () => this.setServerAvailable(false);
+    this.serverAvailable = true;
   }
 
   connectedCallback() {
@@ -37,12 +39,15 @@ export class NodeEditorCanvas extends HTMLElement {
     document.addEventListener('keydown', this.onKeyDown);
     document.addEventListener('change', this.onInspectorChange);
     document.addEventListener('click', this.onInspectorClick);
+    globalThis.addEventListener('offline', this.onBrowserOffline);
     this.observer.observe(this, {
       childList:true, subtree:true, attributes:true,
       attributeFilter:['data-points','data-layers','data-arrangement','data-direction','data-x','data-y','data-width','data-height'],
     });
     const routeSelect=document.querySelector('#route-style');if(routeSelect)routeSelect.value=this.routeStyle;
     this.refresh();
+    this.checkServer();
+    this.healthTimer = globalThis.setInterval(() => this.checkServer(), 2000);
     this.debug('session-start', { routeStyle:this.routeStyle });
     globalThis.nodeEditorDebug = {
       reproduction: () => ({
@@ -64,11 +69,12 @@ export class NodeEditorCanvas extends HTMLElement {
     document.removeEventListener('keydown', this.onKeyDown);
     document.removeEventListener('change', this.onInspectorChange);
     document.removeEventListener('click', this.onInspectorClick);
+    globalThis.removeEventListener('offline', this.onBrowserOffline);
+    globalThis.clearInterval(this.healthTimer);
     this.observer.disconnect();
     this.initialized = false;
   }
 
-  disconnectedCallback() { this.observer.disconnect(); }
   workspace() { return this.closest('#workspace'); }
   document() {
     try { return JSON.parse(this.workspace()?.dataset.document ?? '{}'); }
@@ -94,8 +100,30 @@ export class NodeEditorCanvas extends HTMLElement {
     console.info('[node-editor]', entry);
   }
 
+  async checkServer() {
+    try {
+      const response = await fetch('/health', { cache:'no-store', signal:AbortSignal.timeout(1500) });
+      this.setServerAvailable(response.ok);
+    } catch { this.setServerAvailable(false); }
+  }
+  setServerAvailable(available) {
+    if (this.serverAvailable === available && document.body.dataset.serverState) return;
+    this.serverAvailable = available;
+    document.body.dataset.serverState = available ? 'online' : 'offline';
+    document.body.classList.toggle('server-offline', !available);
+    const status = document.querySelector('#status');
+    const revision = this.workspace()?.dataset.revision;
+    if (status) status.textContent = available && revision ? `Revision ${revision} synchronized.` : available ? 'Connected · synchronizing…' : 'Server unavailable · changes are paused; reconnecting…';
+    this.debug(available ? 'server-connected' : 'server-disconnected');
+  }
+
   payload(extra={}) { return { ...EMPTY_PAYLOAD, ...extra }; }
   requestCommand(kind, extra={}, options={}) {
+    if (!this.serverAvailable) {
+      this.setServerAvailable(false);
+      this.debug('command-paused', { kind });
+      return false;
+    }
     const document = this.document();
     if (!options.history && kind !== 'replace-document' && Object.keys(document).length) {
       this.history.push(JSON.stringify(document));
@@ -108,6 +136,7 @@ export class NodeEditorCanvas extends HTMLElement {
     this.dispatchEvent(new CustomEvent('node-editor-command', {
       bubbles:true, detail:{ kind, operationId, payload },
     }));
+    return true;
   }
   undo() {
     const previous = this.history.pop();
@@ -148,7 +177,7 @@ export class NodeEditorCanvas extends HTMLElement {
   }
   refreshRoutes() {
     for (const path of this.querySelectorAll('.route[data-points]')) {
-      try { path.setAttribute('d', Geometry.routePath(JSON.parse(path.dataset.points), this.routeStyle)); }
+      try { path.setAttribute('d', Geometry.routePath(Geometry.shortenTarget(JSON.parse(path.dataset.points)), this.routeStyle)); }
       catch { path.setAttribute('d', ''); }
       path.classList.toggle('rounded', this.routeStyle === 'rounded');
       path.classList.toggle('angular', this.routeStyle === 'angular');
@@ -343,7 +372,7 @@ export class NodeEditorCanvas extends HTMLElement {
       const edge={from:Number(path.dataset.from),to:Number(path.dataset.to),source_port:path.dataset.sourcePort??'out',target_port:path.dataset.targetPort??'in'};
       if(!this.selected.has(edge.from)&&!this.selected.has(edge.to)&&this.drag?.node!==edge.from&&this.drag?.node!==edge.to)continue;
       const points=Geometry.previewRoute(edge,nodes);
-      path.setAttribute('d',Geometry.routePath(points,this.routeStyle));
+      path.setAttribute('d',Geometry.routePath(Geometry.shortenTarget(points),this.routeStyle));
     }
   }
   drawConnection(point,event) {
