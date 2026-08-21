@@ -41,8 +41,7 @@
         <option value="light">Light theme</option>
         <option value="dark">Dark theme</option>
       </select>
-      <button data-on:click="$showLayers=!$showLayers;document.querySelector('node-editor-canvas')?.setLayersVisible($showLayers)" data-text="$showLayers?'Hide layers':'Show layers'">Hide layers</button>
-      <a class="button-link" href="/routing-gallery">Routing diagnostics</a>
+      <button id="diagnostics-toggle" data-on:click="document.querySelector('node-editor-canvas')?.setDiagnostics(!document.querySelector('node-editor-canvas')?.diagnosticsVisible)" aria-pressed="false">Show diagnostics</button>
       <button class="danger" data-on:click="confirm('Reset the workspace?')&&document.querySelector('node-editor-canvas')?.requestCommand('reset')">Reset</button>
     </nav>
   </header>
@@ -58,6 +57,7 @@
   <footer>
     <span><b class="legend input"></b> Input</span>
     <span><b class="legend output"></b> Output</span>
+    <span id="diagnostics-key">Diagnostics: layers · node bounds · routing clearance · terminals · bend points</span>
     <span>Drag empty space to pan · Shift-drag to box-select · drag an output to an available input · select a connection to edit it</span>
     <span data-show="$pending">Saving…</span>
   </footer>

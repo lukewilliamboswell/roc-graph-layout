@@ -64,6 +64,8 @@ input_port = { id: "in", label: "A", role: "input", side: "top", resolved_side: 
 output_port : Port
 output_port = { id: "out", label: "B", role: "output", side: "bottom", resolved_side: "bottom", offset: 0.5 }
 
+editor_route_settings = { ..Route.default_settings, obstacle_gap: 24 }
+
 initial_document : Document
 initial_document = {
 	schema_version: 4,
@@ -542,7 +544,7 @@ arrange = |document, algorithm, raw_direction| {
 			"right" => Right
 			_ => Down
 		}
-		match Layered.layout({ ..Layered.default_input, graph: spec, attachments: attachments(document), edge_labels: route_edge_labels(document) }, { ..Layered.default_settings, direction: layer_direction }, Layered.default_run) {
+		match Layered.layout({ ..Layered.default_input, graph: spec, attachments: attachments(document), edge_labels: route_edge_labels(document) }, { ..Layered.default_settings, direction: layer_direction, routing: editor_route_settings }, Layered.default_run) {
 			Ok(result) => accepted_positions(document, result.layout.positions, "layered", direction, result.layers, result.layout.routes.map_with_index(|route, edge| { edge, points: interior(route) }), "Layered arrangement applied.")
 			Err(_) => rejected(document, "Layered arrangement could not be applied.")
 		}
@@ -577,7 +579,7 @@ make_view = |document, revision, message| {
 		},
 	)
 	input = { ..Route.default_input, graph: { nodes, edges }, positions, attachments: attachments(document), edge_labels: route_edge_labels(document), guides: document.guides }
-	routes = match Route.layout(input, Route.default_settings) {
+	routes = match Route.layout(input, editor_route_settings) {
 		Ok(result) => result.layout.routes.map_with_index(
 			|route, i| {
 				edge = document.edges.get(i) ?? { id: 0, from: 0, to: 0, source_port: "", target_port: "", label: "", color: "#7895dd", label_placement: "center", label_width: 0, label_height: 0 }

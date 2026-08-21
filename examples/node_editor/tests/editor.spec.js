@@ -29,6 +29,30 @@ test('ports use their configured names and distinct rounded roles', async ({ pag
   expect(await route.locator('.route').getAttribute('d')).not.toBe(await route.locator('.route-hit').getAttribute('d'));
 });
 
+test('routes meet every visible port perpendicular to its node side', async ({ page }) => {
+  await page.locator('.node[data-node-id="2"] .node-title').click();
+  const violations = await page.locator('node-editor-canvas').evaluate(canvas => {
+    const outward = (side,from,to) => side==='left' ? to.x<from.x&&to.y===from.y : side==='right' ? to.x>from.x&&to.y===from.y : side==='top' ? to.y<from.y&&to.x===from.x : to.y>from.y&&to.x===from.x;
+    return [...canvas.querySelectorAll('.route')].flatMap(route => {
+      const points=JSON.parse(route.dataset.points),source=canvas.querySelector(`.node[data-node-id="${route.dataset.from}"] .port[data-port-id="${route.dataset.sourcePort}"]`),target=canvas.querySelector(`.node[data-node-id="${route.dataset.to}"] .port[data-port-id="${route.dataset.targetPort}"]`);
+      const terminalLength=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
+      const sourceOk=source&&points.length>1&&outward(source.dataset.side,points[0],points[1])&&terminalLength(points[0],points[1])>=24;
+      const end=points.at(-1),before=points.at(-2),targetOk=target&&before&&outward(target.dataset.side,end,before)&&terminalLength(end,before)>=24;
+      return sourceOk&&targetOk?[]:[route.dataset.edgeId];
+    });
+  });
+  expect(violations).toEqual([]);
+
+  const visiblePortViolations = await page.locator('.node[data-node-id="2"]').evaluate(node => {
+    const box=node.getBoundingClientRect();
+    return [...node.querySelectorAll('.port')].filter(port => {
+      const p=port.getBoundingClientRect(),side=port.dataset.side;
+      return side==='left'?p.left<box.left-1:side==='right'?p.right>box.right+1:side==='top'?p.top<box.top-1:p.bottom>box.bottom+1;
+    }).map(port=>port.dataset.portId);
+  });
+  expect(visiblePortViolations).toEqual([]);
+});
+
 test('the full viewport pans and node actions appear in the right context', async ({ page }) => {
   const viewport = page.locator('#viewport');
   const canvas = page.locator('node-editor-canvas');
@@ -42,6 +66,9 @@ test('the full viewport pans and node actions appear in the right context', asyn
   await node.locator('.node-title').click();
   await expect(node.locator('.resize-handle')).toBeVisible();
   await expect(page.locator('#inspector [data-delete-node]')).toBeVisible();
+  await page.waitForTimeout(200);
+  await expect(node).toHaveClass(/selected/);
+  await expect(node.locator('.resize-handle')).toBeVisible();
 
   const before = await canvas.evaluate(element => element.style.transform);
   await page.mouse.move(viewportBox.x + viewportBox.width - 12, viewportBox.y + viewportBox.height - 12);
@@ -52,13 +79,19 @@ test('the full viewport pans and node actions appear in the right context', asyn
 });
 
 test('rendered layer bands remain stable instead of feeding the mutation observer', async ({ page }) => {
+  await page.locator('#diagnostics-toggle').click();
+  await expect(page.locator('.diagnostic-node')).toHaveCount(3);
+  await expect(page.locator('.diagnostic-clearance')).toHaveCount(3);
+  await expect(page.locator('#diagnostics-toggle')).toHaveAttribute('aria-pressed','true');
   await page.locator('node-editor-canvas').evaluate(element => {
-    element.dataset.arrangement='layered';element.dataset.direction='down';element.dataset.layers='[0,1,2]';element.layersVisible=true;element.refreshLayers();
+    element.dataset.arrangement='layered';element.dataset.direction='down';element.dataset.layers='[0,1,2]';element.refreshDiagnostics();
   });
   await expect(page.locator('.layer-band')).toHaveCount(3);
   await page.locator('.layer-band').first().evaluate(element => { globalThis.firstLayerBand = element; });
   await page.waitForTimeout(150);
   expect(await page.evaluate(() => globalThis.firstLayerBand === document.querySelector('.layer-band'))).toBe(true);
+  await page.locator('#diagnostics-toggle').click();
+  await expect(page.locator('.diagnostic-node')).toHaveCount(0);
 });
 
 test('light and dark themes preserve accessible semantic contrast', async ({ page }) => {

@@ -17,12 +17,12 @@ export class NodeEditorCanvas extends HTMLElement {
     this.future = [];
     this.routeStyle = localStorage.getItem('node-editor-route-style') ?? 'rounded';
     this.theme = localStorage.getItem('node-editor-theme') ?? 'system';
-    this.layersVisible = localStorage.getItem('node-editor-show-layers') !== 'false';
+    this.diagnosticsVisible = localStorage.getItem('node-editor-diagnostics') === 'true';
     this.viewport = { x:0, y:0, scale:1 };
     this.events = [];
     this.session = crypto.randomUUID?.() ?? String(Date.now());
     this.observer = new MutationObserver(mutations => {
-      const external = mutations.some(mutation => !mutation.target.closest?.('#layers'));
+      const external = mutations.some(mutation => !mutation.target.closest?.('#layers,#diagnostics'));
       if (external) this.refresh();
     });
     this.onKeyDown = event => this.keyDown(event);
@@ -46,12 +46,13 @@ export class NodeEditorCanvas extends HTMLElement {
     globalThis.addEventListener('offline', this.onBrowserOffline);
     this.observer.observe(this, {
       childList:true, subtree:true, attributes:true,
-      attributeFilter:['data-points','data-layers','data-arrangement','data-direction','data-x','data-y','data-width','data-height'],
+      attributeFilter:['class','data-points','data-layers','data-arrangement','data-direction','data-x','data-y','data-width','data-height'],
     });
     this.viewportObserver = new ResizeObserver(() => this.resizeSurface());
     this.viewportObserver.observe(this.closest('#viewport'));
     const routeSelect=document.querySelector('#route-style');if(routeSelect)routeSelect.value=this.routeStyle;
     this.setTheme(this.theme);
+    this.setDiagnostics(this.diagnosticsVisible);
     this.refresh();
     this.checkServer();
     this.healthTimer = globalThis.setInterval(() => this.checkServer(), 2000);
@@ -173,10 +174,13 @@ export class NodeEditorCanvas extends HTMLElement {
     const select=document.querySelector('#theme');if(select)select.value=this.theme;
     this.debug('theme-changed', { theme:this.theme });
   }
-  setLayersVisible(visible) {
-    this.layersVisible = Boolean(visible);
-    localStorage.setItem('node-editor-show-layers', String(this.layersVisible));
-    this.refreshLayers();
+  setDiagnostics(visible) {
+    this.diagnosticsVisible = Boolean(visible);
+    localStorage.setItem('node-editor-diagnostics', String(this.diagnosticsVisible));
+    document.body.classList.toggle('diagnostics-visible', this.diagnosticsVisible);
+    const button=document.querySelector('#diagnostics-toggle');
+    if(button){button.textContent=this.diagnosticsVisible?'Hide diagnostics':'Show diagnostics';button.setAttribute('aria-pressed',String(this.diagnosticsVisible));}
+    this.refreshDiagnostics();
   }
 
   refresh() {
@@ -187,7 +191,7 @@ export class NodeEditorCanvas extends HTMLElement {
       edge.classList.toggle('selected', this.selectedEdges.has(Number(edge.dataset.edgeId)));
     }
     this.refreshRoutes();
-    this.refreshLayers();
+    this.refreshDiagnostics();
     this.resizeSurface();
   }
   refreshRoutes() {
@@ -201,7 +205,7 @@ export class NodeEditorCanvas extends HTMLElement {
   refreshLayers() {
     const layerRoot = this.querySelector('#layers');
     if (!layerRoot) return;
-    if (!this.layersVisible || this.dataset.arrangement !== 'layered') {
+    if (!this.diagnosticsVisible || this.dataset.arrangement !== 'layered') {
       layerRoot.replaceChildren();
       return;
     }
@@ -230,6 +234,28 @@ export class NodeEditorCanvas extends HTMLElement {
       else{element.style.left=`${start}px`;element.style.width=`${end-start}px`;}
       return element;
     }));
+  }
+  refreshDiagnostics() {
+    this.refreshLayers();
+    let root=this.querySelector('#diagnostics');
+    if(!root){root=document.createElementNS('http://www.w3.org/2000/svg','svg');root.id='diagnostics';this.querySelector('#routes')?.before(root);}
+    if(!this.diagnosticsVisible){root.replaceChildren();return;}
+    const svg=(name,attributes={})=>{const element=document.createElementNS('http://www.w3.org/2000/svg',name);for(const [key,value] of Object.entries(attributes))element.setAttribute(key,String(value));return element;};
+    const items=[];
+    for(const node of this.nodes()){
+      items.push(svg('rect',{class:'diagnostic-clearance',x:node.x-node.width/2-24,y:node.y-node.height/2-24,width:node.width+48,height:node.height+48,rx:18}));
+      items.push(svg('rect',{class:'diagnostic-node',x:node.x-node.width/2,y:node.y-node.height/2,width:node.width,height:node.height,rx:12}));
+      const label=svg('text',{class:'diagnostic-label',x:node.x-node.width/2+6,y:node.y-node.height/2-28});label.textContent=`Node ${node.id}`;items.push(label);
+    }
+    for(const route of this.querySelectorAll('.route[data-points]')){
+      let points=[];try{points=JSON.parse(route.dataset.points);}catch{}
+      if(points.length>1){
+        items.push(svg('line',{class:'diagnostic-terminal',x1:points[0].x,y1:points[0].y,x2:points[1].x,y2:points[1].y}));
+        items.push(svg('line',{class:'diagnostic-terminal',x1:points.at(-2).x,y1:points.at(-2).y,x2:points.at(-1).x,y2:points.at(-1).y}));
+      }
+      points.forEach((point,index)=>items.push(svg('circle',{class:index===0||index===points.length-1?'diagnostic-attachment':'diagnostic-bend',cx:point.x,cy:point.y,r:index===0||index===points.length-1?4:3})));
+    }
+    root.replaceChildren(...items);
   }
   resizeSurface() {
     const nodes=this.nodes();
@@ -386,6 +412,7 @@ export class NodeEditorCanvas extends HTMLElement {
       const points=Geometry.previewRoute(edge,nodes);
       path.setAttribute('d',Geometry.routePath(Geometry.shortenTarget(points),this.routeStyle));
     }
+    this.refreshDiagnostics();
   }
   drawConnection(point,event) {
     const nodes=this.nodes(),source=nodes.find(node=>node.id===this.connection.from);
