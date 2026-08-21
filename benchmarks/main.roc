@@ -176,10 +176,11 @@ run_case! = |family, operation, source, fixture, n, seed| {
 		}
 		Measure.finish!(observation)
 	} else if family == "route" {
-		positions = List.repeat(0, n + 1).map_with_index(|_, i| { x: i.to_f64() * 40, y: 0 })
+		positions = List.repeat(0, n + 1).map_with_index(|_, i| if fixture == "shared_port" { if i == 0 { { x: 0, y: n.to_f64() * 10 } } else { { x: 240 + (i % 8).to_f64() * 36, y: i.to_f64() * 20 } } } else { { x: i.to_f64() * 40, y: 0 } })
 		nodes = List.repeat({ width: 24, height: 16 }, n + 1)
-		edges = List.repeat(0, n).map_with_index(|_, i| { from: i, to: i + 1 })
-		input = { ..Route.default_input, graph: { nodes, edges }, positions }
+		edges = List.repeat(0, n).map_with_index(|_, i| if fixture == "shared_port" { { from: 0, to: i + 1 } } else { { from: i, to: i + 1 } })
+		attachments = if fixture == "shared_port" { edges.fold_with_index([], |rules, _, edge| rules.concat([{ edge, endpoint: From, attachment: Fixed({ side: Right, offset: 0.5 }) }, { edge, endpoint: To, attachment: Fixed({ side: Left, offset: 0.5 }) }])) } else { [] }
+		input = { ..Route.default_input, graph: { nodes, edges }, positions, attachments }
 		_ = Measure.start!({})
 		result = Route.layout(input, Route.default_settings)
 		observation = match result {
