@@ -2,7 +2,7 @@ import pf.Attribute
 import ./DatastarMarkup
 import pf.Html
 import ./InternalDatastarName
-import ./Selector
+import ds.Selector
 
 ## An HTML element ID restricted to a directly selectable ASCII subset.
 ##

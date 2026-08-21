@@ -1,11 +1,4 @@
 const Geometry = globalThis.NodeEditorGeometry;
-const EMPTY_PAYLOAD = Object.freeze({
-  node:0, edge:0, from:0, to:0, source_port:'', target_port:'',
-  port_id:'', role:'', side:'', color:'#7895dd', placement:'center',
-  x:0, y:0, width:0, height:0, label_width:0, label_height:0,
-  label:'', algorithm:'', direction:'', document:'',
-});
-
 export class NodeEditorCanvas extends HTMLElement {
   constructor() {
     super();
@@ -126,7 +119,7 @@ export class NodeEditorCanvas extends HTMLElement {
     this.debug(available ? 'server-connected' : 'server-disconnected');
   }
 
-  payload(extra={}) { return { ...EMPTY_PAYLOAD, ...extra }; }
+  payload(fields={}) { return fields; }
   requestCommand(kind, extra={}, options={}) {
     if (!this.serverAvailable) {
       this.setServerAvailable(false);

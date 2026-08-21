@@ -32,12 +32,13 @@ editor's documented bounds. Set `ROC_GRAPH_LAYOUT_NODE_EDITOR_PORT` to choose
 another listening port; the interactive default is 8000 and the browser tests
 use their own port 18080.
 
-The browser files are served directly by the platform's native static-file
-service and are not embedded in the Roc executable. Run from this directory,
-or set `ROC_GRAPH_LAYOUT_NODE_EDITOR_ASSETS` to the directory containing
-`index.html`, `style.css`, and the JavaScript assets. CSS and JavaScript edits
-therefore require only a browser reload, not another native build. These demo
-assets use a `no_store` cache policy so every reload reads the current files.
+The browser files under `assets/` are served directly by the platform's native
+static-file service and are not embedded in the Roc executable. Run from this
+directory, or set `ROC_GRAPH_LAYOUT_NODE_EDITOR_ASSETS` to this example's root
+directory (the directory containing `assets/` and `style.css`). CSS and
+JavaScript edits therefore require only a browser reload, not another native
+build. These demo assets use a `no_store` cache policy so every reload reads the
+current files.
 The editor follows the operating-system color preference by default and offers
 persistent light and dark overrides from the toolbar.
 
@@ -51,9 +52,9 @@ it as JSON, or `nodeEditorDebug.clear()` before reproducing one interaction.
 Dragging keeps an optimistic draft until the retained SSE stream delivers the
 accepted revision. Drops are exact; arrangements are separate Layered, Force,
 and Stress commands. Persisted edges name stable source and target ports, and
-older database documents are upgraded when read. Final routes always come from
-the Roc package; `geometry.js` provides only transient previews and SVG path
-appearance.
+the stored document uses only the demo's current shape. Final routes always
+come from the Roc package; `assets/geometry.js` provides only transient previews
+and SVG path appearance.
 
 Open `/routing-gallery` while the example is running for deterministic routing
 fixtures showing the node clearance boxes used by the final router.
@@ -61,7 +62,7 @@ fixtures showing the node clearance boxes used by the final router.
 Run the browser-independent interaction geometry tests with:
 
 ```sh
-node examples/node_editor/geometry.test.js
+node examples/node_editor/tests/geometry.test.js
 ```
 
 The example also owns its browser integration suite. From this directory,
@@ -78,10 +79,17 @@ serialized route clearance contract, and the deterministic routing gallery.
 Failure artifacts stay under this example's `test-results` and
 `playwright-report` directories.
 
-The web platform dependency is basic-webserver 0.16.0. `Datastar.roc`,
-`DatastarMarkup.roc`, `DatastarSignals.roc`, `ElementId.roc`, `SignalName.roc`,
-`Selector.roc`, `RoutePath.roc`, `InternalDatastarName.roc`, and the pinned
-Datastar v1.0.2 browser bundle are vendored from that release's Datastar
-example under the Universal Permissive License. They intentionally retain the
-original flat module layout because it is part of the verified Roc module
-boundary on the pinned compiler.
+The web platform dependency is basic-webserver 0.16.0. Datastar's reusable
+names and route types are a local Roc package at `datastar/main.roc`; its
+basic-webserver adapters live beside that package. The pinned Datastar v1.0.2
+browser bundle is under `assets/vendor/`. These files are vendored from that
+release's Datastar example under the Universal Permissive License.
+
+The Roc application decodes browser input into the `Command`, `Direction`,
+`Arrangement`, `EditorSignals`, and `Selection` nominal type modules. Direction
+and arrangement are closed tag unions with custom JSON `parser_for` and
+`encoder_for` methods, so their wire-format strings do not leak into layout
+logic. The persisted `Document`, `Node`, `Edge`, and `Port` values are nominal
+types in `main.roc`; their associated methods form the application boundary
+while larger layout and rendering helpers remain private to the application
+module.

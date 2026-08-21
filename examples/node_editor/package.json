@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node geometry.test.js && playwright test",
+    "test": "node tests/geometry.test.js && playwright test",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
   },

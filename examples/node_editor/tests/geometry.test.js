@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const geometry=require('./geometry.js');
+const geometry=require('../assets/geometry.js');
 
 const edge={id:1,from:1,to:2};
 const nodes=[{id:1,x:0,y:0},{id:2,x:0,y:240},{id:3,x:0,y:120}];

@@ -1,9 +1,9 @@
 import pf.Attribute
 import ./Datastar
 import pf.Html
-import ./RoutePath
-import ./Selector
-import ./SignalName
+import ds.RoutePath
+import ds.Selector
+import ds.SignalName
 import pf.Sse
 import http.Method
 
@@ -370,7 +370,6 @@ signal_definitions_attribute = |name, definitions|
 		"{${Str.join_with(definitions.map(|definition| definition.to_field()), ",")}}",
 	)
 
-targeted_patch : Html.Fragment, Selector, Datastar.PatchMode -> Sse.Event
 targeted_patch = |fragment, selector, mode|
 	Datastar.patch_elements_with(
 		fragment.to_str(),

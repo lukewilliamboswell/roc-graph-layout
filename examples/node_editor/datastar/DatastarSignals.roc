@@ -1,6 +1,6 @@
 import pf.Attribute
 import ./DatastarMarkup
-import ./SignalName
+import ds.SignalName
 
 ## A composable collection of checked Datastar signal definitions.
 ##
