@@ -21,6 +21,19 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('#status')).toHaveText(`Revision ${revision} synchronized.`);
 });
 
+test('ports use their configured names and distinct directional chevrons', async ({ page }) => {
+  const request = page.locator('.node[data-node-id="1"]');
+  await expect(request.locator('.port-mark')).toHaveText(['A', 'B']);
+  await expect(page.locator('.node[data-node-id="3"] .port-mark')).toHaveText(['A', 'B', 'C']);
+  const shapes = await request.locator('.port').evaluateAll(ports => ports.map(port => ({
+    role: port.dataset.role,
+    clip: getComputedStyle(port, '::before').clipPath,
+    color: getComputedStyle(port, '::before').backgroundColor,
+  })));
+  expect(shapes.every(shape => shape.clip !== 'none')).toBe(true);
+  expect(shapes.find(shape => shape.role === 'input').color).not.toBe(shapes.find(shape => shape.role === 'output').color);
+});
+
 test('a dropped node remains at its exact browser position after the server response', async ({ page }) => {
   const node = page.locator('.node[data-node-id="2"]');
   const before = await documentState(page);
@@ -57,6 +70,10 @@ test('port and connection properties persist through the server and reload', asy
   await expect.poll(async () => (await documentState(page)).nodes.find(item => item.id === 1).ports.length).toBe(3);
   await expect.poll(async () => (await documentState(page)).nodes.find(item => item.id === 1).ports.at(-1).label).toBe('Failure');
   await added.getByRole('button', { name: 'Move port up' }).click();
+  await expect.poll(async () => (await documentState(page)).nodes.find(item => item.id === 1).ports[1].label).toBe('Failure');
+  await page.locator('.port-editor').nth(1).getByRole('button', { name: 'Move port down' }).click();
+  await expect.poll(async () => (await documentState(page)).nodes.find(item => item.id === 1).ports.at(-1).label).toBe('Failure');
+  await page.locator('.port-editor').last().getByRole('button', { name: 'Move port up' }).click();
   await expect.poll(async () => (await documentState(page)).nodes.find(item => item.id === 1).ports[1].label).toBe('Failure');
 
   await clickEdge(page, 1);

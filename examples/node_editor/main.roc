@@ -64,10 +64,10 @@ View : { revision : I64, document : Document, routes : List(RouteView), message 
 StreamState : { revision : I64, signal_revision : I64, ticks : U64 }
 
 input_port : Port
-input_port = { id: "in", label: "Input", role: "input", side: "top", resolved_side: "top", offset: 0.5 }
+input_port = { id: "in", label: "A", role: "input", side: "top", resolved_side: "top", offset: 0.5 }
 
 output_port : Port
-output_port = { id: "out", label: "Output", role: "output", side: "bottom", resolved_side: "bottom", offset: 0.5 }
+output_port = { id: "out", label: "B", role: "output", side: "bottom", resolved_side: "bottom", offset: 0.5 }
 
 initial_document : Document
 initial_document = {
@@ -82,7 +82,7 @@ initial_document = {
 	nodes: [
 		{ id: 1, label: "Request", x: 210, y: 110, width: 160, height: 64, ports: [input_port, output_port] },
 		{ id: 2, label: "Review", x: 470, y: 260, width: 160, height: 64, ports: [input_port, output_port] },
-		{ id: 3, label: "Release", x: 250, y: 430, width: 160, height: 64, ports: [input_port, { ..input_port, id: "in-alt", label: "Expedite", offset: 0.67 }, output_port] },
+		{ id: 3, label: "Release", x: 250, y: 430, width: 160, height: 64, ports: [{ ..input_port, offset: 0.35 }, { ..input_port, id: "in-alt", label: "B", offset: 0.65 }, { ..output_port, label: "C" }] },
 	],
 	edges: [
 		{ id: 1, from: 1, to: 2, source_port: "out", target_port: "in", label: "review", color: "#7895dd", label_placement: "center", label_width: 58, label_height: 22 },
@@ -305,8 +305,7 @@ apply_command = |document, kind, p| {
 	} else if kind == "add-port" and ["input", "output"].contains(p.role) {
 		found = document.nodes.any(|node| node.id == p.node and node.ports.len() < 16)
 		port_id = "port-${document.next_port_id.to_str()}"
-		port = { id: port_id, label: if p.role == "input" { "Input" } else { "Output" }, role: p.role, side: "auto", resolved_side: if p.role == "input" { "left" } else { "right" }, offset: 0.5 }
-		next = { ..document, next_port_id: document.next_port_id + 1, nodes: document.nodes.map(|node| if node.id == p.node { { ..node, ports: node.ports.append(port) } } else { node }) }
+		next = { ..document, next_port_id: document.next_port_id + 1, nodes: document.nodes.map(|node| if node.id == p.node { { ..node, ports: node.ports.append({ id: port_id, label: port_label(node.ports.len()), role: p.role, side: "auto", resolved_side: if p.role == "input" { "left" } else { "right" }, offset: 0.5 }) } } else { node }) }
 		{ document: free(redistribute_ports(next)), message: if found { "Port added." } else { "The node cannot accept another port." }, accepted: found }
 	} else if kind == "move-port" and ["up", "down"].contains(p.direction) {
 		found = document.nodes.any(|node| node.id == p.node and node.ports.any(|port| port.id == p.port_id))
@@ -484,6 +483,8 @@ port_connection_count = |document, node_id, port_id| document.edges.fold(
 )
 
 fallback_side = |role| if role == "input" { "left" } else { "right" }
+
+port_label = |index| ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P"].get(index) ?? "Port"
 
 move_port = |ports, port_id, direction| match ports.find_first_index(|port| port.id == port_id) {
 	Err(_) => ports
@@ -775,6 +776,7 @@ port_node = |port| {
 		Attribute.attribute("data-side-mode", port.side),
 		Attribute.attribute("data-offset", port.offset.to_str()),
 		Attribute.attribute("title", "${port.label} · ${port.role}"),
+		Attribute.attribute("aria-label", "${port.label}, ${port.role} port"),
 		Attribute.style(position),
 	],
 	[
@@ -782,15 +784,11 @@ port_node = |port| {
 			[Attribute.class("port-mark")],
 			[
 				Html.text(
-					if port.role == "input" {
-						"IN"
-					} else {
-						"OUT"
-					},
+					port.label,
 				),
 			],
 		),
-		Html.span([Attribute.class("port-label")], [Html.text(port.label)]),
+		Html.span([Attribute.class("port-label")], [Html.text(if port.role == "input" { "Input" } else { "Output" })]),
 	],
 )
 }
@@ -867,7 +865,7 @@ port_inspector = |document, node, port, index| {
 			Html.button([Attribute.class("small"), Attribute.attribute("data-move-port", "down"), Attribute.attribute("aria-label", "Move port down"), Attribute.attribute("title", "Move ${port.label} down")].concat(if index + 1 == node.ports.len() { [Attribute.attribute("disabled", "")] } else { [] }), [Html.text("↓")]),
 		],
 	)
-	Html.li([Attribute.class("port-editor"), Attribute.attribute("data-node", node.id.to_str()), Attribute.attribute("data-port", port.id)], controls.concat(auto_controls).concat([move_controls, Html.button([Attribute.class("danger small"), Attribute.attribute("data-delete-port", "")], [Html.text("Delete port")])]))
+	Html.li([Attribute.id("port-editor-${node.id.to_str()}-${port.id}"), Attribute.class("port-editor"), Attribute.attribute("data-node", node.id.to_str()), Attribute.attribute("data-port", port.id)], controls.concat(auto_controls).concat([move_controls, Html.button([Attribute.class("danger small"), Attribute.attribute("data-delete-port", "")], [Html.text("Delete port")])]))
 }
 
 edge_inspector = |edge| Html.div(
