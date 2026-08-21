@@ -21,7 +21,10 @@ export class NodeEditorCanvas extends HTMLElement {
     this.viewport = { x:0, y:0, scale:1 };
     this.events = [];
     this.session = crypto.randomUUID?.() ?? String(Date.now());
-    this.observer = new MutationObserver(() => this.refresh());
+    this.observer = new MutationObserver(mutations => {
+      const external = mutations.some(mutation => !mutation.target.closest?.('#layers'));
+      if (external) this.refresh();
+    });
     this.onKeyDown = event => this.keyDown(event);
     this.onInspectorChange = event => this.inspectorChanged(event);
     this.onInspectorClick = event => this.inspectorClicked(event);
@@ -235,8 +238,9 @@ export class NodeEditorCanvas extends HTMLElement {
     const maxY=nodes.length?Math.max(...nodes.map(n=>n.y+n.height/2))+180:0;
     const visibleWidth=(viewport?.clientWidth??0)/this.viewport.scale+Math.max(0,-this.viewport.x)/this.viewport.scale;
     const visibleHeight=(viewport?.clientHeight??0)/this.viewport.scale+Math.max(0,-this.viewport.y)/this.viewport.scale;
-    this.style.width=`${Math.max(1100,maxX,visibleWidth)}px`;
-    this.style.height=`${Math.max(720,maxY,visibleHeight)}px`;
+    const width=`${Math.max(1100,maxX,visibleWidth)}px`,height=`${Math.max(720,maxY,visibleHeight)}px`;
+    if(this.style.width!==width)this.style.width=width;
+    if(this.style.height!==height)this.style.height=height;
     this.applyViewport();
   }
   applyViewport() {

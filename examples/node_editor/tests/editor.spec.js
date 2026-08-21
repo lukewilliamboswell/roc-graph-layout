@@ -51,6 +51,16 @@ test('the full viewport pans and node actions appear in the right context', asyn
   expect(await canvas.evaluate(element => element.style.transform)).not.toBe(before);
 });
 
+test('rendered layer bands remain stable instead of feeding the mutation observer', async ({ page }) => {
+  await page.locator('node-editor-canvas').evaluate(element => {
+    element.dataset.arrangement='layered';element.dataset.direction='down';element.dataset.layers='[0,1,2]';element.layersVisible=true;element.refreshLayers();
+  });
+  await expect(page.locator('.layer-band')).toHaveCount(3);
+  await page.locator('.layer-band').first().evaluate(element => { globalThis.firstLayerBand = element; });
+  await page.waitForTimeout(150);
+  expect(await page.evaluate(() => globalThis.firstLayerBand === document.querySelector('.layer-band'))).toBe(true);
+});
+
 test('light and dark themes preserve accessible semantic contrast', async ({ page }) => {
   const ratios = async theme => {
     await page.locator('#theme').selectOption(theme);
