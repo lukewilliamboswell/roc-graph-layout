@@ -1056,7 +1056,12 @@ RouteInternals :: {}.{
 		if F64.is_finite(searched.distances.get(finish_state) ?? F64.infinity) == False {
 			[]
 		} else {
-			RouteInternals.grid_rebuild(points, searched.previous, start_index, finish_state, start, finish, [], state_count + 1)
+			rebuilt = RouteInternals.grid_rebuild(points, searched.previous, start_index, finish_state, start, finish, [], state_count + 1)
+			if RouteInternals.path_visible(rebuilt, boxes) {
+				rebuilt
+			} else {
+				[]
+			}
 		}
 	}
 
@@ -1887,7 +1892,8 @@ RouteInternals :: {}.{
 		routes.map_with_index(
 			|route, edge_index| {
 				edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
-				if RouteInternals.waypoints_for(edge_index, input).is_empty() {
+				crosses_group_boundary = !RouteInternals.boundary_groups(edge, input).is_empty()
+				if RouteInternals.waypoints_for(edge_index, input).is_empty() and !crosses_group_boundary {
 					RouteInternals.nudge_one(route, edge_index, edge, input, settings, segments)
 				} else {
 					route
