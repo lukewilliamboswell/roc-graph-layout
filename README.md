@@ -14,7 +14,8 @@ The supported end-to-end layouts:
 
 - `Layered` — directed flows such as dependencies, pipelines, and process
   diagrams, with orientation-preserving cycle handling, exact layer
-  assignment, and balanced coordinates; `Layered.layout_exact` swaps the
+  assignment, balanced coordinates, sparse position hints, and exact pins;
+  `Layered.layout_exact` swaps the
   crossing-reduction heuristic for an effort-capped exact search that reports
   whether optimality was proven.
 - `Tree` — input that is already a hierarchy, drawn level by level
@@ -38,7 +39,10 @@ displacement, for comparing layouts by measurement).
 `Route.layout` adds deterministic orthogonal routes to any already-positioned
 graph. It searches rectilinear corridors around sized nodes and unrelated
 groups, jointly distributes flexible ports, revisits interacting routes, and
-nudges shared corridors into stable lanes. `Automatic` chooses a side and
+nudges shared corridors into stable lanes. Ordered waypoint rules preserve
+exact caller-authored points; soft guide rules preserve structural corridors
+from placement when they remain simple, outward-facing, and obstacle-clear.
+Routing never translates caller geometry. `Automatic` chooses a side and
 position, `On(side)` fixes only the side, and `Fixed` preserves an exact
 offset. Every containment boundary receives one perpendicular portal, with
 sparse group attachments acting as overrides. Selected attachments and group
@@ -97,6 +101,10 @@ distance reflects network distance.
 For repeated layouts of the same input and settings, use `Layered.prepare` once
 and pass the result to `Layered.layout_prepared` with `Layered.default_run`.
 Changed input must be prepared again.
+
+The [node editor example](examples/node_editor/README.md) is a native persisted
+editor demonstrating graph edits, direction changes, sparse re-layout hints,
+drag-to-pin behavior, and authoritative routed geometry.
 
 ## Development
 

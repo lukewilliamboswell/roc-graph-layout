@@ -76,7 +76,7 @@ test = |bytes| {
 	match Layered.prepare(input, settings) {
 		Err(_) => crash "bounded valid layered input failed preparation"
 		Ok(prepared) => {
-			hints = LayeredInternalsForFuzz.positions(node_count)
+			hints = LayeredInternalsForFuzz.positions(node_count).map_with_index(|point, node| { node, x: point.x, y: point.y })
 			run_args = if byte_at(bytes, 55) % 2 == 0 {
 				Layered.default_run
 			} else {
