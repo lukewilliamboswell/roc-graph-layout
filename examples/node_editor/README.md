@@ -25,8 +25,9 @@ ROC=/path/to/the/pinned/roc npm run build
 ```
 
 Set `ROC_GRAPH_LAYOUT_NODE_EDITOR_DB` to choose another database path. The
-default is `examples/node_editor/node_editor.db`. Nodes store their dimensions
-as geometry input and can be resized between the editor's documented bounds.
+default is `node_editor.db` in the process's current working directory. Nodes
+store their dimensions as geometry input and can be resized between the
+editor's documented bounds.
 
 The browser console records structured `[node-editor]` events for graph
 actions, direction and route-style changes, connections, drags, server

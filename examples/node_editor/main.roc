@@ -97,7 +97,7 @@ init! : () => Try({ config : Server.Config, context : Context }, [Exit(I64), Ini
 init! = || {
 	db_path = match Env.var!("ROC_GRAPH_LAYOUT_NODE_EDITOR_DB") {
 		Ok(value) => Path.from_os_str(value)
-		Err(_) => Path.utf8("./examples/node_editor/node_editor.db")
+		Err(_) => Path.utf8("./node_editor.db")
 	}
 	db = Sqlite.open!(Sqlite.default_config(db_path)) ? |err| InitFailed(Str.inspect(err))
 	Sqlite.execute!({ db, query: "CREATE TABLE IF NOT EXISTS workspace (id INTEGER PRIMARY KEY CHECK (id = 1), revision INTEGER NOT NULL, document TEXT NOT NULL);", params: {} }) ? |err| InitFailed(Str.inspect(err))

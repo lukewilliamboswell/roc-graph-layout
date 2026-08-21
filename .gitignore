@@ -17,3 +17,4 @@ examples/node_editor/*.db
 examples/node_editor/*.db-shm
 examples/node_editor/*.db-wal
 examples/node_editor/node-editor
+/node_editor.db*
