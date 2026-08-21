@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parent
 ALLOWED = {"schema_version","id","series","tier","family","operation","fixture","settings","warmups","samples","timeout_seconds"}
 FAMILIES = {"tree_tidy","tree_radial","layered","circular","force","stress","radial","constrained","overlap","pack","compound","route","metrics_crossings","metrics_bends"}
+BUILD_TIMEOUT_SECONDS = 600
 
 class Failure(Exception): pass
 
@@ -37,7 +38,8 @@ def build(binary: Path):
     z=run(["zig","build","-Doptimize=ReleaseFast"],ROOT/"platform")
     if z.returncode: raise Failure(z.stdout+z.stderr)
     binary.parent.mkdir(parents=True,exist_ok=True)
-    r=run([compiler(),"build","main.roc",f"--output={binary}","--opt=speed","--no-cache"],ROOT,180)
+    try: r=run([compiler(),"build","main.roc",f"--output={binary}","--opt=speed","--no-cache"],ROOT,BUILD_TIMEOUT_SECONDS)
+    except subprocess.TimeoutExpired: raise Failure(f"optimized benchmark build timed out after {BUILD_TIMEOUT_SECONDS} seconds") from None
     if r.returncode: raise Failure(r.stdout+r.stderr)
 
 def sample(binary: Path, case: dict, index: int):
