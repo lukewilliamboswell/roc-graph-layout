@@ -1,0 +1,251 @@
+import { expect, test } from '@playwright/test';
+
+const documentState = page => page.locator('#workspace').evaluate(element => JSON.parse(element.dataset.document));
+
+const clickEdge = async (page, id) => {
+  await page.locator(`#edge-${id} .route-hit`).dispatchEvent('pointerdown', { pointerId:1 });
+};
+
+test.beforeEach(async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('.node')).toHaveCount(3);
+  const revision = await page.locator('#workspace').getAttribute('data-revision');
+  await expect(page.locator('#status')).toHaveText(`Revision ${revision} synchronized.`);
+});
+
+test('ports use their configured names and distinct rounded roles', async ({ page }) => {
+  const request = page.locator('.node[data-node-id="1"]');
+  await expect(request.locator('.port-mark')).toHaveText(['A', 'B']);
+  await expect(page.locator('.node[data-node-id="3"] .port-mark')).toHaveText(['A', 'B', 'C']);
+  const shapes = await request.locator('.port').evaluateAll(ports => ports.map(port => ({
+    role: port.dataset.role,
+    radius: getComputedStyle(port).borderRadius,
+    color: getComputedStyle(port).borderColor,
+  })));
+  expect(shapes.every(shape => shape.radius !== '0px')).toBe(true);
+  expect(shapes.find(shape => shape.role === 'input').color).not.toBe(shapes.find(shape => shape.role === 'output').color);
+  const route = page.locator('.edge').first();
+  await expect(route.locator('.route')).toHaveAttribute('marker-end', 'url(#route-arrow)');
+  expect(await route.locator('.route').getAttribute('d')).not.toBe(await route.locator('.route-hit').getAttribute('d'));
+});
+
+test('routes meet every visible port perpendicular to its node side', async ({ page }) => {
+  await page.locator('.node[data-node-id="2"] .node-title').click();
+  const violations = await page.locator('node-editor-canvas').evaluate(canvas => {
+    const outward = (side,from,to) => side==='left' ? to.x<from.x&&to.y===from.y : side==='right' ? to.x>from.x&&to.y===from.y : side==='top' ? to.y<from.y&&to.x===from.x : to.y>from.y&&to.x===from.x;
+    return [...canvas.querySelectorAll('.route')].flatMap(route => {
+      const points=JSON.parse(route.dataset.points),source=canvas.querySelector(`.node[data-node-id="${route.dataset.from}"] .port[data-port-id="${route.dataset.sourcePort}"]`),target=canvas.querySelector(`.node[data-node-id="${route.dataset.to}"] .port[data-port-id="${route.dataset.targetPort}"]`);
+      const terminalLength=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
+      const sourceOk=source&&points.length>1&&outward(source.dataset.side,points[0],points[1])&&terminalLength(points[0],points[1])>=24;
+      const end=points.at(-1),before=points.at(-2),targetOk=target&&before&&outward(target.dataset.side,end,before)&&terminalLength(end,before)>=24;
+      return sourceOk&&targetOk?[]:[route.dataset.edgeId];
+    });
+  });
+  expect(violations).toEqual([]);
+
+  const visiblePortViolations = await page.locator('.node[data-node-id="2"]').evaluate(node => {
+    const box=node.getBoundingClientRect();
+    return [...node.querySelectorAll('.port')].filter(port => {
+      const p=port.getBoundingClientRect(),side=port.dataset.side;
+      return side==='left'?Math.abs((p.left+p.right)/2-box.left)>3:side==='right'?Math.abs((p.left+p.right)/2-box.right)>3:side==='top'?Math.abs((p.top+p.bottom)/2-box.top)>3:Math.abs((p.top+p.bottom)/2-box.bottom)>3;
+    }).map(port=>port.dataset.portId);
+  });
+  expect(visiblePortViolations).toEqual([]);
+});
+
+test('the full viewport pans and node actions appear in the right context', async ({ page }) => {
+  const viewport = page.locator('#viewport');
+  const canvas = page.locator('node-editor-canvas');
+  const [viewportBox,canvasBox] = await Promise.all([viewport.boundingBox(),canvas.boundingBox()]);
+  expect(canvasBox.width).toBeGreaterThanOrEqual(viewportBox.width);
+  expect(canvasBox.height).toBeGreaterThanOrEqual(viewportBox.height);
+
+  await expect(page.locator('.node [data-delete-node]')).toHaveCount(0);
+  const node = page.locator('.node[data-node-id="1"]');
+  await expect(node.locator('.resize-handle')).toBeHidden();
+  await node.locator('.node-title').click();
+  await expect(node.locator('.resize-handle')).toBeVisible();
+  await expect(page.locator('#inspector [data-delete-node]')).toBeVisible();
+  await page.waitForTimeout(200);
+  await expect(node).toHaveClass(/selected/);
+  await expect(node.locator('.resize-handle')).toBeVisible();
+
+  const before = await canvas.evaluate(element => element.style.transform);
+  await page.mouse.move(viewportBox.x + viewportBox.width - 12, viewportBox.y + viewportBox.height - 12);
+  await page.mouse.down();
+  await page.mouse.move(viewportBox.x + viewportBox.width - 52, viewportBox.y + viewportBox.height - 42);
+  await page.mouse.up();
+  expect(await canvas.evaluate(element => element.style.transform)).not.toBe(before);
+});
+
+test('rendered layer bands remain stable instead of feeding the mutation observer', async ({ page }) => {
+  await page.locator('#diagnostics-toggle').click();
+  await expect(page.locator('.diagnostic-node')).toHaveCount(3);
+  await expect(page.locator('.diagnostic-clearance')).toHaveCount(3);
+  await expect(page.locator('#diagnostics-toggle')).toHaveAttribute('aria-pressed','true');
+  await page.locator('node-editor-canvas').evaluate(element => {
+    element.dataset.arrangement='layered';element.dataset.direction='down';element.dataset.layers='[0,1,2]';element.refreshDiagnostics();
+  });
+  await expect(page.locator('.layer-band')).toHaveCount(3);
+  await page.locator('.layer-band').first().evaluate(element => { globalThis.firstLayerBand = element; });
+  await page.waitForTimeout(150);
+  expect(await page.evaluate(() => globalThis.firstLayerBand === document.querySelector('.layer-band'))).toBe(true);
+  await page.locator('#diagnostics-toggle').click();
+  await expect(page.locator('.diagnostic-node')).toHaveCount(0);
+});
+
+test('light and dark themes preserve accessible semantic contrast', async ({ page }) => {
+  const ratios = async theme => {
+    await page.locator('#theme').selectOption(theme);
+    return page.evaluate(() => {
+      const rgb = value => {
+        let hex=value.trim().slice(1);if(hex.length===3)hex=[...hex].map(character=>character+character).join('');
+        return [0,2,4].map(index=>parseInt(hex.slice(index,index+2),16));
+      };
+      const luminance = value => rgb(value).map(channel => channel / 255).map(channel => channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4).reduce((sum,channel,index) => sum + channel * [.2126,.7152,.0722][index], 0);
+      const ratio = (a,b) => (Math.max(luminance(a),luminance(b)) + .05) / (Math.min(luminance(a),luminance(b)) + .05);
+      const root = getComputedStyle(document.documentElement);
+      return {
+        text:ratio(root.getPropertyValue('--text'),root.getPropertyValue('--surface-container')),
+        muted:ratio(root.getPropertyValue('--text-muted'),root.getPropertyValue('--surface-container')),
+        input:ratio(root.getPropertyValue('--input'),root.getPropertyValue('--surface-container')),
+        output:ratio(root.getPropertyValue('--output'),root.getPropertyValue('--surface-container')),
+      };
+    });
+  };
+  for (const theme of ['light','dark']) {
+    const result = await ratios(theme);
+    expect(result.text).toBeGreaterThanOrEqual(4.5);
+    expect(result.muted).toBeGreaterThanOrEqual(4.5);
+    expect(result.input).toBeGreaterThanOrEqual(3);
+    expect(result.output).toBeGreaterThanOrEqual(3);
+  }
+  await page.reload();
+  await expect(page.locator('#theme')).toHaveValue('dark');
+});
+
+test('a dropped node remains at its exact browser position after the server response', async ({ page }) => {
+  const node = page.locator('.node[data-node-id="2"]');
+  const before = await documentState(page);
+  const revision = Number(await page.locator('#workspace').getAttribute('data-revision'));
+  const box = await node.boundingBox();
+  expect(box).not.toBeNull();
+
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 73, box.y + box.height / 2 + 41, { steps: 6 });
+  await page.mouse.up();
+
+  await expect.poll(async () => Number(await page.locator('#workspace').getAttribute('data-revision'))).toBeGreaterThan(revision);
+  const after = await documentState(page);
+  const oldNode = before.nodes.find(item => item.id === 2);
+  const movedNode = after.nodes.find(item => item.id === 2);
+  expect(movedNode.x).toBeCloseTo(oldNode.x + 73, 4);
+  expect(movedNode.y).toBeCloseTo(oldNode.y + 41, 4);
+
+  await page.reload();
+  await expect.poll(async () => (await documentState(page)).nodes.find(item => item.id === 2).x).toBeCloseTo(movedNode.x, 4);
+});
+
+test('a server disconnect preserves the canvas and pauses mutations', async ({ page }) => {
+  const canvas = page.locator('node-editor-canvas');
+  const nodesBefore = await page.locator('.node').count();
+  await page.route('**/health', route => route.abort());
+  await canvas.evaluate(element => element.checkServer());
+  await expect(page.locator('body')).toHaveAttribute('data-server-state', 'offline');
+  await expect(page.locator('#offline-status')).toBeVisible();
+  await expect(page.locator('#offline-status')).toContainText('changes are paused');
+  expect(await canvas.evaluate(element => element.requestCommand('add-node'))).toBe(false);
+  await expect(page.locator('.node')).toHaveCount(nodesBefore);
+
+  await page.unroute('**/health');
+  await canvas.evaluate(element => element.checkServer());
+  await expect(page.locator('body')).toHaveAttribute('data-server-state', 'online');
+});
+
+test('port and connection properties persist through the server and reload', async ({ page }) => {
+  await page.locator('.node[data-node-id="1"] .node-title').click();
+  await expect(page.locator('.port-editor')).toHaveCount(2);
+  await page.getByRole('button', { name: 'Add output' }).click();
+  await expect(page.locator('.port-editor')).toHaveCount(3);
+
+  const added = page.locator('.port-editor').last();
+  await added.locator('[data-port-label]').fill('Failure');
+  await added.locator('[data-port-side]').selectOption('left');
+  await added.locator('[data-port-label]').blur();
+  await expect.poll(async () => (await documentState(page)).nodes.find(item => item.id === 1).ports.length).toBe(3);
+  await expect.poll(async () => (await documentState(page)).nodes.find(item => item.id === 1).ports.at(-1).label).toBe('Failure');
+  await added.getByRole('button', { name: 'Move port up' }).click();
+  await expect.poll(async () => (await documentState(page)).nodes.find(item => item.id === 1).ports[1].label).toBe('Failure');
+  await page.locator('.port-editor').nth(1).getByRole('button', { name: 'Move port down' }).click();
+  await expect.poll(async () => (await documentState(page)).nodes.find(item => item.id === 1).ports.at(-1).label).toBe('Failure');
+  await page.locator('.port-editor').last().getByRole('button', { name: 'Move port up' }).click();
+  await expect.poll(async () => (await documentState(page)).nodes.find(item => item.id === 1).ports[1].label).toBe('Failure');
+
+  await clickEdge(page, 1);
+  await expect(page.locator('.edge-editor')).toBeVisible();
+  await page.locator('[data-edge-label]').fill('approved');
+  await page.locator('[data-edge-label]').blur();
+  await expect.poll(async () => (await documentState(page)).edges.find(item => item.id === 1).label).toBe('approved');
+  await page.locator('[data-edge-color]').evaluate(input => {
+    input.value = '#22aa88';
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await expect.poll(async () => (await documentState(page)).edges.find(item => item.id === 1).color).toBe('#22aa88');
+
+  await page.reload();
+  const persisted = await documentState(page);
+  const port = persisted.nodes.find(item => item.id === 1).ports.find(item => item.label === 'Failure');
+  expect(port.side).toBe('left');
+  expect(persisted.nodes.find(item => item.id === 1).ports[1].id).toBe(port.id);
+  expect(persisted.edges.find(item => item.id === 1)).toMatchObject({ label: 'approved', color: '#22aa88' });
+});
+
+test('serialized final routes are orthogonal and avoid unrelated node bodies', async ({ page }) => {
+  const violations = await page.locator('#editor-canvas').evaluate(canvas => {
+    const nodes = [...canvas.querySelectorAll('.node')].map(node => ({
+      id: Number(node.dataset.nodeId),
+      left: Number(node.dataset.x),
+      top: Number(node.dataset.y),
+      right: Number(node.dataset.x) + Number(node.dataset.width),
+      bottom: Number(node.dataset.y) + Number(node.dataset.height),
+    }));
+    const crosses = (a, b, box) => {
+      if (a.x === b.x) return a.x > box.left && a.x < box.right && Math.max(a.y, b.y) > box.top && Math.min(a.y, b.y) < box.bottom;
+      if (a.y === b.y) return a.y > box.top && a.y < box.bottom && Math.max(a.x, b.x) > box.left && Math.min(a.x, b.x) < box.right;
+      return true;
+    };
+    return [...canvas.querySelectorAll('.route')].flatMap(path => {
+      const points = JSON.parse(path.dataset.points);
+      const excluded = new Set([Number(path.dataset.from), Number(path.dataset.to)]);
+      return points.slice(1).flatMap((point, index) => nodes
+        .filter(node => !excluded.has(node.id) && crosses(points[index], point, node))
+        .map(node => ({ edge: path.dataset.edgeId, segment: index, node: node.id })));
+    });
+  });
+  expect(violations).toEqual([]);
+  const detachedLabels = await page.locator('.edge:has(.edge-label-text)').evaluateAll(edges => edges.flatMap(edge => {
+    const text=edge.querySelector('.edge-label-text'),point={x:Number(text.getAttribute('x')),y:Number(text.getAttribute('y'))-4},points=JSON.parse(edge.querySelector('.route').dataset.points);
+    const attached=points.slice(1).some((b,index)=>{const a=points[index];return a.x===b.x?point.x===a.x&&point.y>=Math.min(a.y,b.y)&&point.y<=Math.max(a.y,b.y):point.y===a.y&&point.x>=Math.min(a.x,b.x)&&point.x<=Math.max(a.x,b.x);});
+    return attached?[]:[edge.dataset.edgeId];
+  }));
+  expect(detachedLabels).toEqual([]);
+});
+
+test('routing diagnostics render deterministic orthogonal fixtures', async ({ page }) => {
+  await page.goto('/routing-gallery');
+  await expect(page.locator('article')).toHaveCount(3);
+  const invalid = await page.locator('.gallery-route').evaluateAll(routes => routes.flatMap((route, routeIndex) => {
+    const points = route.getAttribute('points').trim().split(/\s+/).map(pair => {
+      const [x, y] = pair.split(',').map(Number);
+      return { x, y };
+    });
+    return points.slice(1).flatMap((point, index) => {
+      const previous = points[index];
+      return Number.isFinite(point.x) && Number.isFinite(point.y) && (point.x === previous.x || point.y === previous.y)
+        ? []
+        : [{ route: routeIndex, segment: index }];
+    });
+  }));
+  expect(invalid).toEqual([]);
+});

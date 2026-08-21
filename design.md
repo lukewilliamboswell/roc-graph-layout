@@ -166,8 +166,8 @@ edges may cross group boundaries; layout recurses through the nesting
 the spec-composition architecture ([Data model](#data-model)), not a group field threaded
 through every spec.
 
-**F7 — Stability under re-layout.** Callers may supply
-previous positions as hints; algorithms that can honor them minimize
+**F7 — Stability under re-layout.** Callers may supply sparse previous
+positions by node index as hints; algorithms that can honor them minimize
 movement, so a small change to the graph yields a small change to the
 drawing. This is the output-stability requirement distinguished from
 animation in [Scope and Boundary](#scope-and-boundary), and it exists
@@ -481,10 +481,13 @@ One convention, stated once, held everywhere:
   centers (forces, alignment, centering a parent over children);
   storing centers makes the code read like the geometry. The top-left
   rectangle form consumers often want is one derived accessor away.
-- **Layouts are normalized.** Every layout is translated so its
+- **Owned placements are normalized unless pinned.** A layout that chooses
+  every position is translated so its
   bounding box has its top-left corner at the origin. Output is then
   directly usable as canvas coordinates, and two layouts are comparable
-  without first agreeing on a frame.
+  without first agreeing on a frame. Exact pins retain the caller's coordinate
+  frame. Placement-independent passes never translate geometry they receive;
+  their bounds report the actual origin.
 
 Output is again plain data:
 
@@ -699,7 +702,12 @@ the layer gap.
 **Routes.** Each edge becomes a polyline through its virtual waypoints;
 an optional smoothing pass replaces bends with monotone cubic segments
 (the `Curves` route form) that stay within the reserved corridor.
-Orthogonal edge styling is the [Placement-independent passes](#placement-independent-passes) router applied to this placement.
+Orthogonal edge styling passes those ordered virtual waypoints into the
+[Placement-independent passes](#placement-independent-passes) router as soft
+interior guides. The router retains that context only when the resulting path
+is simple, outward-facing, and obstacle-clear; otherwise it computes an
+independent route. Placement context must not be discarded, but it must not
+override routing correctness.
 
 Config: direction, layer gap, node gap, sweep cap; per-edge weight and
 minimum span live in the spec ([Data model](#data-model)). Run: position hints (F7), which
@@ -918,7 +926,10 @@ an axis-aligned visibility structure over the node boxes, assign flexible
 ports in crossing-minimizing order, choose initial paths for every edge,
 then run a bounded deterministic improvement sweep before nudging coincident
 segments into parallel tracks. `Route` remains placement-independent and does
-not move caller geometry. `Compound`, which owns placement, feeds busy group
+not move or normalize caller geometry. Ordered sparse waypoint rules are exact
+caller constraints. Separate soft guide rules let a placement algorithm prefer
+structural corridors without coupling routing correctness to that algorithm.
+`Compound`, which owns placement, feeds busy group
 sides back as proxy spacing so parent algorithms reserve usable corridors.
 This keeps the geometric family boundary while avoiding the quality cliff of
 forcing routing alone to compensate for insufficient inter-group space. A bend
@@ -1116,12 +1127,12 @@ Defined behavior at the edges, chosen and tested rather than emergent:
   around their point extent.
 - **Self-loops and parallel edges** → uniform loop-stub and fanning
   rules ([Data model](#data-model)), in every algorithm.
-- **Pinned nodes** → a capability of the algorithms whose optimization
-  is continuous — force, stress, constrained layout, overlap removal —
-  which hold pins exactly by excluding them from updates.
-  Discrete-placement algorithms have no pin field at all: that pins do
-  not apply is said by the type system, not by documentation or a
-  runtime report ([Data model](#data-model)).
+- **Pinned nodes** → force, stress, constrained layout, and overlap removal
+  hold pins exactly inside their continuous solves. Layered layout also
+  accepts exact pins, but only when their coordinates can coexist with its
+  strict shared layers, authored order, node sizes, and configured gaps;
+  preparation reports conflicts before a total run is exposed. Other
+  discrete-placement algorithms have no pin field.
 - **Adversarial scale** → iteration caps bound time; quality degrades
   gradually (N3); nothing hangs.
 

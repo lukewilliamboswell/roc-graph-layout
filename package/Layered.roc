@@ -1,5 +1,6 @@
 import Geom
 import Route
+import Solver
 
 ## Layered layouts for directed graphs read as flow — a complete
 ## Sugiyama-style pipeline: break cycles with a greedy vertex-ordering
@@ -753,7 +754,7 @@ LayeredInternals :: {}.{
 		)
 	}
 
-	## Seeds real-node order from a full finite hint list. Virtual waypoints
+	## Seeds real-node order from a finite node-indexed hint table. Virtual waypoints
 	## interpolate their owning edge's endpoints before each layer is sorted.
 	hinted_layers : List(List(U64)), List(List(U64)), List({ x : F64, y : F64 }), List(Bool) -> List(List(U64))
 	hinted_layers = |layers, chains, hints, reversed_flags| {
@@ -801,22 +802,34 @@ LayeredInternals :: {}.{
 		)
 	}
 
-	canonical_hints : List({ x : F64, y : F64 }), U64, [Down, Up, Left, Right] -> [Some(List({ x : F64, y : F64 })), None]
+	canonical_hints : List({ node : U64, x : F64, y : F64 }), U64, [Down, Up, Left, Right] -> [Some({ points : List({ x : F64, y : F64 }), nodes : List(U64) }), None]
 	canonical_hints = |hints, node_count, direction| {
-		usable = hints.len() == node_count and hints.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y))
-		if !usable {
+		base = LayeredInternals.indices_up_to(node_count).map(|node| Geom.point(node.to_f64(), 0))
+		valid = hints.keep_if(|hint| hint.node < node_count and F64.is_finite(hint.x) and F64.is_finite(hint.y))
+		if valid.is_empty() {
 			None
 		} else {
-			Some(
-				hints.map(
-					|p| match direction {
-						Down => p
-						Up => Geom.point(p.x, 0 - p.y)
-						Right => Geom.point(p.y, p.x)
-						Left => Geom.point(p.y, 0 - p.x)
-					},
-				),
+			canonical = valid.fold(
+				base,
+				|points, hint| {
+					point = match direction {
+						Down => Geom.point(hint.x, hint.y)
+						Up => Geom.point(hint.x, 0 - hint.y)
+						Right => Geom.point(hint.y, hint.x)
+						Left => Geom.point(hint.y, 0 - hint.x)
+					}
+					points.set(hint.node, point) ?? []
+				},
 			)
+			nodes = valid.fold(
+				[],
+				|found, hint| if found.contains(hint.node) {
+					found
+				} else {
+					found.append(hint.node)
+				},
+			)
+			Some({ points: canonical, nodes })
 		}
 	}
 
@@ -1928,6 +1941,230 @@ LayeredInternals :: {}.{
 		}
 	}
 
+	## The placement router needs the interior virtual-chain points, without
+	## the clipped node-boundary endpoints of the provisional route.
+	interior_route_points = |candidate_route| match candidate_route {
+		Polyline(points) if points.len() > 2 => points.drop_first(1).drop_last(1)
+		_ => []
+	}
+
+	flow_coordinate = |point, direction| match direction {
+		Down | Up => point.y
+		Left | Right => point.x
+	}
+
+	cross_coordinate = |point, direction| match direction {
+		Down | Up => point.x
+		Left | Right => point.y
+	}
+
+	with_flow = |point, value, direction| match direction {
+		Down | Up => { ..point, y: value }
+		Left | Right => { ..point, x: value }
+	}
+
+	with_cross = |point, value, direction| match direction {
+		Down | Up => { ..point, x: value }
+		Left | Right => { ..point, y: value }
+	}
+
+	apply_pins = |positions, ranks, pins, direction| positions.map_with_index(
+		|position, node| {
+			rank = ranks.get(node) ?? 0
+			flow_pin = pins.find_first(|pin| (ranks.get(pin.node) ?? 0) == rank)
+			flowed = match flow_pin {
+				Ok(pin) => LayeredInternals.with_flow(position, LayeredInternals.flow_coordinate(pin, direction), direction)
+				Err(_) => position
+			}
+			match pins.find_first(|pin| pin.node == node) {
+				Ok(pin) => LayeredInternals.with_cross(flowed, LayeredInternals.cross_coordinate(pin, direction), direction)
+				Err(_) => flowed
+			}
+		},
+	)
+
+	valid_hint_for = |hints, node| hints.rev().find_first(|hint| hint.node == node and F64.is_finite(hint.x) and F64.is_finite(hint.y))
+
+	apply_hints = |positions, ordered_layers, nodes, hints, direction, node_gap, layer_gap| {
+		real_layers = ordered_layers.map(|layer| layer.keep_if(|node| node < nodes.len())).keep_if(|layer| !layer.is_empty())
+		crossed = real_layers.fold(
+			positions,
+			|placed, layer| {
+				variables = layer.map(
+					|node| match LayeredInternals.valid_hint_for(hints, node) {
+						Ok(hint) => { position: LayeredInternals.cross_coordinate(hint, direction), weight: 4 }
+						Err(_) => { position: LayeredInternals.cross_coordinate(placed.get(node) ?? Geom.point(0, 0), direction), weight: 1 }
+					},
+				)
+				constraints = if layer.len() < 2 {
+					[]
+				} else {
+					LayeredInternals.indices_up_to(layer.len() - 1).map(
+						|i| {
+							left_node = nodes.get(layer.get(i) ?? 0) ?? { width: 0, height: 0 }
+							right_node = nodes.get(layer.get(i + 1) ?? 0) ?? { width: 0, height: 0 }
+							left_size = match direction {
+								Down | Up => left_node.width
+								Left | Right => left_node.height
+							}
+							right_size = match direction {
+								Down | Up => right_node.width
+								Left | Right => right_node.height
+							}
+							{ left: i, right: i + 1, gap: left_size / 2 + right_size / 2 + node_gap }
+						},
+					)
+				}
+				solved = Solver.project(variables, constraints)
+				layer.fold_with_index(placed, |updated, node, i| updated.set(node, LayeredInternals.with_cross(updated.get(node) ?? Geom.point(0, 0), solved.get(i) ?? 0, direction)) ?? [])
+			},
+		)
+		flow_variables = real_layers.map(
+			|layer| {
+				hinted = layer.keep_oks(|node| LayeredInternals.valid_hint_for(hints, node))
+				base = LayeredInternals.flow_coordinate(crossed.get(layer.first() ?? 0) ?? Geom.point(0, 0), direction)
+				target = if hinted.is_empty() {
+					base
+				} else {
+					hinted.map(|hint| LayeredInternals.flow_coordinate(hint, direction)).sum() / hinted.len().to_f64()
+				}
+				signed = match direction {
+					Down | Right => target
+					Up | Left => 0 - target
+				}
+				{
+					position: signed,
+					weight: if hinted.is_empty() {
+						1
+					} else {
+						4
+					},
+				}
+			},
+		)
+		flow_constraints = if real_layers.len() < 2 {
+			[]
+		} else {
+			LayeredInternals.indices_up_to(real_layers.len() - 1).map(
+				|i| {
+					layer_size = |layer| layer.fold(
+						0,
+						|largest, node| {
+							item = nodes.get(node) ?? { width: 0, height: 0 }
+							size = match direction {
+								Down | Up => item.height
+								Left | Right => item.width
+							}
+							largest.max(size)
+						},
+					)
+					left_size = layer_size(real_layers.get(i) ?? [])
+					right_size = layer_size(real_layers.get(i + 1) ?? [])
+					{ left: i, right: i + 1, gap: left_size / 2 + right_size / 2 + layer_gap }
+				},
+			)
+		}
+		flow_solved = Solver.project(flow_variables, flow_constraints)
+		real_layers.fold_with_index(
+			crossed,
+			|placed, layer, i| {
+				signed = flow_solved.get(i) ?? 0
+				flow = match direction {
+					Down | Right => signed
+					Up | Left => 0 - signed
+				}
+				layer.fold(placed, |updated, node| updated.set(node, LayeredInternals.with_flow(updated.get(node) ?? Geom.point(0, 0), flow, direction)) ?? [])
+			},
+		)
+	}
+
+	pin_geometry_conflict = |ranks, layers, nodes, pins, direction, node_gap, layer_gap| {
+		pins.fold_with_index(
+			False,
+			|conflict, pin, i| pins.take_first(i).fold(
+				conflict,
+				|found, other| {
+					pin_rank = ranks.get(pin.node) ?? 0
+					other_rank = ranks.get(other.node) ?? 0
+					if pin_rank == other_rank {
+						flow_conflict = LayeredInternals.flow_coordinate(pin, direction) != LayeredInternals.flow_coordinate(other, direction)
+						layer = layers.find_first(|item| item.contains(pin.node)) ?? []
+						pin_before = (layer.find_first_index(|node| node == pin.node) ?? 0) < (layer.find_first_index(|node| node == other.node) ?? 0)
+						first = if pin_before {
+							pin
+						} else {
+							other
+						}
+						second = if pin_before {
+							other
+						} else {
+							pin
+						}
+						first_node = nodes.get(first.node) ?? { width: 0, height: 0 }
+						second_node = nodes.get(second.node) ?? { width: 0, height: 0 }
+						first_size = match direction {
+							Down | Up => first_node.width
+							Left | Right => first_node.height
+						}
+						second_size = match direction {
+							Down | Up => second_node.width
+							Left | Right => second_node.height
+						}
+						cross_gap = LayeredInternals.cross_coordinate(second, direction) - LayeredInternals.cross_coordinate(first, direction)
+						found or flow_conflict or cross_gap < first_size / 2 + second_size / 2 + node_gap
+					} else {
+						first = if pin_rank < other_rank {
+							pin
+						} else {
+							other
+						}
+						second = if pin_rank < other_rank {
+							other
+						} else {
+							pin
+						}
+						delta = LayeredInternals.flow_coordinate(second, direction) - LayeredInternals.flow_coordinate(first, direction)
+						actual = match direction {
+							Down | Right => delta
+							Up | Left => 0 - delta
+						}
+						found or actual < layer_gap
+					}
+				},
+			),
+		)
+	}
+
+	move_waypoints = |routes, old_positions, new_positions, edges, direction| routes.map_with_index(
+		|candidate, edge_index| {
+			old = LayeredInternals.interior_route_points(candidate)
+			edge = edges.get(edge_index) ?? { from: 0, to: 0 }
+			from_old = old_positions.get(edge.from) ?? Geom.point(0, 0)
+			to_old = old_positions.get(edge.to) ?? from_old
+			from_new = new_positions.get(edge.from) ?? from_old
+			to_new = new_positions.get(edge.to) ?? to_old
+			count = old.len() + 1
+			old.map_with_index(
+				|point, i| {
+					fraction = (i + 1).to_f64() / count.to_f64()
+					from_delta = LayeredInternals.flow_coordinate(from_new, direction) - LayeredInternals.flow_coordinate(from_old, direction)
+					to_delta = LayeredInternals.flow_coordinate(to_new, direction) - LayeredInternals.flow_coordinate(to_old, direction)
+					delta = from_delta * (1 - fraction) + to_delta * fraction
+					flowed = LayeredInternals.with_flow(point, LayeredInternals.flow_coordinate(point, direction) + delta, direction)
+					from_cross = LayeredInternals.cross_coordinate(from_new, direction)
+					to_cross = LayeredInternals.cross_coordinate(to_new, direction)
+					cross = LayeredInternals.cross_coordinate(flowed, direction)
+					bounded_cross = if from_cross == to_cross {
+						cross
+					} else {
+						cross.max(from_cross.min(to_cross)).min(from_cross.max(to_cross))
+					}
+					LayeredInternals.with_cross(flowed, bounded_cross, direction)
+				},
+			)
+		},
+	)
+
 	## Full minimal Sugiyama pipeline: rank, split long edges into virtual
 	## chains, order layers by median sweeps, assign coordinates, then route
 	## each original edge as a `Line` (unit span) or `Polyline` (through its
@@ -2502,8 +2739,20 @@ LayeredInternals :: {}.{
 					acc
 				},
 			)
-			layer_rules = spec.layer_constraints.fold_with_index(
+			pin_problems = config.pins.fold_with_index(
 				boundaries,
+				|acc, pin, i| if pin.node >= spec.graph.nodes.len() {
+					acc.append(MissingPinNode(i, pin.node))
+				} else if !F64.is_finite(pin.x) or !F64.is_finite(pin.y) {
+					acc.append(InvalidPin(i))
+				} else if config.pins.take_first(i).any(|other| other.node == pin.node) {
+					acc.append(DuplicatePin(i))
+				} else {
+					acc
+				},
+			)
+			layer_rules = spec.layer_constraints.fold_with_index(
+				pin_problems,
 				|acc, rule, i| match rule {
 					SameLayer(pair) => if pair.first >= spec.graph.nodes.len() {
 						acc.append(MissingLayerConstraintNode(i, pair.first))
@@ -2605,9 +2854,10 @@ Prepared := {
 	attachments : List(Route.AttachmentRule),
 	boundaries : List(Route.BoundaryRule),
 	edge_labels : List(Route.EdgeLabel),
+	pins : List({ node : U64, x : F64, y : F64 }),
 	precedences : List({ before : U64, after : U64 }),
 }.{
-	Config : { node_gap : F64, layer_gap : F64, routing : Route.Settings, direction : [Down, Up, Left, Right], max_sweeps : U64 }
+	Config : { node_gap : F64, layer_gap : F64, routing : Route.Settings, direction : [Down, Up, Left, Right], max_sweeps : U64, pins : List({ node : U64, x : F64, y : F64 }) }
 	Spec : {
 		graph : {
 			nodes : List({ width : F64, height : F64 }),
@@ -2640,6 +2890,10 @@ Prepared := {
 		DuplicateAttachment(U64),
 		InvalidBoundaryNode(U64),
 		DuplicateBoundary(U64),
+		MissingPinNode(U64, U64),
+		InvalidPin(U64),
+		DuplicatePin(U64),
+		ConflictingPins,
 		InvalidEdgeLabelEdge(U64),
 		InvalidEdgeLabelWidth(U64),
 		InvalidEdgeLabelHeight(U64),
@@ -2675,6 +2929,10 @@ Prepared := {
 			DuplicateAttachment(item) => "Attachment rule ${item.to_str()} repeats a rule for the same end of an edge."
 			InvalidBoundaryNode(item) => "Boundary rule ${item.to_str()} refers to a node that does not exist."
 			DuplicateBoundary(item) => "Boundary rule ${item.to_str()} repeats a rule for the same node."
+			MissingPinNode(item, node) => "Pin ${item.to_str()} refers to node ${node.to_str()}, which does not exist."
+			InvalidPin(item) => "Pin ${item.to_str()} has a coordinate that is not finite."
+			DuplicatePin(item) => "Pin ${item.to_str()} repeats a pin for the same node."
+			ConflictingPins => "The exact pins cannot coexist with aligned layers and the configured node and layer gaps."
 			InvalidEdgeLabelEdge(item) => "Edge label ${item.to_str()} refers to an edge that does not exist."
 			InvalidEdgeLabelWidth(item) => "Edge label ${item.to_str()} has a width that is negative or not finite."
 			InvalidEdgeLabelHeight(item) => "Edge label ${item.to_str()} has a height that is negative or not finite."
@@ -2691,7 +2949,7 @@ Prepared := {
 	}
 
 	defaults : Config
-	defaults = { node_gap: 24, layer_gap: 70, routing: Route.default_settings, direction: Down, max_sweeps: 4 }
+	defaults = { node_gap: 24, layer_gap: 70, routing: Route.default_settings, direction: Down, max_sweeps: 4, pins: [] }
 
 	default_spec : Spec
 	default_spec = { graph: { nodes: [], edges: [] }, edge_weights: [], min_spans: [], attachments: [], boundaries: [], edge_labels: [], layer_constraints: [], order_constraints: [], non_ranking_edges: [] }
@@ -2702,7 +2960,7 @@ Prepared := {
 			Ok(_) => []
 			Err(items) => items.map(|item| InvalidRouting(item))
 		}
-		problems = LayeredInternals.validation_problems(spec, { node_gap: config.node_gap, layer_gap: config.layer_gap, route_style: Straight, direction: config.direction, max_sweeps: config.max_sweeps }).concat(routing_problems)
+		problems = LayeredInternals.validation_problems(spec, { node_gap: config.node_gap, layer_gap: config.layer_gap, route_style: Straight, direction: config.direction, max_sweeps: config.max_sweeps, pins: config.pins }).concat(routing_problems)
 		if !problems.is_empty() {
 			Err(problems)
 		} else {
@@ -2758,8 +3016,7 @@ Prepared := {
 				} else if !LayeredInternals.precedences_hold(legal_layers, precedences) {
 					Err([ConflictingOrderConstraints])
 				} else {
-
-					Ok({
+					candidate = {
 						nodes: spec.graph.nodes,
 						edges: spec.graph.edges,
 						reversed: active_reversed,
@@ -2778,13 +3035,20 @@ Prepared := {
 						attachments: spec.attachments,
 						boundaries: spec.boundaries,
 						edge_labels: spec.edge_labels,
-					})
+						pins: config.pins,
+					}
+					real_layers = candidate.ordered_layers.map(|layer| layer.keep_if(|node| node < candidate.nodes.len())).keep_if(|layer| !layer.is_empty())
+					if LayeredInternals.pin_geometry_conflict(candidate.real_ranks, real_layers, candidate.nodes, candidate.pins, candidate.direction, candidate.node_gap, candidate.layer_gap) {
+						Err([ConflictingPins])
+					} else {
+						Ok(candidate)
+					}
 				}
 			}
 		}
 	}
 
-	RunArgs : { hints : List({ x : F64, y : F64 }), stability : [Reflow, PreserveOrder] }
+	RunArgs : { hints : List({ node : U64, x : F64, y : F64 }), stability : [Reflow, PreserveOrder] }
 
 	## Reflow for best layout quality without previous-position hints.
 	default_run : RunArgs
@@ -2806,14 +3070,17 @@ Prepared := {
 		canonical = LayeredInternals.canonical_hints(args.hints, sweep.nodes.len(), sweep.direction)
 		seeded = match canonical {
 			None => LayeredInternals.group_by_rank(sweep.extended_ranks)
-			Some(hints) => LayeredInternals.hinted_layers(LayeredInternals.group_by_rank(sweep.extended_ranks), sweep.chains, hints, sweep.reversed_flags)
+			Some(hints) => LayeredInternals.hinted_layers(LayeredInternals.group_by_rank(sweep.extended_ranks), sweep.chains, hints.points, sweep.reversed_flags)
 		}
 		stable = match (args.stability, canonical) {
-			(PreserveOrder, Some(_)) => seeded.map(
-				|layer| if layer.len() < 2 {
-					[]
-				} else {
-					LayeredInternals.indices_up_to(layer.len() - 1).map(|i| { before: layer.get(i) ?? 0, after: layer.get(i + 1) ?? 0 })
+			(PreserveOrder, Some(hints)) => seeded.map(
+				|layer| {
+					hinted = layer.keep_if(|node| hints.nodes.contains(node))
+					if hinted.len() < 2 {
+						[]
+					} else {
+						LayeredInternals.indices_up_to(hinted.len() - 1).map(|i| { before: hinted.get(i) ?? 0, after: hinted.get(i + 1) ?? 0 })
+					}
 				},
 			).join()
 			_ => []
@@ -2836,10 +3103,18 @@ Prepared := {
 			layer_gap: sweep.layer_gap,
 			route_style: Straight,
 		})
-		routed = Route.layout({ ..Route.default_input, graph: { nodes: sweep.nodes, edges: sweep.edges }, positions: finished.layout.positions, attachments: sweep.attachments, boundaries: sweep.boundaries, edge_labels: sweep.edge_labels }, sweep.routing)
+		hinted_positions = LayeredInternals.apply_hints(finished.layout.positions, ordered, sweep.nodes, args.hints, sweep.direction, sweep.node_gap, sweep.layer_gap)
+		positions = LayeredInternals.apply_pins(hinted_positions, sweep.real_ranks, sweep.pins, sweep.direction)
+		waypoint_points = LayeredInternals.move_waypoints(finished.layout.routes, finished.layout.positions, positions, sweep.edges, sweep.direction)
+		guides = waypoint_points.map_with_index(|points, edge| { edge, points })
+		pinned_layout = { ..finished.layout, positions }
+		routed = Route.layout({ ..Route.default_input, graph: { nodes: sweep.nodes, edges: sweep.edges }, positions, attachments: sweep.attachments, boundaries: sweep.boundaries, edge_labels: sweep.edge_labels, guides }, sweep.routing)
 		match routed {
 			Ok(value) => { layout: value.layout, layers: finished.layers, backward_edges: finished.backward_edges, label_anchors: value.label_anchors, attachments: value.attachments }
-			Err(_) => { layout: finished.layout, layers: finished.layers, backward_edges: finished.backward_edges, label_anchors: LayeredInternals.label_anchors(sweep.edge_labels, finished.layout.routes), attachments: [] }
+			Err(_) => match Route.layout({ ..Route.default_input, graph: { nodes: sweep.nodes, edges: sweep.edges }, positions, attachments: sweep.attachments, boundaries: sweep.boundaries, edge_labels: sweep.edge_labels }, sweep.routing) {
+				Ok(value) => { layout: value.layout, layers: finished.layers, backward_edges: finished.backward_edges, label_anchors: value.label_anchors, attachments: value.attachments }
+				Err(_) => { layout: pinned_layout, layers: finished.layers, backward_edges: finished.backward_edges, label_anchors: LayeredInternals.label_anchors(sweep.edge_labels, pinned_layout.routes), attachments: [] }
+			}
 		}
 	}
 
@@ -2893,8 +3168,9 @@ ExactPrepared := {
 	boundaries : List(Route.BoundaryRule),
 	edge_labels : List(Route.EdgeLabel),
 	precedences : List({ before : U64, after : U64 }),
+	pins : List({ node : U64, x : F64, y : F64 }),
 }.{
-	Config : { node_gap : F64, layer_gap : F64, routing : Route.Settings, effort_cap : U64, direction : [Down, Up, Left, Right] }
+	Config : { node_gap : F64, layer_gap : F64, routing : Route.Settings, effort_cap : U64, direction : [Down, Up, Left, Right], pins : List({ node : U64, x : F64, y : F64 }) }
 	Spec : {
 		graph : {
 			nodes : List({ width : F64, height : F64 }),
@@ -2927,6 +3203,10 @@ ExactPrepared := {
 		DuplicateAttachment(U64),
 		InvalidBoundaryNode(U64),
 		DuplicateBoundary(U64),
+		MissingPinNode(U64, U64),
+		InvalidPin(U64),
+		DuplicatePin(U64),
+		ConflictingPins,
 		InvalidEdgeLabelEdge(U64),
 		InvalidEdgeLabelWidth(U64),
 		InvalidEdgeLabelHeight(U64),
@@ -2962,6 +3242,10 @@ ExactPrepared := {
 		DuplicateAttachment(item) => "Attachment rule ${item.to_str()} repeats a rule for the same end of an edge."
 		InvalidBoundaryNode(item) => "Boundary rule ${item.to_str()} refers to a node that does not exist."
 		DuplicateBoundary(item) => "Boundary rule ${item.to_str()} repeats a rule for the same node."
+		MissingPinNode(item, node) => "Pin ${item.to_str()} refers to node ${node.to_str()}, which does not exist."
+		InvalidPin(item) => "Pin ${item.to_str()} has a coordinate that is not finite."
+		DuplicatePin(item) => "Pin ${item.to_str()} repeats a pin for the same node."
+		ConflictingPins => "The exact pins cannot coexist with aligned layers and the configured node and layer gaps."
 		InvalidEdgeLabelEdge(item) => "Edge label ${item.to_str()} refers to an edge that does not exist."
 		InvalidEdgeLabelWidth(item) => "Edge label ${item.to_str()} has a width that is negative or not finite."
 		InvalidEdgeLabelHeight(item) => "Edge label ${item.to_str()} has a height that is negative or not finite."
@@ -2977,7 +3261,7 @@ ExactPrepared := {
 	}
 
 	defaults : Config
-	defaults = { node_gap: 24, layer_gap: 70, routing: Route.default_settings, effort_cap: 100_000, direction: Down }
+	defaults = { node_gap: 24, layer_gap: 70, routing: Route.default_settings, effort_cap: 100_000, direction: Down, pins: [] }
 
 	build : Spec, Config -> [Ok(ExactPrepared), Err(List(Problem))]
 	build = |spec, config| {
@@ -2985,7 +3269,7 @@ ExactPrepared := {
 			Ok(_) => []
 			Err(items) => items.map(|item| InvalidRouting(item))
 		}
-		problems = LayeredInternals.validation_problems(spec, { node_gap: config.node_gap, layer_gap: config.layer_gap, route_style: Straight, direction: config.direction, max_sweeps: 4 }).concat(routing_problems)
+		problems = LayeredInternals.validation_problems(spec, { node_gap: config.node_gap, layer_gap: config.layer_gap, route_style: Straight, direction: config.direction, max_sweeps: 4, pins: config.pins }).concat(routing_problems)
 		if !problems.is_empty() {
 			Err(problems)
 		} else {
@@ -3052,7 +3336,7 @@ ExactPrepared := {
 						sweep_legal
 					}
 
-					Ok({
+					candidate = {
 						nodes: spec.graph.nodes,
 						edges: spec.graph.edges,
 						reversed: active_reversed,
@@ -3074,7 +3358,14 @@ ExactPrepared := {
 						attachments: spec.attachments,
 						boundaries: spec.boundaries,
 						edge_labels: spec.edge_labels,
-					})
+						pins: config.pins,
+					}
+					real_layers = candidate.ordered_layers.map(|layer| layer.keep_if(|node| node < candidate.nodes.len())).keep_if(|layer| !layer.is_empty())
+					if LayeredInternals.pin_geometry_conflict(candidate.real_ranks, real_layers, candidate.nodes, candidate.pins, candidate.direction, candidate.node_gap, candidate.layer_gap) {
+						Err([ConflictingPins])
+					} else {
+						Ok(candidate)
+					}
 				}
 			}
 		}
@@ -3110,10 +3401,17 @@ ExactPrepared := {
 			route_style: Straight,
 		})
 
-		routed = Route.layout({ ..Route.default_input, graph: { nodes: exact.nodes, edges: exact.edges }, positions: finished.layout.positions, attachments: exact.attachments, boundaries: exact.boundaries, edge_labels: exact.edge_labels }, exact.routing)
+		positions = LayeredInternals.apply_pins(finished.layout.positions, exact.real_ranks, exact.pins, exact.direction)
+		waypoint_points = LayeredInternals.move_waypoints(finished.layout.routes, finished.layout.positions, positions, exact.edges, exact.direction)
+		guides = waypoint_points.map_with_index(|points, edge| { edge, points })
+		pinned_layout = { ..finished.layout, positions }
+		routed = Route.layout({ ..Route.default_input, graph: { nodes: exact.nodes, edges: exact.edges }, positions, attachments: exact.attachments, boundaries: exact.boundaries, edge_labels: exact.edge_labels, guides }, exact.routing)
 		orthogonal = match routed {
 			Ok(value) => value
-			Err(_) => { layout: finished.layout, label_anchors: LayeredInternals.label_anchors(exact.edge_labels, finished.layout.routes), attachments: [], groups: [], group_crossings: [], shared_routes: [] }
+			Err(_) => match Route.layout({ ..Route.default_input, graph: { nodes: exact.nodes, edges: exact.edges }, positions, attachments: exact.attachments, boundaries: exact.boundaries, edge_labels: exact.edge_labels }, exact.routing) {
+				Ok(value) => value
+				Err(_) => { layout: pinned_layout, label_anchors: LayeredInternals.label_anchors(exact.edge_labels, pinned_layout.routes), attachments: [], groups: [], group_crossings: [], shared_routes: [] }
+			}
 		}
 		{
 			layout: orthogonal.layout,
@@ -3187,13 +3485,16 @@ Layered := [].{
 
 	## Space between nodes on the same layer and between adjacent layers,
 	## plus orthogonal routing clearance, edge separation, and path preferences.
-	## Every edge is routed after placement against all node boxes.
-	Settings : { node_gap : F64, layer_gap : F64, routing : Route.Settings, direction : [Down, Up, Left, Right], max_sweeps : U64 }
+	## Every edge is routed after placement against all node boxes. Sparse pins
+	## hold node centers exactly; preparation reports pins that cannot coexist
+	## with strict layer alignment and configured gaps.
+	Settings : { node_gap : F64, layer_gap : F64, routing : Route.Settings, direction : [Down, Up, Left, Right], max_sweeps : U64, pins : List({ node : U64, x : F64, y : F64 }) }
 
-	## Per-layout choices. `PreserveOrder` treats a complete finite hint list as
-	## the previous drawing and keeps its within-layer order wherever possible;
-	## authored order constraints always take priority.
-	RunArgs : { hints : List({ x : F64, y : F64 }), stability : [Reflow, PreserveOrder] }
+	## Per-layout choices. Hints are sparse and addressed by node index; invalid
+	## run-time entries are ignored and the final valid duplicate wins.
+	## `PreserveOrder` keeps the mutual within-layer order of hinted nodes while
+	## allowing unhinted nodes to be inserted. Authored constraints take priority.
+	RunArgs : { hints : List({ node : U64, x : F64, y : F64 }), stability : [Reflow, PreserveOrder] }
 
 	## Invalid sizes, spacing, references, or authored relationships found while
 	## checking input. `NonRankingEdgeWeight` and
@@ -3217,6 +3518,10 @@ Layered := [].{
 		DuplicateAttachment(U64),
 		InvalidBoundaryNode(U64),
 		DuplicateBoundary(U64),
+		MissingPinNode(U64, U64),
+		InvalidPin(U64),
+		DuplicatePin(U64),
+		ConflictingPins,
 		InvalidEdgeLabelEdge(U64),
 		InvalidEdgeLabelWidth(U64),
 		InvalidEdgeLabelHeight(U64),
@@ -3279,9 +3584,11 @@ Layered := [].{
 	## `Settings`, plus `effort_cap` — the most ordering choices the crossing
 	## search may try before stopping with the best ordering found so far.
 	## Higher caps prove optimality on wider layers at higher cost; a cap of
+	## zero still returns a deterministic best-known order. Pins have the same
+	## exact-coordinate and preparation-conflict behavior as `Settings`.
 	## `0` skips the search entirely and keeps the ordering `layout` would
 	## produce.
-	ExactSettings : { node_gap : F64, layer_gap : F64, routing : Route.Settings, effort_cap : U64, direction : [Down, Up, Left, Right] }
+	ExactSettings : { node_gap : F64, layer_gap : F64, routing : Route.Settings, effort_cap : U64, direction : [Down, Up, Left, Right], pins : List({ node : U64, x : F64, y : F64 }) }
 
 	## Everything `Result` reports, plus whether the crossing search proved
 	## its ordering has the fewest crossings any ordering can achieve:
@@ -3781,7 +4088,7 @@ expect {
 		layer_constraints: [SameLayer({ first: 0, second: 1 })],
 		order_constraints: [{ before: 0, after: 1 }],
 	}
-	args = { hints: [Geom.point(100, 0), Geom.point(0, 0)], stability: PreserveOrder }
+	args = { hints: [{ node: 0, x: 100, y: 0 }, { node: 1, x: 0, y: 0 }], stability: PreserveOrder }
 	match Layered.layout(input, Layered.default_settings, args) {
 		Ok(result) => (result.layout.positions.get(0) ?? Geom.point(0, 0)).x < (result.layout.positions.get(1) ?? Geom.point(0, 0)).x
 		Err(_) => False
@@ -3854,7 +4161,7 @@ expect {
 		graph: { nodes: List.repeat({ width: 10, height: 6 }, 3), edges: [{ from: 0, to: 2 }, { from: 0, to: 1 }] },
 		attachments: [{ edge: 0, endpoint: From, attachment: Fixed({ side: Bottom, offset: 0.25 }) }, { edge: 1, endpoint: From, attachment: Fixed({ side: Bottom, offset: 0.75 }) }],
 	}
-	sweep = Layered.layout(input, Layered.default_settings, { hints: [Geom.point(0, 0), Geom.point(0, 20), Geom.point(0, 0)], stability: Reflow })
+	sweep = Layered.layout(input, Layered.default_settings, { hints: [{ node: 0, x: 0, y: 0 }, { node: 1, x: 0, y: 20 }, { node: 2, x: 0, y: 0 }], stability: Reflow })
 	exact = Layered.layout_exact(input, Layered.default_exact_settings)
 	match (sweep, exact) {
 		(Ok(a), Ok(b)) => a.attachments.len() == 2 and b.attachments.len() == 2 and (a.layout.positions.get(2) ?? Geom.point(0, 0)).x <= (a.layout.positions.get(1) ?? Geom.point(0, 0)).x
@@ -4093,4 +4400,81 @@ expect {
 		MissingEdgeEnd(0, 3),
 		InvalidNodeGap,
 	])
+}
+
+## Exact pins retain their caller-space coordinates while preserving strict
+## layer alignment and routing through the pinned placement.
+expect {
+	input = { ..Layered.default_input, graph: { nodes: [{ width: 20, height: 12 }, { width: 20, height: 12 }], edges: [{ from: 0, to: 1 }] } }
+	settings = { ..Layered.default_settings, pins: [{ node: 0, x: 100, y: 100 }, { node: 1, x: 100, y: 200 }] }
+	match Layered.layout(input, settings, Layered.default_run) {
+		Ok(result) => result.layout.positions == [Geom.point(100, 100), Geom.point(100, 200)]
+		Err(_) => False
+	}
+}
+
+## Sparse soft hints influence both placement axes while separation remains
+## enforced. Nodes without a hint retain the deterministic base target.
+expect {
+	input = { ..Layered.default_input, graph: { nodes: [{ width: 20, height: 10 }, { width: 20, height: 10 }], edges: [] }, layer_constraints: [SameLayer({ first: 0, second: 1 })] }
+	args = { hints: [{ node: 0, x: 100, y: 50 }, { node: 1, x: 300, y: 50 }], stability: PreserveOrder }
+	match Layered.layout(input, Layered.default_settings, args) {
+		Ok(result) => result.layout.positions == [Geom.point(100, 50), Geom.point(300, 50)]
+		Err(_) => False
+	}
+}
+
+## Moving a horizontal layout's real nodes across the flow must not drag a
+## long edge's virtual guide into an unrelated node. Routing succeeds rather
+## than returning new positions with provisional routes from the old geometry.
+expect {
+	nodes = [{ width: 160, height: 56 }, { width: 160, height: 56 }, { width: 160, height: 56 }]
+	edges = [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 0, to: 2 }]
+	input = { ..Layered.default_input, graph: { nodes, edges } }
+	args = { hints: [{ node: 0, x: 580, y: 28 }, { node: 1, x: 350, y: 154 }, { node: 2, x: 120, y: 280 }], stability: PreserveOrder }
+	match Layered.layout(input, { ..Layered.default_settings, direction: Left }, args) {
+		Ok(result) => result.attachments.len() == edges.len() and result.layout.routes.len() == edges.len()
+		Err(_) => False
+	}
+}
+
+## A preserved long-edge guide outside the new endpoint span must not force a
+## collinear reversal after exact pins move the endpoints across the layer.
+expect {
+	nodes = [{ width: 160, height: 56 }, { width: 160, height: 56 }, { width: 160, height: 56 }]
+	edges = [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 0, to: 2 }]
+	input = { ..Layered.default_input, graph: { nodes, edges } }
+	settings = { ..Layered.default_settings, pins: [{ node: 0, x: 543, y: 108 }, { node: 2, x: 421, y: 372 }] }
+	args = { hints: [{ node: 0, x: 543, y: 108 }, { node: 1, x: 80, y: 214 }, { node: 2, x: 421, y: 372 }], stability: PreserveOrder }
+	match Layered.layout(input, settings, args) {
+		Ok(result) => match result.layout.routes.get(2) ?? Polyline([]) {
+			Polyline(points) => !points.fold_with_index(
+				False,
+				|reverses, a, i| match (points.get(i + 1), points.get(i + 2)) {
+					(Ok(b), Ok(c)) => reverses or (a.y == b.y and b.y == c.y and (b.x - a.x) * (c.x - b.x) < 0) or (a.x == b.x and b.x == c.x and (b.y - a.y) * (c.y - b.y) < 0)
+					_ => reverses
+				},
+			)
+			_ => False
+		}
+		Err(_) => False
+	}
+}
+
+## Pins on one strict layer must agree on its flow coordinate.
+expect {
+	input = { ..Layered.default_input, graph: { nodes: [{ width: 10, height: 10 }, { width: 10, height: 10 }], edges: [] }, layer_constraints: [SameLayer({ first: 0, second: 1 })] }
+	settings = { ..Layered.default_settings, pins: [{ node: 0, x: 0, y: 10 }, { node: 1, x: 40, y: 20 }] }
+	Layered.prepare(input, settings) == Err([ConflictingPins])
+}
+
+## Pin validation reports independent reference, numeric, and duplicate
+## problems together at preparation.
+expect {
+	settings = { ..Layered.default_settings, pins: [{ node: 4, x: 0, y: 0 }, { node: 0, x: F64.nan, y: 0 }, { node: 0, x: 20, y: 0 }] }
+	match Layered.prepare({ ..Layered.default_input, graph: { nodes: [{ width: 1, height: 1 }], edges: [] } }, settings) {
+		Err([MissingPinNode(0, 4), InvalidPin(1), DuplicatePin(2)]) => True
+		Err(_) => False
+		Ok(_) => False
+	}
 }

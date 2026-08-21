@@ -199,8 +199,62 @@ RouteInternals :: {}.{
 				c
 			},
 		)
-		p6b = input.shared_ends.fold_with_index(
+		p6a = input.waypoints.fold_with_index(
 			p6,
+			|acc, rule, i| {
+				a = if rule.edge < input.graph.edges.len() {
+					acc
+				} else {
+					acc.append(InvalidWaypointEdge(i))
+				}
+				b = if rule.points.all(|point| RouteInternals.finite_point(point)) {
+					a
+				} else {
+					a.append(InvalidWaypoint(i))
+				}
+				duplicate = input.waypoints.fold_with_index(False, |found, other, j| found or (j < i and other.edge == rule.edge))
+				c = if duplicate {
+					b.append(DuplicateWaypoints(i))
+				} else {
+					b
+				}
+				blocked = if rule.edge < input.graph.edges.len() and rule.points.all(|point| RouteInternals.finite_point(point)) and F64.is_finite(settings.obstacle_gap) and settings.obstacle_gap >= 0 {
+					edge = input.graph.edges.get(rule.edge) ?? { from: 0, to: 0 }
+					boxes = RouteInternals.obstacles(input, settings, edge.from, edge.to)
+					rule.points.any(|point| RouteInternals.point_blocked(point, boxes))
+				} else {
+					False
+				}
+				if blocked {
+					c.append(BlockedWaypoint(i))
+				} else {
+					c
+				}
+			},
+		)
+		p6g = input.guides.fold_with_index(
+			p6a,
+			|acc, rule, i| {
+				a = if rule.edge < input.graph.edges.len() {
+					acc
+				} else {
+					acc.append(InvalidGuideEdge(i))
+				}
+				b = if rule.points.all(|point| RouteInternals.finite_point(point)) {
+					a
+				} else {
+					a.append(InvalidGuide(i))
+				}
+				duplicate = input.guides.fold_with_index(False, |found, other, j| found or (j < i and other.edge == rule.edge))
+				if duplicate {
+					b.append(DuplicateGuides(i))
+				} else {
+					b
+				}
+			},
+		)
+		p6b = input.shared_ends.fold_with_index(
+			p6g,
 			|acc, rule, i| {
 				a = if rule.edges.len() >= 2 {
 					acc
@@ -398,6 +452,17 @@ RouteInternals :: {}.{
 		}
 	}
 
+	escape_point = |selected, node, input, gap| {
+		center = input.positions.get(node) ?? selected.point
+		size = input.graph.nodes.get(node) ?? { width: 0, height: 0 }
+		match selected.side {
+			Top => { x: selected.point.x, y: center.y - size.height / 2 - gap }
+			Right => { x: center.x + size.width / 2 + gap, y: selected.point.y }
+			Bottom => { x: selected.point.x, y: center.y + size.height / 2 + gap }
+			Left => { x: center.x - size.width / 2 - gap, y: selected.point.y }
+		}
+	}
+
 	group_chain = |group, groups, acc, fuel| if fuel == 0 {
 		acc
 	} else {
@@ -556,10 +621,10 @@ RouteInternals :: {}.{
 	}
 
 	side_index = |side| match side {
-		Top => 0
-		Right => 1
-		Bottom => 2
-		Left => 3
+		Top => 0.U64
+		Right => 1.U64
+		Bottom => 2.U64
+		Left => 3.U64
 	}
 
 	resolve_node_attachments = |input, settings| {
@@ -576,11 +641,11 @@ RouteInternals :: {}.{
 				])
 			},
 		)
-		slot_count = input.graph.nodes.len() * 4
+		slot_count = input.graph.nodes.len() * 4.U64
 		counts = uses.fold(
 			List.repeat(RouteInternals.zero_count, slot_count),
 			|table, use| {
-				slot = use.node * 4 + RouteInternals.side_index(use.side)
+				slot = use.node * 4.U64 + RouteInternals.side_index(use.side)
 				table.set(slot, (table.get(slot) ?? 0) + 1) ?? []
 			},
 		)
@@ -588,7 +653,7 @@ RouteInternals :: {}.{
 			{ seen: List.repeat(RouteInternals.zero_count, slot_count), rules: [] },
 			|state, use| {
 				rule = RouteInternals.attachment_rule(use.edge, use.endpoint, input.attachments)
-				slot = use.node * 4 + RouteInternals.side_index(use.side)
+				slot = use.node * 4.U64 + RouteInternals.side_index(use.side)
 				rank = state.seen.get(slot) ?? RouteInternals.zero_count
 				count = counts.get(slot) ?? RouteInternals.zero_count + 1
 				offset = match rule {
@@ -649,6 +714,58 @@ RouteInternals :: {}.{
 			..input,
 			attachments: RouteInternals.resolve_node_attachments(input, settings),
 			group_attachments: RouteInternals.resolve_group_attachments(input, settings),
+		}
+	}
+
+	endpoint_fan_table = |input| {
+		uses = input.graph.edges.fold_with_index(
+			[],
+			|found, edge, edge_index| {
+				from = RouteInternals.terminal(edge_index, From, edge, input)
+				to = RouteInternals.terminal(edge_index, To, edge, input)
+				from_key = RouteInternals.edge_order_key(edge, from.side, input)
+				to_key = RouteInternals.edge_order_key(edge, to.side, input)
+				found.concat([
+					{ edge: edge_index, role: 0.U64, node: edge.from, point: from.point, side: from.side, primary: from_key.primary, secondary: from_key.secondary },
+					{ edge: edge_index, role: 1.U64, node: edge.to, point: to.point, side: to.side, primary: to_key.primary, secondary: to_key.secondary },
+				])
+			},
+		)
+		input.graph.edges.map_with_index(
+			|_, edge_index| {
+				for_role = |role| {
+					use = uses.find_first(|item| item.edge == edge_index and item.role == role) ?? { edge: edge_index, role, node: 0, point: { x: 0, y: 0 }, side: Top, primary: 0, secondary: 0 }
+					# Counting in place avoids allocating and sorting the same shared-port
+					# group once for every incident edge. The ordering is identical to
+					# port_order and the edge index is its final deterministic tie-breaker.
+					ranked = uses.fold(
+						{ rank: 0.U64, count: 0.U64 },
+						|state, other| if other.node == use.node and other.point == use.point and other.side == use.side and other.role == role {
+							{
+								rank: state.rank + if RouteInternals.port_order(other, use) == LT {
+									1.U64
+								} else {
+									0.U64
+								},
+								count: state.count + 1.U64,
+							}
+						} else {
+							state
+						},
+					)
+					{ rank: ranked.rank, count: ranked.count }
+				}
+				{ from: for_role(0.U64), to: for_role(1.U64) }
+			},
+		)
+	}
+
+	fan_point = |point, selected, fan, gap| {
+		track = (fan.rank.to_f64() - (fan.count - 1).to_f64() / 2) * gap
+		if selected.outward.x == 0 {
+			{ x: point.x + track, y: point.y }
+		} else {
+			{ x: point.x, y: point.y + track }
 		}
 	}
 
@@ -810,6 +927,18 @@ RouteInternals :: {}.{
 		nodes.concat(groups)
 	}
 
+	incident_obstacles = |input, settings, from, to| input.positions.fold_with_index(
+		[],
+		|acc, p, node| if node == from or node == to {
+			n = input.graph.nodes.get(node) ?? { width: 0, height: 0 }
+			acc.append({ min_x: p.x - n.width / 2 - settings.obstacle_gap, min_y: p.y - n.height / 2 - settings.obstacle_gap, max_x: p.x + n.width / 2 + settings.obstacle_gap, max_y: p.y + n.height / 2 + settings.obstacle_gap })
+		} else {
+			acc
+		},
+	)
+
+	body_obstacles = |input, settings, from, to| RouteInternals.obstacles(input, settings, from, to).concat(RouteInternals.incident_obstacles(input, settings, from, to))
+
 	point_blocked = |point, boxes| boxes.any(|box| point.x > box.min_x and point.x < box.max_x and point.y > box.min_y and point.y < box.max_y)
 
 	visible = |a, b, boxes| (a.x == b.x or a.y == b.y) and boxes.all(|box| RouteInternals.segment_hits(a, b, box) == False)
@@ -853,7 +982,7 @@ RouteInternals :: {}.{
 		)
 	}
 
-	grid_walk = |points, boxes, finish_index, start, settings, prior, distances, previous, visited, fuel| if fuel == 0 {
+	grid_walk = |points, boxes, finish_index, start_index, settings, prior, distances, previous, visited, fuel| if fuel == 0 {
 		{ distances, previous }
 	} else {
 		chosen = distances.fold_with_index(
@@ -864,39 +993,46 @@ RouteInternals :: {}.{
 				best
 			},
 		)
-		if F64.is_finite(chosen.distance) == False or chosen.index == finish_index {
+		point_index = chosen.index // 2
+		if F64.is_finite(chosen.distance) == False or point_index == finish_index {
 			{ distances, previous }
 		} else {
-			from_point = points.get(chosen.index) ?? start
+			from_point = points.get(point_index) ?? Geom.point(0, 0)
+			arrival_axis = chosen.index % 2
 			relaxed = points.fold_with_index(
 				{ distances, previous },
-				|state, point, i| if i == chosen.index or (visited.get(i) ?? False) or RouteInternals.visible(from_point, point, boxes) == False {
+				|state, point, i| if i == point_index or RouteInternals.visible(from_point, point, boxes) == False {
 					state
 				} else {
-					previous_point = points.get(previous.get(chosen.index) ?? chosen.index) ?? from_point
-					turn = if chosen.index == (previous.get(chosen.index) ?? chosen.index) or (previous_point.x == from_point.x) == (from_point.x == point.x) {
+					move_axis = if from_point.y == point.y {
+						0
+					} else {
+						1
+					}
+					next_state = i * 2 + move_axis
+					turn = if point_index == start_index or arrival_axis == move_axis {
 						0
 					} else {
 						settings.bend_penalty
 					}
 					shared = RouteInternals.shared_count(from_point, point, prior).to_f64() * settings.shared_path_penalty
 					candidate = chosen.distance + (point.x - from_point.x).abs() + (point.y - from_point.y).abs() + turn + shared
-					if candidate < (state.distances.get(i) ?? F64.infinity) {
-						{ distances: state.distances.set(i, candidate) ?? [], previous: state.previous.set(i, chosen.index) ?? [] }
+					if (visited.get(next_state) ?? False) == False and candidate < (state.distances.get(next_state) ?? F64.infinity) {
+						{ distances: state.distances.set(next_state, candidate) ?? [], previous: state.previous.set(next_state, chosen.index) ?? [] }
 					} else {
 						state
 					}
 				},
 			)
-			RouteInternals.grid_walk(points, boxes, finish_index, start, settings, prior, relaxed.distances, relaxed.previous, visited.set(chosen.index, True) ?? [], fuel - 1)
+			RouteInternals.grid_walk(points, boxes, finish_index, start_index, settings, prior, relaxed.distances, relaxed.previous, visited.set(chosen.index, True) ?? [], fuel - 1)
 		}
 	}
 
-	grid_rebuild = |points, previous, start_index, index, start, finish, acc, fuel| if fuel == 0 or index == start_index {
+	grid_rebuild = |points, previous, start_index, state_index, start, finish, acc, fuel| if fuel == 0 or state_index // 2 == start_index {
 		[start].concat(acc)
 	} else {
-		point = points.get(index) ?? finish
-		RouteInternals.grid_rebuild(points, previous, start_index, previous.get(index) ?? start_index, start, finish, [point].concat(acc), fuel - 1)
+		point = points.get(state_index // 2) ?? finish
+		RouteInternals.grid_rebuild(points, previous, start_index, previous.get(state_index) ?? (start_index * 2), start, finish, [point].concat(acc), fuel - 1)
 	}
 
 	shortest_grid = |start, finish, boxes, settings, prior| {
@@ -905,13 +1041,27 @@ RouteInternals :: {}.{
 		points = xs.map(|x| ys.map(|y| { x, y })).join().keep_if(|point| RouteInternals.point_blocked(point, boxes) == False)
 		start_index = points.find_first_index(|point| point == start) ?? 0
 		finish_index = points.find_first_index(|point| point == finish) ?? start_index
-		count = points.len()
-		initial_distances = List.repeat(F64.infinity, count).set(start_index, 0) ?? []
-		searched = RouteInternals.grid_walk(points, boxes, finish_index, start, settings, prior, initial_distances, List.repeat(count, count), List.repeat(False, count), count)
-		if F64.is_finite(searched.distances.get(finish_index) ?? F64.infinity) == False {
+		state_count = points.len() * 2
+		start_horizontal = start_index * 2
+		start_vertical = start_horizontal + 1
+		initial_distances = (List.repeat(F64.infinity, state_count).set(start_horizontal, 0) ?? []).set(start_vertical, 0) ?? []
+		searched = RouteInternals.grid_walk(points, boxes, finish_index, start_index, settings, prior, initial_distances, List.repeat(state_count, state_count), List.repeat(False, state_count), state_count)
+		finish_horizontal = finish_index * 2
+		finish_vertical = finish_horizontal + 1
+		finish_state = if (searched.distances.get(finish_horizontal) ?? F64.infinity) <= (searched.distances.get(finish_vertical) ?? F64.infinity) {
+			finish_horizontal
+		} else {
+			finish_vertical
+		}
+		if F64.is_finite(searched.distances.get(finish_state) ?? F64.infinity) == False {
 			[]
 		} else {
-			RouteInternals.grid_rebuild(points, searched.previous, start_index, finish_index, start, finish, [], count + 1)
+			rebuilt = RouteInternals.grid_rebuild(points, searched.previous, start_index, finish_state, start, finish, [], state_count + 1)
+			if RouteInternals.path_visible(rebuilt, boxes) {
+				rebuilt
+			} else {
+				[]
+			}
 		}
 	}
 
@@ -979,31 +1129,161 @@ RouteInternals :: {}.{
 		}
 	}
 
-	route_one : U64, { from : U64, to : U64 }, Route.Input, Route.Settings, { rank : U64, count : U64 }, List(Geom.Route) -> Geom.Route
-	route_one = |index, edge, input, settings, fan, prior| {
+	waypoints_for = |edge, input| match input.waypoints.find_first(|rule| rule.edge == edge) {
+		Ok(rule) => rule.points
+		Err(_) => []
+	}
+
+	guides_for = |edge, input| match input.guides.find_first(|rule| rule.edge == edge) {
+		Ok(rule) => rule.points
+		Err(_) => []
+	}
+
+	proper_segment_intersection = |a, b, c, d| {
+		if a.x == b.x and c.y == d.y {
+			c.x > a.x.min(b.x) and c.x < a.x.max(b.x) and a.y > c.y.min(d.y) and a.y < c.y.max(d.y)
+		} else if a.y == b.y and c.x == d.x {
+			a.x > c.x.min(d.x) and a.x < c.x.max(d.x) and c.y > a.y.min(b.y) and c.y < a.y.max(b.y)
+		} else if a.x == b.x and c.x == d.x and a.x == c.x {
+			a.y.min(b.y) < c.y.max(d.y) and a.y.max(b.y) > c.y.min(d.y)
+		} else if a.y == b.y and c.y == d.y and a.y == c.y {
+			a.x.min(b.x) < c.x.max(d.x) and a.x.max(b.x) > c.x.min(d.x)
+		} else {
+			False
+		}
+	}
+
+	simple_path = |points| points.fold_with_index(
+		True,
+		|simple, a, i| match points.get(i + 1) {
+			Err(_) => simple
+			Ok(b) => points.fold_with_index(
+				simple,
+				|clear, c, j| if j <= i + 1 {
+					clear
+				} else {
+					match points.get(j + 1) {
+						Ok(d) => clear and !RouteInternals.proper_segment_intersection(a, b, c, d)
+						Err(_) => clear
+					}
+				},
+			)
+		},
+	)
+
+	guided_path_valid = |points, input, settings, edge, a, b| {
+		orthogonal = points.fold_with_index(
+			True,
+			|ok, point, i| match points.get(i + 1) {
+				Ok(next) => ok and point != next and (point.x == next.x or point.y == next.y)
+				Err(_) => ok
+			},
+		)
+		from_next = points.get(1) ?? a.point
+		to_previous = if points.len() < 2 {
+			b.point
+		} else {
+			points.get(points.len() - 2) ?? b.point
+		}
+		leaves_from = (from_next.x - a.point.x) * a.outward.x + (from_next.y - a.point.y) * a.outward.y > 0
+		enters_to = (to_previous.x - b.point.x) * b.outward.x + (to_previous.y - b.point.y) * b.outward.y > 0
+		orthogonal and leaves_from and enters_to and RouteInternals.simple_path(points) and RouteInternals.clear_path(points, input, settings, edge.from, edge.to)
+	}
+
+	terminal_path_valid = |points, input, settings, edge, a, b| {
+		from_escape = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
+		to_escape = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
+		from_next = points.get(1) ?? a.point
+		to_previous = if points.len() < 2 {
+			b.point
+		} else {
+			points.get(points.len() - 2) ?? b.point
+		}
+		from_required = (from_escape.x - a.point.x).abs() + (from_escape.y - a.point.y).abs()
+		to_required = (to_escape.x - b.point.x).abs() + (to_escape.y - b.point.y).abs()
+		from_advance = (from_next.x - a.point.x) * a.outward.x + (from_next.y - a.point.y) * a.outward.y
+		to_advance = (to_previous.x - b.point.x) * b.outward.x + (to_previous.y - b.point.y) * b.outward.y
+		from_straight = (a.outward.x == 0 and from_next.x == a.point.x) or (a.outward.y == 0 and from_next.y == a.point.y)
+		to_straight = (b.outward.x == 0 and to_previous.x == b.point.x) or (b.outward.y == 0 and to_previous.y == b.point.y)
+		orthogonal = points.fold_with_index(
+			True,
+			|ok, point, i| match points.get(i + 1) {
+				Ok(next) => ok and (point.x == next.x or point.y == next.y)
+				Err(_) => ok
+			},
+		)
+		incident = RouteInternals.incident_obstacles(input, settings, edge.from, edge.to)
+		body_clear = points.fold_with_index(
+			True,
+			|ok, point, i| match points.get(i + 1) {
+				Ok(next) if i > 0 and i + 2 < points.len() => ok and incident.all(|box| RouteInternals.segment_hits(point, next, box) == False)
+				_ => ok
+			},
+		)
+		points.first() == Ok(a.point) and points.last() == Ok(b.point) and orthogonal and from_straight and to_straight and from_advance >= from_required and to_advance >= to_required and body_clear and RouteInternals.simple_path(points)
+	}
+
+	route_through = |start, finish, waypoints, boxes, settings, prior| {
+		stops = waypoints.append(finish)
+		stops.fold(
+			{ points: [start], current: start },
+			|state, stop| {
+				leg = RouteInternals.route_leg(state.current, stop, boxes, settings, prior)
+				{ points: state.points.concat(leg.drop_first(1)), current: stop }
+			},
+		).points
+	}
+
+	route_one = |index, edge, input, settings, parallel, endpoint_fan, prior| {
 		a = RouteInternals.terminal(index, From, edge, input)
 		b = RouteInternals.terminal(index, To, edge, input)
 		portals = RouteInternals.edge_portals(index, edge, input)
-		track = (fan.rank.to_f64() - (fan.count - 1).to_f64() / 2) * settings.edge_gap
+		waypoints = RouteInternals.waypoints_for(index, input)
+		guides = RouteInternals.guides_for(index, input)
 		if edge.from == edge.to {
 			# A rectangular exterior loop; bound ports still determine its first and last point.
-			d = settings.obstacle_gap + settings.edge_gap * (fan.rank + 1).to_f64()
-			ap = { x: a.point.x + a.outward.x * d, y: a.point.y + a.outward.y * d }
-			bp = { x: b.point.x + b.outward.x * d, y: b.point.y + b.outward.y * d }
+			d = settings.obstacle_gap + settings.edge_gap * (parallel.rank + 1).to_f64()
+			base_ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
+			base_bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
+			ap = { x: base_ap.x + a.outward.x * settings.edge_gap * (parallel.rank + 1).to_f64(), y: base_ap.y + a.outward.y * settings.edge_gap * (parallel.rank + 1).to_f64() }
+			bp = { x: base_bp.x + b.outward.x * settings.edge_gap * (parallel.rank + 1).to_f64(), y: base_bp.y + b.outward.y * settings.edge_gap * (parallel.rank + 1).to_f64() }
 			node = input.graph.nodes.get(edge.from) ?? { width: 0, height: 0 }
 			center = input.positions.get(edge.from) ?? a.point
 			lane = center.y - node.height / 2 - d - settings.edge_gap
 			# Going through one shared exterior lane keeps every segment
 			# axis-aligned even when both unbound endpoints coincide.
 			Polyline(RouteInternals.simplify([a.point, ap, { x: ap.x, y: lane }, { x: bp.x, y: lane }, bp, b.point]))
+		} else if portals.is_empty() and !waypoints.is_empty() {
+			ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
+			bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
+			af = RouteInternals.fan_point(ap, a, endpoint_fan.from, settings.edge_gap)
+			bf = RouteInternals.fan_point(bp, b, endpoint_fan.to, settings.edge_gap)
+			boxes = RouteInternals.body_obstacles(input, settings, edge.from, edge.to)
+			through = RouteInternals.route_through(af, bf, waypoints, boxes, settings, prior)
+			Polyline(RouteInternals.simplify_preserving([a.point, ap, af].concat(through.drop_first(1)).concat([bf, bp, b.point]), waypoints))
+		} else if portals.is_empty() and !guides.is_empty() {
+			ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
+			bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
+			af = RouteInternals.fan_point(ap, a, endpoint_fan.from, settings.edge_gap)
+			bf = RouteInternals.fan_point(bp, b, endpoint_fan.to, settings.edge_gap)
+			boxes = RouteInternals.body_obstacles(input, settings, edge.from, edge.to)
+			through = RouteInternals.route_through(af, bf, guides, boxes, settings, prior)
+			candidate = RouteInternals.simplify([a.point, ap, af].concat(through.drop_first(1)).concat([bf, bp, b.point]))
+			if RouteInternals.guided_path_valid(candidate, input, settings, edge, a, b) and RouteInternals.terminal_path_valid(candidate, input, settings, edge, a, b) {
+				Polyline(candidate)
+			} else {
+				RouteInternals.route_one(index, edge, { ..input, guides: input.guides.keep_if(|rule| rule.edge != index) }, settings, parallel, endpoint_fan, prior)
+			}
 		} else if portals.is_empty() {
-			ap = { x: a.point.x + a.outward.x * settings.obstacle_gap, y: a.point.y + a.outward.y * settings.obstacle_gap }
-			bp = { x: b.point.x + b.outward.x * settings.obstacle_gap, y: b.point.y + b.outward.y * settings.obstacle_gap }
-			hv = [a.point, ap, { x: bp.x, y: ap.y + track }, bp, b.point]
-			vh = [a.point, ap, { x: ap.x + track, y: bp.y }, bp, b.point]
-			boxes = RouteInternals.obstacles(input, settings, edge.from, edge.to)
-			hv_clear = RouteInternals.path_visible(hv, boxes)
-			vh_clear = RouteInternals.path_visible(vh, boxes)
+			ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
+			bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
+			af = RouteInternals.fan_point(ap, a, endpoint_fan.from, settings.edge_gap)
+			bf = RouteInternals.fan_point(bp, b, endpoint_fan.to, settings.edge_gap)
+			hv = [a.point, ap, af, { x: bf.x, y: af.y }, bf, bp, b.point]
+			vh = [a.point, ap, af, { x: af.x, y: bf.y }, bf, bp, b.point]
+			boxes = RouteInternals.body_obstacles(input, settings, edge.from, edge.to)
+			hv_clear = RouteInternals.path_visible(hv.drop_first(1).drop_last(1), boxes)
+			vh_clear = RouteInternals.path_visible(vh.drop_first(1).drop_last(1), boxes)
 			chosen = if hv_clear and vh_clear {
 				if RouteInternals.path_cost(hv, prior, settings) <= RouteInternals.path_cost(vh, prior, settings) {
 					hv
@@ -1015,29 +1295,31 @@ RouteInternals :: {}.{
 			} else if vh_clear {
 				vh
 			} else {
-				searched = RouteInternals.shortest_grid(a.point, b.point, boxes, settings, prior)
+				searched = RouteInternals.shortest_grid(af, bf, boxes, settings, prior)
 				if searched.is_empty() {
-					exterior_y = boxes.fold(ap.y.min(bp.y), |top, box| top.min(box.min_y)) - settings.edge_gap
-					[a.point, ap, { x: ap.x, y: exterior_y }, { x: bp.x, y: exterior_y }, bp, b.point]
+					exterior_y = boxes.fold(af.y.min(bf.y), |top, box| top.min(box.min_y)) - settings.edge_gap
+					[a.point, ap, af, { x: af.x, y: exterior_y }, { x: bf.x, y: exterior_y }, bf, bp, b.point]
 				} else {
-					searched
+					[a.point, ap, af].concat(searched.drop_first(1)).concat([bf, bp, b.point])
 				}
 			}
 			Polyline(RouteInternals.simplify(chosen))
 		} else {
-			ap = { x: a.point.x + a.outward.x * settings.obstacle_gap, y: a.point.y + a.outward.y * settings.obstacle_gap }
-			bp = { x: b.point.x + b.outward.x * settings.obstacle_gap, y: b.point.y + b.outward.y * settings.obstacle_gap }
-			boxes = RouteInternals.obstacles(input, settings, edge.from, edge.to)
+			ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
+			bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
+			af = RouteInternals.fan_point(ap, a, endpoint_fan.from, settings.edge_gap)
+			bf = RouteInternals.fan_point(bp, b, endpoint_fan.to, settings.edge_gap)
+			boxes = RouteInternals.body_obstacles(input, settings, edge.from, edge.to)
 			through = portals.fold(
-				{ points: [a.point, ap], current: ap },
+				{ points: [a.point, ap, af], current: af },
 				|state, portal| {
 					stops = RouteInternals.portal_stops(portal, settings.obstacle_gap, input)
 					leg = RouteInternals.route_leg(state.current, stops.approach, boxes, settings, prior)
 					{ points: state.points.concat(leg.drop_first(1)).concat([portal.point, stops.departure]), current: stops.departure }
 				},
 			)
-			last_leg = RouteInternals.route_leg(through.current, bp, boxes, settings, prior)
-			Polyline(RouteInternals.simplify_preserving(through.points.concat(last_leg.drop_first(1)).append(b.point), portals.map(|portal| portal.point)))
+			last_leg = RouteInternals.route_leg(through.current, bf, boxes, settings, prior)
+			Polyline(RouteInternals.simplify_preserving(through.points.concat(last_leg.drop_first(1)).concat([bp, b.point]), portals.map(|portal| portal.point)))
 		}
 	}
 
@@ -1177,20 +1459,13 @@ RouteInternals :: {}.{
 		[base].concat(normal)
 	}
 
-	label_candidates = |route, placement, width, height, settings| {
+	label_candidates = |route, placement, _width, _height, _settings| {
 		fractions = match placement {
 			Near(From) => [0.15, 0.22, 0.30, 0.38, 0.46]
 			Near(To) => [0.85, 0.78, 0.70, 0.62, 0.54]
 			Center => [0.50, 0.42, 0.58, 0.34, 0.66]
 		}
-		local = fractions.map(
-			|fraction| {
-				anchor = RouteInternals.anchor_fraction(route, fraction)
-				RouteInternals.local_label_candidates(route, anchor, width, height, settings, [1, 2])
-			},
-		).join()
-		desired = RouteInternals.anchor_fraction(route, fractions.first() ?? 0.5)
-		local.concat(RouteInternals.local_label_candidates(route, desired, width, height, settings, [3, 4, 5, 6, 7, 8]).drop_first(1))
+		fractions.map(|fraction| RouteInternals.anchor_fraction(route, fraction))
 	}
 
 	segment_crossings = |a, b, rect| if a.x == b.x {
@@ -1388,17 +1663,17 @@ RouteInternals :: {}.{
 	route_stats = |route, others, settings| {
 		points = RouteInternals.route_points(route)
 		own = points.fold_with_index(
-			{ bends: 0, length: 0.0 },
+			{ bends: 0.U64, length: 0.0 },
 			|state, a, i| match points.get(i + 1) {
 				Ok(b) => {
 					bend = if i == 0 {
-						0
+						0.U64
 					} else {
 						before = points.get(i - 1) ?? a
 						if (before.x == a.x) == (a.x == b.x) {
-							0
+							0.U64
 						} else {
-							1
+							1.U64
 						}
 					}
 					{ bends: state.bends + bend, length: state.length + (b.x - a.x).abs() + (b.y - a.y).abs() }
@@ -1407,7 +1682,7 @@ RouteInternals :: {}.{
 			},
 		)
 		interactions = others.fold(
-			{ crossings: 0, shared: 0.0 },
+			{ crossings: 0.U64, shared: 0.0 },
 			|state, other| {
 				other_points = RouteInternals.route_points(other)
 				points.fold_with_index(
@@ -1418,9 +1693,9 @@ RouteInternals :: {}.{
 							|inner, c, j| match other_points.get(j + 1) {
 								Ok(d) => {
 									crossing = if RouteInternals.proper_crossing(a, b, c, d) {
-										1
+										1.U64
 									} else {
-										0
+										0.U64
 									}
 									{ crossings: inner.crossings + crossing, shared: inner.shared + RouteInternals.shared_length(a, b, c, d) }
 								}
@@ -1464,7 +1739,7 @@ RouteInternals :: {}.{
 		a.length < b.length
 	}
 
-	refine_routes = |input, settings, ranks, routes, sweep, fuel| if fuel == 0 {
+	refine_routes = |input, settings, ranks, fan_table, routes, sweep, fuel| if fuel == 0 {
 		routes
 	} else {
 		indices = List.repeat(0, input.graph.edges.len()).map_with_index(|_, i| i)
@@ -1489,7 +1764,7 @@ RouteInternals :: {}.{
 				old_stats = RouteInternals.route_stats(old, others, settings)
 				affected = !RouteInternals.edge_portals(edge_index, edge, input).is_empty() or old_stats.crossings > 0 or old_stats.shared > RouteInternals.zero_distance
 				if affected {
-					candidate = RouteInternals.route_one(edge_index, edge, input, settings, ranks.get(edge_index) ?? { rank: 0, count: 1 }, others)
+					candidate = RouteInternals.route_one(edge_index, edge, input, settings, ranks.get(edge_index) ?? { rank: 0, count: 1 }, fan_table.get(edge_index) ?? { from: { rank: 0.U64, count: 1.U64 }, to: { rank: 0.U64, count: 1.U64 } }, others)
 					candidate_stats = RouteInternals.route_stats(candidate, others, settings)
 					if RouteInternals.stats_better(candidate_stats, old_stats) {
 						current.set(edge_index, candidate) ?? []
@@ -1504,7 +1779,7 @@ RouteInternals :: {}.{
 		if refined == routes {
 			routes
 		} else {
-			RouteInternals.refine_routes(input, settings, ranks, refined, sweep + 1, fuel - 1)
+			RouteInternals.refine_routes(input, settings, ranks, fan_table, refined, sweep + 1, fuel - 1)
 		}
 	}
 
@@ -1532,7 +1807,10 @@ RouteInternals :: {}.{
 						} else {
 							a.y.max(b.y)
 						}
-						found.append({ edge, index, horizontal, coord, low, high, movable: index > 0 and index + 2 < points.len() and high > low })
+						# The first two and last two segments form the protected
+						# attachment/escape/fan corridor. Lane separation may only
+						# move the route body outside those terminal corridors.
+						found.append({ edge, index, horizontal, coord, low, high, movable: index > 2 and index + 4 < points.len() and high > low })
 					}
 					Err(_) => found
 				},
@@ -1598,8 +1876,10 @@ RouteInternals :: {}.{
 					}
 				},
 			)
-			boxes = RouteInternals.obstacles(input, settings, edge.from, edge.to)
-			if RouteInternals.path_visible(moved, boxes) {
+			boxes = RouteInternals.body_obstacles(input, settings, edge.from, edge.to)
+			a = RouteInternals.terminal(edge_index, From, edge, input)
+			b = RouteInternals.terminal(edge_index, To, edge, input)
+			if RouteInternals.path_visible(moved.drop_first(1).drop_last(1), boxes) and RouteInternals.terminal_path_valid(moved, input, settings, edge, a, b) {
 				Polyline(RouteInternals.simplify(moved))
 			} else {
 				route
@@ -1612,7 +1892,12 @@ RouteInternals :: {}.{
 		routes.map_with_index(
 			|route, edge_index| {
 				edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
-				RouteInternals.nudge_one(route, edge_index, edge, input, settings, segments)
+				crosses_group_boundary = !RouteInternals.boundary_groups(edge, input).is_empty()
+				if RouteInternals.waypoints_for(edge_index, input).is_empty() and !crosses_group_boundary {
+					RouteInternals.nudge_one(route, edge_index, edge, input, settings, segments)
+				} else {
+					route
+				}
 			},
 		)
 	}
@@ -1620,8 +1905,9 @@ RouteInternals :: {}.{
 	compute : Route.Input, Route.Settings -> Route.Result
 	compute = |input, settings| {
 		ranks = EdgeRoutes.parallel_ranks(input.graph.edges)
-		initial_routes = input.graph.edges.map_with_index(|edge, i| RouteInternals.route_one(i, edge, input, settings, ranks.get(i) ?? { rank: 0, count: 1 }, []))
-		independent_routes = RouteInternals.refine_routes(input, settings, ranks, initial_routes, 0, settings.max_sweeps)
+		fan_table = RouteInternals.endpoint_fan_table(input)
+		initial_routes = input.graph.edges.fold_with_index([], |routes, edge, i| routes.append(RouteInternals.route_one(i, edge, input, settings, ranks.get(i) ?? { rank: 0, count: 1 }, fan_table.get(i) ?? { from: { rank: 0.U64, count: 1.U64 }, to: { rank: 0.U64, count: 1.U64 } }, routes)))
+		independent_routes = RouteInternals.refine_routes(input, settings, ranks, fan_table, initial_routes, 0, settings.max_sweeps)
 		shared = input.shared_ends.fold([], |acc, rule| acc.append(RouteInternals.shared_geometry(rule, input, settings, independent_routes)))
 		shared_branches = input.shared_ends.fold_with_index(
 			independent_routes,
@@ -1643,18 +1929,7 @@ RouteInternals :: {}.{
 			|placed, label| {
 				base = RouteInternals.anchor_for(label_routes.get(label.edge) ?? Polyline([]), label.placement)
 				candidates = RouteInternals.label_candidates(label_routes.get(label.edge) ?? Polyline([]), label.placement, label.width, label.height, settings)
-				point = candidates.find_first(|p| RouteInternals.label_clear(p, label, input, settings, placed, label_routes)) ?? {
-					node_top = input.positions.fold_with_index(
-						base.y,
-						|top, p, i| {
-							node = input.graph.nodes.get(i) ?? { width: 0, height: 0 }
-							top.min(p.y - node.height / 2)
-						},
-					)
-					route_top = label_routes.fold(node_top, |top, route| RouteInternals.route_points(route).fold(top, |m, p| m.min(p.y)))
-					clear_top = placed.fold(route_top, |top, old| top.min(old.point.y - old.height / 2 - settings.obstacle_gap))
-					{ x: base.x, y: clear_top - label.height / 2 - settings.obstacle_gap - settings.edge_gap }
-				}
+				point = candidates.find_first(|p| RouteInternals.label_clear(p, label, input, settings, placed, label_routes)) ?? base
 				placed.append({ point, width: label.width, height: label.height })
 			},
 		)
@@ -1681,20 +1956,11 @@ RouteInternals :: {}.{
 				{ min_x: b.min_x.min(p.x - label.width / 2), min_y: b.min_y.min(p.y - label.height / 2), max_x: b.max_x.max(p.x + label.width / 2), max_y: b.max_y.max(p.y + label.height / 2) }
 			},
 		)
-		dx = Geom.saturate(0 - box.min_x)
-		dy = Geom.saturate(0 - box.min_y)
-		shift = |p| { x: Geom.saturate(p.x + dx), y: Geom.saturate(p.y + dy) }
-		shift_route = |route|
-			match route {
-				Line(a, b) => Line(shift(a), shift(b))
-				Polyline(ps) => Polyline(ps.map(shift))
-				Curves(ss) => Curves(ss.map(|s| { from: shift(s.from), ctl_a: shift(s.ctl_a), ctl_b: shift(s.ctl_b), to: shift(s.to) }))
-			}
 		independent_attachments = input.graph.edges.map_with_index(
 			|edge, i| {
 				from = RouteInternals.terminal(i, From, edge, input)
 				to = RouteInternals.terminal(i, To, edge, input)
-				{ from: { point: shift(from.point), side: from.side }, to: { point: shift(to.point), side: to.side } }
+				{ from: { point: from.point, side: from.side }, to: { point: to.point, side: to.side } }
 			},
 		)
 		attachments = input.shared_ends.fold_with_index(
@@ -1718,8 +1984,8 @@ RouteInternals :: {}.{
 					|updated, edge_index| {
 						old = updated.get(edge_index) ?? { from: { point: common_point, side: selected_side }, to: { point: common_point, side: selected_side } }
 						next = match rule.endpoint {
-							From => { ..old, from: { point: shift(common_point), side: selected_side } }
-							To => { ..old, to: { point: shift(common_point), side: selected_side } }
+							From => { ..old, from: { point: common_point, side: selected_side } }
+							To => { ..old, to: { point: common_point, side: selected_side } }
 						}
 						updated.set(edge_index, next) ?? []
 					},
@@ -1732,20 +1998,20 @@ RouteInternals :: {}.{
 				portals = RouteInternals.edge_portals(edge_index, edge, input)
 				RouteInternals.route_crossings(route, input.groups).map(
 					|crossing| match portals.find_first(|portal| portal.group == crossing.group and portal.point == crossing.point) {
-						Ok(portal) => { group: portal.group, point: shift(portal.point), side: portal.side, offset: portal.offset }
-						Err(_) => { ..crossing, point: shift(crossing.point) }
+						Ok(portal) => { group: portal.group, point: portal.point, side: portal.side, offset: portal.offset }
+						Err(_) => crossing
 					},
 				)
 			},
 		)
-		groups = input.groups.map(|group| { x: Geom.saturate(group.rect.x + dx), y: Geom.saturate(group.rect.y + dy), width: group.rect.width, height: group.rect.height })
+		groups = input.groups.map(|group| group.rect)
 		shared_routes = input.shared_ends.map_with_index(
 			|rule, i| {
 				geometry = shared.get(i) ?? { junction: { x: 0, y: 0 }, trunk: Polyline([]), branches: [] }
-				{ edges: rule.edges, endpoint: rule.endpoint, junction: shift(geometry.junction), trunk: shift_route(geometry.trunk), group_crossings: RouteInternals.route_crossings(geometry.trunk, input.groups).map(|crossing| { ..crossing, point: shift(crossing.point) }) }
+				{ edges: rule.edges, endpoint: rule.endpoint, junction: geometry.junction, trunk: geometry.trunk, group_crossings: RouteInternals.route_crossings(geometry.trunk, input.groups) }
 			},
 		)
-		{ layout: { positions: input.positions.map(shift), routes: raw_routes.map(shift_route), bounds: { ..Geom.empty_bounds, width: Geom.saturate(box.max_x - box.min_x), height: Geom.saturate(box.max_y - box.min_y) } }, groups, label_anchors: raw_labels.map(shift), attachments, group_crossings, shared_routes }
+		{ layout: { positions: input.positions, routes: raw_routes, bounds: { x: box.min_x, y: box.min_y, width: Geom.saturate(box.max_x - box.min_x), height: Geom.saturate(box.max_y - box.min_y) } }, groups, label_anchors: raw_labels, attachments, group_crossings, shared_routes }
 	}
 }
 
@@ -1753,15 +2019,30 @@ RouteInternals :: {}.{
 ## `layout` produces deterministic axis-aligned polylines, honors sparse
 ## attachment rules, separates parallel edges into stable tracks, gives
 ## self-loops exterior paths, and returns one anchor for every sparse edge
-## label in label input order. Labels may be centered on an edge or placed
-## near either end, so relationship names, roles, and multiplicities can be
-## positioned without putting text or styling into the geometry API. Group
+## label in label input order. Every label anchor lies on its final edge path;
+## labels may be centered on an edge or placed near either end, so relationship
+## names, roles, and multiplicities remain visually attached without putting
+## text or styling into the geometry API. Group
 ## attachments are exact boundary crossings: routes approach and leave them
 ## perpendicularly instead of following the group outline.
+##
+## Sparse waypoint rules are exact: a routed edge passes through every listed
+## point in order. Sparse guide rules are preferences supplied by placement;
+## the router discards a guided candidate when it would lose clearance,
+## reverse, self-intersect, or approach a node from the wrong direction. The
+## router never moves or normalizes caller geometry; `bounds.x` and `bounds.y`
+## report the actual drawing origin.
 ##
 ## Nodes use their rectangular size as their boundary by default. A sparse
 ## boundary rule makes attachment points follow an ellipse inside the same
 ## sized box; routing still treats that box as the node's obstacle.
+## Every ordinary route first travels outward from its selected attachment to
+## the node's inflated routing boundary before it may turn. Edges sharing an
+## exact attachment share that short terminal throat and then receive stable
+## lanes. Refinement never moves these terminal corridors, so a route cannot
+## return beneath an incident node after leaving its port. Exact waypoints
+## remain obligations and can intentionally describe otherwise infeasible
+## geometry; overlapping endpoint boxes may likewise leave no clear route.
 ##
 ## Every edge that enters or leaves a group receives one perpendicular portal
 ## on that boundary. Sparse group attachments override those automatic portals.
@@ -1792,8 +2073,10 @@ Route :: {}.{
 	LabelPlacement : [Center, Near(Endpoint)]
 	EdgeLabel : { edge : U64, width : F64, height : F64, placement : LabelPlacement }
 	SharedEndRule : { edges : List(U64), endpoint : Endpoint, attachment : Attachment }
+	WaypointRule : { edge : U64, points : List(Geom.Point) }
+	GuideRule : { edge : U64, points : List(Geom.Point) }
 
-	Input : { graph : { nodes : List({ width : F64, height : F64 }), edges : List({ from : U64, to : U64 }) }, positions : List({ x : F64, y : F64 }), groups : List(Group), memberships : List(Membership), attachments : List(AttachmentRule), group_attachments : List(GroupAttachmentRule), boundaries : List(BoundaryRule), edge_labels : List(EdgeLabel), shared_ends : List(SharedEndRule) }
+	Input : { graph : { nodes : List({ width : F64, height : F64 }), edges : List({ from : U64, to : U64 }) }, positions : List({ x : F64, y : F64 }), groups : List(Group), memberships : List(Membership), attachments : List(AttachmentRule), group_attachments : List(GroupAttachmentRule), boundaries : List(BoundaryRule), edge_labels : List(EdgeLabel), shared_ends : List(SharedEndRule), waypoints : List(WaypointRule), guides : List(GuideRule) }
 
 	## `obstacle_gap` is the empty space kept around node and group boxes. `edge_gap`
 	## separates flexible ports and parallel lanes. `bend_penalty` favors fewer
@@ -1807,7 +2090,7 @@ Route :: {}.{
 	GroupCrossing : { group : U64, point : Geom.Point, side : Side, offset : F64 }
 	SharedRoute : { edges : List(U64), endpoint : Endpoint, junction : Geom.Point, trunk : Geom.Route, group_crossings : List(GroupCrossing) }
 	Result : { layout : { positions : List(Geom.Point), routes : List(Geom.Route), bounds : Geom.Rect }, groups : List(Geom.Rect), label_anchors : List(Geom.Point), attachments : List(EdgeAttachments), group_crossings : List(List(GroupCrossing)), shared_routes : List(SharedRoute) }
-	Problem := [InvalidNodeWidth(U64), InvalidNodeHeight(U64), PositionCountMismatch, InvalidPosition(U64), InvalidEdgeFrom(U64), InvalidEdgeTo(U64), InvalidAttachmentEdge(U64), InvalidAttachmentOffset(U64), DuplicateAttachment(U64), InvalidGroupRect(U64), InvalidGroupParent(U64), InvalidMembershipNode(U64), InvalidMembershipGroup(U64), DuplicateMembership(U64), InvalidBoundaryNode(U64), DuplicateBoundary(U64), InvalidGroupAttachmentEdge(U64), InvalidGroupAttachmentGroup(U64), InvalidGroupAttachmentOffset(U64), DuplicateGroupAttachment(U64), GroupAttachmentNotBoundary(U64), InvalidLabelEdge(U64), InvalidLabelWidth(U64), InvalidLabelHeight(U64), SharedEndNeedsEdges(U64), InvalidSharedEndEdge(U64), DuplicateSharedEndEdge(U64), InvalidSharedEndAttachmentOffset(U64), SharedEndMismatch(U64), SharedEndMemberAttachment(U64), SharedEndOverlap(U64), InvalidObstacleGap, InvalidBendPenalty, InvalidSharedPathPenalty, InvalidEdgeGap].{
+	Problem := [InvalidNodeWidth(U64), InvalidNodeHeight(U64), PositionCountMismatch, InvalidPosition(U64), InvalidEdgeFrom(U64), InvalidEdgeTo(U64), InvalidAttachmentEdge(U64), InvalidAttachmentOffset(U64), DuplicateAttachment(U64), InvalidGroupRect(U64), InvalidGroupParent(U64), InvalidMembershipNode(U64), InvalidMembershipGroup(U64), DuplicateMembership(U64), InvalidBoundaryNode(U64), DuplicateBoundary(U64), InvalidGroupAttachmentEdge(U64), InvalidGroupAttachmentGroup(U64), InvalidGroupAttachmentOffset(U64), DuplicateGroupAttachment(U64), GroupAttachmentNotBoundary(U64), InvalidLabelEdge(U64), InvalidLabelWidth(U64), InvalidLabelHeight(U64), InvalidWaypointEdge(U64), InvalidWaypoint(U64), DuplicateWaypoints(U64), BlockedWaypoint(U64), InvalidGuideEdge(U64), InvalidGuide(U64), DuplicateGuides(U64), SharedEndNeedsEdges(U64), InvalidSharedEndEdge(U64), DuplicateSharedEndEdge(U64), InvalidSharedEndAttachmentOffset(U64), SharedEndMismatch(U64), SharedEndMemberAttachment(U64), SharedEndOverlap(U64), InvalidObstacleGap, InvalidBendPenalty, InvalidSharedPathPenalty, InvalidEdgeGap].{
 
 		## Turn one typed problem into a short explanation for a person reading a
 		## log or error message. Numbers identify positions in the corresponding
@@ -1838,6 +2121,13 @@ Route :: {}.{
 			InvalidLabelEdge(label) => "Edge label ${label.to_str()} refers to an edge that does not exist."
 			InvalidLabelWidth(label) => "Edge label ${label.to_str()} has a width that is negative or not finite."
 			InvalidLabelHeight(label) => "Edge label ${label.to_str()} has a height that is negative or not finite."
+			InvalidWaypointEdge(rule) => "Waypoint rule ${rule.to_str()} refers to an edge that does not exist."
+			InvalidWaypoint(rule) => "Waypoint rule ${rule.to_str()} contains a point whose x or y value is not finite."
+			DuplicateWaypoints(rule) => "Waypoint rule ${rule.to_str()} repeats a rule for the same edge."
+			BlockedWaypoint(rule) => "Waypoint rule ${rule.to_str()} contains a point inside an unrelated obstacle."
+			InvalidGuideEdge(rule) => "Guide rule ${rule.to_str()} refers to an edge that does not exist."
+			InvalidGuide(rule) => "Guide rule ${rule.to_str()} contains a point whose x or y value is not finite."
+			DuplicateGuides(rule) => "Guide rule ${rule.to_str()} repeats a rule for the same edge."
 			SharedEndNeedsEdges(rule) => "Shared end ${rule.to_str()} must contain at least two edges."
 			InvalidSharedEndEdge(rule) => "Shared end ${rule.to_str()} refers to an edge that does not exist."
 			DuplicateSharedEndEdge(rule) => "Shared end ${rule.to_str()} repeats an edge."
@@ -1853,7 +2143,7 @@ Route :: {}.{
 	}
 
 	default_input : Input
-	default_input = { graph: { nodes: [], edges: [] }, positions: [], groups: [], memberships: [], attachments: [], group_attachments: [], boundaries: [], edge_labels: [], shared_ends: [] }
+	default_input = { graph: { nodes: [], edges: [] }, positions: [], groups: [], memberships: [], attachments: [], group_attachments: [], boundaries: [], edge_labels: [], shared_ends: [], waypoints: [], guides: [] }
 
 	## Readable clearance and lane separation, with four bounded joint sweeps.
 	default_settings : Settings
@@ -1878,6 +2168,68 @@ expect {
 }
 
 expect Route.layout(Route.default_input, Route.default_settings) == Ok({ layout: { positions: [], routes: [], bounds: Geom.empty_bounds }, groups: [], label_anchors: [], attachments: [], group_crossings: [], shared_routes: [] })
+
+## Placement-independent routing preserves the caller's coordinate frame.
+expect {
+	positions = [Geom.point(0 - 40, 0 - 20), Geom.point(40, 20)]
+	input = { ..Route.default_input, graph: { nodes: [{ width: 10, height: 10 }, { width: 10, height: 10 }], edges: [{ from: 0, to: 1 }] }, positions }
+	match Route.layout(input, Route.default_settings) {
+		Ok(result) => result.layout.positions == positions and result.layout.bounds.x < 0 and result.layout.bounds.y < 0
+		Err(_) => False
+	}
+}
+
+## Ordered waypoint geometry survives routing and simplification.
+expect {
+	guide = Geom.point(30, 40)
+	input = { ..Route.default_input, graph: { nodes: [{ width: 10, height: 10 }, { width: 10, height: 10 }], edges: [{ from: 0, to: 1 }] }, positions: [Geom.point(0, 0), Geom.point(60, 80)], waypoints: [{ edge: 0, points: [guide] }] }
+	match Route.layout(input, Route.default_settings) {
+		Ok(result) => match result.layout.routes.first() {
+			Ok(Polyline(points)) => points.contains(guide)
+			_ => False
+		}
+		Err(_) => False
+	}
+}
+
+expect {
+	input = { ..Route.default_input, graph: { nodes: [{ width: 1, height: 1 }], edges: [] }, positions: [Geom.point(0, 0)], waypoints: [{ edge: 2, points: [Geom.point(F64.nan, 0)] }, { edge: 2, points: [] }] }
+	Route.layout(input, Route.default_settings) == Err([InvalidWaypointEdge(0), InvalidWaypoint(0), InvalidWaypointEdge(1), DuplicateWaypoints(1)])
+}
+
+## Soft guides are validated independently from exact waypoints.
+expect {
+	input = { ..Route.default_input, graph: { nodes: [{ width: 1, height: 1 }], edges: [] }, positions: [Geom.point(0, 0)], guides: [{ edge: 2, points: [Geom.point(F64.nan, 0)] }, { edge: 2, points: [] }] }
+	Route.layout(input, Route.default_settings) == Err([InvalidGuideEdge(0), InvalidGuide(0), InvalidGuideEdge(1), DuplicateGuides(1)])
+}
+
+## A guide that doubles back is a preference, not an exact geometric
+## obligation: the final route remains a simple forward path.
+expect {
+	input = {
+		..Route.default_input,
+		graph: { nodes: [{ width: 20, height: 20 }, { width: 20, height: 20 }], edges: [{ from: 0, to: 1 }] },
+		positions: [Geom.point(0, 0), Geom.point(120, 0)],
+		attachments: [
+			{ edge: 0, endpoint: From, attachment: Fixed({ side: Right, offset: 0.5 }) },
+			{ edge: 0, endpoint: To, attachment: Fixed({ side: Left, offset: 0.5 }) },
+		],
+		guides: [{ edge: 0, points: [Geom.point(90, 0), Geom.point(30, 0)] }],
+	}
+	match Route.layout(input, Route.default_settings) {
+		Err(_) => False
+		Ok(result) => {
+			points = RouteInternals.route_points(result.layout.routes.first() ?? Polyline([]))
+			points.fold_with_index(
+				True,
+				|forward, point, i| match points.get(i + 1) {
+					Ok(next) => forward and next.x >= point.x
+					Err(_) => forward
+				},
+			)
+		}
+	}
+}
 
 ## Side-only endpoint attachments are flexible ports. Edges sharing one node
 ## receive stable, distinct positions ordered by their opposite endpoints.
@@ -1907,15 +2259,21 @@ expect {
 		..Route.default_input,
 		graph: { nodes: List.repeat({ width: 0, height: 0 }, 4), edges: [{ from: 0, to: 1 }, { from: 2, to: 3 }] },
 		positions: [{ x: 0, y: 0 }, { x: 50, y: 100 }, { x: 0, y: 10 }, { x: 50, y: 90 }],
+		attachments: [
+			{ edge: 0, endpoint: From, attachment: Fixed({ side: Right, offset: 0.5 }) },
+			{ edge: 0, endpoint: To, attachment: Fixed({ side: Left, offset: 0.5 }) },
+			{ edge: 1, endpoint: From, attachment: Fixed({ side: Right, offset: 0.5 }) },
+			{ edge: 1, endpoint: To, attachment: Fixed({ side: Left, offset: 0.5 }) },
+		],
 	}
 	routes = [
-		Polyline([{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 10, y: 50 }, { x: 40, y: 50 }, { x: 40, y: 100 }, { x: 50, y: 100 }]),
-		Polyline([{ x: 0, y: 10 }, { x: 20, y: 10 }, { x: 20, y: 50 }, { x: 40, y: 50 }, { x: 40, y: 90 }, { x: 50, y: 90 }]),
+		Polyline([{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 10, y: 20 }, { x: 20, y: 20 }, { x: 20, y: 60 }, { x: 40, y: 60 }, { x: 40, y: 100 }, { x: 50, y: 100 }]),
+		Polyline([{ x: 0, y: 10 }, { x: 15, y: 10 }, { x: 15, y: 20 }, { x: 20, y: 20 }, { x: 20, y: 60 }, { x: 35, y: 60 }, { x: 35, y: 90 }, { x: 50, y: 90 }]),
 	]
 	nudged = RouteInternals.nudge_routes(routes, input, Route.default_settings)
 	first = RouteInternals.route_points(nudged.get(0) ?? Polyline([]))
 	second = RouteInternals.route_points(nudged.get(1) ?? Polyline([]))
-	(first.get(2) ?? { x: 0, y: 0 }).y + Route.default_settings.edge_gap == (second.get(2) ?? { x: 0, y: 0 }).y
+	(first.get(3) ?? { x: 0, y: 0 }).x + Route.default_settings.edge_gap == (second.get(3) ?? { x: 0, y: 0 }).x
 		and first.first() == Ok({ x: 0, y: 0 })
 			and first.last() == Ok({ x: 50, y: 100 })
 				and second.first() == Ok({ x: 0, y: 10 })
@@ -2172,6 +2530,35 @@ expect {
 			Err(_) => False
 		}
 		Err(_) => False
+	}
+}
+
+## Parallel edges bound to the same visible ports keep a complete terminal
+## escape before their lanes separate. In particular, post-routing lane
+## refinement cannot move either route back onto a node boundary.
+expect {
+	input = {
+		..Route.default_input,
+		graph: { nodes: [{ width: 160, height: 64 }, { width: 220, height: 88 }], edges: [{ from: 0, to: 1 }, { from: 0, to: 1 }] },
+		positions: [{ x: 245, y: 80 }, { x: 180, y: 338 }],
+		attachments: [
+			{ edge: 0, endpoint: From, attachment: Fixed({ side: Bottom, offset: 0.5 }) },
+			{ edge: 0, endpoint: To, attachment: Fixed({ side: Top, offset: 0.5 }) },
+			{ edge: 1, endpoint: From, attachment: Fixed({ side: Bottom, offset: 0.5 }) },
+			{ edge: 1, endpoint: To, attachment: Fixed({ side: Top, offset: 0.5 }) },
+		],
+	}
+	match Route.layout(input, Route.default_settings) {
+		Err(_) => False
+		Ok(result) => result.layout.routes.fold_with_index(
+			True,
+			|ok, route, i| {
+				edge = input.graph.edges.get(i) ?? { from: 0, to: 1 }
+				a = RouteInternals.terminal(i, From, edge, input)
+				b = RouteInternals.terminal(i, To, edge, input)
+				RouteInternals.terminal_path_valid(RouteInternals.route_points(route), input, Route.default_settings, edge, a, b) and ok
+			},
+		)
 	}
 }
 

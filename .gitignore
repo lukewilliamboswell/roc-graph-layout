@@ -13,3 +13,8 @@ benchmarks/platform/zig-out/
 !benchmarks/platform/targets/x64musl/libhost.a
 /fuzz_*
 .roc-fuzz/
+examples/node_editor/*.db
+examples/node_editor/*.db-shm
+examples/node_editor/*.db-wal
+examples/node_editor/node-editor
+/node_editor.db*

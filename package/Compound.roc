@@ -423,7 +423,7 @@ CompoundInternals :: {}.{
 				},
 			)
 		}
-		route_problem = match Route.layout({ graph: input.graph, positions: List.repeat({ x: 0, y: 0 }, node_count), groups: [], memberships: [], attachments: input.attachments, boundaries: input.boundaries, group_attachments: [], edge_labels: input.edge_labels, shared_ends: [] }, route_settings) {
+		route_problem = match Route.layout({ graph: input.graph, positions: List.repeat({ x: 0, y: 0 }, node_count), groups: [], memberships: [], attachments: input.attachments, boundaries: input.boundaries, group_attachments: [], edge_labels: input.edge_labels, shared_ends: [], waypoints: [], guides: [] }, route_settings) {
 			Ok(_) => []
 			Err(problems) => problems.keep_oks(
 				|problem| match problem {
@@ -659,7 +659,7 @@ CompoundInternals :: {}.{
 		)
 		routed = match input.routing {
 			Orthogonal(settings) if !input.graph.nodes.is_empty() =>
-				match Route.layout({ graph: route_graph, positions: route_positions, groups: route_groups, memberships, attachments: input.attachments, boundaries: input.boundaries, group_attachments: route_group_attachments, edge_labels: input.edge_labels, shared_ends: [] }, settings) {
+				match Route.layout({ graph: route_graph, positions: route_positions, groups: route_groups, memberships, attachments: input.attachments, boundaries: input.boundaries, group_attachments: route_group_attachments, edge_labels: input.edge_labels, shared_ends: [], waypoints: [], guides: [] }, settings) {
 					Ok(result) => { positions: result.layout.positions.drop_last(header_obstacles.len()), routes: result.layout.routes, bounds: result.layout.bounds, label_anchors: result.label_anchors, attachments: result.attachments, group_crossings: result.group_crossings }
 					Err(_) => { positions, routes: straight_routes, bounds: placed.rect, label_anchors: [], attachments: [], group_crossings: List.repeat([], input.graph.edges.len()) }
 				}
@@ -854,11 +854,12 @@ CompoundInternals :: {}.{
 
 	algorithm_positions = |algorithm, nodes, edges, hints, pins, constraints, layered, seed| {
 		fallback = |vertical| CompoundInternals.linear_positions(nodes, 24, vertical)
+		layered_hints = hints.map_with_index(|point, node| { node, x: point.x, y: point.y })
 		match algorithm {
 			Rows(payload) => { positions: CompoundInternals.linear_positions(nodes, payload.gap, False), valid: True }
 			Columns(payload) => { positions: CompoundInternals.linear_positions(nodes, payload.gap, True), valid: True }
 			LayeredSweep(payload) =>
-				match Layered.layout({ ..Layered.default_input, graph: { nodes, edges }, edge_weights: payload.edge_weights, min_spans: payload.min_spans, layer_constraints: layered.layer_constraints, order_constraints: layered.order_constraints, non_ranking_edges: layered.non_ranking_edges }, payload.settings, { ..Layered.default_run, hints }) {
+				match Layered.layout({ ..Layered.default_input, graph: { nodes, edges }, edge_weights: payload.edge_weights, min_spans: payload.min_spans, layer_constraints: layered.layer_constraints, order_constraints: layered.order_constraints, non_ranking_edges: layered.non_ranking_edges }, payload.settings, { ..Layered.default_run, hints: layered_hints }) {
 					Ok(result) => { positions: result.layout.positions, valid: True }
 					Err(_) => { positions: fallback(False), valid: False }
 				}

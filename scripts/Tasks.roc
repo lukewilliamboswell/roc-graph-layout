@@ -51,11 +51,12 @@ Tasks :: [].{
 		Ok({})
 	}
 
-	## Runs every runnable example app under `examples/` (any `main.roc` whose
-	## header starts with `app`, as opposed to a helper `package` manifest
-	## like `examples/svg/main.roc`). Each app is expected to regenerate its
-	## own golden output file(s) in place, so a subsequent `git diff` can
-	## catch any unintended change.
+	## Runs every terminating example app under `examples/` (any `main.roc`
+	## whose header starts with `app`, as opposed to a helper `package` manifest
+	## like `examples/svg/main.roc`). Interactive services opt out with a
+	## `## scripts: service` marker; they are still checked and tested above.
+	## Each app is expected to regenerate its own golden output file(s) in place,
+	## so a subsequent `git diff` can catch any unintended change.
 	run_examples! : () => Try({}, _)
 	run_examples! = || {
 		Stdout.line!("Running examples...")?
@@ -68,7 +69,7 @@ Tasks :: [].{
 				is_app = match main_path.read_utf8!() {
 					Ok(contents) => {
 						first_code_line = contents.split_on("\n").keep_if(|line| !line.starts_with("#") and !line.is_empty()).first() ?? ""
-						first_code_line.starts_with("app")
+						first_code_line.starts_with("app") and !contents.contains("## scripts: service")
 					}
 					Err(_) => Bool.False
 				}

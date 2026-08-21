@@ -431,6 +431,27 @@ micro-optimizations alone should not materially change the slope.
 
 Relevant code: crossing measurement in `package/Metrics.roc`.
 
+## Resolved: shared fixed-port ranking repeated sorts
+
+**Finding.** Ranking each endpoint by filtering and sorting its complete peer
+group once per edge produced pathological shared-port behavior. In the
+optimized native benchmark, 100 edges took about 338 ms and requested 166 MB;
+300 edges took 7.78 s and requested 4.78 GB. The original hypothesis was
+confirmed: repeated peer-list allocation plus the pinned compiler's sort made
+this substantially worse than the surrounding routing work.
+
+**Change.** Rank is now computed by one deterministic peer scan per endpoint,
+using the same ordering and stable edge-index tie-breaker without allocating or
+sorting a bucket. The same native fixture now measures about 22.6 ms / 7.1 MB
+at 100 edges, 133 ms / 86.2 MB at 300, and 848 ms / 1.02 GB at 1,000. The
+remaining requested-byte growth is still worth monitoring, but all three
+practical rungs complete reliably and remain in `benchmarks/cases/scale.jsonl`.
+
+The fixture also exposed two narrow inferred integer accumulators: attachment
+slots overflowed at node index 64 and route crossing telemetry overflowed at
+64 interactions. Both are now explicitly `U64`, and the 100-edge smoke case
+guards the native path.
+
 ## Investigation discipline
 
 For each hypothesis:

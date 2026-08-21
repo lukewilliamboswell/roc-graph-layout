@@ -25,6 +25,56 @@ finite_route = |route| match route {
 
 finite_point = |point| F64.is_finite(point.x) and F64.is_finite(point.y)
 
+route_points = |route| match route {
+	Line(a, b) => [a, b]
+	Polyline(points) => points
+	Curves(_) => []
+}
+
+point_on_route = |point, route| {
+	points = route_points(route)
+	points.fold_with_index(
+		False,
+		|found, a, i| match points.get(i + 1) {
+			Ok(b) => found or (a.x == b.x and point.x == a.x and point.y >= a.y.min(b.y) and point.y <= a.y.max(b.y)) or (a.y == b.y and point.y == a.y and point.x >= a.x.min(b.x) and point.x <= a.x.max(b.x))
+			Err(_) => found
+		},
+	)
+}
+
+segment_hits = |a, b, box| if a.x == b.x {
+	a.x > box.min_x and a.x < box.max_x and a.y.min(b.y) < box.max_y and a.y.max(b.y) > box.min_y
+} else if a.y == b.y {
+	a.y > box.min_y and a.y < box.max_y and a.x.min(b.x) < box.max_x and a.x.max(b.x) > box.min_x
+} else {
+	True
+}
+
+route_avoids_nodes = |edge, route, input, gap| {
+	points = route_points(route)
+	input.positions.fold_with_index(
+		True,
+		|clear, center, node| if node == edge.from or node == edge.to {
+			clear
+		} else {
+			size = input.graph.nodes.get(node) ?? { width: 0, height: 0 }
+			box = { min_x: center.x - size.width / 2 - gap, min_y: center.y - size.height / 2 - gap, max_x: center.x + size.width / 2 + gap, max_y: center.y + size.height / 2 + gap }
+			from = input.positions.get(edge.from) ?? center
+			to = input.positions.get(edge.to) ?? center
+			impossible = (from.x > box.min_x and from.x < box.max_x and from.y > box.min_y and from.y < box.max_y) or (to.x > box.min_x and to.x < box.max_x and to.y > box.min_y and to.y < box.max_y)
+			clear and (
+				impossible or points.fold_with_index(
+					True,
+					|free, a, i| match points.get(i + 1) {
+						Ok(b) => free and !segment_hits(a, b, box)
+						Err(_) => free
+					},
+				)
+			)
+		},
+	)
+}
+
 side_at = |byte| match byte % 4 {
 	0 => Top
 	1 => Right
@@ -60,6 +110,49 @@ ellipse_attachment = |edge_index, endpoint, edge, input, result| {
 	} else {
 		True
 	}
+}
+
+terminal_escape = |edge_index, endpoint, edge, input, result| {
+	points = route_points(result.layout.routes.get(edge_index) ?? Polyline([]))
+	selected_ends = result.attachments.get(edge_index) ?? { from: { point: { x: 0, y: 0 }, side: Top }, to: { point: { x: 0, y: 0 }, side: Top } }
+	selected = match endpoint {
+		From => selected_ends.from
+		To => selected_ends.to
+	}
+	node = match endpoint {
+		From => edge.from
+		To => edge.to
+	}
+	center = input.positions.get(node) ?? selected.point
+	size = input.graph.nodes.get(node) ?? { width: 0, height: 0 }
+	escape = match selected.side {
+		Top => { x: selected.point.x, y: center.y - size.height / 2 - Route.default_settings.obstacle_gap }
+		Right => { x: center.x + size.width / 2 + Route.default_settings.obstacle_gap, y: selected.point.y }
+		Bottom => { x: selected.point.x, y: center.y + size.height / 2 + Route.default_settings.obstacle_gap }
+		Left => { x: center.x - size.width / 2 - Route.default_settings.obstacle_gap, y: selected.point.y }
+	}
+	neighbor = match endpoint {
+		From => points.get(1) ?? selected.point
+		To => if points.len() < 2 {
+			selected.point
+		} else {
+			points.get(points.len() - 2) ?? selected.point
+		}
+	}
+	outward = match selected.side {
+		Top => { x: 0, y: 0 - 1.0 }
+		Right => { x: 1, y: 0 }
+		Bottom => { x: 0, y: 1 }
+		Left => { x: 0 - 1.0, y: 0 }
+	}
+	required = (escape.x - selected.point.x).abs() + (escape.y - selected.point.y).abs()
+	advance = (neighbor.x - selected.point.x) * outward.x + (neighbor.y - selected.point.y) * outward.y
+	straight = (outward.x == 0 and neighbor.x == selected.point.x) or (outward.y == 0 and neighbor.y == selected.point.y)
+	attached = match endpoint {
+		From => points.first() == Ok(selected.point)
+		To => points.last() == Ok(selected.point)
+	}
+	attached and straight and advance >= required
 }
 
 test = |bytes| {
@@ -153,7 +246,12 @@ test = |bytes| {
 			{ edge, width: (byte_at(bytes, 137 + i) % 41).to_f64(), height: (byte_at(bytes, 146 + i) % 21).to_f64(), placement }
 		},
 	)
-	input = { ..Route.default_input, graph: { nodes, edges }, positions, groups, memberships, group_attachments, boundaries, attachments, edge_labels, shared_ends }
+	guides = if edge_count == 0 {
+		[]
+	} else {
+		[{ edge: 0, points: [{ x: (byte_at(bytes, 214) % 101).to_f64(), y: (byte_at(bytes, 215) % 101).to_f64() }, { x: (byte_at(bytes, 216) % 101).to_f64(), y: (byte_at(bytes, 217) % 101).to_f64() }] }]
+	}
+	input = { ..Route.default_input, graph: { nodes, edges }, positions, groups, memberships, group_attachments, boundaries, attachments, edge_labels, shared_ends, guides }
 	invalid = { ..input, group_attachments: [{ edge: edge_count, group: groups.len(), attachment: Fixed({ side: Top, offset: 2 }) }] }
 	invalid_ok = match Route.layout(invalid, Route.default_settings) {
 		Err(problems) => {
@@ -177,13 +275,30 @@ test = |bytes| {
 				True,
 				|ok, label, i| {
 					anchor = a.label_anchors.get(i) ?? { x: F64.nan, y: F64.nan }
-					ok and anchor.x - label.width / 2 >= 0 and anchor.y - label.height / 2 >= 0 and anchor.x + label.width / 2 <= a.layout.bounds.width and anchor.y + label.height / 2 <= a.layout.bounds.height
+					ok and anchor.x - label.width / 2 >= a.layout.bounds.x and anchor.y - label.height / 2 >= a.layout.bounds.y and anchor.x + label.width / 2 <= a.layout.bounds.x + a.layout.bounds.width and anchor.y + label.height / 2 <= a.layout.bounds.y + a.layout.bounds.height
+				},
+			)
+			labels_on_routes = edge_labels.fold_with_index(
+				True,
+				|ok, label, i| {
+					anchor = a.label_anchors.get(i) ?? { x: F64.nan, y: F64.nan }
+					on_edge = point_on_route(anchor, a.layout.routes.get(label.edge) ?? Polyline([]))
+					on_shared = a.shared_routes.any(|shared| shared.edges.contains(label.edge) and point_on_route(anchor, shared.trunk))
+					ok and (on_edge or on_shared)
 				},
 			)
 			finite_shared = a.shared_routes.all(|shared| finite_point(shared.junction) and orthogonal(shared.trunk) and finite_route(shared.trunk) and shared.edges.len() >= 2)
 			finite_crossings = a.group_crossings.join().all(|crossing| finite_point(crossing.point) and F64.is_finite(crossing.offset) and crossing.offset >= 0 and crossing.offset <= 1)
-			finite = a.layout.routes.all(|r| orthogonal(r) and finite_route(r)) and a.layout.positions.all(finite_point) and a.label_anchors.all(finite_point) and a.attachments.all(|ends| finite_point(ends.from.point) and finite_point(ends.to.point)) and finite_crossings and F64.is_finite(a.layout.bounds.width) and F64.is_finite(a.layout.bounds.height)
+			finite = a.layout.routes.all(|r| orthogonal(r) and finite_route(r)) and a.layout.positions.all(finite_point) and a.label_anchors.all(finite_point) and a.attachments.all(|ends| finite_point(ends.from.point) and finite_point(ends.to.point)) and finite_crossings and F64.is_finite(a.layout.bounds.x) and F64.is_finite(a.layout.bounds.y) and F64.is_finite(a.layout.bounds.width) and F64.is_finite(a.layout.bounds.height)
 			ellipses = edges.fold_with_index(True, |ok, edge, i| ok and ellipse_attachment(i, From, edge, input, a) and ellipse_attachment(i, To, edge, input, a))
+			terminals = edges.fold_with_index(
+				True,
+				|ok, edge, i| {
+					shared = shared_ends.any(|rule| rule.edges.contains(i))
+					ok and (edge.from == edge.to or shared or (terminal_escape(i, From, edge, input, a) and terminal_escape(i, To, edge, input, a)))
+				},
+			)
+			clear_nodes = edges.fold_with_index(True, |ok, edge, i| ok and route_avoids_nodes(edge, a.layout.routes.get(i) ?? Polyline([]), input, Route.default_settings.obstacle_gap))
 			portals = group_attachments.all(
 				|rule| {
 					crossings = (a.group_crossings.get(rule.edge) ?? []).keep_if(|crossing| crossing.group == rule.group)
@@ -196,7 +311,7 @@ test = |bytes| {
 					}
 				},
 			)
-			if invalid_ok and aligned and labels_in_bounds and finite and finite_shared and ellipses and portals and Route.layout(input, Route.default_settings) == Ok(a) {
+			if invalid_ok and aligned and labels_in_bounds and labels_on_routes and finite and finite_shared and ellipses and terminals and clear_nodes and portals and a.layout.positions == positions and Route.layout(input, Route.default_settings) == Ok(a) {
 				Fuzz.keep
 			} else {
 				crash "route geometry contract failed"
