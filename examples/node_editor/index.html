@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Node Editor</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/datastar.js"></script>
+  <script src="/geometry.js"></script>
+  <script type="module" src="/node-editor-canvas.js"></script>
+</head>
+<body data-signals='{"revision":-1,"operationId":"","commandKind":"","commandPayload":"{}","selectedIds":"[]","selectedEdgeIds":"[]","pending":false,"status":"Connecting…","routeStyle":"rounded","showLayers":true,"direction":"down","serverAlive":false,"acceptedRevision":0,"acceptedOperationId":""}' data-init="@get('/updates')">
+  <header>
+    <div class="brand">
+      <strong>Node Editor</strong>
+      <span id="status" data-text="$status">Connecting…</span>
+    </div>
+    <nav aria-label="Editor commands">
+      <button data-on:click="document.querySelector('node-editor-canvas')?.requestCommand('add-node')">Add node</button>
+      <div class="arrange-group">
+        <select id="arrangement" aria-label="Arrangement">
+          <option value="layered">Layered</option>
+          <option value="force">Force</option>
+          <option value="stress">Stress</option>
+        </select>
+        <select id="direction" data-bind:direction aria-label="Layered direction">
+          <option value="down">Down</option><option value="right">Right</option>
+          <option value="up">Up</option><option value="left">Left</option>
+        </select>
+        <button data-on:click="document.querySelector('node-editor-canvas')?.requestCommand('arrange',{algorithm:document.querySelector('#arrangement').value,direction:$direction})">Arrange</button>
+      </div>
+      <button data-on:click="document.querySelector('node-editor-canvas')?.undo()" title="Undo (Ctrl+Z)">Undo</button>
+      <button data-on:click="document.querySelector('node-editor-canvas')?.redo()" title="Redo (Ctrl+Shift+Z)">Redo</button>
+      <select id="route-style" data-bind:route-style data-on:change="document.querySelector('node-editor-canvas')?.setRouteStyle(evt.target.value)" aria-label="Route appearance">
+        <option value="angular">Square lines</option>
+        <option value="rounded">Smooth bends</option>
+      </select>
+      <button data-on:click="$showLayers=!$showLayers;document.querySelector('node-editor-canvas')?.setLayersVisible($showLayers)" data-text="$showLayers?'Hide layers':'Show layers'">Hide layers</button>
+      <a class="button-link" href="/routing-gallery">Routing diagnostics</a>
+      <button class="danger" data-on:click="confirm('Reset the workspace?')&&document.querySelector('node-editor-canvas')?.requestCommand('reset')">Reset</button>
+    </nav>
+  </header>
+  <div class="editor-shell">
+    <main id="viewport">
+      <div id="workspace"><div class="loading">Loading workspace…</div></div>
+    </main>
+    <aside id="inspector">
+      <h2>Inspector</h2>
+      <p>Select a node to inspect and edit it.</p>
+    </aside>
+  </div>
+  <footer>
+    <span><b class="legend input"></b> Input</span>
+    <span><b class="legend output"></b> Output</span>
+    <span>Drag empty space to pan · Shift-drag to box-select · drag an output to an available input · select a connection to edit it</span>
+    <span data-show="$pending">Saving…</span>
+  </footer>
+</body>
+</html>
