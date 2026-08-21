@@ -38,6 +38,8 @@ or set `ROC_GRAPH_LAYOUT_NODE_EDITOR_ASSETS` to the directory containing
 `index.html`, `style.css`, and the JavaScript assets. CSS and JavaScript edits
 therefore require only a browser reload, not another native build. These demo
 assets use a `no_store` cache policy so every reload reads the current files.
+The editor follows the operating-system color preference by default and offers
+persistent light and dark overrides from the toolbar.
 
 The browser console records structured `[node-editor]` events for graph
 actions, direction and route-style changes, connections, drags, server

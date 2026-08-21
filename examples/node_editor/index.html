@@ -36,6 +36,11 @@
         <option value="angular">Square lines</option>
         <option value="rounded">Smooth bends</option>
       </select>
+      <select id="theme" data-on:change="document.querySelector('node-editor-canvas')?.setTheme(evt.target.value)" aria-label="Color theme">
+        <option value="system">System theme</option>
+        <option value="light">Light theme</option>
+        <option value="dark">Dark theme</option>
+      </select>
       <button data-on:click="$showLayers=!$showLayers;document.querySelector('node-editor-canvas')?.setLayersVisible($showLayers)" data-text="$showLayers?'Hide layers':'Show layers'">Hide layers</button>
       <a class="button-link" href="/routing-gallery">Routing diagnostics</a>
       <button class="danger" data-on:click="confirm('Reset the workspace?')&&document.querySelector('node-editor-canvas')?.requestCommand('reset')">Reset</button>

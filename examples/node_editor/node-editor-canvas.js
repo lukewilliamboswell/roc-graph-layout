@@ -16,6 +16,7 @@ export class NodeEditorCanvas extends HTMLElement {
     this.history = [];
     this.future = [];
     this.routeStyle = localStorage.getItem('node-editor-route-style') ?? 'rounded';
+    this.theme = localStorage.getItem('node-editor-theme') ?? 'system';
     this.layersVisible = localStorage.getItem('node-editor-show-layers') !== 'false';
     this.viewport = { x:0, y:0, scale:1 };
     this.events = [];
@@ -45,6 +46,7 @@ export class NodeEditorCanvas extends HTMLElement {
       attributeFilter:['data-points','data-layers','data-arrangement','data-direction','data-x','data-y','data-width','data-height'],
     });
     const routeSelect=document.querySelector('#route-style');if(routeSelect)routeSelect.value=this.routeStyle;
+    this.setTheme(this.theme);
     this.refresh();
     this.checkServer();
     this.healthTimer = globalThis.setInterval(() => this.checkServer(), 2000);
@@ -157,6 +159,13 @@ export class NodeEditorCanvas extends HTMLElement {
     this.routeStyle = style === 'angular' ? 'angular' : 'rounded';
     localStorage.setItem('node-editor-route-style', this.routeStyle);
     this.refreshRoutes();
+  }
+  setTheme(theme) {
+    this.theme = ['light','dark'].includes(theme) ? theme : 'system';
+    localStorage.setItem('node-editor-theme', this.theme);
+    document.documentElement.dataset.theme = this.theme;
+    const select=document.querySelector('#theme');if(select)select.value=this.theme;
+    this.debug('theme-changed', { theme:this.theme });
   }
   setLayersVisible(visible) {
     this.layersVisible = Boolean(visible);

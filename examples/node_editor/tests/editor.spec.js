@@ -37,6 +37,36 @@ test('ports use their configured names and distinct rounded roles', async ({ pag
   expect(await route.locator('.route').getAttribute('d')).not.toBe(await route.locator('.route-hit').getAttribute('d'));
 });
 
+test('light and dark themes preserve accessible semantic contrast', async ({ page }) => {
+  const ratios = async theme => {
+    await page.locator('#theme').selectOption(theme);
+    return page.evaluate(() => {
+      const rgb = value => {
+        let hex=value.trim().slice(1);if(hex.length===3)hex=[...hex].map(character=>character+character).join('');
+        return [0,2,4].map(index=>parseInt(hex.slice(index,index+2),16));
+      };
+      const luminance = value => rgb(value).map(channel => channel / 255).map(channel => channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4).reduce((sum,channel,index) => sum + channel * [.2126,.7152,.0722][index], 0);
+      const ratio = (a,b) => (Math.max(luminance(a),luminance(b)) + .05) / (Math.min(luminance(a),luminance(b)) + .05);
+      const root = getComputedStyle(document.documentElement);
+      return {
+        text:ratio(root.getPropertyValue('--text'),root.getPropertyValue('--surface-container')),
+        muted:ratio(root.getPropertyValue('--text-muted'),root.getPropertyValue('--surface-container')),
+        input:ratio(root.getPropertyValue('--input'),root.getPropertyValue('--surface-container')),
+        output:ratio(root.getPropertyValue('--output'),root.getPropertyValue('--surface-container')),
+      };
+    });
+  };
+  for (const theme of ['light','dark']) {
+    const result = await ratios(theme);
+    expect(result.text).toBeGreaterThanOrEqual(4.5);
+    expect(result.muted).toBeGreaterThanOrEqual(4.5);
+    expect(result.input).toBeGreaterThanOrEqual(3);
+    expect(result.output).toBeGreaterThanOrEqual(3);
+  }
+  await page.reload();
+  await expect(page.locator('#theme')).toHaveValue('dark');
+});
+
 test('a dropped node remains at its exact browser position after the server response', async ({ page }) => {
   const node = page.locator('.node[data-node-id="2"]');
   const before = await documentState(page);
