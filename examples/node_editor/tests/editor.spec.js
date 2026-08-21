@@ -47,7 +47,7 @@ test('routes meet every visible port perpendicular to its node side', async ({ p
     const box=node.getBoundingClientRect();
     return [...node.querySelectorAll('.port')].filter(port => {
       const p=port.getBoundingClientRect(),side=port.dataset.side;
-      return side==='left'?p.left<box.left-1:side==='right'?p.right>box.right+1:side==='top'?p.top<box.top-1:p.bottom>box.bottom+1;
+      return side==='left'?Math.abs((p.left+p.right)/2-box.left)>3:side==='right'?Math.abs((p.left+p.right)/2-box.right)>3:side==='top'?Math.abs((p.top+p.bottom)/2-box.top)>3:Math.abs((p.top+p.bottom)/2-box.bottom)>3;
     }).map(port=>port.dataset.portId);
   });
   expect(visiblePortViolations).toEqual([]);
@@ -224,6 +224,12 @@ test('serialized final routes are orthogonal and avoid unrelated node bodies', a
     });
   });
   expect(violations).toEqual([]);
+  const detachedLabels = await page.locator('.edge:has(.edge-label-text)').evaluateAll(edges => edges.flatMap(edge => {
+    const text=edge.querySelector('.edge-label-text'),point={x:Number(text.getAttribute('x')),y:Number(text.getAttribute('y'))-4},points=JSON.parse(edge.querySelector('.route').dataset.points);
+    const attached=points.slice(1).some((b,index)=>{const a=points[index];return a.x===b.x?point.x===a.x&&point.y>=Math.min(a.y,b.y)&&point.y<=Math.max(a.y,b.y):point.y===a.y&&point.x>=Math.min(a.x,b.x)&&point.x<=Math.max(a.x,b.x);});
+    return attached?[]:[edge.dataset.edgeId];
+  }));
+  expect(detachedLabels).toEqual([]);
 });
 
 test('routing diagnostics render deterministic orthogonal fixtures', async ({ page }) => {

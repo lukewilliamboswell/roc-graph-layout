@@ -742,7 +742,11 @@ RouteInternals :: {}.{
 						{ rank: 0.U64, count: 0.U64 },
 						|state, other| if other.node == use.node and other.point == use.point and other.side == use.side and other.role == role {
 							{
-								rank: state.rank + if RouteInternals.port_order(other, use) == LT { 1.U64 } else { 0.U64 },
+								rank: state.rank + if RouteInternals.port_order(other, use) == LT {
+									1.U64
+								} else {
+									0.U64
+								},
 								count: state.count + 1.U64,
 							}
 						} else {
@@ -1196,10 +1200,13 @@ RouteInternals :: {}.{
 		to_advance = (to_previous.x - b.point.x) * b.outward.x + (to_previous.y - b.point.y) * b.outward.y
 		from_straight = (a.outward.x == 0 and from_next.x == a.point.x) or (a.outward.y == 0 and from_next.y == a.point.y)
 		to_straight = (b.outward.x == 0 and to_previous.x == b.point.x) or (b.outward.y == 0 and to_previous.y == b.point.y)
-		orthogonal = points.fold_with_index(True, |ok, point, i| match points.get(i + 1) {
-			Ok(next) => ok and (point.x == next.x or point.y == next.y)
-			Err(_) => ok
-		})
+		orthogonal = points.fold_with_index(
+			True,
+			|ok, point, i| match points.get(i + 1) {
+				Ok(next) => ok and (point.x == next.x or point.y == next.y)
+				Err(_) => ok
+			},
+		)
 		incident = RouteInternals.incident_obstacles(input, settings, edge.from, edge.to)
 		body_clear = points.fold_with_index(
 			True,
@@ -1447,20 +1454,13 @@ RouteInternals :: {}.{
 		[base].concat(normal)
 	}
 
-	label_candidates = |route, placement, width, height, settings| {
+	label_candidates = |route, placement, _width, _height, _settings| {
 		fractions = match placement {
 			Near(From) => [0.15, 0.22, 0.30, 0.38, 0.46]
 			Near(To) => [0.85, 0.78, 0.70, 0.62, 0.54]
 			Center => [0.50, 0.42, 0.58, 0.34, 0.66]
 		}
-		local = fractions.map(
-			|fraction| {
-				anchor = RouteInternals.anchor_fraction(route, fraction)
-				RouteInternals.local_label_candidates(route, anchor, width, height, settings, [1, 2])
-			},
-		).join()
-		desired = RouteInternals.anchor_fraction(route, fractions.first() ?? 0.5)
-		local.concat(RouteInternals.local_label_candidates(route, desired, width, height, settings, [3, 4, 5, 6, 7, 8]).drop_first(1))
+		fractions.map(|fraction| RouteInternals.anchor_fraction(route, fraction))
 	}
 
 	segment_crossings = |a, b, rect| if a.x == b.x {
@@ -1923,18 +1923,7 @@ RouteInternals :: {}.{
 			|placed, label| {
 				base = RouteInternals.anchor_for(label_routes.get(label.edge) ?? Polyline([]), label.placement)
 				candidates = RouteInternals.label_candidates(label_routes.get(label.edge) ?? Polyline([]), label.placement, label.width, label.height, settings)
-				point = candidates.find_first(|p| RouteInternals.label_clear(p, label, input, settings, placed, label_routes)) ?? {
-					node_top = input.positions.fold_with_index(
-						base.y,
-						|top, p, i| {
-							node = input.graph.nodes.get(i) ?? { width: 0, height: 0 }
-							top.min(p.y - node.height / 2)
-						},
-					)
-					route_top = label_routes.fold(node_top, |top, route| RouteInternals.route_points(route).fold(top, |m, p| m.min(p.y)))
-					clear_top = placed.fold(route_top, |top, old| top.min(old.point.y - old.height / 2 - settings.obstacle_gap))
-					{ x: base.x, y: clear_top - label.height / 2 - settings.obstacle_gap - settings.edge_gap }
-				}
+				point = candidates.find_first(|p| RouteInternals.label_clear(p, label, input, settings, placed, label_routes)) ?? base
 				placed.append({ point, width: label.width, height: label.height })
 			},
 		)
@@ -2024,9 +2013,10 @@ RouteInternals :: {}.{
 ## `layout` produces deterministic axis-aligned polylines, honors sparse
 ## attachment rules, separates parallel edges into stable tracks, gives
 ## self-loops exterior paths, and returns one anchor for every sparse edge
-## label in label input order. Labels may be centered on an edge or placed
-## near either end, so relationship names, roles, and multiplicities can be
-## positioned without putting text or styling into the geometry API. Group
+## label in label input order. Every label anchor lies on its final edge path;
+## labels may be centered on an edge or placed near either end, so relationship
+## names, roles, and multiplicities remain visually attached without putting
+## text or styling into the geometry API. Group
 ## attachments are exact boundary crossings: routes approach and leave them
 ## perpendicularly instead of following the group outline.
 ##
@@ -2224,10 +2214,13 @@ expect {
 		Err(_) => False
 		Ok(result) => {
 			points = RouteInternals.route_points(result.layout.routes.first() ?? Polyline([]))
-			points.fold_with_index(True, |forward, point, i| match points.get(i + 1) {
-				Ok(next) => forward and next.x >= point.x
-				Err(_) => forward
-			})
+			points.fold_with_index(
+				True,
+				|forward, point, i| match points.get(i + 1) {
+					Ok(next) => forward and next.x >= point.x
+					Err(_) => forward
+				},
+			)
 		}
 	}
 }
