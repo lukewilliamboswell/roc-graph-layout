@@ -581,23 +581,23 @@ RouteInternals :: {}.{
 	}
 
 	port_order = |a, b| if a.primary < b.primary {
-		LT
+		Before
 	} else if a.primary > b.primary {
-		GT
+		After
 	} else if a.secondary < b.secondary {
-		LT
+		Before
 	} else if a.secondary > b.secondary {
-		GT
+		After
 	} else if a.edge < b.edge {
-		LT
+		Before
 	} else if a.edge > b.edge {
-		GT
+		After
 	} else if a.role < b.role {
-		LT
+		Before
 	} else if a.role > b.role {
-		GT
+		After
 	} else {
-		EQ
+		Same
 	}
 
 	flex_offset = |ordered, edge, role, length, gap| {
@@ -742,7 +742,7 @@ RouteInternals :: {}.{
 						{ rank: 0.U64, count: 0.U64 },
 						|state, other| if other.node == use.node and other.point == use.point and other.side == use.side and other.role == role {
 							{
-								rank: state.rank + if RouteInternals.port_order(other, use) == LT {
+								rank: state.rank + if RouteInternals.port_order(other, use) == Before {
 									1.U64
 								} else {
 									0.U64
@@ -1819,15 +1819,15 @@ RouteInternals :: {}.{
 	)
 
 	segment_order = |a, b| if a.edge < b.edge {
-		LT
+		Before
 	} else if a.edge > b.edge {
-		GT
+		After
 	} else if a.index < b.index {
-		LT
+		Before
 	} else if a.index > b.index {
-		GT
+		After
 	} else {
-		EQ
+		Same
 	}
 
 	lane_coordinate = |segment, segments, gap| if !segment.movable {

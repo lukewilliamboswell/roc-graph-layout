@@ -85,7 +85,8 @@ expect Rand.step_u32(Rand.seed(0)).value != Rand.step_u32(Rand.seed(1)).value
 
 ## Unit doubles stay in [0, 1) across 20 consecutive steps from a fixed seed.
 expect {
-	checked = U32.range_exclusive(0, 20).fold(
+	checked = Iter.fold(
+		U32.range_exclusive_to(0, 20).iter(),
 		{ state: Rand.seed(99), ok: True },
 		|acc, _| {
 			step = Rand.step_unit_f64(acc.state)
@@ -97,7 +98,8 @@ expect {
 
 ## Bounded outputs stay within [min, max] across consecutive steps.
 expect {
-	checked = U32.range_exclusive(0, 20).fold(
+	checked = Iter.fold(
+		U32.range_exclusive_to(0, 20).iter(),
 		{ state: Rand.seed(5), ok: True },
 		|acc, _| {
 			step = Rand.step_bounded_u32(acc.state, 3, 11)

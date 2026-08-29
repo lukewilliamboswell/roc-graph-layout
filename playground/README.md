@@ -1,8 +1,8 @@
 # Playground build
 
 The GitHub Pages release site serves the checked-in `www/app.wasm` and
-`www/runtime.js`. They are vendored temporarily because Roc
-`nightly-2026-08-13-2fdd90e` needs the Wasm Boxy runtime-linking fix from Roc
+`www/runtime.js`. They are vendored temporarily. These artifacts, built with
+`nightly-2026-08-13-2fdd90e`, need the Wasm Boxy runtime-linking fix from Roc
 commit `4de66456239fa70c8ce887b00d273586d46ae627` to build this app with
 `--opt=dev`.
 

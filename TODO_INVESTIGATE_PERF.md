@@ -34,8 +34,8 @@ the dominant source.
 
 ## Reproducing the measurements
 
-Set `ROC` to the compiler pinned by `.roc-version`, build the harness by running
-its smoke suite, then invoke the cached binary directly:
+Set `ROC` to the compiler used for these measurements, build the harness by
+running its smoke suite, then invoke the cached binary directly:
 
 ```sh
 export ROC=/private/tmp/roc-nightly-2026-08-13-2fdd90e/roc_nightly-macos_apple_silicon-2026-08-13-2fdd90e/roc

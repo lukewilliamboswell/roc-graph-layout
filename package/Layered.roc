@@ -787,15 +787,15 @@ LayeredInternals :: {}.{
 					ak = virtual_keys.get(a) ?? 0
 					bk = virtual_keys.get(b) ?? 0
 					if ak < bk {
-						LT
+						Before
 					} else if ak > bk {
-						GT
+						After
 					} else if a < b {
-						LT
+						Before
 					} else if a > b {
-						GT
+						After
 					} else {
-						EQ
+						Same
 					}
 				},
 			),
@@ -1182,11 +1182,11 @@ LayeredInternals :: {}.{
 	ascending_indices = |values|
 		values.sort_with(
 			|a, b| if a < b {
-				LT
+				Before
 			} else if a > b {
-				GT
+				After
 			} else {
-				EQ
+				Same
 			},
 		)
 
@@ -1363,27 +1363,27 @@ LayeredInternals :: {}.{
 
 						score_order = |a, b|
 							if a.key < b.key {
-								LT
+								Before
 							} else if a.key > b.key {
-								GT
+								After
 							} else if a.pos < b.pos {
-								LT
+								Before
 							} else if a.pos > b.pos {
-								GT
+								After
 							} else if a.node < b.node {
-								LT
+								Before
 							} else if a.node > b.node {
-								GT
+								After
 							} else {
-								EQ
+								Same
 							}
 						ascending = scored.fold_with_index(
 							True,
-							|ordered, score, index| ordered and (index == 0 or score_order(scored.get(index - 1) ?? score, score) != GT),
+							|ordered, score, index| ordered and (index == 0 or score_order(scored.get(index - 1) ?? score, score) != After),
 						)
 						descending = scored.fold_with_index(
 							True,
-							|ordered, score, index| ordered and (index == 0 or score_order(scored.get(index - 1) ?? score, score) != LT),
+							|ordered, score, index| ordered and (index == 0 or score_order(scored.get(index - 1) ?? score, score) != Before),
 						)
 						ordered_scores = if ascending {
 							scored
@@ -1422,11 +1422,11 @@ LayeredInternals :: {}.{
 		} else {
 			sorted = values.sort_with(
 				|a, b| if a < b {
-					LT
+					Before
 				} else if a > b {
-					GT
+					After
 				} else {
-					EQ
+					Same
 				},
 			)
 			n = sorted.len()
@@ -1730,11 +1730,11 @@ LayeredInternals :: {}.{
 				values = [ul, ur, ll, lr].map_with_index(|xs, i| (xs.get(v) ?? 0) + (shifts.get(i) ?? 0))
 				sorted = values.sort_with(
 					|a, b| if a < b {
-						LT
+						Before
 					} else if a > b {
-						GT
+						After
 					} else {
-						EQ
+						Same
 					},
 				)
 				((sorted.get(1) ?? 0) + (sorted.get(2) ?? 0)) / 2

@@ -57,13 +57,13 @@ Pack :: {}.{
 				extent_a = a.width.max(a.height)
 				extent_b = b.width.max(b.height)
 				if extent_a > extent_b {
-					LT
+					Before
 				} else if extent_a < extent_b {
-					GT
+					After
 				} else if a.index < b.index {
-					LT
+					Before
 				} else {
-					GT
+					After
 				}
 			}
 			already_ordered = indexed.fold_with_index(
@@ -73,7 +73,7 @@ Pack :: {}.{
 						and if index == 0 {
 							True
 						} else {
-							box_order(indexed.get(index - 1) ?? box, box) != GT
+							box_order(indexed.get(index - 1) ?? box, box) != After
 						},
 			)
 			sorted = if already_ordered {
