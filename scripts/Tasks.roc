@@ -29,12 +29,12 @@ Tasks :: [].{
 	test! = || {
 		Stdout.line!("Running tests...")?
 		roc = roc_bin!()
-		run!(roc, ["test", "package/main.roc"])?
+		run!(roc, ["test", "package/main.roc", "--opt=interpreter"])?
 
 		for entry in Path.utf8("package").list!()? {
 			name = Path.display(entry)
 			if name.starts_with("package/fuzz_") and name.ends_with(".roc") {
-				run!(roc, ["test", name])?
+				run!(roc, ["test", name, "--opt=interpreter"])?
 			}
 		}
 
@@ -42,7 +42,7 @@ Tasks :: [].{
 			if dir.is_dir!()? {
 				main_path = Path.join(dir, "main.roc")
 				match main_path.read_utf8!() {
-					Ok(_) => run!(roc, ["test", Path.display(main_path)])?
+					Ok(_) => run!(roc, ["test", Path.display(main_path), "--opt=interpreter"])?
 					Err(_) => {}
 				}
 			}
