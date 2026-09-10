@@ -72,11 +72,11 @@ CompoundRouting :: {}.{
 						ad = CompoundRouting.distance_sq(from, a)
 						bd = CompoundRouting.distance_sq(from, b)
 						if ad < bd {
-							LT
+							Before
 						} else if ad > bd {
-							GT
+							After
 						} else {
-							EQ
+							Same
 						}
 					},
 				)
@@ -170,11 +170,11 @@ CompoundRouting :: {}.{
 					a_length = CompoundRouting.path_length(a)
 					b_length = CompoundRouting.path_length(b)
 					if a_length < b_length {
-						LT
+						Before
 					} else if a_length > b_length {
-						GT
+						After
 					} else {
-						EQ
+						Same
 					}
 				},
 			).first() ?? hv

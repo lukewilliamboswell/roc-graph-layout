@@ -1143,13 +1143,10 @@ CompoundInternals :: {}.{
 }
 
 ## Empty recursive input is total.
-expect Compound.layout(Compound.default_input, Compound.default_run) == Ok({
-	layout: { positions: [], routes: [], bounds: { x: 0, y: 0, width: 32, height: 32 } },
-	groups: [{ rect: { x: 0, y: 0, width: 32, height: 32 }, content: { x: 16, y: 16, width: 0, height: 0 }, header: None }],
-	label_anchors: [],
-	attachments: [],
-	group_crossings: [],
-})
+expect match Compound.layout(Compound.default_input, Compound.default_run) {
+	Ok(result) => List.is_empty(result.layout.positions) and List.is_empty(result.layout.routes) and result.layout.bounds == { x: 0, y: 0, width: 32, height: 32 } and result.groups == [{ rect: { x: 0, y: 0, width: 32, height: 32 }, content: { x: 16, y: 16, width: 0, height: 0 }, header: None }] and List.is_empty(result.label_anchors) and List.is_empty(result.attachments) and List.is_empty(result.group_crossings)
+	Err(_) => False
+}
 
 ## Insets and header height are independent geometric inputs, so all invalid
 ## sides are reported together instead of silently repaired.
@@ -1159,7 +1156,31 @@ expect {
 	}
 	root = Group({ ..base, insets: { top: 0 - 1.0, right: F64.infinity, bottom: 3, left: 0 - 2.0 }, header: Reserve({ height: 0 - 4.0 }) })
 	match Compound.layout({ ..Compound.default_input, root }, Compound.default_run) {
-		Err(problems) => problems.contains(InvalidInset(0, Top)) and problems.contains(InvalidInset(0, Right)) and problems.contains(InvalidInset(0, Left)) and problems.contains(InvalidHeaderHeight(0))
+		Err(problems) => List.any(
+			problems,
+			|problem| match problem {
+				InvalidInset(0, Top) => True
+				_ => False
+			},
+		) and List.any(
+			problems,
+			|problem| match problem {
+				InvalidInset(0, Right) => True
+				_ => False
+			},
+		) and List.any(
+			problems,
+			|problem| match problem {
+				InvalidInset(0, Left) => True
+				_ => False
+			},
+		) and List.any(
+			problems,
+			|problem| match problem {
+				InvalidHeaderHeight(0) => True
+				_ => False
+			},
+		)
 		Ok(_) => False
 	}
 }
@@ -1195,7 +1216,19 @@ expect {
 	root = Group({ ..base, children: [Node(0)], algorithm })
 	input = { ..Compound.default_input, graph: { nodes: [{ width: 1, height: 1 }], edges: [] }, root, routing: Straight }
 	match Compound.layout(input, Compound.default_run) {
-		Err(problems) => problems.contains(MissingLayerTarget(0, 0, Group(9))) and problems.contains(MissingNonRankingEdge(0, 0, 4))
+		Err(problems) => List.any(
+			problems,
+			|problem| match problem {
+				MissingLayerTarget(0, 0, Group(9)) => True
+				_ => False
+			},
+		) and List.any(
+			problems,
+			|problem| match problem {
+				MissingNonRankingEdge(0, 0, 4) => True
+				_ => False
+			},
+		)
 		Ok(_) => False
 	}
 }
@@ -1241,7 +1274,13 @@ expect {
 	root = Group({ ..base, children: [Node(0), Node(1)], header: Reserve({ height: 12 }), insets: { ..Compound.default_insets, top: 0 } })
 	input = { ..Compound.default_input, graph: { nodes: List.repeat({ width: 10, height: 10 }, 2), edges: [{ from: 0, to: 1 }] }, root, attachments: [{ edge: 0, endpoint: From, attachment: On(Top) }] }
 	match Compound.layout(input, Compound.default_run) {
-		Err(problems) => problems.contains(HeaderAttachmentConflict(0, 0))
+		Err(problems) => List.any(
+			problems,
+			|problem| match problem {
+				HeaderAttachmentConflict(0, 0) => True
+				_ => False
+			},
+		)
 		Ok(_) => False
 	}
 }
@@ -1266,7 +1305,10 @@ expect {
 ## of being collapsed into one opaque metadata problem.
 expect {
 	input = { ..Compound.default_input, routing: Orthogonal({ ..Route.default_settings, obstacle_gap: 0 - 1.0 }) }
-	Compound.layout(input, Compound.default_run) == Err([RouteProblem(InvalidObstacleGap)])
+	match Compound.layout(input, Compound.default_run) {
+		Err([RouteProblem(InvalidObstacleGap)]) => True
+		_ => False
+	}
 }
 
 ## Row and column spacing belongs to the algorithms that consume it.
@@ -1276,7 +1318,13 @@ expect {
 	}
 	root = Group({ ..base, algorithm: Rows({ gap: 0 - 1.0 }) })
 	match Compound.layout({ ..Compound.default_input, root }, Compound.default_run) {
-		Err(problems) => problems.contains(InvalidGap(0))
+		Err(problems) => List.any(
+			problems,
+			|problem| match problem {
+				InvalidGap(0) => True
+				_ => False
+			},
+		)
 		Ok(_) => False
 	}
 }
@@ -1289,7 +1337,19 @@ expect {
 	group = Group({ ..base, children: [Node(0), Node(0)] })
 	input = { graph: { nodes: [{ width: 2, height: 2 }, { width: 2, height: 2 }], edges: [] }, attachments: [], group_attachments: [], boundaries: [], edge_labels: [], root: group, routing: Orthogonal(Route.default_settings) }
 	match Compound.layout(input, Compound.default_run) {
-		Err(problems) => problems.contains(DuplicateMember(0)) and problems.contains(MissingMember(1))
+		Err(problems) => List.any(
+			problems,
+			|problem| match problem {
+				DuplicateMember(0) => True
+				_ => False
+			},
+		) and List.any(
+			problems,
+			|problem| match problem {
+				MissingMember(1) => True
+				_ => False
+			},
+		)
 		Ok(_) => False
 	}
 }
@@ -1303,7 +1363,13 @@ expect {
 	root = Group({ ..base, children: [Node(0)], algorithm: ConstrainedStress({ settings: { node_gap: 1, max_iterations: 10, tolerance: 0.001 }, constraints: [Align({ axis: X, nodes: [0, 1] })], pins: [] }) })
 	input = { ..Compound.default_input, graph: { nodes: [{ width: 1, height: 1 }], edges: [] }, root, routing: Straight }
 	match Compound.layout(input, Compound.default_run) {
-		Err(problems) => problems.contains(MissingConstraintNode(0, 0, 1))
+		Err(problems) => List.any(
+			problems,
+			|problem| match problem {
+				MissingConstraintNode(0, 0, 1) => True
+				_ => False
+			},
+		)
 		Ok(_) => False
 	}
 }
@@ -1421,7 +1487,13 @@ expect {
 	root = Group({ ..base, children: [Nested(child), Node(1)] })
 	input = { ..Compound.default_input, graph: { nodes: List.repeat({ width: 10, height: 10 }, 2), edges: [{ from: 0, to: 1 }] }, root, routing: Straight, group_attachments: [{ edge: 0, group: 1, attachment: On(Right) }] }
 	match Compound.layout(input, Compound.default_run) {
-		Err(problems) => problems.contains(GroupAttachmentNeedsOrthogonal(0))
+		Err(problems) => List.any(
+			problems,
+			|problem| match problem {
+				GroupAttachmentNeedsOrthogonal(0) => True
+				_ => False
+			},
+		)
 		Ok(_) => False
 	}
 }
@@ -1484,7 +1556,13 @@ expect {
 	root = Group({ ..base, children: [Node(0)], algorithm: GraphCircular({ ..Graph.default_circular_settings, node_gap: -1 }) })
 	input = { graph: { nodes: [{ width: 1, height: 1 }], edges: [] }, attachments: [], group_attachments: [], boundaries: [], edge_labels: [], root, routing: Straight }
 	match Compound.layout(input, Compound.default_run) {
-		Err(problems) => problems.contains(InvalidGroupAlgorithm(0))
+		Err(problems) => List.any(
+			problems,
+			|problem| match problem {
+				InvalidGroupAlgorithm(0) => True
+				_ => False
+			},
+		)
 		Ok(_) => False
 	}
 }
@@ -1498,7 +1576,13 @@ expect {
 	root = Group({ ..base, children: [Node(0), Node(1)], algorithm: TreeTidy(Tree.default_settings) })
 	input = { graph: { nodes: List.repeat({ width: 1, height: 1 }, 2), edges: [] }, attachments: [], group_attachments: [], boundaries: [], edge_labels: [], root, routing: Straight }
 	match Compound.layout(input, Compound.default_run) {
-		Err(problems) => problems.contains(InvalidTreeTopology(0))
+		Err(problems) => List.any(
+			problems,
+			|problem| match problem {
+				InvalidTreeTopology(0) => True
+				_ => False
+			},
+		)
 		Ok(_) => False
 	}
 }

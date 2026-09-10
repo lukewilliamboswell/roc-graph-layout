@@ -111,6 +111,7 @@ LayeredInternals :: {}.{
 
 	grow_weighted_forest : U64, List({ from : U64, to : U64, weight : F64, min_span : U64 }), List(I64) -> { ranks : List(I64), tree_flags : List(Bool) }
 	grow_weighted_forest = |node_count, edges, init_ranks| {
+		empty : List(Bool)
 		empty = List.repeat(False, node_count)
 		finished = LayeredInternals.indices_up_to(node_count).fold(
 			{ ranks: init_ranks, tree_flags: List.repeat(False, edges.len()), in_forest: empty },
@@ -198,7 +199,9 @@ LayeredInternals :: {}.{
 				edges.fold_with_index(
 					side,
 					|acc, edge, i| if (tree_flags.get(i) ?? False) and i != excluded {
+						a : Bool
 						a = acc.get(edge.from) ?? False
+						b : Bool
 						b = acc.get(edge.to) ?? False
 						if a and !b {
 							acc.set(edge.to, True) ?? acc
@@ -348,6 +351,7 @@ LayeredInternals :: {}.{
 	## other edge feasible. Returns the adjusted ranks and a per-edge tree flag.
 	grow_tight_forest : U64, List({ from : U64, to : U64 }), List(I64) -> { ranks : List(I64), tree_flags : List(Bool) }
 	grow_tight_forest = |node_count, edges, init_ranks| {
+		empty_flags : List(Bool)
 		empty_flags = List.repeat(False, node_count)
 
 		grown = LayeredInternals.indices_up_to(node_count).fold(
@@ -420,7 +424,9 @@ LayeredInternals :: {}.{
 					side,
 					|acc, edge, index| {
 						if (tree_flags.get(index) ?? False) and index != excluded {
+							from_in : Bool
 							from_in = acc.get(edge.from) ?? False
+							to_in : Bool
 							to_in = acc.get(edge.to) ?? False
 							if from_in and !to_in {
 								acc.set(edge.to, True) ?? acc
@@ -787,15 +793,15 @@ LayeredInternals :: {}.{
 					ak = virtual_keys.get(a) ?? 0
 					bk = virtual_keys.get(b) ?? 0
 					if ak < bk {
-						LT
+						Before
 					} else if ak > bk {
-						GT
+						After
 					} else if a < b {
-						LT
+						Before
 					} else if a > b {
-						GT
+						After
 					} else {
-						EQ
+						Same
 					}
 				},
 			),
@@ -1182,11 +1188,11 @@ LayeredInternals :: {}.{
 	ascending_indices = |values|
 		values.sort_with(
 			|a, b| if a < b {
-				LT
+				Before
 			} else if a > b {
-				GT
+				After
 			} else {
-				EQ
+				Same
 			},
 		)
 
@@ -1363,27 +1369,27 @@ LayeredInternals :: {}.{
 
 						score_order = |a, b|
 							if a.key < b.key {
-								LT
+								Before
 							} else if a.key > b.key {
-								GT
+								After
 							} else if a.pos < b.pos {
-								LT
+								Before
 							} else if a.pos > b.pos {
-								GT
+								After
 							} else if a.node < b.node {
-								LT
+								Before
 							} else if a.node > b.node {
-								GT
+								After
 							} else {
-								EQ
+								Same
 							}
 						ascending = scored.fold_with_index(
 							True,
-							|ordered, score, index| ordered and (index == 0 or score_order(scored.get(index - 1) ?? score, score) != GT),
+							|ordered, score, index| ordered and (index == 0 or score_order(scored.get(index - 1) ?? score, score) != After),
 						)
 						descending = scored.fold_with_index(
 							True,
-							|ordered, score, index| ordered and (index == 0 or score_order(scored.get(index - 1) ?? score, score) != LT),
+							|ordered, score, index| ordered and (index == 0 or score_order(scored.get(index - 1) ?? score, score) != Before),
 						)
 						ordered_scores = if ascending {
 							scored
@@ -1422,11 +1428,11 @@ LayeredInternals :: {}.{
 		} else {
 			sorted = values.sort_with(
 				|a, b| if a < b {
-					LT
+					Before
 				} else if a > b {
-					GT
+					After
 				} else {
-					EQ
+					Same
 				},
 			)
 			n = sorted.len()
@@ -1730,11 +1736,11 @@ LayeredInternals :: {}.{
 				values = [ul, ur, ll, lr].map_with_index(|xs, i| (xs.get(v) ?? 0) + (shifts.get(i) ?? 0))
 				sorted = values.sort_with(
 					|a, b| if a < b {
-						LT
+						Before
 					} else if a > b {
-						GT
+						After
 					} else {
-						EQ
+						Same
 					},
 				)
 				((sorted.get(1) ?? 0) + (sorted.get(2) ?? 0)) / 2
