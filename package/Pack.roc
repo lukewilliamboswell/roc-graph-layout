@@ -62,8 +62,10 @@ Pack :: {}.{
 					After
 				} else if a.index < b.index {
 					Before
-				} else {
+				} else if a.index > b.index {
 					After
+				} else {
+					Same
 				}
 			}
 			already_ordered = indexed.fold_with_index(
