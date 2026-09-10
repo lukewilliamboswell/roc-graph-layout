@@ -3,8 +3,9 @@
 This repository checks once daily at 13:13 UTC, about four hours
 after the upstream 09:00 UTC build. Late publication can wait until the next day.
 
-`.roc-version` is the compiler pin. `.github/roc-nightly.json` selects this
-repository's validation workflows, including their validation-only release paths.
+The `roc` fields in `package/main.roc` and `examples/node_editor/main.roc` are the
+compiler pins. `.github/roc-nightly.json` selects both roots and this repository's
+validation workflows, including their validation-only release paths.
 The controller, its tests, and job permissions are maintained in
 [roc-automation](https://github.com/lukewilliamboswell/roc-automation).
 The caller workflows pin shared code to `0b4595a2fca0630b3a9df4797f8c7a58aec0b2dc`.
