@@ -57,61 +57,63 @@ Pack :: {}.{
 				extent_a = a.width.max(a.height)
 				extent_b = b.width.max(b.height)
 				if extent_a > extent_b {
-					LT
+					Before
 				} else if extent_a < extent_b {
-					GT
+					After
 				} else if a.index < b.index {
-					LT
+					Before
+				} else if a.index > b.index {
+					After
 				} else {
-					GT
+					Same
 				}
 			}
-			already_ordered = indexed.fold_with_index(
-				True,
-				|ordered, box, index|
-					ordered
-						and if index == 0 {
-							True
-						} else {
-							box_order(indexed.get(index - 1) ?? box, box) != GT
-						},
+			order_scan = indexed.fold(
+				{ ordered: True, previous: None },
+				|state, box| {
+					ordered = match state.previous {
+						None => state.ordered
+						Some(previous) => state.ordered and box_order(previous, box) != After
+					}
+
+					{ ordered, previous: Some(box) }
+				},
 			)
-			sorted = if already_ordered {
+			sorted = if order_scan.ordered {
 				indexed
 			} else {
 				indexed.sort_with(box_order)
 			}
 
-			placed = sorted.fold(
-				{ placements: [], cursor_x: 0, shelf_y: 0, shelf_height: 0, shelf_count: 0 },
-				|state, box| {
-					opens_shelf = state.shelf_count > 0 and state.cursor_x + box.width > target_width
-					if opens_shelf {
-						# shelf arithmetic saturates so extreme-but-finite box
-						# sizes keep every placement finite
-						shelf_y = Geom.saturate(state.shelf_y + state.shelf_height + gap)
+			var $placements = List.repeat({ index: 0.U64, x: 0, y: 0, width: 0, height: 0 }, boxes.len())
+			var $placement_index = 0.U64
+			var $cursor_x = 0
+			var $shelf_y = 0
+			var $shelf_height = 0
+			var $shelf_count = 0.U64
+			for box in sorted {
+				opens_shelf = $shelf_count > 0 and $cursor_x + box.width > target_width
+				placement = if opens_shelf {
+					# shelf arithmetic saturates so extreme-but-finite box
+					# sizes keep every placement finite
+					$shelf_y = Geom.saturate($shelf_y + $shelf_height + gap)
+					$cursor_x = Geom.saturate(box.width + gap)
+					$shelf_height = box.height
+					$shelf_count = 1
+					{ index: box.index, x: 0, y: $shelf_y, width: box.width, height: box.height }
+				} else {
+					placed_at = { index: box.index, x: $cursor_x, y: $shelf_y, width: box.width, height: box.height }
+					$cursor_x = Geom.saturate($cursor_x + box.width + gap)
+					$shelf_height = $shelf_height.max(box.height)
+					$shelf_count = $shelf_count + 1
+					placed_at
+				}
+				$placements = $placements.set($placement_index, placement) ?? []
+				$placement_index = $placement_index + 1
+			}
 
-						{
-							placements: state.placements.append({ index: box.index, x: 0, y: shelf_y, width: box.width, height: box.height }),
-							cursor_x: Geom.saturate(box.width + gap),
-							shelf_y,
-							shelf_height: box.height,
-							shelf_count: 1,
-						}
-					} else {
-						{
-							placements: state.placements.append({ index: box.index, x: state.cursor_x, y: state.shelf_y, width: box.width, height: box.height }),
-							cursor_x: Geom.saturate(state.cursor_x + box.width + gap),
-							shelf_y: state.shelf_y,
-							shelf_height: state.shelf_height.max(box.height),
-							shelf_count: state.shelf_count + 1,
-						}
-					}
-				},
-			)
-
-			first = placed.placements.get(0) ?? { index: 0, x: 0, y: 0, width: 0, height: 0 }
-			tight = placed.placements.fold(
+			first = $placements.get(0) ?? { index: 0, x: 0, y: 0, width: 0, height: 0 }
+			tight = $placements.fold(
 				{
 					min_x: first.x,
 					min_y: first.y,
@@ -128,14 +130,17 @@ Pack :: {}.{
 				},
 			)
 
-			positions = placed.placements.fold(
+			positions = $placements.fold(
 				List.repeat(Geom.point(0, 0), boxes.len()),
 				|acc, p| {
 					center = Geom.point(
 						Geom.saturate(p.x + p.width / 2 - tight.min_x),
 						Geom.saturate(p.y + p.height / 2 - tight.min_y),
 					)
-					acc.set(p.index, center) ?? acc
+					# Every placement index came from boxes.map_with_index, and acc has
+					# exactly boxes.len() entries, so this fallback is unreachable. Do
+					# not retain acc here: doing so forces a copy for every update.
+					acc.set(p.index, center) ?? []
 				},
 			)
 

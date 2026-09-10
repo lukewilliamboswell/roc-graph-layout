@@ -128,13 +128,13 @@ Overlap :: {}.{
 				.map_with_index(|p, index| { index, y: p.y })
 				.sort_with(
 					|a, b| if a.y < b.y {
-						LT
+						Before
 					} else if a.y > b.y {
-						GT
+						After
 					} else if a.index < b.index {
-						LT
+						Before
 					} else {
-						GT
+						After
 					},
 				)
 			order.fold(

@@ -106,19 +106,19 @@ CircularInternals :: {}.{
 			da = (neighbors.get(a) ?? []).len()
 			db = (neighbors.get(b) ?? []).len()
 			if da > db {
-				LT
+				Before
 			} else if da < db {
-				GT
+				After
 			} else if a < b {
-				LT
+				Before
 			} else {
-				GT
+				After
 			}
 		}
 		indices = CircularInternals.indices_up_to(node_count)
 		already_ordered = indices.fold_with_index(
 			True,
-			|ordered, node, index| ordered and (index == 0 or degree_order(indices.get(index - 1) ?? node, node) != GT),
+			|ordered, node, index| ordered and (index == 0 or degree_order(indices.get(index - 1) ?? node, node) != After),
 		)
 		by_degree = if already_ordered {
 			indices

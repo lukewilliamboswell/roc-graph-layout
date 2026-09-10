@@ -130,9 +130,9 @@ RadialInternals :: {}.{
 		sorted = Paths.neighbors_of(adj, parent).sort_with(
 			|a, b|
 				if a < b {
-					LT
+					Before
 				} else {
-					GT
+					After
 				},
 		)
 		sorted.fold(
@@ -222,9 +222,9 @@ RadialInternals :: {}.{
 		sorted = values.sort_with(
 			|a, b|
 				if a < b {
-					LT
+					Before
 				} else {
-					GT
+					After
 				},
 		)
 		m = sorted.len()
@@ -268,17 +268,17 @@ RadialInternals :: {}.{
 		keyed.sort_with(
 			|a, b|
 				if a.key < b.key {
-					LT
+					Before
 				} else if a.key > b.key {
-					GT
+					After
 				} else if a.position < b.position {
-					LT
+					Before
 				} else if a.position > b.position {
-					GT
+					After
 				} else if a.node < b.node {
-					LT
+					Before
 				} else {
-					GT
+					After
 				},
 		).map(|entry| entry.node)
 	}

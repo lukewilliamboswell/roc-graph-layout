@@ -189,23 +189,23 @@ Solver :: {}.{
 			a_key = desired.get(a.left) ?? 0
 			b_key = desired.get(b.left) ?? 0
 			if a_key < b_key {
-				LT
+				Before
 			} else if a_key > b_key {
-				GT
+				After
 			} else if a.left < b.left {
-				LT
+				Before
 			} else if a.left > b.left {
-				GT
+				After
 			} else if a.right < b.right {
-				LT
+				Before
 			} else if a.right > b.right {
-				GT
+				After
 			} else if a.gap > b.gap {
-				LT
+				Before
 			} else if a.gap < b.gap {
-				GT
+				After
 			} else {
-				EQ
+				Same
 			}
 		}
 		already_ordered = constraints.fold_with_index(
@@ -215,7 +215,7 @@ Solver :: {}.{
 					and if index == 0 {
 						True
 					} else {
-						constraint_order(constraints.get(index - 1) ?? constraint, constraint) != GT
+						constraint_order(constraints.get(index - 1) ?? constraint, constraint) != After
 					},
 		)
 		ordered = if already_ordered {

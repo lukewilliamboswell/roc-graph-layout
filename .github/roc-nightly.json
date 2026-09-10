@@ -1,5 +1,10 @@
 {
   "workflows": [
     "tests.yaml"
-  ]
+  ],
+  "compiler_roots": [
+    "package/main.roc",
+    "examples/node_editor/main.roc"
+  ],
+  "auto_merge": false
 }
