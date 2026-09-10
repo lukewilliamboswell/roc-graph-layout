@@ -1,5 +1,6 @@
 {
   "workflows": [
     "tests.yaml"
-  ]
+  ],
+  "auto_merge": false
 }
