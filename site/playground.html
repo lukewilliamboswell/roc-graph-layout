@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Graph layout playground — roc-graph-layout</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="header">
+    <a href="../index.html">roc-graph-layout</a>
+    <nav class="header-links" aria-label="Site">
+      <a href="../choosing-a-layout.html">Guides</a>
+      <a href="../docs/">API reference</a>
+      <a href="https://github.com/lukewilliamboswell/roc-graph-layout">GitHub</a>
+    </nav>
+  </header>
+  <main id="app" aria-label="Graph layout playground">
+    <p>Loading the interactive playground…</p>
+  </main>
+  <noscript><p>This playground needs JavaScript and WebAssembly. The <a href="../index.html">guides</a> and <a href="../docs/">API reference</a> do not.</p></noscript>
+  <script type="module">
+    import { mountSignalsApp } from './signals.mjs';
+    const root = document.getElementById('app');
+    try {
+      window.app = await mountSignalsApp({ root, wasmUrl: './app.wasm' });
+    } catch (error) {
+      root.textContent = 'The playground could not start. Please reload, or use the guides and API reference above.';
+      console.error(error);
+    }
+  </script>
+</body>
+</html>
