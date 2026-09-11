@@ -6,5 +6,5 @@
     "package/main.roc",
     "examples/node_editor/main.roc"
   ],
-  "auto_merge": false
+  "auto_merge": true
 }
