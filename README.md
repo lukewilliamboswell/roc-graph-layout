@@ -117,16 +117,19 @@ Run the project checks with:
 ./scripts/all.roc            # check, test, then bundle
 ```
 
-QA the browser playground from its vendored release assets with:
+Build and preview the new guides and Signals playground locally with:
 
 ```sh
+python3 scripts/build_site.py --base-path ''
 python3 scripts/serve.py
 # open http://127.0.0.1:8000/
 ```
 
 Pass `--port 8080` (or another port) if 8000 is already in use. This serves
-the checked-in Wasm and matching Joy runtime; it does not rebuild them.
+the generated site under `dist/site`; it does not rebuild it. See the
+[site build instructions](site/README.md) for the pinned compiler, reproducible
+Signals assets, and browser tests.
 
-CI uses the nightly pinned in `.roc-version`. Locally, scripts use `roc` on
+CI uses the nightly pinned in `package/main.roc`. Locally, scripts use `roc` on
 your `PATH`, or the executable path in `ROC`; for example,
 `ROC=../roc/target/release/roc ./scripts/all.roc`.
