@@ -54,6 +54,9 @@ select { padding-right: 28px; }
 .settings { display: grid; gap: 14px; }
 .controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: end; }
 .control { display: grid; gap: 6px; color: #627366; font-size: 11px; font-weight: 550; }
+.control-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.control-value { color: #2f6047; font: 600 10px/1.4 ui-monospace, monospace; }
+.control input[type=range] { width: 100%; min-height: 22px; margin: 0; accent-color: #245b40; cursor: pointer; }
 .layout-control { color: #22352d; font-size: 12px; }
 .check { display: flex; align-items: center; gap: 7px; min-height: 40px; color: #526254; font-size: 12px; }
 .check input { accent-color: #245b40; margin: 0; width: 16px; height: 16px; }

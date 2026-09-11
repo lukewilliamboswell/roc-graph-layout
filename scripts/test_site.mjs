@@ -56,6 +56,10 @@ try {
   await page.waitForFunction(() => document.querySelectorAll('svg .node').length === 7);
   assert.equal(await page.locator('[role="alert"]').isVisible(), false, 'empty errors must not leave a visible banner');
   assert.match(await page.locator('.layout-control').innerText(), /Layout algorithm/);
+  assert.ok(await page.getByRole('slider').count() > 0, 'numeric layout settings use sliders');
+  const nodeGap = page.getByRole('slider', { name: 'Node gap', exact: true });
+  await nodeGap.fill('40');
+  await nodeGap.locator('xpath=..').locator('output').filter({ hasText: '40' }).waitFor();
   assert.match(await page.locator('.example-picker').innerText(), /Choose an example/);
   assert.ok(await page.locator('.preview').evaluate(el => el.getBoundingClientRect().height < 750), 'preview must remain bounded on desktop');
   assert.equal(await page.locator('details.inspect').getAttribute('open'), null, 'geometry starts collapsed');
@@ -77,6 +81,10 @@ try {
   assert.equal(await page.locator('svg').count(), 0);
   await page.getByRole('button', { name: 'Reset', exact: true }).click();
   await page.waitForFunction(() => document.querySelectorAll('svg .node').length === 7);
+  await page.getByRole('combobox', { name: 'Layout', exact: true }).selectOption('Tree');
+  await page.waitForFunction(() => document.querySelectorAll('svg .node').length === 7);
+  assert.equal(await page.locator('[role="alert"]').textContent(), '', 'pipeline should have a spanning-tree projection');
+  assert.equal(await page.locator('svg .edge').count(), 8, 'tree projection must retain every source edge');
   for (const [preset, count] of [['org', 9], ['mind', 11], ['collaboration', 10], ['incident', 12], ['cloud', 8], ['release', 9], ['transit', 10]]) {
     await page.getByRole('combobox', { name: 'Example', exact: true }).selectOption(preset);
     await page.waitForFunction(expected => document.querySelectorAll('svg .node').length === expected, count);

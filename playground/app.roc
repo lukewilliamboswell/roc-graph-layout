@@ -183,20 +183,21 @@ direction_name = |direction|
 expect {
 	doc : Doc
 	doc = { labels: ["root", "left", "right", "leaf"], graph: { nodes: List.repeat({ width: 10, height: 10 }, 4), edges: [{ from: 0, to: 2 }, { from: 0, to: 1 }, { from: 1, to: 3 }] } }
-	points = [{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 1, y: 0 }, { x: 3, y: 0 }]
-	routes = [Line(points.get(0)?, points.get(1)?), Line(points.get(0)?, points.get(2)?), Line(points.get(2)?, points.get(3)?)]
-	geometry = LayoutDemo.tree_geometry(doc, { positions: points, routes, bounds: { x: 0, y: 0, width: 10, height: 10 } })
-	geometry.positions.map(|point| point.x) == [0, 1, 2, 3] and geometry.routes == routes
+	points = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 3, y: 0 }, { x: 2, y: 0 }]
+	tree_routes = [Line(points.get(0)?, points.get(1)?), Line(points.get(1)?, points.get(2)?), Line(points.get(0)?, points.get(3)?)]
+	geometry = LayoutDemo.tree_geometry(doc, { positions: points, routes: tree_routes, bounds: { x: 0, y: 0, width: 10, height: 10 } })
+	source_routes = [tree_routes.get(2)?, tree_routes.get(0)?, tree_routes.get(1)?]
+	geometry.positions.map(|point| point.x) == [0, 1, 2, 3] and geometry.routes == source_routes
 }
 
-## Tree mode rejects disconnected nodes and multiple parents instead of dropping them.
+## Tree mode derives a spanning hierarchy from disconnected and multi-parent input.
 expect {
 	nodes = List.repeat({ width: 10, height: 10 }, 3)
 	disconnected : Doc
 	disconnected = { labels: ["A", "B", "C"], graph: { nodes, edges: [{ from: 0, to: 1 }] } }
 	multiple : Doc
 	multiple = { labels: disconnected.labels, graph: { nodes, edges: [{ from: 0, to: 1 }, { from: 0, to: 2 }, { from: 1, to: 2 }] } }
-	LayoutDemo.tree_problems(disconnected).len() == 1 and LayoutDemo.tree_problems(multiple).len() == 1
+	LayoutDemo.tree_problems(disconnected).is_empty() and LayoutDemo.tree_problems(multiple).is_empty() and LayoutDemo.tree_edges(disconnected) == [{ from: 0, to: 1 }, { from: 0, to: 2 }] and LayoutDemo.tree_edges(multiple) == [{ from: 0, to: 1 }, { from: 0, to: 2 }]
 }
 
 main : () -> Elem
@@ -349,15 +350,33 @@ number_value = |config, field| match field {
 	Seed => config.seed.to_str()
 }
 
+range_for = |field| match field {
+	NodeGap => { min: "0", max: "120", step: "1" }
+	LayerGap => { min: "0", max: "240", step: "1" }
+	RingGap => { min: "0", max: "240", step: "1" }
+	StartAngle => { min: "-3.15", max: "3.15", step: "0.05" }
+	Iterations => { min: "10", max: "2000", step: "10" }
+	Tolerance => { min: "0.001", max: "1", step: "0.001" }
+	Repulsion => { min: "0", max: "5", step: "0.05" }
+	Gravity => { min: "0", max: "1", step: "0.01" }
+	Sweeps => { min: "0", max: "20", step: "1" }
+	Seed => { min: "0", max: "1000", step: "1" }
+}
+
 number : Ui.State(Model), Signal(State), Str, NumberField -> Elem
-number = |model, state, title, field| html(
-	"label",
-	[Html.class_attr("control")],
-	[
-		Html.text(title),
-		Html.number_input(title, Signal.map(state, |value| number_value(value.config, field)), model.on_str(|value, raw| (update(value, SetNumber(field, raw))))),
-	],
-)
+number = |model, state, title, field| {
+	input_value = Signal.map(state, |current_state| number_value(current_state.config, field))
+	output_value = Signal.map(state, |current_state| number_value(current_state.config, field))
+	range = range_for(field)
+	html(
+		"label",
+		[Html.class_attr("control")],
+		[
+			panel("control-heading", [Html.text(title), html("output", [Html.class_attr("control-value")], [Html.text_s(output_value)])]),
+			html("input", [Html.attr("type", "range"), Html.attr("role", "slider"), Html.aria_label(title), Html.attr("min", range.min), Html.attr("max", range.max), Html.attr("step", range.step), Html.attr_s("value", input_value), Html.on_custom("input", model.on_str(|current_model, raw| (update(current_model, SetNumber(field, raw)))))], []),
+		],
+	)
+}
 
 controls : Ui.State(Model), Signal(State) -> Elem
 controls = |model, state| panel(

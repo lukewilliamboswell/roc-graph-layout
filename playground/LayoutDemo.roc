@@ -77,30 +77,30 @@ LayoutDemo := [].{
 
 	tree_problems : Doc -> List(Str)
 	tree_problems = |doc| {
-		edge_problems = doc.graph.edges.map_with_index(
+		doc.graph.edges.map_with_index(
 			|edge, index| {
 				if edge.from >= doc.graph.nodes.len() or edge.to >= doc.graph.nodes.len() {
 					["Tree edge ${index.to_str()} refers to a missing node."]
-				} else if edge.from >= edge.to {
-					["Tree edge ${index.to_str()} must point from an earlier parent to a later child."]
 				} else []
 			},
 		).join()
-		parent_problems = doc.graph.nodes.map_with_index(
-			|_, index| {
-				parents = doc.graph.edges.keep_if(|edge| edge.to == index).len()
-				if (index == 0 and parents != 0) or (index != 0 and parents != 1) {
-					["Tree node ${index.to_str()} must have ${if index == 0 "no parent" else "exactly one parent"}."]
-				} else []
-			},
-		).join()
-		edge_problems.concat(parent_problems)
 	}
+
+	## Choose one earlier incoming edge per node. Nodes without one become root
+	## children, so any valid playground graph has a deterministic tree reading.
+	tree_edges : Doc -> List(Edge)
+	tree_edges = |doc| doc.graph.nodes.drop_first(1).map_with_index(
+		|_, offset| {
+			child = offset + 1
+			doc.graph.edges.find_first(|edge| edge.to == child and edge.from < child) ?? { from: 0, to: child }
+		},
+	)
 
 	## Tree numbers output in depth-first order. Restore the playground's node
 	## and edge input order before joining positions to labels and sizes.
 	tree_geometry : Doc, Geometry -> Geometry
 	tree_geometry = |doc, geometry| {
+		hierarchy = tree_edges(doc)
 		initial : List(U64)
 		initial = [0]
 		var $pending = initial
@@ -109,7 +109,7 @@ LayoutDemo := [].{
 			match $pending {
 				[node, .. as rest] => {
 					$order = $order.append(node)
-					$pending = doc.graph.edges.keep_if(|edge| edge.from == node).map(|edge| edge.to).concat(rest)
+					$pending = hierarchy.keep_if(|edge| edge.from == node).map(|edge| edge.to).concat(rest)
 				}
 				[] => crash "Validated tree traversal ended early"
 			}
@@ -129,8 +129,15 @@ LayoutDemo := [].{
 		)
 		routes = doc.graph.edges.map(
 			|edge| {
-				child_index = inverse.get(edge.to) ?? crash "Validated tree endpoint disappeared"
-				geometry.routes.get(child_index - 1) ?? crash "Tree omitted a parent route"
+				parent = hierarchy.find_first(|candidate| candidate.to == edge.to)
+				if edge.to != 0 and parent == Ok(edge) {
+					child_index = inverse.get(edge.to) ?? crash "Validated tree endpoint disappeared"
+					geometry.routes.get(child_index - 1) ?? crash "Tree omitted a parent route"
+				} else {
+					from = positions.get(edge.from) ?? crash "Validated tree start disappeared"
+					to = positions.get(edge.to) ?? crash "Validated tree end disappeared"
+					Line(from, to)
+				}
 			},
 		)
 		{ ..geometry, positions, routes }
@@ -143,7 +150,7 @@ LayoutDemo := [].{
 		for offset in 0..<node_count {
 			index = node_count - offset - 1
 			base = $specs.get(index) ?? { width: 0, height: 0, children: [] }
-			children = doc.graph.edges.keep_oks(|edge| if edge.from == index $specs.get(edge.to).map_err(|_| Skip) else Err(Skip))
+			children = tree_edges(doc).keep_oks(|edge| if edge.from == index $specs.get(edge.to).map_err(|_| Skip) else Err(Skip))
 			$specs = $specs.set(index, { ..base, children }) ?? []
 		}
 		$specs.get(0) ?? { width: 0, height: 0, children: [] }
