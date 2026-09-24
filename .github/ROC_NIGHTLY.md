@@ -8,10 +8,11 @@ compiler pins. `.github/roc-nightly.json` selects both roots and this repository
 validation workflows, including their validation-only release paths.
 The controller, its tests, and job permissions are maintained in
 [roc-automation](https://github.com/lukewilliamboswell/roc-automation).
-The caller workflows pin shared code to `355f762079f676df4d0ae86416edf34216b488e0`.
+The nightly updater pins shared code to `2af4ba5decfc7cae11d432f9ac82194d6401b782`;
+the PR configuration check retains its reviewed pin `355f762079f676df4d0ae86416edf34216b488e0`.
 Dependabot proposes reviewed updates to Actions/workflow references.
 
-Follow the shared [integration and permissions guide](https://github.com/lukewilliamboswell/roc-automation/blob/355f762079f676df4d0ae86416edf34216b488e0/docs/integration.md)
+Follow the shared [integration and permissions guide](https://github.com/lukewilliamboswell/roc-automation/blob/2af4ba5decfc7cae11d432f9ac82194d6401b782/docs/integration.md)
 for the PR-creation setting, action allowlists, required checks, and first live
 GITHUB_TOKEN run. Keep default token permissions read-only. This repository
 enables automatic merging after candidate validation and repository rules pass;
