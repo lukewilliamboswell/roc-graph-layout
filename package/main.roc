@@ -14,4 +14,4 @@ package
 		StressLayout,
 		Tree,
 	]
-	{ roc: "nightly-2026-09-05-b195f5b" }
+	{ roc: "nightly-2026-09-26-d6267b4" }
