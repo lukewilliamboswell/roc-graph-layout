@@ -1,7 +1,7 @@
 ## Datastar-driven free-form node editor showcasing layout and routing.
 ## scripts: service
 app [Context, program] {
-	pf: platform "https://github.com/roc-lang/basic-webserver/releases/download/0.16.0/42jC1JT3auhHSmv2Ah8mW5F2MXiAakq1UQQ4NQceQjXw.tar.zst",
+	pf: platform "https://github.com/roc-lang/basic-webserver/releases/download/0.17.0/AC9goxhsjJJdrQtnc2ga3eTiESyh6ZLraZJsCVdEfeZT.tar.zst",
 	http: "https://github.com/roc-lang/http/releases/download/1.0.0/6ZUwqYhCS8PU9Mo6MF7oV82ET2o7KYb57CLKDq4cq4sS.tar.zst",
 	layout: "../../package/main.roc",
 	ds: "./datastar/main.roc",
@@ -62,7 +62,7 @@ StreamState : { revision : I64, signal_revision : I64, ticks : U64 }
 
 program = { init!, respond!, shutdown! }
 
-init! : () => Try({ config : Server.Config, context : Context }, [Exit(I64), InitFailed(Str), ..])
+init! : () => Try({ config : Server.Config, context : Context }, [Exit(I64), InitFailed(Str)])
 init! = || {
 	db_path = match Env.var!("ROC_GRAPH_LAYOUT_NODE_EDITOR_DB") {
 		Ok(value) => Path.from_os_str(value)
@@ -104,7 +104,7 @@ init! = || {
 	Ok({ config, context: db })
 }
 
-respond! : Server.Request, Context => Try(Server.Outcome, [ServerErr(Str), ..])
+respond! : Server.Request, Context => Try(Server.Outcome, [ServerErr(Str)])
 respond! = |request, db| {
 	path = request_path(request)
 	match (request.method(), path) {
@@ -147,7 +147,7 @@ stream_step! = |db, state| {
 	}
 }
 
-action! : Sqlite.Db, Server.Request => Try(Server.Outcome, [ServerErr(Str), ..])
+action! : Sqlite.Db, Server.Request => Try(Server.Outcome, [ServerErr(Str)])
 action! = |db, request| {
 	signals : Signals
 	signals = match Datastar.read_signals!(request) {
@@ -185,7 +185,7 @@ action! = |db, request| {
 signal_event : Bool, Str -> Sse.Event
 signal_event = |pending, status| Datastar.patch_signals("{\"pending\":${Json.to_str(pending)},\"status\":${Json.to_str(status)}}")
 
-inspector! : Sqlite.Db, Server.Request => Try(Server.Outcome, [ServerErr(Str), ..])
+inspector! : Sqlite.Db, Server.Request => Try(Server.Outcome, [ServerErr(Str)])
 inspector! = |db, request| {
 	signals : Signals
 	signals = match Datastar.read_signals!(request) {
@@ -546,5 +546,5 @@ bytes_response = |status, content_type, body| Response.from_status(status).with_
 text_response : U16, Str -> Response
 text_response = |status, body| bytes_response(status, "text/plain; charset=utf-8", Str.to_utf8(body))
 
-shutdown! : Server.ShutdownReason, Context => Try({}, [Exit(I64), ..])
+shutdown! : Server.ShutdownReason, Context => Try({}, [Exit(I64)])
 shutdown! = |_reason, _db| Ok({})
