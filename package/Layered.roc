@@ -2914,6 +2914,45 @@ Prepared := {
 		InvalidRouting(Route.Problem),
 	].{
 
+		## Compare the typed problem and its indices, independent of diagnostic wording.
+		is_eq : Problem, Problem -> Bool
+		is_eq = |left, right| match (left, right) {
+			(InvalidNodeWidth(a0), InvalidNodeWidth(b0)) => a0 == b0
+			(InvalidNodeHeight(a0), InvalidNodeHeight(b0)) => a0 == b0
+			(MissingEdgeStart(a0, a1), MissingEdgeStart(b0, b1)) => a0 == b0 and a1 == b1
+			(MissingEdgeEnd(a0, a1), MissingEdgeEnd(b0, b1)) => a0 == b0 and a1 == b1
+			(InvalidNodeGap, InvalidNodeGap) => True
+			(InvalidLayerGap, InvalidLayerGap) => True
+			(MissingEdgeWeightEdge(a0), MissingEdgeWeightEdge(b0)) => a0 == b0
+			(InvalidEdgeWeight(a0), InvalidEdgeWeight(b0)) => a0 == b0
+			(NonRankingEdgeWeight(a0, a1), NonRankingEdgeWeight(b0, b1)) => a0 == b0 and a1 == b1
+			(MissingMinimumSpanEdge(a0), MissingMinimumSpanEdge(b0)) => a0 == b0
+			(InvalidMinimumSpan(a0), InvalidMinimumSpan(b0)) => a0 == b0
+			(NonRankingMinimumSpan(a0, a1), NonRankingMinimumSpan(b0, b1)) => a0 == b0 and a1 == b1
+			(InvalidAttachmentEdge(a0), InvalidAttachmentEdge(b0)) => a0 == b0
+			(InvalidAttachmentOffset(a0), InvalidAttachmentOffset(b0)) => a0 == b0
+			(DuplicateAttachment(a0), DuplicateAttachment(b0)) => a0 == b0
+			(InvalidBoundaryNode(a0), InvalidBoundaryNode(b0)) => a0 == b0
+			(DuplicateBoundary(a0), DuplicateBoundary(b0)) => a0 == b0
+			(MissingPinNode(a0, a1), MissingPinNode(b0, b1)) => a0 == b0 and a1 == b1
+			(InvalidPin(a0), InvalidPin(b0)) => a0 == b0
+			(DuplicatePin(a0), DuplicatePin(b0)) => a0 == b0
+			(ConflictingPins, ConflictingPins) => True
+			(InvalidEdgeLabelEdge(a0), InvalidEdgeLabelEdge(b0)) => a0 == b0
+			(InvalidEdgeLabelWidth(a0), InvalidEdgeLabelWidth(b0)) => a0 == b0
+			(InvalidEdgeLabelHeight(a0), InvalidEdgeLabelHeight(b0)) => a0 == b0
+			(MissingLayerConstraintNode(a0, a1), MissingLayerConstraintNode(b0, b1)) => a0 == b0 and a1 == b1
+			(InvalidLayerConstraintSpan(a0), InvalidLayerConstraintSpan(b0)) => a0 == b0
+			(ConflictingLayerConstraints, ConflictingLayerConstraints) => True
+			(MissingOrderConstraintNode(a0, a1), MissingOrderConstraintNode(b0, b1)) => a0 == b0 and a1 == b1
+			(OrderConstraintAcrossLayers(a0), OrderConstraintAcrossLayers(b0)) => a0 == b0
+			(ConflictingOrderConstraints, ConflictingOrderConstraints) => True
+			(MissingNonRankingEdge(a0, a1), MissingNonRankingEdge(b0, b1)) => a0 == b0 and a1 == b1
+			(DuplicateNonRankingEdge(a0), DuplicateNonRankingEdge(b0)) => a0 == b0
+			(InvalidRouting(a0), InvalidRouting(b0)) => a0 == b0
+			_ => False
+		}
+
 		## Turn one typed problem into a short explanation for a person reading a
 		## log or error message. List positions and referenced values start at zero.
 		to_str : Problem -> Str

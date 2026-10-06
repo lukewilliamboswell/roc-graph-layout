@@ -160,7 +160,7 @@ When changing a hot path:
   the fix, extending the ladder only as each preceding rung completes reliably.
 
 Keep current measurements, compiler-specific observations, and investigation
-status in performance notes such as `TODO_INVESTIGATE_PERF.md`; keep only these
+status in performance notes such as `wip/TODO_INVESTIGATE_PERF.md`; keep only these
 enduring practices in this file.
 
 ## Preserve totality, determinism, and numerical safety
