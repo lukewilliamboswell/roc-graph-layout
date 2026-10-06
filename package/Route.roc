@@ -2092,6 +2092,54 @@ Route :: {}.{
 	Result : { layout : { positions : List(Geom.Point), routes : List(Geom.Route), bounds : Geom.Rect }, groups : List(Geom.Rect), label_anchors : List(Geom.Point), attachments : List(EdgeAttachments), group_crossings : List(List(GroupCrossing)), shared_routes : List(SharedRoute) }
 	Problem := [InvalidNodeWidth(U64), InvalidNodeHeight(U64), PositionCountMismatch, InvalidPosition(U64), InvalidEdgeFrom(U64), InvalidEdgeTo(U64), InvalidAttachmentEdge(U64), InvalidAttachmentOffset(U64), DuplicateAttachment(U64), InvalidGroupRect(U64), InvalidGroupParent(U64), InvalidMembershipNode(U64), InvalidMembershipGroup(U64), DuplicateMembership(U64), InvalidBoundaryNode(U64), DuplicateBoundary(U64), InvalidGroupAttachmentEdge(U64), InvalidGroupAttachmentGroup(U64), InvalidGroupAttachmentOffset(U64), DuplicateGroupAttachment(U64), GroupAttachmentNotBoundary(U64), InvalidLabelEdge(U64), InvalidLabelWidth(U64), InvalidLabelHeight(U64), InvalidWaypointEdge(U64), InvalidWaypoint(U64), DuplicateWaypoints(U64), BlockedWaypoint(U64), InvalidGuideEdge(U64), InvalidGuide(U64), DuplicateGuides(U64), SharedEndNeedsEdges(U64), InvalidSharedEndEdge(U64), DuplicateSharedEndEdge(U64), InvalidSharedEndAttachmentOffset(U64), SharedEndMismatch(U64), SharedEndMemberAttachment(U64), SharedEndOverlap(U64), InvalidObstacleGap, InvalidBendPenalty, InvalidSharedPathPenalty, InvalidEdgeGap].{
 
+		## Compare the typed problem and its indices, independent of diagnostic wording.
+		is_eq : Problem, Problem -> Bool
+		is_eq = |left, right| match (left, right) {
+			(InvalidNodeWidth(a0), InvalidNodeWidth(b0)) => a0 == b0
+			(InvalidNodeHeight(a0), InvalidNodeHeight(b0)) => a0 == b0
+			(PositionCountMismatch, PositionCountMismatch) => True
+			(InvalidPosition(a0), InvalidPosition(b0)) => a0 == b0
+			(InvalidEdgeFrom(a0), InvalidEdgeFrom(b0)) => a0 == b0
+			(InvalidEdgeTo(a0), InvalidEdgeTo(b0)) => a0 == b0
+			(InvalidAttachmentEdge(a0), InvalidAttachmentEdge(b0)) => a0 == b0
+			(InvalidAttachmentOffset(a0), InvalidAttachmentOffset(b0)) => a0 == b0
+			(DuplicateAttachment(a0), DuplicateAttachment(b0)) => a0 == b0
+			(InvalidGroupRect(a0), InvalidGroupRect(b0)) => a0 == b0
+			(InvalidGroupParent(a0), InvalidGroupParent(b0)) => a0 == b0
+			(InvalidMembershipNode(a0), InvalidMembershipNode(b0)) => a0 == b0
+			(InvalidMembershipGroup(a0), InvalidMembershipGroup(b0)) => a0 == b0
+			(DuplicateMembership(a0), DuplicateMembership(b0)) => a0 == b0
+			(InvalidBoundaryNode(a0), InvalidBoundaryNode(b0)) => a0 == b0
+			(DuplicateBoundary(a0), DuplicateBoundary(b0)) => a0 == b0
+			(InvalidGroupAttachmentEdge(a0), InvalidGroupAttachmentEdge(b0)) => a0 == b0
+			(InvalidGroupAttachmentGroup(a0), InvalidGroupAttachmentGroup(b0)) => a0 == b0
+			(InvalidGroupAttachmentOffset(a0), InvalidGroupAttachmentOffset(b0)) => a0 == b0
+			(DuplicateGroupAttachment(a0), DuplicateGroupAttachment(b0)) => a0 == b0
+			(GroupAttachmentNotBoundary(a0), GroupAttachmentNotBoundary(b0)) => a0 == b0
+			(InvalidLabelEdge(a0), InvalidLabelEdge(b0)) => a0 == b0
+			(InvalidLabelWidth(a0), InvalidLabelWidth(b0)) => a0 == b0
+			(InvalidLabelHeight(a0), InvalidLabelHeight(b0)) => a0 == b0
+			(InvalidWaypointEdge(a0), InvalidWaypointEdge(b0)) => a0 == b0
+			(InvalidWaypoint(a0), InvalidWaypoint(b0)) => a0 == b0
+			(DuplicateWaypoints(a0), DuplicateWaypoints(b0)) => a0 == b0
+			(BlockedWaypoint(a0), BlockedWaypoint(b0)) => a0 == b0
+			(InvalidGuideEdge(a0), InvalidGuideEdge(b0)) => a0 == b0
+			(InvalidGuide(a0), InvalidGuide(b0)) => a0 == b0
+			(DuplicateGuides(a0), DuplicateGuides(b0)) => a0 == b0
+			(SharedEndNeedsEdges(a0), SharedEndNeedsEdges(b0)) => a0 == b0
+			(InvalidSharedEndEdge(a0), InvalidSharedEndEdge(b0)) => a0 == b0
+			(DuplicateSharedEndEdge(a0), DuplicateSharedEndEdge(b0)) => a0 == b0
+			(InvalidSharedEndAttachmentOffset(a0), InvalidSharedEndAttachmentOffset(b0)) => a0 == b0
+			(SharedEndMismatch(a0), SharedEndMismatch(b0)) => a0 == b0
+			(SharedEndMemberAttachment(a0), SharedEndMemberAttachment(b0)) => a0 == b0
+			(SharedEndOverlap(a0), SharedEndOverlap(b0)) => a0 == b0
+			(InvalidObstacleGap, InvalidObstacleGap) => True
+			(InvalidBendPenalty, InvalidBendPenalty) => True
+			(InvalidSharedPathPenalty, InvalidSharedPathPenalty) => True
+			(InvalidEdgeGap, InvalidEdgeGap) => True
+			_ => False
+		}
+
 		## Turn one typed problem into a short explanation for a person reading a
 		## log or error message. Numbers identify positions in the corresponding
 		## input list and start at zero.
