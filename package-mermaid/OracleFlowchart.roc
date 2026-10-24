@@ -28,300 +28,304 @@ OracleFlowchart :: {}.{
 ## ampersand
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    A & B --> C & D\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_C_0", from: Node(0), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_A_D_0", from: Node(0), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_B_C_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_B_D_0", from: Node(1), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_C_0", from: Node(0), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_A_D_0", from: Node(0), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_B_C_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_B_D_0", from: Node(1), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## chain-td
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    A --> B --> C\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_B_C_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_B_C_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## class-def
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    classDef hot fill:#f96,stroke:#333\n    A:::hot --> B\n    class B hot\n    style A stroke-width:4px\n    linkStyle 0 stroke:#ff3\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [
+	Accepted({
+		direction: Right,
+		nodes: [
+			{
+				id: "A",
+				label: "A",
+				shape: Rectangle,
+				container: Root,
+				classes: [
 					"hot",
-				], styles: [
+				],
+				styles: [
 					"stroke-width:4px",
-				] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [
+				],
+			},
+			{
+				id: "B",
+				label: "B",
+				shape: Rectangle,
+				container: Root,
+				classes: [
 					"hot",
-				], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [
+				],
+				styles: [],
+			},
+		],
+		edges: [
+			{
+				id: "L_A_B_0",
+				from: Node(0),
+				to: Node(1),
+				label: "",
+				line: Solid,
+				start: None,
+				end: Arrow,
+				length: 1,
+				classes: [],
+				styles: [
 					"stroke:#ff3",
 					"fill:none",
-				] },
-			],
-			groups: [],
-			classes: [
-				{ name: "hot", styles: [
+				],
+			},
+		],
+		groups: [],
+		classes: [
+			{
+				name: "hot",
+				styles: [
 					"fill:#f96",
 					"stroke:#333",
-				] },
-			],
-		},
-	),
+				],
+			},
+		],
+	}),
 )
 
 ## comments
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    %% a comment line\n    A --> B\n    %% another\n    B --> C\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_B_C_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_B_C_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## cycle
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    A --> B --> C --> A\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_B_C_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_C_A_0", from: Node(2), to: Node(0), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_B_C_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_C_A_0", from: Node(2), to: Node(0), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## diamond-dag
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    A --> B & C\n    B --> D\n    C --> D\n    D --> E\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "E", label: "E", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_A_C_0", from: Node(0), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_B_D_0", from: Node(1), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_C_D_0", from: Node(2), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_D_E_0", from: Node(3), to: Node(4), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "E", label: "E", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_A_C_0", from: Node(0), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_B_D_0", from: Node(1), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_C_D_0", from: Node(2), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_D_E_0", from: Node(3), to: Node(4), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## direction-bt
 expect OracleFlowchart.agrees(
 	"flowchart BT\n    A --> B\n",
-	Accepted(
-		{
-			direction: Up,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Up,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## direction-rl
 expect OracleFlowchart.agrees(
 	"flowchart RL\n    A --> B\n",
-	Accepted(
-		{
-			direction: Left,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Left,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## edge-kinds
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A --- B\n    A --> C\n    A -.- D\n    A -.-> E\n    A === F\n    A ==> G\n    A ~~~ H\n    A --o I\n    A --x J\n    A <--> K\n    A o--o L\n    A x--x M\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "E", label: "E", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "F", label: "F", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "G", label: "G", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "H", label: "H", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "I", label: "I", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "J", label: "J", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "K", label: "K", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "L", label: "L", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "M", label: "M", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: None, length: 1, classes: [], styles: [] },
-				{ id: "L_A_C_0", from: Node(0), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_A_D_0", from: Node(0), to: Node(3), label: "", line: Dotted, start: None, end: None, length: 1, classes: [], styles: [] },
-				{ id: "L_A_E_0", from: Node(0), to: Node(4), label: "", line: Dotted, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_A_F_0", from: Node(0), to: Node(5), label: "", line: Thick, start: None, end: None, length: 1, classes: [], styles: [] },
-				{ id: "L_A_G_0", from: Node(0), to: Node(6), label: "", line: Thick, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_A_H_0", from: Node(0), to: Node(7), label: "", line: Invisible, start: None, end: None, length: 1, classes: [], styles: [] },
-				{ id: "L_A_I_0", from: Node(0), to: Node(8), label: "", line: Solid, start: None, end: Circle, length: 1, classes: [], styles: [] },
-				{ id: "L_A_J_0", from: Node(0), to: Node(9), label: "", line: Solid, start: None, end: Cross, length: 1, classes: [], styles: [] },
-				{ id: "L_A_K_0", from: Node(0), to: Node(10), label: "", line: Solid, start: Arrow, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_A_L_0", from: Node(0), to: Node(11), label: "", line: Solid, start: Circle, end: Circle, length: 1, classes: [], styles: [] },
-				{ id: "L_A_M_0", from: Node(0), to: Node(12), label: "", line: Solid, start: Cross, end: Cross, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "E", label: "E", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "F", label: "F", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "G", label: "G", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "H", label: "H", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "I", label: "I", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "J", label: "J", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "K", label: "K", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "L", label: "L", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "M", label: "M", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: None, length: 1, classes: [], styles: [] },
+			{ id: "L_A_C_0", from: Node(0), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_A_D_0", from: Node(0), to: Node(3), label: "", line: Dotted, start: None, end: None, length: 1, classes: [], styles: [] },
+			{ id: "L_A_E_0", from: Node(0), to: Node(4), label: "", line: Dotted, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_A_F_0", from: Node(0), to: Node(5), label: "", line: Thick, start: None, end: None, length: 1, classes: [], styles: [] },
+			{ id: "L_A_G_0", from: Node(0), to: Node(6), label: "", line: Thick, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_A_H_0", from: Node(0), to: Node(7), label: "", line: Invisible, start: None, end: None, length: 1, classes: [], styles: [] },
+			{ id: "L_A_I_0", from: Node(0), to: Node(8), label: "", line: Solid, start: None, end: Circle, length: 1, classes: [], styles: [] },
+			{ id: "L_A_J_0", from: Node(0), to: Node(9), label: "", line: Solid, start: None, end: Cross, length: 1, classes: [], styles: [] },
+			{ id: "L_A_K_0", from: Node(0), to: Node(10), label: "", line: Solid, start: Arrow, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_A_L_0", from: Node(0), to: Node(11), label: "", line: Solid, start: Circle, end: Circle, length: 1, classes: [], styles: [] },
+			{ id: "L_A_M_0", from: Node(0), to: Node(12), label: "", line: Solid, start: Cross, end: Cross, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## edge-labels
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A -->|yes| B\n    A -- no --> C\n    A -. maybe .-> D\n    A == sure ==> E\n    A ---|plain| F\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "E", label: "E", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "F", label: "F", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "yes", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_A_C_0", from: Node(0), to: Node(2), label: "no", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_A_D_0", from: Node(0), to: Node(3), label: "maybe", line: Dotted, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_A_E_0", from: Node(0), to: Node(4), label: "sure", line: Thick, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_A_F_0", from: Node(0), to: Node(5), label: "plain", line: Solid, start: None, end: None, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "E", label: "E", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "F", label: "F", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "yes", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_A_C_0", from: Node(0), to: Node(2), label: "no", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_A_D_0", from: Node(0), to: Node(3), label: "maybe", line: Dotted, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_A_E_0", from: Node(0), to: Node(4), label: "sure", line: Thick, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_A_F_0", from: Node(0), to: Node(5), label: "plain", line: Solid, start: None, end: None, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## edge-lengths
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    A --> B\n    A ---> C\n    A ----> D\n    A -..-> E\n    A ====> F\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "E", label: "E", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "F", label: "F", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_A_C_0", from: Node(0), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 2, classes: [], styles: [] },
-				{ id: "L_A_D_0", from: Node(0), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 3, classes: [], styles: [] },
-				{ id: "L_A_E_0", from: Node(0), to: Node(4), label: "", line: Dotted, start: None, end: Arrow, length: 2, classes: [], styles: [] },
-				{ id: "L_A_F_0", from: Node(0), to: Node(5), label: "", line: Thick, start: None, end: Arrow, length: 3, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "E", label: "E", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "F", label: "F", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_A_C_0", from: Node(0), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 2, classes: [], styles: [] },
+			{ id: "L_A_D_0", from: Node(0), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 3, classes: [], styles: [] },
+			{ id: "L_A_E_0", from: Node(0), to: Node(4), label: "", line: Dotted, start: None, end: Arrow, length: 2, classes: [], styles: [] },
+			{ id: "L_A_F_0", from: Node(0), to: Node(5), label: "", line: Thick, start: None, end: Arrow, length: 3, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## entity-codes
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A[\"#quot;hello#quot; #35; done\"] --> B\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "\"hello\" # done", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "\"hello\" # done", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## fuzz-dot-in-dotted-text
@@ -345,187 +349,167 @@ expect OracleFlowchart.agrees(
 ## fuzz-legacy-entity-prefix
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A[a &notit; &ampx b] --> B\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "a \u(AC)it; &x b", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "a \u(AC)it; &x b", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## fuzz-legacy-entity-title
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    subgraph S [in&amp]\n    a\n    end\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "a", label: "a", shape: Rectangle, container: Group(0), classes: [], styles: [] },
-			],
-			edges: [],
-			groups: [
-				{ id: "S", title: "in&", container: Root, direction: Inherit, classes: [] },
-			],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "a", label: "a", shape: Rectangle, container: Group(0), classes: [], styles: [] },
+		],
+		edges: [],
+		groups: [
+			{ id: "S", title: "in&", container: Root, direction: Inherit, classes: [] },
+		],
+		classes: [],
+	}),
 )
 
 ## fuzz-nul-in-label
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A[\"x\u(0)y\"] --> B\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "xy", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "xy", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## fuzz-numeric-references
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A[a &#128; &#0; &#x41 &#65] --> B\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "a &\u(20AC) &\u(FFFD) A A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "a &\u(20AC) &\u(FFFD) A A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## fuzz-quote-in-subgraph-id
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    subgraph tw\"o\n    a\n    end\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "a", label: "a", shape: Rectangle, container: Group(0), classes: [], styles: [] },
-			],
-			edges: [],
-			groups: [
-				{ id: "tw\"o", title: "tw\"o", container: Root, direction: Inherit, classes: [] },
-			],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "a", label: "a", shape: Rectangle, container: Group(0), classes: [], styles: [] },
+		],
+		edges: [],
+		groups: [
+			{ id: "tw\"o", title: "tw\"o", container: Root, direction: Inherit, classes: [] },
+		],
+		classes: [],
+	}),
 )
 
 ## graph-keyword-lr
 expect OracleFlowchart.agrees(
 	"graph LR\n    A --> B\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## long-label
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A[This is a considerably longer label that may wrap] --> B[Short]\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "This is a considerably longer label that may wrap", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "Short", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "This is a considerably longer label that may wrap", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "Short", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## multiline-label
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    A[\"first line<br>second line\"] --> B\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "A", label: "first line\nsecond line", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "A", label: "first line\nsecond line", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## node-only
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    A\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## parallel-edges
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    A --> B\n    A --> B\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_A_B_2", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_A_B_2", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-ampersand-half
@@ -537,20 +521,18 @@ expect OracleFlowchart.agrees(
 ## quirk-ampersand-tight
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A&B --> C\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A&B", label: "A&B", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A&B_C_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A&B", label: "A&B", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A&B_C_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-anonymous-subgraph
@@ -568,81 +550,84 @@ expect OracleFlowchart.agrees(
 ## quirk-crlf
 expect OracleFlowchart.agrees(
 	"flowchart TD\r\n    A --> B\r\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-direction-line
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A --> B direction TB\n    C --> D\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_C_D_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_C_D_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-edge-id-class
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A e1@--> B\n    class e1 hot\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "e1", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{
+				id: "e1",
+				from: Node(0),
+				to: Node(1),
+				label: "",
+				line: Solid,
+				start: None,
+				end: Arrow,
+				length: 1,
+				classes: [
 					"hot",
-				], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+				],
+				styles: [],
+			},
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-edge-id
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A e1@--> B\n    A --> B\n    A --> B\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "e1", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_A_B_2", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_A_B_3", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "e1", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_A_B_2", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_A_B_3", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-empty-label
@@ -654,20 +639,18 @@ expect OracleFlowchart.agrees(
 ## quirk-entity-in-edge
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A -->|#9829; love| B\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "\u(2665) love", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "\u(2665) love", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-header-semicolon-space
@@ -679,117 +662,116 @@ expect OracleFlowchart.agrees(
 ## quirk-html-escape
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A[a & b < c] --> B\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "a & b < c", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "a & b < c", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-keyword-prefix-classes
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    classes --> B\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "classes", label: "classes", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_classes_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "classes", label: "classes", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_classes_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-keyword-prefix-default
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    defaults --> B\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "defaults", label: "defaults", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_defaults_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "defaults", label: "defaults", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_defaults_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-keyword-prefix-graphics
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    A --> graphics\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "graphics", label: "graphics", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_graphics_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "graphics", label: "graphics", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_graphics_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-keyword-prefix-very
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    very --> end_point\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "very", label: "very", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "end_point", label: "end_point", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_very_end_point_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "very", label: "very", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "end_point", label: "end_point", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_very_end_point_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-linkstyle-default
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    A --> B\n    linkStyle default stroke:red\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{
+				id: "L_A_B_0",
+				from: Node(0),
+				to: Node(1),
+				label: "",
+				line: Solid,
+				start: None,
+				end: Arrow,
+				length: 1,
+				classes: [],
+				styles: [
 					"stroke:red",
-				] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+				],
+			},
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-linkstyle-leading-zero
@@ -813,42 +795,38 @@ expect OracleFlowchart.agrees(
 ## quirk-newline-before-arrow
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A\n    --> B\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-node-in-two-subgraphs
 expect OracleFlowchart.agrees(
 	"flowchart TB\n    subgraph one\n    a\n    end\n    subgraph two\n    a --> b\n    end\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "a", label: "a", shape: Rectangle, container: Group(0), classes: [], styles: [] },
-				{ id: "b", label: "b", shape: Rectangle, container: Group(1), classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_a_b_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [
-				{ id: "one", title: "one", container: Root, direction: Inherit, classes: [] },
-				{ id: "two", title: "two", container: Root, direction: Inherit, classes: [] },
-			],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "a", label: "a", shape: Rectangle, container: Group(0), classes: [], styles: [] },
+			{ id: "b", label: "b", shape: Rectangle, container: Group(1), classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_a_b_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [
+			{ id: "one", title: "one", container: Root, direction: Inherit, classes: [] },
+			{ id: "two", title: "two", container: Root, direction: Inherit, classes: [] },
+		],
+		classes: [],
+	}),
 )
 
 ## quirk-paren-in-label
@@ -860,141 +838,134 @@ expect OracleFlowchart.agrees(
 ## quirk-quoted-then-text
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A[\"quoted\" more] --> B\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "quoted more", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "quoted more", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-start-link-text
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A <-- text --> B\n    C -. dotted .-> D\n    E == thick ==> F\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "E", label: "E", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "F", label: "F", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "text", line: Solid, start: Arrow, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_C_D_0", from: Node(2), to: Node(3), label: "dotted", line: Dotted, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_E_F_0", from: Node(4), to: Node(5), label: "thick", line: Thick, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "E", label: "E", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "F", label: "F", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "text", line: Solid, start: Arrow, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_C_D_0", from: Node(2), to: Node(3), label: "dotted", line: Dotted, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_E_F_0", from: Node(4), to: Node(5), label: "thick", line: Thick, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-style-semicolon
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A --> B\n    style A fill:#f96;\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [
+	Accepted({
+		direction: Right,
+		nodes: [
+			{
+				id: "A",
+				label: "A",
+				shape: Rectangle,
+				container: Root,
+				classes: [],
+				styles: [
 					"fill:#f96",
-				] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+				],
+			},
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## quirk-subgraph-merge
 expect OracleFlowchart.agrees(
 	"flowchart TB\n    subgraph S\n    a\n    end\n    subgraph S\n    b\n    end\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "a", label: "a", shape: Rectangle, container: Group(0), classes: [], styles: [] },
-				{ id: "b", label: "b", shape: Rectangle, container: Group(0), classes: [], styles: [] },
-			],
-			edges: [],
-			groups: [
-				{ id: "S", title: "S", container: Root, direction: Inherit, classes: [] },
-			],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "a", label: "a", shape: Rectangle, container: Group(0), classes: [], styles: [] },
+			{ id: "b", label: "b", shape: Rectangle, container: Group(0), classes: [], styles: [] },
+		],
+		edges: [],
+		groups: [
+			{ id: "S", title: "S", container: Root, direction: Inherit, classes: [] },
+		],
+		classes: [],
+	}),
 )
 
 ## quirk-subgraph-title-space
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    subgraph My Group\n    A\n    end\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Group(0), classes: [], styles: [] },
-			],
-			edges: [],
-			groups: [
-				{ id: "subGraph0", title: "My Group", container: Root, direction: Inherit, classes: [] },
-			],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Group(0), classes: [], styles: [] },
+		],
+		edges: [],
+		groups: [
+			{ id: "subGraph0", title: "My Group", container: Root, direction: Inherit, classes: [] },
+		],
+		classes: [],
+	}),
 )
 
 ## quoted-labels
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A[\"Quoted (with) [brackets]\"] --> B(\"A, B; C\")\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "Quoted (with) [brackets]", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "A, B; C", shape: Rounded, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "Quoted (with) [brackets]", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "A, B; C", shape: Rounded, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## redefine-label
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A --> B\n    A[First label]\n    A[Second label]\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "Second label", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "Second label", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## reject-dangling-edge
@@ -1036,199 +1007,183 @@ expect OracleFlowchart.agrees(
 ## self-loop
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    A --> A\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_A_0", from: Node(0), to: Node(0), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_A_0", from: Node(0), to: Node(0), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## semicolons
 expect OracleFlowchart.agrees(
 	"flowchart TD;\n    A-->B;\n    B-->C;\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_B_C_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_B_C_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## shapes-classic
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    a[Square] --> b(Round) --> c([Stadium]) --> d[[Subroutine]]\n    e[(Database)] --> f((Circle)) --> g>Odd] --> h{Diamond}\n    i{{Hexagon}} --> j[/Lean right/] --> k[\\Lean left\\] --> l[/Trapezoid\\]\n    m[\\Inverse trapezoid/] --> n(((Double circle)))\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "a", label: "Square", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "b", label: "Round", shape: Rounded, container: Root, classes: [], styles: [] },
-				{ id: "c", label: "Stadium", shape: Stadium, container: Root, classes: [], styles: [] },
-				{ id: "d", label: "Subroutine", shape: Subroutine, container: Root, classes: [], styles: [] },
-				{ id: "e", label: "Database", shape: Cylinder, container: Root, classes: [], styles: [] },
-				{ id: "f", label: "Circle", shape: Circle, container: Root, classes: [], styles: [] },
-				{ id: "g", label: "Odd", shape: Asymmetric, container: Root, classes: [], styles: [] },
-				{ id: "h", label: "Diamond", shape: Diamond, container: Root, classes: [], styles: [] },
-				{ id: "i", label: "Hexagon", shape: Hexagon, container: Root, classes: [], styles: [] },
-				{ id: "j", label: "Lean right", shape: LeanRight, container: Root, classes: [], styles: [] },
-				{ id: "k", label: "Lean left", shape: LeanLeft, container: Root, classes: [], styles: [] },
-				{ id: "l", label: "Trapezoid", shape: Trapezoid, container: Root, classes: [], styles: [] },
-				{ id: "m", label: "Inverse trapezoid", shape: InverseTrapezoid, container: Root, classes: [], styles: [] },
-				{ id: "n", label: "Double circle", shape: DoubleCircle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_a_b_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_b_c_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_c_d_0", from: Node(2), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_e_f_0", from: Node(4), to: Node(5), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_f_g_0", from: Node(5), to: Node(6), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_g_h_0", from: Node(6), to: Node(7), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_i_j_0", from: Node(8), to: Node(9), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_j_k_0", from: Node(9), to: Node(10), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_k_l_0", from: Node(10), to: Node(11), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_m_n_0", from: Node(12), to: Node(13), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "a", label: "Square", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "b", label: "Round", shape: Rounded, container: Root, classes: [], styles: [] },
+			{ id: "c", label: "Stadium", shape: Stadium, container: Root, classes: [], styles: [] },
+			{ id: "d", label: "Subroutine", shape: Subroutine, container: Root, classes: [], styles: [] },
+			{ id: "e", label: "Database", shape: Cylinder, container: Root, classes: [], styles: [] },
+			{ id: "f", label: "Circle", shape: Circle, container: Root, classes: [], styles: [] },
+			{ id: "g", label: "Odd", shape: Asymmetric, container: Root, classes: [], styles: [] },
+			{ id: "h", label: "Diamond", shape: Diamond, container: Root, classes: [], styles: [] },
+			{ id: "i", label: "Hexagon", shape: Hexagon, container: Root, classes: [], styles: [] },
+			{ id: "j", label: "Lean right", shape: LeanRight, container: Root, classes: [], styles: [] },
+			{ id: "k", label: "Lean left", shape: LeanLeft, container: Root, classes: [], styles: [] },
+			{ id: "l", label: "Trapezoid", shape: Trapezoid, container: Root, classes: [], styles: [] },
+			{ id: "m", label: "Inverse trapezoid", shape: InverseTrapezoid, container: Root, classes: [], styles: [] },
+			{ id: "n", label: "Double circle", shape: DoubleCircle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_a_b_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_b_c_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_c_d_0", from: Node(2), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_e_f_0", from: Node(4), to: Node(5), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_f_g_0", from: Node(5), to: Node(6), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_g_h_0", from: Node(6), to: Node(7), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_i_j_0", from: Node(8), to: Node(9), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_j_k_0", from: Node(9), to: Node(10), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_k_l_0", from: Node(10), to: Node(11), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_m_n_0", from: Node(12), to: Node(13), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## subgraph-basic
 expect OracleFlowchart.agrees(
 	"flowchart TB\n    c1 --> a2\n    subgraph one\n    a1 --> a2\n    end\n    subgraph two [Second group]\n    b1 --> b2\n    end\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "c1", label: "c1", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "a2", label: "a2", shape: Rectangle, container: Group(0), classes: [], styles: [] },
-				{ id: "a1", label: "a1", shape: Rectangle, container: Group(0), classes: [], styles: [] },
-				{ id: "b1", label: "b1", shape: Rectangle, container: Group(1), classes: [], styles: [] },
-				{ id: "b2", label: "b2", shape: Rectangle, container: Group(1), classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_c1_a2_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_a1_a2_0", from: Node(2), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_b1_b2_0", from: Node(3), to: Node(4), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [
-				{ id: "one", title: "one", container: Root, direction: Inherit, classes: [] },
-				{ id: "two", title: "Second group", container: Root, direction: Inherit, classes: [] },
-			],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "c1", label: "c1", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "a2", label: "a2", shape: Rectangle, container: Group(0), classes: [], styles: [] },
+			{ id: "a1", label: "a1", shape: Rectangle, container: Group(0), classes: [], styles: [] },
+			{ id: "b1", label: "b1", shape: Rectangle, container: Group(1), classes: [], styles: [] },
+			{ id: "b2", label: "b2", shape: Rectangle, container: Group(1), classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_c1_a2_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_a1_a2_0", from: Node(2), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_b1_b2_0", from: Node(3), to: Node(4), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [
+			{ id: "one", title: "one", container: Root, direction: Inherit, classes: [] },
+			{ id: "two", title: "Second group", container: Root, direction: Inherit, classes: [] },
+		],
+		classes: [],
+	}),
 )
 
 ## subgraph-direction
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    subgraph S\n        direction TB\n        a --> b\n    end\n    b --> c\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "a", label: "a", shape: Rectangle, container: Group(0), classes: [], styles: [] },
-				{ id: "b", label: "b", shape: Rectangle, container: Group(0), classes: [], styles: [] },
-				{ id: "c", label: "c", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_a_b_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_b_c_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [
-				{ id: "S", title: "S", container: Root, direction: Set(Down), classes: [] },
-			],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "a", label: "a", shape: Rectangle, container: Group(0), classes: [], styles: [] },
+			{ id: "b", label: "b", shape: Rectangle, container: Group(0), classes: [], styles: [] },
+			{ id: "c", label: "c", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_a_b_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_b_c_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [
+			{ id: "S", title: "S", container: Root, direction: Set(Down), classes: [] },
+		],
+		classes: [],
+	}),
 )
 
 ## subgraph-edge
 expect OracleFlowchart.agrees(
 	"flowchart TB\n    subgraph one\n    a1 --> a2\n    end\n    subgraph two\n    b1 --> b2\n    end\n    one --> two\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "a1", label: "a1", shape: Rectangle, container: Group(0), classes: [], styles: [] },
-				{ id: "a2", label: "a2", shape: Rectangle, container: Group(0), classes: [], styles: [] },
-				{ id: "b1", label: "b1", shape: Rectangle, container: Group(1), classes: [], styles: [] },
-				{ id: "b2", label: "b2", shape: Rectangle, container: Group(1), classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_a1_a2_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_b1_b2_0", from: Node(2), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_one_two_0", from: Group(0), to: Group(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [
-				{ id: "one", title: "one", container: Root, direction: Inherit, classes: [] },
-				{ id: "two", title: "two", container: Root, direction: Inherit, classes: [] },
-			],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "a1", label: "a1", shape: Rectangle, container: Group(0), classes: [], styles: [] },
+			{ id: "a2", label: "a2", shape: Rectangle, container: Group(0), classes: [], styles: [] },
+			{ id: "b1", label: "b1", shape: Rectangle, container: Group(1), classes: [], styles: [] },
+			{ id: "b2", label: "b2", shape: Rectangle, container: Group(1), classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_a1_a2_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_b1_b2_0", from: Node(2), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_one_two_0", from: Group(0), to: Group(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [
+			{ id: "one", title: "one", container: Root, direction: Inherit, classes: [] },
+			{ id: "two", title: "two", container: Root, direction: Inherit, classes: [] },
+		],
+		classes: [],
+	}),
 )
 
 ## subgraph-nested
 expect OracleFlowchart.agrees(
 	"flowchart TB\n    subgraph outer\n        subgraph inner\n            x --> y\n        end\n        z\n    end\n    y --> z\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "x", label: "x", shape: Rectangle, container: Group(1), classes: [], styles: [] },
-				{ id: "y", label: "y", shape: Rectangle, container: Group(1), classes: [], styles: [] },
-				{ id: "z", label: "z", shape: Rectangle, container: Group(0), classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_x_y_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_y_z_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [
-				{ id: "outer", title: "outer", container: Root, direction: Inherit, classes: [] },
-				{ id: "inner", title: "inner", container: Group(0), direction: Inherit, classes: [] },
-			],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "x", label: "x", shape: Rectangle, container: Group(1), classes: [], styles: [] },
+			{ id: "y", label: "y", shape: Rectangle, container: Group(1), classes: [], styles: [] },
+			{ id: "z", label: "z", shape: Rectangle, container: Group(0), classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_x_y_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_y_z_0", from: Node(1), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [
+			{ id: "outer", title: "outer", container: Root, direction: Inherit, classes: [] },
+			{ id: "inner", title: "inner", container: Group(0), direction: Inherit, classes: [] },
+		],
+		classes: [],
+	}),
 )
 
 ## unicode
 expect OracleFlowchart.agrees(
 	"flowchart LR\n    A[Caf\u(E9)] --> B[na\u(EF)ve r\u(E9)sum\u(E9)]\n",
-	Accepted(
-		{
-			direction: Right,
-			nodes: [
-				{ id: "A", label: "Caf\u(E9)", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "na\u(EF)ve r\u(E9)sum\u(E9)", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Right,
+		nodes: [
+			{ id: "A", label: "Caf\u(E9)", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "na\u(EF)ve r\u(E9)sum\u(E9)", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_A_B_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )
 
 ## unsupported-click
@@ -1258,28 +1213,26 @@ expect OracleFlowchart.agrees(
 ## wide-fanout
 expect OracleFlowchart.agrees(
 	"flowchart TD\n    R --> A & B & C & D & E & F\n",
-	Accepted(
-		{
-			direction: Down,
-			nodes: [
-				{ id: "R", label: "R", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "E", label: "E", shape: Rectangle, container: Root, classes: [], styles: [] },
-				{ id: "F", label: "F", shape: Rectangle, container: Root, classes: [], styles: [] },
-			],
-			edges: [
-				{ id: "L_R_A_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_R_B_0", from: Node(0), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_R_C_0", from: Node(0), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_R_D_0", from: Node(0), to: Node(4), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_R_E_0", from: Node(0), to: Node(5), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-				{ id: "L_R_F_0", from: Node(0), to: Node(6), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
-			],
-			groups: [],
-			classes: [],
-		},
-	),
+	Accepted({
+		direction: Down,
+		nodes: [
+			{ id: "R", label: "R", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "A", label: "A", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "B", label: "B", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "C", label: "C", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "D", label: "D", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "E", label: "E", shape: Rectangle, container: Root, classes: [], styles: [] },
+			{ id: "F", label: "F", shape: Rectangle, container: Root, classes: [], styles: [] },
+		],
+		edges: [
+			{ id: "L_R_A_0", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_R_B_0", from: Node(0), to: Node(2), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_R_C_0", from: Node(0), to: Node(3), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_R_D_0", from: Node(0), to: Node(4), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_R_E_0", from: Node(0), to: Node(5), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+			{ id: "L_R_F_0", from: Node(0), to: Node(6), label: "", line: Solid, start: None, end: Arrow, length: 1, classes: [], styles: [] },
+		],
+		groups: [],
+		classes: [],
+	}),
 )

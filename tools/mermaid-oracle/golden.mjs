@@ -13,6 +13,7 @@
 // unsupported is skipped whatever Mermaid did with it.
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { expectedOutcome } from './model.mjs';
 
 const [recordsDir, output] = process.argv.slice(2).filter(a => !a.startsWith('--'));
@@ -104,4 +105,10 @@ ${lenientArm}\t\t\t_ => False
 }
 `;
 await fs.writeFile(output, `${header}\n${blocks.join('\n\n')}\n`);
+// Leave the output as `roc fmt` would, using $ROC when set.
+try {
+	execFileSync(process.env.ROC ?? 'roc', ['fmt', output], { stdio: 'ignore' });
+} catch {
+	console.warn(`could not run roc fmt on ${output}`);
+}
 console.log(`${blocks.length} case(s) -> ${output}`);

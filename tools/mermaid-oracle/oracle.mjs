@@ -15,20 +15,20 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 
 // Bump when the shape or meaning of a record changes.
 const EXTRACTOR_VERSION = 5;
-const FONT_FAMILY = 'Oracle Inter';
-const FONT_FILE = path.join(here, 'fonts', 'Inter-Regular.ttf');
+export const FONT_FAMILY = 'Oracle Inter';
+export const FONT_FILE = path.join(here, 'fonts', 'Inter-Regular.ttf');
 const CASE_TIMEOUT_MS = 20000;
 
 // Fixed configuration. HTML labels are off so every label is SVG text whose
 // width is measured by the pinned font, not by HTML line breaking.
-const CONFIG = {
+export const CONFIG = {
 	startOnLoad: false,
 	securityLevel: 'strict',
 	deterministicIds: true,
@@ -221,7 +221,7 @@ async function extractInPage(source) {
 
 // ------------------------------------------------------------------ node side
 
-async function openBrowser() {
+export async function openBrowser() {
 	const puppeteer = require('puppeteer');
 	// The page only loads the pinned local Mermaid bundle and the pinned font;
 	// every network request is refused below. The sandbox is disabled because
@@ -383,4 +383,5 @@ async function main() {
 	process.exit(2);
 }
 
-await main();
+// Importable for its pinned configuration and browser setup; runs only as a script.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();
