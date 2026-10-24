@@ -103,7 +103,7 @@ jobs:
           RELEASE_VERSION: ${{ steps.validate.outputs.release_version }}
         run: blueprint run package-examples
 
-      - name: Package the API reference
+      - name: Package the API reference and the guide's PDF
         env:
           RELEASE_VERSION: ${{ steps.validate.outputs.release_version }}
         run: blueprint run package-docs
@@ -125,6 +125,7 @@ jobs:
             dist/*.tar.zst
             dist/roc-graph-layout-examples-*.zip
             dist/roc-graph-layout-docs-*.zip
+            dist/roc-graph-layout-*.pdf
             dist/release-notes.md
           if-no-files-found: error
           retention-days: 7
@@ -196,64 +197,18 @@ jobs:
             candidate/*.tar.zst
             candidate/roc-graph-layout-examples-*.zip
             candidate/roc-graph-layout-docs-*.zip
+            candidate/roc-graph-layout-*.pdf
 
   # A final release changes which release the API reference leads with, so
   # the site is rebuilt. A release candidate does not change the site.
-  build-site:
-    name: Build the site
+  site:
+    name: Site
     needs:
       - build
       - publish
     if: needs.build.outputs.is_prerelease != 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
     permissions:
       contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@7aff4132691ad4fc348abe9df146a57512b49bd6
-
-      - name: Install the Roc nightly this run resolved
-        uses: roc-lang/setup-roc@f5a74bf90aa694b43ab4a7cbfdb19273bc6aa697
-        with:
-          version: nightly-new-compiler
-          nightly-tag: ${{ needs.build.outputs.nightly_tag }}
-
-      - name: Build the guides and the API reference of each release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          FETCH_RELEASE_DOCS: "1"
-          SITE_VERSION: ${{ needs.build.outputs.release_version }}
-          SITE_OUTPUT: dist/site
-        run: blueprint run site
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
-        with:
-          path: dist/site
-
-  # Holds the Pages permissions, checks out nothing, and deploys the artifact
-  # the job above built.
-  deploy-pages:
-    name: Deploy the site
-    needs: build-site
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    permissions:
       pages: write
       id-token: write
-    concurrency:
-      group: pages
-      cancel-in-progress: false
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy Pages
-        id: deployment
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+    uses: ./.github/workflows/docs.yml

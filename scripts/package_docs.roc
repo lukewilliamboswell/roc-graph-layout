@@ -10,12 +10,14 @@ import src/DocsArchive
 import src/Script
 import src/Site
 
-## Build the API reference archive attached to a release.
+## Build the documentation attached to a release: the API reference archive
+## and the guide as a PDF.
 ##
 ##     RELEASE_VERSION=0.2.0 blueprint run package-docs
 ##
-## Writes `roc-graph-layout-docs-<version>.zip` to `dist`, or to the
-## directory named by `OUTPUT_DIR`. The site restores it for later releases.
+## Writes `roc-graph-layout-docs-<version>.zip` and `roc-graph-layout-<version>.pdf`
+## to `dist`, or to the directory named by `OUTPUT_DIR`. The site restores the
+## archive for later releases.
 main! = |_args| {
 	roc = Script.roc!()?
 	version = Script.env!("RELEASE_VERSION")?
@@ -24,6 +26,7 @@ main! = |_args| {
 		|temporary| {
 			Site.docs!(roc, Path.join(temporary, version))?
 			_ = DocsArchive.pack!(temporary, version, output_dir)?
+			_ = Site.manual!(version, output_dir)?
 			Ok({})
 		},
 	)
