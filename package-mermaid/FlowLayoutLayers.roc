@@ -1,4 +1,6 @@
+import Flowchart
 import FlowLayoutGraph
+import FlowLayoutImport
 import FlowLayoutLoops
 import FlowLayoutSimplex
 
@@ -1207,4 +1209,80 @@ FlowLayoutLayers :: {}.{
 			}
 		}
 	}
+}
+
+## Test helper: a diagram's working graph with every node 152 by 41, edge
+## labels 31.27 by 17 and titles 10 by 17, as Mermaid measured the recorded
+## runs these tests take their expected values from.
+test_setup : Str -> FlowLayoutImport.Setup
+test_setup = |text| {
+	diagram = match Flowchart.parse(text) {
+		Ok(d) => d
+		Err(_) => { direction: Right, nodes: [], edges: [], groups: [], classes: [] }
+	}
+	box = { width: 152, height: 41, label: { lines: [], width: 0, height: 0 } }
+	sizes = {
+		nodes: List.repeat(box, diagram.nodes.len()),
+		edge_labels: diagram.edges.map(|e| if (e.label.is_empty()) None else Some({ lines: [], width: 31.26953125, height: 17 })),
+		group_titles: List.repeat({ lines: [], width: 10, height: 17 }, diagram.groups.len()),
+	}
+	FlowLayoutImport.build(diagram, sizes)
+}
+
+## Test helper: the drawing's graph of `text`, layered.
+test_layered : Str -> { setup : FlowLayoutImport.Setup, model : FlowLayoutGraph.Model }
+test_layered = |text| {
+	setup = test_setup(text)
+	m = setup.model
+	{ setup, model: FlowLayoutLayers.prepare(m, 0, FlowLayoutLayers.features(m, 0, False)) }
+}
+
+## A cycle's back edge is turned around, and an edge spanning two layers is
+## split by a dummy in the layer between. Recorded: ELK puts a, b, c at
+## x 12, 204, 396 (layers 0, 1, 2) and routes both a --> c and c --> a
+## through layer 1, beside b.
+expect {
+	r = test_layered("flowchart LR\n    a --> b --> c\n    a --> c\n    c --> a\n")
+	m = r.model
+	layer = |i| FlowLayoutGraph.node(m, r.setup.node_of.get(i) ?? 0).layer
+	middle = FlowLayoutGraph.graph(m, 0).layers.get(1) ?? []
+	back = FlowLayoutGraph.edge(m, r.setup.edge_of.get(3) ?? 0)
+	layer(0) == 0
+		and layer(1) == 1
+		and layer(2) == 2
+		and middle.len() == 3
+		and middle.count_if(|n| FlowLayoutGraph.node(m, n).kind == LongEdge) == 2
+		and back.reversed
+}
+
+## After layering, every edge runs from one layer to the next.
+expect {
+	r = test_layered("flowchart LR\n    a --> b --> c --> d\n    a --> d\n    d --> b\n    a -->|go| c\n")
+	m = r.model
+	m.edges.all(
+		|e|
+			if e.source == FlowLayoutGraph.nil or e.target == FlowLayoutGraph.nil {
+				True
+			} else {
+				s = FlowLayoutGraph.node(m, FlowLayoutGraph.port(m, e.source).node).layer
+				t = FlowLayoutGraph.node(m, FlowLayoutGraph.port(m, e.target).node).layer
+				t == s + 1
+			},
+	)
+}
+
+## A labelled edge gets a label node in its middle layer.
+expect {
+	r = test_layered("flowchart LR\n    a -->|go| b\n")
+	m = r.model
+	layers = FlowLayoutGraph.graph(m, 0).layers
+	layers.len() == 3 and (layers.get(1) ?? []).all(|n| FlowLayoutGraph.node(m, n).kind == Label)
+}
+
+## The declared order decides a layer's starting order: r's edges to z, y
+## and x were declared in that order.
+expect {
+	r = test_layered("flowchart LR\n    r --> z\n    r --> y\n    r --> x\n    q --> y\n")
+	ids = (FlowLayoutGraph.graph(r.model, 0).layers.get(1) ?? []).map(|n| r.setup.node_of.find_first_index(|x| x == n) ?? 99)
+	ids == [1, 2, 3]
 }

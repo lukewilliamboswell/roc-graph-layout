@@ -387,3 +387,53 @@ FlowLayoutElk :: {}.{
 		List.repeat(0, m.nodes.len()).map_with_index(|_, n| name(n))
 	}
 }
+
+## Test helper: the engine's result for `text` with every node 152 by 41
+## and titles 10 by 17, as Mermaid measured the recorded runs below.
+test_raw : Str -> FlowLayoutElk.Raw
+test_raw = |text| {
+	diagram = match Flowchart.parse(text) {
+		Ok(d) => d
+		Err(_) => { direction: Right, nodes: [], edges: [], groups: [], classes: [] }
+	}
+	box = { width: 152, height: 41, label: { lines: [], width: 0, height: 0 } }
+	sizes = {
+		nodes: List.repeat(box, diagram.nodes.len()),
+		edge_labels: diagram.edges.map(|_| None),
+		group_titles: List.repeat({ lines: [], width: 10, height: 17 }, diagram.groups.len()),
+	}
+	FlowLayoutElk.layout_raw(diagram, sizes)
+}
+
+## Every phase together. Recorded: ELK places a, b, c, d, e at (12, 93),
+## (204, 12), (204, 93), (204, 174), (396, 93) and bends a --> b at x 184.
+expect {
+	raw = test_raw("flowchart LR\n    a --> b\n    a --> c\n    a --> d\n    b --> e\n    c --> e\n    d --> e\n")
+	raw.nodes.map(|r| (r.x, r.y)) == [(12, 93), (204, 12), (204, 93), (204, 174), (396, 93)]
+		and (raw.edges.first() ?? { points: [], label: None }).points == [{ x: 164, y: 108.25 }, { x: 184, y: 108.25 }, { x: 184, y: 32.5 }, { x: 204, y: 32.5 }]
+}
+
+## A subgraph laid out on its own reads its own way inside a diagram that
+## reads the other way, and is a box of fixed size to it. Recorded: ELK
+## puts s at (12, 12) sized 376 by 109 with a, b at (36, 56) and
+## (212, 56), and t at (164, 161) sized 212 by 174 with c, d at (200, 205)
+## and (200, 270), and e at (200, 385).
+expect {
+	raw = test_raw("flowchart TD\n    subgraph s [S]\n        direction LR\n        a --> b\n    end\n    subgraph t [T]\n        direction LR\n        c --> d\n    end\n    s --> t\n    d --> e\n")
+	raw.nodes.map(|r| (r.x, r.y)) == [(36, 56), (212, 56), (200, 205), (200, 270), (200, 385)]
+		and raw.groups == [{ x: 12, y: 12, width: 376, height: 109 }, { x: 164, y: 161, width: 212, height: 174 }]
+}
+
+## Graphs are visited inside out, each once, even when a subgraph's node is
+## listed both unlayered and in a layer.
+expect {
+	text = "flowchart TD\n    subgraph g [G]\n        subgraph h [H]\n            direction LR\n            a\n        end\n        subgraph k [K]\n            b\n        end\n    end\n    b --> c\n"
+	diagram = match Flowchart.parse(text) {
+		Ok(d) => d
+		Err(_) => { direction: Right, nodes: [], edges: [], groups: [], classes: [] }
+	}
+	box = { width: 152, height: 41, label: { lines: [], width: 0, height: 0 } }
+	sizes = { nodes: List.repeat(box, diagram.nodes.len()), edge_labels: diagram.edges.map(|_| None), group_titles: List.repeat({ lines: [], width: 10, height: 17 }, diagram.groups.len()) }
+	order = FlowLayoutElk.bottom_up(FlowLayoutElk.ordered(diagram, sizes).model)
+	order.len() == 4 and order.last() == Ok(0) and order.all(|g| order.count_if(|x| x == g) == 1)
+}

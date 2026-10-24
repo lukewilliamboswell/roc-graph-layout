@@ -1,5 +1,9 @@
+import Flowchart
 import FlowLayoutGraph
+import FlowLayoutImport
+import FlowLayoutLayers
 import FlowLayoutLoops
+import FlowLayoutOrder
 
 ## Where nodes go across the flow, as Mermaid's layout engine places them:
 ## ports spread along their nodes' sides, each label moved to the middle
@@ -1010,4 +1014,63 @@ FlowLayoutPlace :: {}.{
 		}
 		$m
 	}
+}
+
+## Test helper: a diagram's working graph with every node 152 by 41, edge
+## labels 31.27 by 17 and titles 10 by 17, as Mermaid measured the recorded
+## runs these tests take their expected values from.
+test_setup : Str -> FlowLayoutImport.Setup
+test_setup = |text| {
+	diagram = match Flowchart.parse(text) {
+		Ok(d) => d
+		Err(_) => { direction: Right, nodes: [], edges: [], groups: [], classes: [] }
+	}
+	box = { width: 152, height: 41, label: { lines: [], width: 0, height: 0 } }
+	sizes = {
+		nodes: List.repeat(box, diagram.nodes.len()),
+		edge_labels: diagram.edges.map(|e| if (e.label.is_empty()) None else Some({ lines: [], width: 31.26953125, height: 17 })),
+		group_titles: List.repeat({ lines: [], width: 10, height: 17 }, diagram.groups.len()),
+	}
+	FlowLayoutImport.build(diagram, sizes)
+}
+
+## Test helper: the drawing's graph of `text`, layered, ordered and with
+## nodes placed across the flow.
+test_placed : Str -> { setup : FlowLayoutImport.Setup, model : FlowLayoutGraph.Model }
+test_placed = |text| {
+	setup = test_setup(text)
+	m0 = setup.model
+	m1 = FlowLayoutLayers.prepare(m0, 0, FlowLayoutLayers.features(m0, 0, False))
+	m2 = FlowLayoutOrder.minimize(m1, True)
+	m3 = FlowLayoutPlace.prepare(m2, 0, False)
+	{ setup, model: FlowLayoutPlace.brandes_koepf(m3, 0) }
+}
+
+## Balanced placement of a diamond: the fan's middle node lines up with both
+## ends, the others 81 either side. Recorded: ELK places a, b, c, d, e at
+## y 93, 12, 93, 174, 93.
+expect {
+	r = test_placed("flowchart LR\n    a --> b\n    a --> c\n    a --> d\n    b --> e\n    c --> e\n    d --> e\n")
+	y = |i| FlowLayoutGraph.node(r.model, r.setup.node_of.get(i) ?? 0).y
+	y(1) - y(0) == -81 and y(2) == y(0) and y(3) - y(0) == 81 and y(4) == y(0)
+}
+
+## Ports spread evenly along a side between its margins. Recorded: ELK
+## puts a's two ports 17 and 24 below its top (a node 41 high).
+expect {
+	r = test_placed("flowchart LR\n    a --> d\n    b --> c\n    a --> c\n    b --> d\n")
+	m = r.model
+	a = FlowLayoutGraph.node(m, r.setup.node_of.get(0) ?? 0)
+	ys = a.ports.map(|p| FlowLayoutGraph.port(m, p).y)
+	FlowLayoutGraph.sort_by(ys, |p, q| if (p < q) -1 else if (p > q) 1 else 0) == [17, 24]
+}
+
+## A lone port on a side too short for the ports' margins sits just inside
+## the margin rather than in the middle. Recorded: ELK puts the port of an
+## empty subgraph (a box of no size) 10 along its side.
+expect {
+	r = test_placed("flowchart TD\n    a --> e\n    subgraph e [E]\n    end\n")
+	m = r.model
+	e = FlowLayoutGraph.node(m, r.setup.group_node.get(0) ?? 0)
+	e.ports.map(|p| FlowLayoutGraph.port(m, p).y) == [10]
 }

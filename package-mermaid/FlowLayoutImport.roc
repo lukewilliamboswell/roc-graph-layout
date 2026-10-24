@@ -930,3 +930,50 @@ FlowLayoutImport :: {}.{
 		(m2, dn)
 	}
 }
+
+## Test helper: a diagram's working graph with every node 152 by 41, edge
+## labels 31.27 by 17 and titles 10 by 17, as Mermaid measured the recorded
+## runs these tests take their expected values from.
+test_setup : Str -> FlowLayoutImport.Setup
+test_setup = |text| {
+	diagram = match Flowchart.parse(text) {
+		Ok(d) => d
+		Err(_) => { direction: Right, nodes: [], edges: [], groups: [], classes: [] }
+	}
+	box = { width: 152, height: 41, label: { lines: [], width: 0, height: 0 } }
+	sizes = {
+		nodes: List.repeat(box, diagram.nodes.len()),
+		edge_labels: diagram.edges.map(|e| if (e.label.is_empty()) None else Some({ lines: [], width: 31.26953125, height: 17 })),
+		group_titles: List.repeat({ lines: [], width: 10, height: 17 }, diagram.groups.len()),
+	}
+	FlowLayoutImport.build(diagram, sizes)
+}
+
+## A subgraph with its own direction and no edge crossing its border is laid
+## out on its own, reading its own way; one an edge leaves is laid out with
+## the drawing. Recorded: Mermaid gives `s` SEPARATE_CHILDREN with direction
+## RIGHT and `t` (left by `d --> e`) INCLUDE_CHILDREN.
+expect {
+	setup = test_setup("flowchart TD\n    subgraph s [S]\n        direction LR\n        a --> b\n    end\n    subgraph t [T]\n        direction LR\n        c --> d\n    end\n    s --> t\n    d --> e\n")
+	m = setup.model
+	s = FlowLayoutGraph.graph(m, setup.group_graph.get(0) ?? 0)
+	t = FlowLayoutGraph.graph(m, setup.group_graph.get(1) ?? 0)
+	s.separate and s.direction == Right and !t.separate and t.direction == Down
+}
+
+## Each node lies in its container's graph, in Mermaid's order: subgraphs
+## last declared first, then nodes.
+expect {
+	setup = test_setup("flowchart LR\n    a --> b\n    subgraph g [G]\n        c\n    end\n    subgraph h [H]\n        d\n    end\n")
+	m = setup.model
+	root = FlowLayoutGraph.graph(m, 0).nodes
+	root == [setup.group_node.get(1) ?? 0, setup.group_node.get(0) ?? 0, setup.node_of.get(0) ?? 0, setup.node_of.get(1) ?? 0]
+		and FlowLayoutGraph.node(m, setup.node_of.get(2) ?? 0).graph == (setup.group_graph.get(0) ?? 0)
+}
+
+## An empty subgraph has no graph and no size.
+expect {
+	setup = test_setup("flowchart TD\n    a --> e\n    subgraph e [E]\n    end\n")
+	node = FlowLayoutGraph.node(setup.model, setup.group_node.get(0) ?? 0)
+	setup.group_graph == [FlowLayoutGraph.nil] and node.width == 0 and node.height == 0
+}

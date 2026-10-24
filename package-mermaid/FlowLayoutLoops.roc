@@ -1,4 +1,6 @@
+import Flowchart
 import FlowLayoutGraph
+import FlowLayoutImport
 
 ## Self-loops, as Mermaid's layout engine draws them: taken out of the graph
 ## while it is layered and ordered, then put back on their node's north side
@@ -556,3 +558,67 @@ edge_source_port = |loop, _edge| loop.ports.first() ?? FlowLayoutGraph.nil
 
 edge_target_port : FlowLayoutGraph.Loop, FlowLayoutGraph.Edge -> U64
 edge_target_port = |loop, _edge| loop.ports.last() ?? FlowLayoutGraph.nil
+
+## Test helper: a diagram's working graph with every node 152 by 41, edge
+## labels 31.27 by 17 and titles 10 by 17, as Mermaid measured the recorded
+## runs these tests take their expected values from.
+test_setup : Str -> FlowLayoutImport.Setup
+test_setup = |text| {
+	diagram = match Flowchart.parse(text) {
+		Ok(d) => d
+		Err(_) => { direction: Right, nodes: [], edges: [], groups: [], classes: [] }
+	}
+	box = { width: 152, height: 41, label: { lines: [], width: 0, height: 0 } }
+	sizes = {
+		nodes: List.repeat(box, diagram.nodes.len()),
+		edge_labels: diagram.edges.map(|e| if (e.label.is_empty()) None else Some({ lines: [], width: 31.26953125, height: 17 })),
+		group_titles: List.repeat({ lines: [], width: 10, height: 17 }, diagram.groups.len()),
+	}
+	FlowLayoutImport.build(diagram, sizes)
+}
+
+## Test helper: a's two self-loops (the second labelled) hidden, then put
+## back after a and b were placed in layers 0 and 1.
+test_loops : {} -> { setup : FlowLayoutImport.Setup, hidden : FlowLayoutGraph.Model, restored : FlowLayoutGraph.Model }
+test_loops = |{}| {
+	setup = test_setup("flowchart LR\n    a --> a\n    a -->|retry| a\n    a --> b\n")
+	hidden = FlowLayoutLoops.hide(setup.model, 0)
+	a = setup.node_of.get(0) ?? 0
+	b = setup.node_of.get(1) ?? 0
+	graph = FlowLayoutGraph.graph(hidden, 0)
+	layered = FlowLayoutGraph.set_graph(hidden, 0, { ..graph, layers: [[a], [b]] })
+	{ setup, hidden, restored: FlowLayoutLoops.restore(layered, 0) }
+}
+
+## Hiding takes each self-loop out of the graph with the ports only it
+## used, remembering its label.
+expect {
+	r = test_loops({})
+	m = r.hidden
+	a = FlowLayoutGraph.node(m, r.setup.node_of.get(0) ?? 0)
+	m.loops.len() == 2
+		and m.loops.all(|l| l.hidden and l.ports.len() == 2)
+		and m.loops.map(|l| l.label != None) == [False, True]
+		and a.ports.len() == 1
+		and m.loops.all(|l| FlowLayoutGraph.edge(m, l.edge).source == FlowLayoutGraph.nil)
+}
+
+## Restored ports all go on the north side, stacked: the later loop's
+## ports outside the earlier one's. Recorded: ELK's north ports on a, left
+## to right, are the second loop's source (49.6), the first loop's source
+## (75.2) and target (100.8), then the second loop's target (126.4).
+expect {
+	r = test_loops({})
+	m = r.restored
+	a = FlowLayoutGraph.node(m, r.setup.node_of.get(0) ?? 0)
+	first = m.loops.get(0) ?? FlowLayoutLoops.blank
+	second = m.loops.get(1) ?? FlowLayoutLoops.blank
+	north = a.ports.keep_if(|p| FlowLayoutGraph.port(m, p).side == North)
+	north == [second.ports.get(0) ?? 0, first.ports.get(0) ?? 0, first.ports.get(1) ?? 0, second.ports.get(1) ?? 0]
+		and a.ports.len() == 5
+		and m.loops.all(|l| !l.hidden)
+}
+
+## Corner loops order their two sides as the engine does: west before
+## north, otherwise by side.
+expect FlowLayoutLoops.sorted_sides([North, West]) == [West, North] and FlowLayoutLoops.sorted_sides([South, East]) == [East, South]

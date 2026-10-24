@@ -1,5 +1,10 @@
+import Flowchart
 import FlowLayoutGraph
+import FlowLayoutImport
+import FlowLayoutLayers
 import FlowLayoutLoops
+import FlowLayoutOrder
+import FlowLayoutPlace
 import FlowLayoutRandom
 
 ## Where layers go along the flow and how edges bend, as Mermaid's layout
@@ -1063,3 +1068,76 @@ FlowLayoutRoute :: {}.{
 		$slot
 	}
 }
+
+## Test helper: a diagram's working graph with every node 152 by 41, edge
+## labels 31.27 by 17 and titles 10 by 17, as Mermaid measured the recorded
+## runs these tests take their expected values from.
+test_setup : Str -> FlowLayoutImport.Setup
+test_setup = |text| {
+	diagram = match Flowchart.parse(text) {
+		Ok(d) => d
+		Err(_) => { direction: Right, nodes: [], edges: [], groups: [], classes: [] }
+	}
+	box = { width: 152, height: 41, label: { lines: [], width: 0, height: 0 } }
+	sizes = {
+		nodes: List.repeat(box, diagram.nodes.len()),
+		edge_labels: diagram.edges.map(|e| if (e.label.is_empty()) None else Some({ lines: [], width: 31.26953125, height: 17 })),
+		group_titles: List.repeat({ lines: [], width: 10, height: 17 }, diagram.groups.len()),
+	}
+	FlowLayoutImport.build(diagram, sizes)
+}
+
+## Test helper: the drawing's graph of `text` laid out left to right, with
+## a function from the graph's coordinates to the drawing's, which is where
+## the engine's recorded coordinates are.
+test_routed : Str -> { setup : FlowLayoutImport.Setup, model : FlowLayoutGraph.Model, at : { x : F64, y : F64 } -> { x : F64, y : F64 } }
+test_routed = |text| {
+	setup = test_setup(text)
+	m0 = setup.model
+	m1 = FlowLayoutLayers.prepare(m0, 0, FlowLayoutLayers.features(m0, 0, False))
+	ordered = FlowLayoutOrder.minimize_traced(m1, 0, True, False, [])
+	m3 = FlowLayoutPlace.prepare(ordered.model, 0, False)
+	m4 = FlowLayoutPlace.brandes_koepf(m3, 0)
+	m = FlowLayoutRoute.finish(m4, 0, False, False, ordered.randoms.get(0) ?? FlowLayoutRandom.from_seed(1)).model
+	graph = FlowLayoutGraph.graph(m, 0)
+	at = |p| { x: p.x + graph.offset_x + graph.padding.left, y: p.y + graph.offset_y + graph.padding.top }
+	{ setup, model: m, at }
+}
+
+## Two crossing edges between two layers take separate lanes, and b --> c,
+## whose ends both sit in a's edge's critical span, is split across two
+## lanes. Recorded: ELK bends a --> d at x 204 and b --> c at x 184 then
+## 224, crossing over at y 73.
+expect {
+	r = test_routed("flowchart LR\n    a --> d\n    b --> c\n    a --> c\n    b --> d\n")
+	bends = |i| FlowLayoutGraph.edge(r.model, r.setup.edge_of.get(i) ?? 0).bends.map(r.at)
+	bends(0) == [{ x: 204, y: 36 }, { x: 204, y: 110 }]
+		and bends(1) == [{ x: 184, y: 110 }, { x: 184, y: 73 }, { x: 224, y: 73 }, { x: 224, y: 36 }]
+		and bends(2) == []
+		and bends(3) == []
+}
+
+## Self-loops sit on the node's north side (above it, left to right), each
+## a lane further out, the labelled one leaving room for its label.
+## Recorded: ELK draws a's loops at y 57 and 37 above a at y 77, from ports
+## at x 75.2 and 100.8, and 49.6 and 126.4, with the label at 70.37, 12.
+expect {
+	r = test_routed("flowchart LR\n    a --> a\n    a -->|retry| a\n    a --> b\n")
+	edge = |i| FlowLayoutGraph.edge(r.model, r.setup.edge_of.get(i) ?? 0)
+	close = |p, q| (p.x - q.x).abs() < 0.000001 and (p.y - q.y).abs() < 0.000001
+	all_close = |ps, qs| ps.len() == qs.len() and List.map2(ps, qs, close).all(|ok| ok)
+	inner = edge(0)
+	outer = edge(1)
+	at = r.at
+	label = at({ x: outer.label_x, y: outer.label_y })
+	all_close(inner.bends.map(r.at), [{ x: 75.2, y: 57 }, { x: 100.8, y: 57 }])
+		and all_close(outer.bends.map(r.at), [{ x: 49.6, y: 37 }, { x: 126.4, y: 37 }])
+		and close(label, { x: 70.365234375 + 35.26953125 / 2, y: 12 + 21 / 2 })
+}
+
+## Lanes come from the longest path over the dependencies.
+expect FlowLayoutRoute.number(
+	[FlowLayoutRoute.no_segment, FlowLayoutRoute.no_segment, FlowLayoutRoute.no_segment].map(|s| { ..s, incoming: [0] }),
+	[{ source: 0, target: 1, weight: 1, critical: False, alive: True }, { source: 1, target: 2, weight: 1, critical: False, alive: True }],
+)
+	== [0, 1, 2]

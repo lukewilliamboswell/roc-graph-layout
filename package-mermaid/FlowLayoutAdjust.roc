@@ -936,3 +936,64 @@ expect {
 	clipped = FlowLayoutAdjust.clip(route, start, stop)
 	clipped == route
 }
+
+## A cylinder's cap is met a little inside its box, more towards its sides.
+## Recorded: Mermaid starts edges from a 144 by 81.15 cylinder 1.051 inside
+## the box 36.72 from its middle, and 0.180 inside 12.24 from it.
+expect {
+	near = |a, b| (a - b).abs() < 0.005
+	near(FlowLayoutAdjust.cylinder_depth(36.72, 144, 81.14869689941406), 1.0508)
+		and near(FlowLayoutAdjust.cylinder_depth(12.24, 144, 81.14869689941406), 0.18)
+		and FlowLayoutAdjust.cylinder_depth(0, 144, 81.14869689941406) == 0
+}
+
+## Slanted sides are met inside the box. Recorded (Mermaid, nodes 32 or 47
+## high): an edge leaves a lean-right node 8 inside its right side, enters
+## a lean-left node 8 inside its left side, leaves an inverse trapezoid
+## 11.75 inside, and enters a flag 10.25 inside its notched side.
+expect {
+	near = |p, q| (p.x - q.x).abs() < 0.001 and (p.y - q.y).abs() < 0.001
+	lean_right = { x: 279, y: 297, width: 182, height: 32 }
+	lean_left = { x: 501, y: 297, width: 182, height: 32 }
+	inverse = { x: 12, y: 417.73834228515625, width: 227, height: 47 }
+	flag = { x: 505.875, y: 153, width: 172.25, height: 41 }
+	near(FlowLayoutAdjust.outline_point({ x: 461, y: 313 }, { x: 501, y: 313 }, LeanRight, lean_right), { x: 453, y: 313 })
+		and near(FlowLayoutAdjust.outline_point({ x: 501, y: 313 }, { x: 461, y: 313 }, LeanLeft, lean_left), { x: 509, y: 313 })
+		and near(FlowLayoutAdjust.outline_point({ x: 239, y: 441.23834228515625 }, { x: 279, y: 441.23834228515625 }, InverseTrapezoid, inverse), { x: 227.25, y: 441.23834228515625 })
+		and near(FlowLayoutAdjust.outline_point({ x: 505.875, y: 173.5 }, { x: 406.9, y: 173.5 }, Asymmetric, flag), { x: 516.125, y: 173.5 })
+}
+
+## A box too small for its ports' margins is centred where its first edge
+## meets it, unless that would strand another edge. Recorded: Mermaid
+## moves an empty subgraph from x 350 to centre it on its edge's end at x
+## 360.
+expect {
+	edges = [{ points: [{ x: 295, y: 134 }, { x: 295, y: 154 }, { x: 360, y: 154 }, { x: 360, y: 184 }], label: None }]
+	moved = FlowLayoutAdjust.align_degenerate([{ x: 197, y: 93, width: 152, height: 41 }], [{ x: 350, y: 184, width: 0, height: 0 }], edges, [(Node(0), Group(0))], [93.640625])
+	kept = FlowLayoutAdjust.align_degenerate(
+		[],
+		[{ x: 350, y: 184, width: 0, height: 0 }],
+		edges.concat([{ points: [{ x: 200, y: 100 }, { x: 330, y: 184 }], label: None }]),
+		[(Node(0), Group(0)), (Node(0), Group(0))],
+		[10],
+	)
+	moved.groups == [{ x: 360, y: 184, width: 0, height: 0 }] and moved.nodes == [{ x: 197, y: 93, width: 152, height: 41 }] and kept.groups == [{ x: 350, y: 184, width: 0, height: 0 }]
+}
+
+## A short jog next to an end is straightened. Expected values from
+## Mermaid's own `straightenTerminalJogsWithRuns` on the same routes.
+expect {
+	one = FlowLayoutAdjust.straighten_route([{ x: 0, y: 0 }, { x: 20, y: 0 }, { x: 20, y: 10 }, { x: 60, y: 10 }, { x: 60, y: 50 }])
+	both = FlowLayoutAdjust.straighten_route([{ x: 0, y: 0 }, { x: 0, y: 20 }, { x: 12, y: 20 }, { x: 12, y: 80 }, { x: 90, y: 80 }, { x: 90, y: 100 }, { x: 96, y: 100 }, { x: 96, y: 130 }])
+	one.points == [{ x: 0, y: 0 }, { x: 60, y: 0 }, { x: 60, y: 50 }]
+		and both.points == [{ x: 0, y: 0 }, { x: 0, y: 80 }, { x: 96, y: 80 }, { x: 96, y: 130 }]
+		and both.runs.len() == 2
+}
+
+## A jog is kept when straightening would cross another edge.
+expect {
+	route = [{ x: 0, y: 0 }, { x: 20, y: 0 }, { x: 20, y: 10 }, { x: 60, y: 10 }, { x: 60, y: 50 }]
+	blocker = [{ x: 40, y: -5 }, { x: 40, y: 5 }]
+	result = FlowLayoutAdjust.straighten([{ points: route, label: None }, { points: blocker, label: None }], [None, None])
+	(result.first() ?? { points: [], label: None }).points == route
+}

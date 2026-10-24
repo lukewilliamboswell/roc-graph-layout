@@ -1,4 +1,7 @@
+import Flowchart
 import FlowLayoutGraph
+import FlowLayoutImport
+import FlowLayoutLayers
 import FlowLayoutRandom
 
 ## The order of nodes within layers, chosen as Mermaid's layout engine
@@ -1107,4 +1110,59 @@ FlowLayoutOrder :: {}.{
 		}
 		$m
 	}
+}
+
+## Test helper: a diagram's working graph with every node 152 by 41, edge
+## labels 31.27 by 17 and titles 10 by 17, as Mermaid measured the recorded
+## runs these tests take their expected values from.
+test_setup : Str -> FlowLayoutImport.Setup
+test_setup = |text| {
+	diagram = match Flowchart.parse(text) {
+		Ok(d) => d
+		Err(_) => { direction: Right, nodes: [], edges: [], groups: [], classes: [] }
+	}
+	box = { width: 152, height: 41, label: { lines: [], width: 0, height: 0 } }
+	sizes = {
+		nodes: List.repeat(box, diagram.nodes.len()),
+		edge_labels: diagram.edges.map(|e| if (e.label.is_empty()) None else Some({ lines: [], width: 31.26953125, height: 17 })),
+		group_titles: List.repeat({ lines: [], width: 10, height: 17 }, diagram.groups.len()),
+	}
+	FlowLayoutImport.build(diagram, sizes)
+}
+
+## Test helper: the drawing's graph of `text`, layered, and the diagram
+## index of each node of each layer.
+test_layered : Str -> { setup : FlowLayoutImport.Setup, model : FlowLayoutGraph.Model }
+test_layered = |text| {
+	setup = test_setup(text)
+	m = setup.model
+	{ setup, model: FlowLayoutLayers.prepare(m, 0, FlowLayoutLayers.features(m, 0, False)) }
+}
+
+test_ids : FlowLayoutImport.Setup, FlowLayoutGraph.Model -> List(List(U64))
+test_ids = |setup, m| FlowLayoutGraph.graph(m, 0).layers.map(|layer| layer.map(|n| setup.node_of.find_first_index(|x| x == n) ?? 99))
+
+## Ordering moves y below x to keep q --> y clear of r's edges. Recorded:
+## ELK places r, q at y 93, 177.5 and z, x, y at y 12, 93, 174.
+expect {
+	r = test_layered("flowchart LR\n    r --> z\n    r --> y\n    r --> x\n    q --> y\n")
+	ordered = FlowLayoutOrder.minimize(r.model, True)
+	test_ids(r.setup, ordered) == [[0, 4], [1, 3, 2]]
+}
+
+## The random tie-breaks come from a generator seeded as the engine seeds
+## it, so the same graph is ordered the same way, draw for draw.
+expect {
+	r = test_layered("flowchart LR\n    a --> b\n    a --> c\n    d --> b\n    d --> c\n    e --> b\n")
+	first = FlowLayoutOrder.minimize_traced(r.model, 0, True, True, [])
+	second = FlowLayoutOrder.minimize_traced(r.model, 0, True, True, [])
+	first.trace == second.trace and first.trace.any(|line| line.starts_with("rand")) and first.model == second.model
+}
+
+## Ordering keeps every layer's nodes; it only reorders them.
+expect {
+	r = test_layered("flowchart LR\n    a --> b --> c\n    a --> c\n    d --> b\n    d --> e --> c\n")
+	before = test_ids(r.setup, r.model)
+	after = test_ids(r.setup, FlowLayoutOrder.minimize(r.model, True))
+	before.len() == after.len() and List.map2(before, after, |x, y| x.len() == y.len() and x.all(|n| y.contains(n))).all(|ok| ok)
 }
