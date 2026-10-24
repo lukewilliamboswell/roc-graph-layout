@@ -1,0 +1,34 @@
+[#graph-geometry]
+= Graph geometry, ready for your renderer
+
+roc-graph-layout computes deterministic node positions, edge routes, and drawing
+bounds. Your application supplies the graph and the actual sizes of its nodes;
+the package does not choose fonts, measure labels, or render the result.
+
+https://lukewilliamboswell.github.io/roc-graph-layout/assets/build-pipeline.svg[See a build pipeline arranged into directed
+stages by Layered layout.]
+
+https://lukewilliamboswell.github.io/roc-graph-layout/docs/[Read the API reference] for every layout family, its settings, and
+the geometry it returns.
+
+== Start with the structure you know
+
+* A directed pipeline or dependency graph: start with *Layered*.
+* An existing hierarchy: use *Tree*.
+* A general network: explore *Graph* layouts.
+* Domain-specific alignment and separation rules: use *Constrained*.
+* Nested groups: use *Compound*.
+
+Read xref:choosing-a-layout.adoc#choosing-a-layout[Choosing a layout] for the
+differences, or browse the https://lukewilliamboswell.github.io/roc-graph-layout/docs/[versioned API reference] for complete
+inputs and settings.
+
+== Read the result
+
+Positions are node centers and follow the input node order. Edge routes follow
+the input edge order. A route can be a straight line, a polyline, or a chain of
+cubic curves. Use the returned bounds to frame the drawing rather than assuming
+all coordinates are positive.
+
+For repeated solves of unchanged input and preparation settings, the prepared
+APIs let you retain reusable work. Prepare again when the graph changes.

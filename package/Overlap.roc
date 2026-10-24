@@ -113,7 +113,17 @@ Overlap :: {}.{
 				},
 			),
 		)
-		if y_rules.is_empty() {
+		# A requirement that already holds within the tolerance must move
+		# nothing; the projection compares gaps exactly, so hand it work only
+		# when some requirement is actually violated.
+		y_violated = y_rules.any(
+			|rule| {
+				left = with_x.get(rule.left) ?? { x: 0, y: 0 }
+				right = with_x.get(rule.right) ?? { x: 0, y: 0 }
+				right.y - left.y < rule.gap - tolerance
+			},
+		)
+		if !y_violated {
 			with_x
 		} else {
 			solved = Solver.project(
@@ -121,10 +131,13 @@ Overlap :: {}.{
 				y_rules,
 			)
 			projected = with_x.map_with_index(|p, i| { ..p, y: solved.get(i) ?? p.y })
-			# The solver is allowed tiny residual error. Scan in its deterministic
-			# vertical order and push later boxes only when that error would still
-			# count as overlap at this pass's tolerance.
-			order = projected
+			# Every vertical requirement points forward in the pre-projection
+			# vertical order (smaller y, ties by index). The projection can leave
+			# a redundant requirement violated inside a rigid block, so sweep in
+			# that order and place each box no higher than every earlier box
+			# still too close horizontally requires: a longest-path pass over
+			# the requirement DAG that satisfies every requirement exactly.
+			order = with_x
 				.map_with_index(|p, index| { index, y: p.y })
 				.sort_with(
 					|a, b| if a.y < b.y {
@@ -137,27 +150,27 @@ Overlap :: {}.{
 						After
 					},
 				)
-			order.fold(
-				projected,
-				|current, entry| {
-					point = current.get(entry.index) ?? { x: 0, y: 0 }
-					minimum = order.fold(
+			swept = order.fold(
+				{ current: projected, done: [] },
+				|state, entry| {
+					point = state.current.get(entry.index) ?? { x: 0, y: 0 }
+					minimum = state.done.fold(
 						point.y,
-						|needed, prior| if prior.index == entry.index {
-							needed
-						} else {
-							other = current.get(prior.index) ?? point
-							need = need_between(prior.index, entry.index)
-							if other.y <= point.y and (other.x - point.x).abs() < need.x - tolerance {
+						|needed, prior| {
+							other = state.current.get(prior) ?? point
+							need = need_between(prior, entry.index)
+							if (other.x - point.x).abs() < need.x - tolerance {
 								needed.max(other.y + need.y)
 							} else {
 								needed
 							}
 						},
 					)
-					current.set(entry.index, { ..point, y: minimum }) ?? current
+					# `entry.index` comes from `with_x`, which `current` matches in length.
+					{ current: state.current.set(entry.index, { ..point, y: minimum }) ?? [], done: state.done.append(entry.index) }
 				},
 			)
+			swept.current
 		}
 	}
 }
@@ -344,6 +357,39 @@ expect {
 				sa = sizes.get(i) ?? { width: 0, height: 0 }
 				sb = sizes.get(j) ?? { width: 0, height: 0 }
 				ok and ((b.x - a.x).abs() >= (sa.width + sb.width) / 2 + 6 - 0.000000001 or (b.y - a.y).abs() >= (sa.height + sb.height) / 2 + 6 - 0.000000001)
+			},
+		),
+	)
+}
+
+## fuzz regression: boxes whose vertical requirements already hold, two of
+## them touching after round-off, must come back unchanged by a second pass.
+## The projection used to run on requirements that held, and its exact block
+## merge moved boxes by about 1e-15 each time.
+expect {
+	positions = [{ x: 6, y: 6 }, { x: 6, y: 15 }, { x: 6, y: 6 }, { x: 6, y: 6 }, { x: 6, y: 15 }]
+	sizes = [{ width: 6, height: 3 }, { width: 6, height: 6 }, { width: 6, height: 6 }, { width: 6, height: 6 }, { width: 0, height: 0 }]
+	result = Overlap.remove(positions, sizes, 5)
+	Overlap.remove(result, sizes, 5) == result
+}
+
+## fuzz regression: a redundant transitive vertical requirement inside a rigid
+## block can stay violated after projection. The sweep in the original vertical
+## order must still separate every pair, here boxes 0 and 1 by 14.5.
+expect {
+	positions = [{ x: 0 - 9.0, y: 0 - 9.0 }, { x: 0 - 9.0, y: 0 - 9.0 }, { x: 0 - 6.0, y: 0 - 20.0 }, { x: 0 - 20.0, y: 0 - 20.0 }, { x: 0 - 20.0, y: 0 - 20.0 }, { x: 0 - 20.0, y: 0 - 20.0 }, { x: 0 - 20.0, y: 0 - 20.0 }, { x: 0 - 20.0, y: 0 - 20.0 }]
+	sizes = [{ width: 4, height: 4 }, { width: 11, height: 9 }, { width: 0, height: 0 }, { width: 0, height: 0 }, { width: 0, height: 0 }, { width: 0, height: 0 }, { width: 0, height: 0 }, { width: 0, height: 0 }]
+	result = Overlap.remove(positions, sizes, 8)
+	result.fold_with_index(
+		True,
+		|outer, a, i| result.fold_with_index(
+			outer,
+			|ok, b, j| if j <= i {
+				ok
+			} else {
+				sa = sizes.get(i) ?? { width: 0, height: 0 }
+				sb = sizes.get(j) ?? { width: 0, height: 0 }
+				ok and ((b.x - a.x).abs() >= (sa.width + sb.width) / 2 + 8 - 0.000000001 or (b.y - a.y).abs() >= (sa.height + sb.height) / 2 + 8 - 0.000000001)
 			},
 		),
 	)

@@ -69,13 +69,18 @@ test = |bytes| {
 	} else {
 		(byte_at(bytes, 31) % 12).to_u64()
 	}
-	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 48 + i * 2).to_u64() % count, to: byte_at(bytes, 49 + i * 2).to_u64() % count })
+	# `.max(1)` changes nothing when this closure runs, but works around
+	# https://github.com/roc-lang/roc/issues/12556: optimized builds otherwise
+	# assume the divisor is nonzero after the closure, even when it never ran.
+	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 48 + i * 2).to_u64() % count.max(1), to: byte_at(bytes, 49 + i * 2).to_u64() % count.max(1) })
 	algorithm = if count >= 2 and byte_at(bytes, 32) % 2 == 0 {
 		LayeredSweep({
 			..Compound.default_layered,
 			same_layers: [{ first: Group(1), second: Group(2) }],
 			sibling_order: [{ before: Node(0), after: Node(1) }],
-			non_ranking_edges: List.repeat(0, edge_count).map_with_index(|_, i| i),
+			# Only an edge between two distinct direct children can be arranged
+			# without ranking; a self-loop is not one.
+			non_ranking_edges: edges.map_with_index(|edge, i| if (edge.from != edge.to) [i] else []).join(),
 		})
 	} else {
 		Rows({ gap: (byte_at(bytes, 30) % 20).to_f64() })

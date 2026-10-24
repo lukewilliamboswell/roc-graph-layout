@@ -164,7 +164,10 @@ test = |bytes| {
 	} else {
 		(byte_at(bytes, 33) % 12).to_u64()
 	}
-	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 34 + i * 2).to_u64() % n, to: byte_at(bytes, 35 + i * 2).to_u64() % n })
+	# `.max(1)` changes nothing when this closure runs, but works around
+	# https://github.com/roc-lang/roc/issues/12556: optimized builds otherwise
+	# assume the divisor is nonzero after the closure, even when it never ran.
+	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 34 + i * 2).to_u64() % n.max(1), to: byte_at(bytes, 35 + i * 2).to_u64() % n.max(1) })
 	shared_pair = edges.fold_with_index(
 		[],
 		|found, edge, i| if found.is_empty() {
