@@ -34,5 +34,5 @@ The nine presets retain their individual drafts and settings while switching.
 Layout is derived once from the active inputs and shared by the SVG preview,
 error display, and returned-geometry inspector.
 
-`site/playground.html` is the Signals mount page the site served the Wasm
+`playground.html` is the Signals mount page the site served the Wasm
 from.

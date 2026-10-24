@@ -103,7 +103,7 @@ jobs:
           RELEASE_VERSION: ${{ steps.validate.outputs.release_version }}
         run: blueprint run package-examples
 
-      - name: Package the API reference
+      - name: Package the API reference and the guide's PDF
         env:
           RELEASE_VERSION: ${{ steps.validate.outputs.release_version }}
         run: blueprint run package-docs
@@ -125,6 +125,7 @@ jobs:
             dist/*.tar.zst
             dist/roc-graph-layout-examples-*.zip
             dist/roc-graph-layout-docs-*.zip
+            dist/roc-graph-layout-*.pdf
             dist/release-notes.md
           if-no-files-found: error
           retention-days: 7
@@ -196,6 +197,7 @@ jobs:
             candidate/*.tar.zst
             candidate/roc-graph-layout-examples-*.zip
             candidate/roc-graph-layout-docs-*.zip
+            candidate/roc-graph-layout-*.pdf
 
   # A final release changes which release the API reference leads with, so
   # the site is rebuilt. A release candidate does not change the site.

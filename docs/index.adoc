@@ -1,0 +1,23 @@
+= roc-graph-layout
+:doctype: book
+:author: The roc-graph-layout contributors
+:revnumber: {docs-version}
+:toc: left
+:toclevels: 2
+:sectanchors:
+
+[.lead]
+roc-graph-layout computes deterministic node positions, edge routes and drawing
+bounds for Roc programs. Your application supplies the graph and the actual
+sizes of its nodes; the package does not choose fonts, measure labels or render
+the result.
+
+ifdef::backend-html5[]
+link:roc-graph-layout.pdf[Download this guide as a PDF] ·
+https://lukewilliamboswell.github.io/roc-graph-layout/docs/[API reference] ·
+https://github.com/lukewilliamboswell/roc-graph-layout[View roc-graph-layout on GitHub].
+endif::[]
+
+include::overview.adoc[leveloffset=+1]
+
+include::choosing-a-layout.adoc[leveloffset=+1]

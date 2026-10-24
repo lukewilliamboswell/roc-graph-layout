@@ -121,5 +121,9 @@ blueprint run serve                  # build the site and preview it locally
 blueprint run bench -- smoke         # native optimized benchmarks
 ```
 
+The guide is AsciiDoc in `docs/index.adoc` and its chapters, rendered by
+roc-automation's shared `roc-docs` utility into the site and a PDF; release
+notes live in `docs/releases/`.
+
 `tests/examples.json` records what each example prints, and each example
 rewrites its drawing beside its source, so `git diff` shows any change.

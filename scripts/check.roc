@@ -97,7 +97,7 @@ check_scripts! = |roc_stable| {
 
 check_package! = |roc| {
 	Script.section!("Package")?
-	roc.run!(["fmt", "--check", "package", "examples", "benchmarks", "site"])?
+	roc.run!(["fmt", "--check", "package", "examples", "benchmarks"])?
 	roc.run!(["check", "package/main.roc", "--no-cache"])?
 	# The default backend and the interpreter have disagreed before, so the
 	# tests run in both.
