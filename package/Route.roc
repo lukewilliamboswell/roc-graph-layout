@@ -1,8 +1,34 @@
 import EdgeRoutes
 import Geom
+import RouteGrid
+import RouteIndex
+import RouteLanes
+import RoutePorts
+import RouteSort
 
 ## Internal implementation for the placement-independent orthogonal router.
 RouteInternals :: {}.{
+	Terminal : { point : Geom.Point, outward : Geom.Point, side : Route.Side }
+	Bounds : { min_x : F64, min_y : F64, max_x : F64, max_y : F64 }
+	Portal : { group : U64, point : Geom.Point, outward : Geom.Point, side : Route.Side, offset : F64, leaving : Bool }
+	View : { from : U64, to : U64, endpoints : Bool }
+	Prior : { segments : RouteIndex.Segments, excluded : U64 }
+	Context : {
+		input : Route.Input,
+		settings : Route.Settings,
+		from_terminals : List(Terminal),
+		to_terminals : List(Terminal),
+		chains : List(List(U64)),
+		waypoints : List(List(Geom.Point)),
+		guides : List(List(Geom.Point)),
+		portals : List(List(Portal)),
+		crosses_boundary : List(Bool),
+		node_boxes : List(Bounds),
+		group_boxes : List(Bounds),
+		obstacles : RouteIndex.Boxes,
+		grid : RouteIndex.Grid,
+	}
+
 	zero_distance : F64
 	zero_distance = 0
 	zero_count : U64
@@ -13,6 +39,27 @@ RouteInternals :: {}.{
 
 	problems : Route.Input, Route.Settings -> List(Route.Problem)
 	problems = |input, settings| {
+		# Repeated rules are found by sorting, not by comparing every pair.
+		attachment_at = |i| input.attachments.get(i) ?? { edge: 0, endpoint: From, attachment: Automatic }
+		repeated_attachment = RouteInternals.repeated(
+			input.attachments.len(),
+			|a, b| (attachment_at(a)).edge < (attachment_at(b)).edge or ((attachment_at(a)).edge == (attachment_at(b)).edge and RouteInternals.endpoint_index((attachment_at(a)).endpoint) < RouteInternals.endpoint_index((attachment_at(b)).endpoint)),
+			|a, b| (attachment_at(a)).edge == (attachment_at(b)).edge and (attachment_at(a)).endpoint == (attachment_at(b)).endpoint,
+		)
+		membership_node = |i| (input.memberships.get(i) ?? { node: 0, group: 0 }).node
+		repeated_membership = RouteInternals.repeated(input.memberships.len(), |a, b| membership_node(a) < membership_node(b), |a, b| membership_node(a) == membership_node(b))
+		boundary_node = |i| (input.boundaries.get(i) ?? { node: 0, outline: Rectangle }).node
+		repeated_boundary = RouteInternals.repeated(input.boundaries.len(), |a, b| boundary_node(a) < boundary_node(b), |a, b| boundary_node(a) == boundary_node(b))
+		group_rule_at = |i| input.group_attachments.get(i) ?? { edge: 0, group: 0, attachment: Automatic }
+		repeated_group_attachment = RouteInternals.repeated(
+			input.group_attachments.len(),
+			|a, b| (group_rule_at(a)).edge < (group_rule_at(b)).edge or ((group_rule_at(a)).edge == (group_rule_at(b)).edge and (group_rule_at(a)).group < (group_rule_at(b)).group),
+			|a, b| (group_rule_at(a)).edge == (group_rule_at(b)).edge and (group_rule_at(a)).group == (group_rule_at(b)).group,
+		)
+		waypoint_edge = |i| (input.waypoints.get(i) ?? { edge: 0, points: [] }).edge
+		repeated_waypoints = RouteInternals.repeated(input.waypoints.len(), |a, b| waypoint_edge(a) < waypoint_edge(b), |a, b| waypoint_edge(a) == waypoint_edge(b))
+		guide_edge = |i| (input.guides.get(i) ?? { edge: 0, points: [] }).edge
+		repeated_guides = RouteInternals.repeated(input.guides.len(), |a, b| guide_edge(a) < guide_edge(b), |a, b| guide_edge(a) == guide_edge(b))
 		p0 = input.graph.nodes.fold_with_index(
 			[],
 			|acc, n, i| {
@@ -73,7 +120,7 @@ RouteInternals :: {}.{
 				} else {
 					a.append(InvalidAttachmentOffset(i))
 				}
-				duplicate = input.attachments.fold_with_index(False, |found, other, j| found or (j < i and other.edge == rule.edge and other.endpoint == rule.endpoint))
+				duplicate = repeated_attachment.get(i) ?? False
 				if duplicate {
 					b.append(DuplicateAttachment(i))
 				} else {
@@ -110,7 +157,7 @@ RouteInternals :: {}.{
 				} else {
 					a.append(InvalidMembershipGroup(i))
 				}
-				duplicate = input.memberships.fold_with_index(False, |found, other, j| found or (j < i and other.node == membership.node))
+				duplicate = repeated_membership.get(i) ?? False
 				if duplicate {
 					b.append(DuplicateMembership(i))
 				} else {
@@ -126,7 +173,7 @@ RouteInternals :: {}.{
 				} else {
 					acc.append(InvalidBoundaryNode(i))
 				}
-				duplicate = input.boundaries.fold_with_index(False, |found, other, j| found or (j < i and other.node == rule.node))
+				duplicate = repeated_boundary.get(i) ?? False
 				if duplicate {
 					a.append(DuplicateBoundary(i))
 				} else {
@@ -158,7 +205,7 @@ RouteInternals :: {}.{
 				} else {
 					b.append(InvalidGroupAttachmentOffset(i))
 				}
-				duplicate = input.group_attachments.fold_with_index(False, |found, other, j| found or (j < i and other.edge == rule.edge and other.group == rule.group))
+				duplicate = repeated_group_attachment.get(i) ?? False
 				d = if duplicate {
 					c.append(DuplicateGroupAttachment(i))
 				} else {
@@ -212,7 +259,7 @@ RouteInternals :: {}.{
 				} else {
 					a.append(InvalidWaypoint(i))
 				}
-				duplicate = input.waypoints.fold_with_index(False, |found, other, j| found or (j < i and other.edge == rule.edge))
+				duplicate = repeated_waypoints.get(i) ?? False
 				c = if duplicate {
 					b.append(DuplicateWaypoints(i))
 				} else {
@@ -245,7 +292,7 @@ RouteInternals :: {}.{
 				} else {
 					a.append(InvalidGuide(i))
 				}
-				duplicate = input.guides.fold_with_index(False, |found, other, j| found or (j < i and other.edge == rule.edge))
+				duplicate = repeated_guides.get(i) ?? False
 				if duplicate {
 					b.append(DuplicateGuides(i))
 				} else {
@@ -394,16 +441,14 @@ RouteInternals :: {}.{
 		}
 	}
 
-	terminal : U64, Route.Endpoint, { from : U64, to : U64 }, Route.Input -> { point : { x : F64, y : F64 }, outward : { x : F64, y : F64 }, side : Route.Side }
-	terminal = |edge_index, endpoint, edge, input| {
+	terminal_for : Route.Endpoint, { from : U64, to : U64 }, Route.Input, Route.Attachment, Route.Outline -> { point : { x : F64, y : F64 }, outward : { x : F64, y : F64 }, side : Route.Side }
+	terminal_for = |endpoint, edge, input, rule, node_outline| {
 		node = match endpoint {
 			From => edge.from
 			To => edge.to
 		}
 		center = input.positions.get(node) ?? { x: 0, y: 0 }
 		size = input.graph.nodes.get(node) ?? { width: 0, height: 0 }
-		node_outline = RouteInternals.boundary_outline(node, input.boundaries)
-		rule = RouteInternals.attachment_rule(edge_index, endpoint, input.attachments)
 		match rule {
 			Fixed(payload) => RouteInternals.fixed_point(center, size, payload.side, payload.offset, node_outline)
 			On(side) => RouteInternals.fixed_point(center, size, side, 0.5, node_outline)
@@ -452,6 +497,15 @@ RouteInternals :: {}.{
 		}
 	}
 
+	terminal : U64, Route.Endpoint, { from : U64, to : U64 }, Route.Input -> { point : { x : F64, y : F64 }, outward : { x : F64, y : F64 }, side : Route.Side }
+	terminal = |edge_index, endpoint, edge, input| {
+		node = match endpoint {
+			From => edge.from
+			To => edge.to
+		}
+		RouteInternals.terminal_for(endpoint, edge, input, RouteInternals.attachment_rule(edge_index, endpoint, input.attachments), RouteInternals.boundary_outline(node, input.boundaries))
+	}
+
 	escape_point = |selected, node, input, gap| {
 		center = input.positions.get(node) ?? selected.point
 		size = input.graph.nodes.get(node) ?? { width: 0, height: 0 }
@@ -474,11 +528,6 @@ RouteInternals :: {}.{
 			}
 			Err(_) => next
 		}
-	}
-
-	node_chain = |node, input| match input.memberships.find_first(|membership| membership.node == node) {
-		Ok(membership) => RouteInternals.group_chain(membership.group, input.groups, [], input.groups.len() + 1)
-		Err(_) => []
 	}
 
 	portal_on_group = |rule, toward, input| {
@@ -538,37 +587,6 @@ RouteInternals :: {}.{
 		{ group: rule.group, point: selected.point, outward: selected.outward, side: selected.side, offset }
 	}
 
-	edge_portals = |edge_index, edge, input| {
-		from_chain = RouteInternals.node_chain(edge.from, input)
-		to_chain_inner = RouteInternals.node_chain(edge.to, input)
-		to_chain = to_chain_inner.fold([], |acc, group| [group].concat(acc))
-		from_rules = from_chain.keep_oks(|group| input.group_attachments.find_first(|rule| rule.edge == edge_index and rule.group == group))
-		to_rules = to_chain.keep_oks(|group| input.group_attachments.find_first(|rule| rule.edge == edge_index and rule.group == group))
-		from_toward = input.positions.get(edge.to) ?? { x: 0, y: 0 }
-		to_toward = input.positions.get(edge.from) ?? { x: 0, y: 0 }
-		from_rules.map(
-			|rule| {
-				portal = RouteInternals.portal_on_group(rule, from_toward, input)
-				{ group: portal.group, point: portal.point, outward: portal.outward, side: portal.side, offset: portal.offset, leaving: True }
-			},
-		).concat(
-			to_rules.map(
-				|rule| {
-					portal = RouteInternals.portal_on_group(rule, to_toward, input)
-					{ group: portal.group, point: portal.point, outward: portal.outward, side: portal.side, offset: portal.offset, leaving: False }
-				},
-			),
-		)
-	}
-
-	boundary_groups = |edge, input| {
-		from_chain = RouteInternals.node_chain(edge.from, input)
-		to_chain = RouteInternals.node_chain(edge.to, input)
-		from_only = from_chain.keep_if(|group| !to_chain.contains(group))
-		to_only = RouteInternals.reverse_items(to_chain.keep_if(|group| !from_chain.contains(group)))
-		from_only.concat(to_only)
-	}
-
 	coordinate_on = |point, side| match side {
 		Top | Bottom => point.x
 		Left | Right => point.y
@@ -600,12 +618,6 @@ RouteInternals :: {}.{
 		Same
 	}
 
-	flex_offset = |ordered, edge, role, length, gap| {
-		count = ordered.len()
-		rank = ordered.find_first_index(|item| item.edge == edge and item.role == role) ?? 0
-		RouteInternals.flex_offset_at(count, rank, length, gap)
-	}
-
 	flex_offset_at = |count, rank, length, gap| {
 		if length <= 0 {
 			0.5
@@ -625,139 +637,6 @@ RouteInternals :: {}.{
 		Right => 1.U64
 		Bottom => 2.U64
 		Left => 3.U64
-	}
-
-	resolve_node_attachments = |input, settings| {
-		uses = input.graph.edges.fold_with_index(
-			[],
-			|acc, edge, edge_index| {
-				from = RouteInternals.terminal(edge_index, From, edge, input)
-				to = RouteInternals.terminal(edge_index, To, edge, input)
-				from_key = RouteInternals.edge_order_key(edge, from.side, input)
-				to_key = RouteInternals.edge_order_key(edge, to.side, input)
-				acc.concat([
-					{ edge: edge_index, role: 0, endpoint: From, node: edge.from, side: from.side, primary: from_key.primary, secondary: from_key.secondary },
-					{ edge: edge_index, role: 1, endpoint: To, node: edge.to, side: to.side, primary: to_key.primary, secondary: to_key.secondary },
-				])
-			},
-		)
-		slot_count = input.graph.nodes.len() * 4.U64
-		counts = uses.fold(
-			List.repeat(RouteInternals.zero_count, slot_count),
-			|table, use| {
-				slot = use.node * 4.U64 + RouteInternals.side_index(use.side)
-				table.set(slot, (table.get(slot) ?? 0) + 1) ?? []
-			},
-		)
-		resolved = uses.fold(
-			{ seen: List.repeat(RouteInternals.zero_count, slot_count), rules: [] },
-			|state, use| {
-				rule = RouteInternals.attachment_rule(use.edge, use.endpoint, input.attachments)
-				slot = use.node * 4.U64 + RouteInternals.side_index(use.side)
-				rank = state.seen.get(slot) ?? RouteInternals.zero_count
-				count = counts.get(slot) ?? RouteInternals.zero_count + 1
-				offset = match rule {
-					Fixed(payload) => payload.offset
-					_ => {
-						size = input.graph.nodes.get(use.node) ?? { width: 0, height: 0 }
-						length = match use.side {
-							Top | Bottom => size.width
-							Left | Right => size.height
-						}
-						RouteInternals.flex_offset_at(count, rank, length, settings.edge_gap)
-					}
-				}
-				{
-					seen: state.seen.set(slot, rank + 1) ?? [],
-					rules: state.rules.append({ edge: use.edge, endpoint: use.endpoint, attachment: Fixed({ side: use.side, offset }) }),
-				}
-			},
-		)
-		resolved.rules
-	}
-
-	resolve_group_attachments = |input, settings| {
-		uses = input.graph.edges.fold_with_index(
-			[],
-			|acc, edge, edge_index| RouteInternals.boundary_groups(edge, input).fold(
-				acc,
-				|found, group| {
-					rule = input.group_attachments.find_first(|item| item.edge == edge_index and item.group == group) ?? { edge: edge_index, group, attachment: Automatic }
-					toward = input.positions.get(edge.to) ?? { x: 0, y: 0 }
-					portal = RouteInternals.portal_on_group(rule, toward, input)
-					key = RouteInternals.edge_order_key(edge, portal.side, input)
-					found.append({ edge: edge_index, role: group, group, side: portal.side, primary: key.primary, secondary: key.secondary, authored: rule.attachment })
-				},
-			),
-		)
-		uses.map(
-			|use| {
-				offset = match use.authored {
-					Fixed(payload) => payload.offset
-					_ => {
-						bucket = uses.keep_if(|other| other.group == use.group and other.side == use.side).sort_with(RouteInternals.port_order)
-						rect = (input.groups.get(use.group) ?? { rect: Geom.empty_bounds, parent: Root }).rect
-						length = match use.side {
-							Top | Bottom => rect.width
-							Left | Right => rect.height
-						}
-						RouteInternals.flex_offset(bucket, use.edge, use.role, length, settings.edge_gap)
-					}
-				}
-				{ edge: use.edge, group: use.group, attachment: Fixed({ side: use.side, offset }) }
-			},
-		)
-	}
-
-	resolve_input = |input, settings| {
-		{
-			..input,
-			attachments: RouteInternals.resolve_node_attachments(input, settings),
-			group_attachments: RouteInternals.resolve_group_attachments(input, settings),
-		}
-	}
-
-	endpoint_fan_table = |input| {
-		uses = input.graph.edges.fold_with_index(
-			[],
-			|found, edge, edge_index| {
-				from = RouteInternals.terminal(edge_index, From, edge, input)
-				to = RouteInternals.terminal(edge_index, To, edge, input)
-				from_key = RouteInternals.edge_order_key(edge, from.side, input)
-				to_key = RouteInternals.edge_order_key(edge, to.side, input)
-				found.concat([
-					{ edge: edge_index, role: 0.U64, node: edge.from, point: from.point, side: from.side, primary: from_key.primary, secondary: from_key.secondary },
-					{ edge: edge_index, role: 1.U64, node: edge.to, point: to.point, side: to.side, primary: to_key.primary, secondary: to_key.secondary },
-				])
-			},
-		)
-		input.graph.edges.map_with_index(
-			|_, edge_index| {
-				for_role = |role| {
-					use = uses.find_first(|item| item.edge == edge_index and item.role == role) ?? { edge: edge_index, role, node: 0, point: { x: 0, y: 0 }, side: Top, primary: 0, secondary: 0 }
-					# Counting in place avoids allocating and sorting the same shared-port
-					# group once for every incident edge. The ordering is identical to
-					# port_order and the edge index is its final deterministic tie-breaker.
-					ranked = uses.fold(
-						{ rank: 0.U64, count: 0.U64 },
-						|state, other| if other.node == use.node and other.point == use.point and other.side == use.side and other.role == role {
-							{
-								rank: state.rank + if RouteInternals.port_order(other, use) == Before {
-									1.U64
-								} else {
-									0.U64
-								},
-								count: state.count + 1.U64,
-							}
-						} else {
-							state
-						},
-					)
-					{ rank: ranked.rank, count: ranked.count }
-				}
-				{ from: for_role(0.U64), to: for_role(1.U64) }
-			},
-		)
 	}
 
 	fan_point = |point, selected, fan, gap| {
@@ -864,24 +743,6 @@ RouteInternals :: {}.{
 		False
 	}
 
-	clear_path : List({ x : F64, y : F64 }), Route.Input, Route.Settings, U64, U64 -> Bool
-	clear_path = |points, input, settings, from, to| points.fold_with_index(
-		True,
-		|ok, a, i| match points.get(i + 1) {
-			Ok(b) => input.positions.fold_with_index(
-				ok,
-				|clear, p, node| if node == from or node == to {
-					clear
-				} else {
-					n = input.graph.nodes.get(node) ?? { width: 0, height: 0 }
-					box = { min_x: p.x - n.width / 2 - settings.obstacle_gap, min_y: p.y - n.height / 2 - settings.obstacle_gap, max_x: p.x + n.width / 2 + settings.obstacle_gap, max_y: p.y + n.height / 2 + settings.obstacle_gap }
-					clear and RouteInternals.segment_hits(a, b, box) == False
-				},
-			)
-			Err(_) => ok
-		},
-	)
-
 	group_in_chain = |group, target, groups, fuel| if fuel == 0 {
 		False
 	} else if group == target {
@@ -927,217 +788,7 @@ RouteInternals :: {}.{
 		nodes.concat(groups)
 	}
 
-	incident_obstacles = |input, settings, from, to| input.positions.fold_with_index(
-		[],
-		|acc, p, node| if node == from or node == to {
-			n = input.graph.nodes.get(node) ?? { width: 0, height: 0 }
-			acc.append({ min_x: p.x - n.width / 2 - settings.obstacle_gap, min_y: p.y - n.height / 2 - settings.obstacle_gap, max_x: p.x + n.width / 2 + settings.obstacle_gap, max_y: p.y + n.height / 2 + settings.obstacle_gap })
-		} else {
-			acc
-		},
-	)
-
-	body_obstacles = |input, settings, from, to| RouteInternals.obstacles(input, settings, from, to).concat(RouteInternals.incident_obstacles(input, settings, from, to))
-
 	point_blocked = |point, boxes| boxes.any(|box| point.x > box.min_x and point.x < box.max_x and point.y > box.min_y and point.y < box.max_y)
-
-	visible = |a, b, boxes| (a.x == b.x or a.y == b.y) and boxes.all(|box| RouteInternals.segment_hits(a, b, box) == False)
-
-	path_visible = |points, boxes| points.fold_with_index(
-		True,
-		|clear, a, i| match points.get(i + 1) {
-			Ok(b) => clear and RouteInternals.visible(a, b, boxes)
-			Err(_) => clear
-		},
-	)
-
-	unique_values = |values| values.fold(
-		[],
-		|acc, value| if acc.contains(value) {
-			acc
-		} else {
-			acc.append(value)
-		},
-	)
-
-	shared_count = |a, b, prior| {
-		zero : U64
-		zero = 0
-		prior.fold(
-			zero,
-			|count, route| {
-				points = RouteInternals.route_points(route)
-				points.fold_with_index(
-					count,
-					|n, c, i| match points.get(i + 1) {
-						Ok(d) => if RouteInternals.segment_hits(a, b, { min_x: c.x.min(d.x) - 0.000001, min_y: c.y.min(d.y) - 0.000001, max_x: c.x.max(d.x) + 0.000001, max_y: c.y.max(d.y) + 0.000001 }) {
-							n + 1
-						} else {
-							n
-						}
-						Err(_) => n
-					},
-				)
-			},
-		)
-	}
-
-	grid_walk = |points, boxes, finish_index, start_index, settings, prior, distances, previous, visited, fuel| if fuel == 0 {
-		{ distances, previous }
-	} else {
-		chosen = distances.fold_with_index(
-			{ index: 0, distance: F64.infinity },
-			|best, distance, i| if (visited.get(i) ?? True) == False and distance < best.distance {
-				{ index: i, distance }
-			} else {
-				best
-			},
-		)
-		point_index = chosen.index // 2
-		if F64.is_finite(chosen.distance) == False or point_index == finish_index {
-			{ distances, previous }
-		} else {
-			from_point = points.get(point_index) ?? Geom.point(0, 0)
-			arrival_axis = chosen.index % 2
-			relaxed = points.fold_with_index(
-				{ distances, previous },
-				|state, point, i| if i == point_index or RouteInternals.visible(from_point, point, boxes) == False {
-					state
-				} else {
-					move_axis = if from_point.y == point.y {
-						0
-					} else {
-						1
-					}
-					next_state = i * 2 + move_axis
-					turn = if point_index == start_index or arrival_axis == move_axis {
-						0
-					} else {
-						settings.bend_penalty
-					}
-					shared = RouteInternals.shared_count(from_point, point, prior).to_f64() * settings.shared_path_penalty
-					candidate = chosen.distance + (point.x - from_point.x).abs() + (point.y - from_point.y).abs() + turn + shared
-					if (visited.get(next_state) ?? False) == False and candidate < (state.distances.get(next_state) ?? F64.infinity) {
-						{ distances: state.distances.set(next_state, candidate) ?? [], previous: state.previous.set(next_state, chosen.index) ?? [] }
-					} else {
-						state
-					}
-				},
-			)
-			RouteInternals.grid_walk(points, boxes, finish_index, start_index, settings, prior, relaxed.distances, relaxed.previous, visited.set(chosen.index, True) ?? [], fuel - 1)
-		}
-	}
-
-	grid_rebuild = |points, previous, start_index, state_index, start, finish, acc, fuel| if fuel == 0 or state_index // 2 == start_index {
-		[start].concat(acc)
-	} else {
-		point = points.get(state_index // 2) ?? finish
-		RouteInternals.grid_rebuild(points, previous, start_index, previous.get(state_index) ?? (start_index * 2), start, finish, [point].concat(acc), fuel - 1)
-	}
-
-	shortest_grid = |start, finish, boxes, settings, prior| {
-		xs = RouteInternals.unique_values([start.x, finish.x].concat(boxes.fold([], |acc, box| acc.concat([box.min_x, box.max_x]))))
-		ys = RouteInternals.unique_values([start.y, finish.y].concat(boxes.fold([], |acc, box| acc.concat([box.min_y, box.max_y]))))
-		points = xs.map(|x| ys.map(|y| { x, y })).join().keep_if(|point| RouteInternals.point_blocked(point, boxes) == False)
-		start_index = points.find_first_index(|point| point == start) ?? 0
-		finish_index = points.find_first_index(|point| point == finish) ?? start_index
-		state_count = points.len() * 2
-		start_horizontal = start_index * 2
-		start_vertical = start_horizontal + 1
-		initial_distances = (List.repeat(F64.infinity, state_count).set(start_horizontal, 0) ?? []).set(start_vertical, 0) ?? []
-		searched = RouteInternals.grid_walk(points, boxes, finish_index, start_index, settings, prior, initial_distances, List.repeat(state_count, state_count), List.repeat(False, state_count), state_count)
-		finish_horizontal = finish_index * 2
-		finish_vertical = finish_horizontal + 1
-		finish_state = if (searched.distances.get(finish_horizontal) ?? F64.infinity) <= (searched.distances.get(finish_vertical) ?? F64.infinity) {
-			finish_horizontal
-		} else {
-			finish_vertical
-		}
-		if F64.is_finite(searched.distances.get(finish_state) ?? F64.infinity) == False {
-			[]
-		} else {
-			rebuilt = RouteInternals.grid_rebuild(points, searched.previous, start_index, finish_state, start, finish, [], state_count + 1)
-			if RouteInternals.path_visible(rebuilt, boxes) {
-				rebuilt
-			} else {
-				[]
-			}
-		}
-	}
-
-	path_cost : List({ x : F64, y : F64 }), List(Geom.Route), Route.Settings -> F64
-	path_cost = |points, prior, settings| points.fold_with_index(
-		0,
-		|cost, a, i| match points.get(i + 1) {
-			Ok(b) => {
-				length = (b.x - a.x).abs() + (b.y - a.y).abs()
-				bend = if i == 0 {
-					0
-				} else {
-					p = points.get(i - 1) ?? a
-					if (p.x == a.x) == (a.x == b.x) {
-						0
-					} else {
-						settings.bend_penalty
-					}
-				}
-				shared : U64
-				shared = prior.fold(
-					0,
-					|count, route| RouteInternals.route_points(route).fold_with_index(
-						count,
-						|n, c, j| match RouteInternals.route_points(route).get(j + 1) {
-							Ok(d) => if RouteInternals.segment_hits(a, b, { min_x: c.x.min(d.x) - 0.000001, min_y: c.y.min(d.y) - 0.000001, max_x: c.x.max(d.x) + 0.000001, max_y: c.y.max(d.y) + 0.000001 }) {
-								n + 1
-							} else {
-								n
-							}
-							Err(_) => n
-						},
-					),
-				)
-				cost + length + bend + shared.to_f64() * settings.shared_path_penalty
-			}
-			Err(_) => cost
-		},
-	)
-
-	route_leg : { x : F64, y : F64 }, { x : F64, y : F64 }, List({ min_x : F64, min_y : F64, max_x : F64, max_y : F64 }), Route.Settings, List(Geom.Route) -> List({ x : F64, y : F64 })
-	route_leg = |start, finish, boxes, settings, prior| {
-		hv = [start, { x: finish.x, y: start.y }, finish]
-		vh = [start, { x: start.x, y: finish.y }, finish]
-		hv_clear = RouteInternals.path_visible(hv, boxes)
-		vh_clear = RouteInternals.path_visible(vh, boxes)
-		if hv_clear and vh_clear {
-			if RouteInternals.path_cost(hv, prior, settings) <= RouteInternals.path_cost(vh, prior, settings) {
-				hv
-			} else {
-				vh
-			}
-		} else if hv_clear {
-			hv
-		} else if vh_clear {
-			vh
-		} else {
-			searched = RouteInternals.shortest_grid(start, finish, boxes, settings, prior)
-			if searched.is_empty() {
-				exterior_y = boxes.fold(start.y.min(finish.y), |top, box| top.min(box.min_y)) - settings.edge_gap
-				[start, { x: start.x, y: exterior_y }, { x: finish.x, y: exterior_y }, finish]
-			} else {
-				searched
-			}
-		}
-	}
-
-	waypoints_for = |edge, input| match input.waypoints.find_first(|rule| rule.edge == edge) {
-		Ok(rule) => rule.points
-		Err(_) => []
-	}
-
-	guides_for = |edge, input| match input.guides.find_first(|rule| rule.edge == edge) {
-		Ok(rule) => rule.points
-		Err(_) => []
-	}
 
 	proper_segment_intersection = |a, b, c, d| {
 		if a.x == b.x and c.y == d.y {
@@ -1171,188 +822,8 @@ RouteInternals :: {}.{
 		},
 	)
 
-	guided_path_valid = |points, input, settings, edge, a, b| {
-		orthogonal = points.fold_with_index(
-			True,
-			|ok, point, i| match points.get(i + 1) {
-				Ok(next) => ok and point != next and (point.x == next.x or point.y == next.y)
-				Err(_) => ok
-			},
-		)
-		from_next = points.get(1) ?? a.point
-		to_previous = if points.len() < 2 {
-			b.point
-		} else {
-			points.get(points.len() - 2) ?? b.point
-		}
-		leaves_from = (from_next.x - a.point.x) * a.outward.x + (from_next.y - a.point.y) * a.outward.y > 0
-		enters_to = (to_previous.x - b.point.x) * b.outward.x + (to_previous.y - b.point.y) * b.outward.y > 0
-		orthogonal and leaves_from and enters_to and RouteInternals.simple_path(points) and RouteInternals.clear_path(points, input, settings, edge.from, edge.to)
-	}
-
-	terminal_path_valid = |points, input, settings, edge, a, b| {
-		from_escape = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
-		to_escape = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
-		from_next = points.get(1) ?? a.point
-		to_previous = if points.len() < 2 {
-			b.point
-		} else {
-			points.get(points.len() - 2) ?? b.point
-		}
-		from_required = (from_escape.x - a.point.x).abs() + (from_escape.y - a.point.y).abs()
-		to_required = (to_escape.x - b.point.x).abs() + (to_escape.y - b.point.y).abs()
-		from_advance = (from_next.x - a.point.x) * a.outward.x + (from_next.y - a.point.y) * a.outward.y
-		to_advance = (to_previous.x - b.point.x) * b.outward.x + (to_previous.y - b.point.y) * b.outward.y
-		from_straight = (a.outward.x == 0 and from_next.x == a.point.x) or (a.outward.y == 0 and from_next.y == a.point.y)
-		to_straight = (b.outward.x == 0 and to_previous.x == b.point.x) or (b.outward.y == 0 and to_previous.y == b.point.y)
-		orthogonal = points.fold_with_index(
-			True,
-			|ok, point, i| match points.get(i + 1) {
-				Ok(next) => ok and (point.x == next.x or point.y == next.y)
-				Err(_) => ok
-			},
-		)
-		incident = RouteInternals.incident_obstacles(input, settings, edge.from, edge.to)
-		body_clear = points.fold_with_index(
-			True,
-			|ok, point, i| match points.get(i + 1) {
-				Ok(next) if i > 0 and i + 2 < points.len() => ok and incident.all(|box| RouteInternals.segment_hits(point, next, box) == False)
-				_ => ok
-			},
-		)
-		points.first() == Ok(a.point) and points.last() == Ok(b.point) and orthogonal and from_straight and to_straight and from_advance >= from_required and to_advance >= to_required and body_clear and RouteInternals.simple_path(points)
-	}
-
-	route_through = |start, finish, waypoints, boxes, settings, prior| {
-		stops = waypoints.append(finish)
-		stops.fold(
-			{ points: [start], current: start },
-			|state, stop| {
-				leg = RouteInternals.route_leg(state.current, stop, boxes, settings, prior)
-				{ points: state.points.concat(leg.drop_first(1)), current: stop }
-			},
-		).points
-	}
-
-	route_one = |index, edge, input, settings, parallel, endpoint_fan, prior| {
-		a = RouteInternals.terminal(index, From, edge, input)
-		b = RouteInternals.terminal(index, To, edge, input)
-		portals = RouteInternals.edge_portals(index, edge, input)
-		waypoints = RouteInternals.waypoints_for(index, input)
-		guides = RouteInternals.guides_for(index, input)
-		if edge.from == edge.to {
-			# A rectangular exterior loop; bound ports still determine its first and last point.
-			d = settings.obstacle_gap + settings.edge_gap * (parallel.rank + 1).to_f64()
-			base_ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
-			base_bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
-			ap = { x: base_ap.x + a.outward.x * settings.edge_gap * (parallel.rank + 1).to_f64(), y: base_ap.y + a.outward.y * settings.edge_gap * (parallel.rank + 1).to_f64() }
-			bp = { x: base_bp.x + b.outward.x * settings.edge_gap * (parallel.rank + 1).to_f64(), y: base_bp.y + b.outward.y * settings.edge_gap * (parallel.rank + 1).to_f64() }
-			node = input.graph.nodes.get(edge.from) ?? { width: 0, height: 0 }
-			center = input.positions.get(edge.from) ?? a.point
-			lane = center.y - node.height / 2 - d - settings.edge_gap
-			# Going through one shared exterior lane keeps every segment
-			# axis-aligned even when both unbound endpoints coincide.
-			Polyline(RouteInternals.simplify([a.point, ap, { x: ap.x, y: lane }, { x: bp.x, y: lane }, bp, b.point]))
-		} else if portals.is_empty() and !waypoints.is_empty() {
-			ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
-			bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
-			af = RouteInternals.fan_point(ap, a, endpoint_fan.from, settings.edge_gap)
-			bf = RouteInternals.fan_point(bp, b, endpoint_fan.to, settings.edge_gap)
-			boxes = RouteInternals.body_obstacles(input, settings, edge.from, edge.to)
-			through = RouteInternals.route_through(af, bf, waypoints, boxes, settings, prior)
-			Polyline(RouteInternals.simplify_preserving([a.point, ap, af].concat(through.drop_first(1)).concat([bf, bp, b.point]), waypoints))
-		} else if portals.is_empty() and !guides.is_empty() {
-			ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
-			bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
-			af = RouteInternals.fan_point(ap, a, endpoint_fan.from, settings.edge_gap)
-			bf = RouteInternals.fan_point(bp, b, endpoint_fan.to, settings.edge_gap)
-			boxes = RouteInternals.body_obstacles(input, settings, edge.from, edge.to)
-			through = RouteInternals.route_through(af, bf, guides, boxes, settings, prior)
-			candidate = RouteInternals.simplify([a.point, ap, af].concat(through.drop_first(1)).concat([bf, bp, b.point]))
-			if RouteInternals.guided_path_valid(candidate, input, settings, edge, a, b) and RouteInternals.terminal_path_valid(candidate, input, settings, edge, a, b) {
-				Polyline(candidate)
-			} else {
-				RouteInternals.route_one(index, edge, { ..input, guides: input.guides.keep_if(|rule| rule.edge != index) }, settings, parallel, endpoint_fan, prior)
-			}
-		} else if portals.is_empty() {
-			ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
-			bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
-			af = RouteInternals.fan_point(ap, a, endpoint_fan.from, settings.edge_gap)
-			bf = RouteInternals.fan_point(bp, b, endpoint_fan.to, settings.edge_gap)
-			hv = [a.point, ap, af, { x: bf.x, y: af.y }, bf, bp, b.point]
-			vh = [a.point, ap, af, { x: af.x, y: bf.y }, bf, bp, b.point]
-			boxes = RouteInternals.body_obstacles(input, settings, edge.from, edge.to)
-			hv_clear = RouteInternals.path_visible(hv.drop_first(1).drop_last(1), boxes)
-			vh_clear = RouteInternals.path_visible(vh.drop_first(1).drop_last(1), boxes)
-			chosen = if hv_clear and vh_clear {
-				if RouteInternals.path_cost(hv, prior, settings) <= RouteInternals.path_cost(vh, prior, settings) {
-					hv
-				} else {
-					vh
-				}
-			} else if hv_clear {
-				hv
-			} else if vh_clear {
-				vh
-			} else {
-				searched = RouteInternals.shortest_grid(af, bf, boxes, settings, prior)
-				if searched.is_empty() {
-					exterior_y = boxes.fold(af.y.min(bf.y), |top, box| top.min(box.min_y)) - settings.edge_gap
-					[a.point, ap, af, { x: af.x, y: exterior_y }, { x: bf.x, y: exterior_y }, bf, bp, b.point]
-				} else {
-					[a.point, ap, af].concat(searched.drop_first(1)).concat([bf, bp, b.point])
-				}
-			}
-			Polyline(RouteInternals.simplify(chosen))
-		} else {
-			ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
-			bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
-			af = RouteInternals.fan_point(ap, a, endpoint_fan.from, settings.edge_gap)
-			bf = RouteInternals.fan_point(bp, b, endpoint_fan.to, settings.edge_gap)
-			boxes = RouteInternals.body_obstacles(input, settings, edge.from, edge.to)
-			through = portals.fold(
-				{ points: [a.point, ap, af], current: af },
-				|state, portal| {
-					stops = RouteInternals.portal_stops(portal, settings.obstacle_gap, input)
-					leg = RouteInternals.route_leg(state.current, stops.approach, boxes, settings, prior)
-					{ points: state.points.concat(leg.drop_first(1)).concat([portal.point, stops.departure]), current: stops.departure }
-				},
-			)
-			last_leg = RouteInternals.route_leg(through.current, bf, boxes, settings, prior)
-			Polyline(RouteInternals.simplify_preserving(through.points.concat(last_leg.drop_first(1)).concat([bp, b.point]), portals.map(|portal| portal.point)))
-		}
-	}
-
 	overlaps_box : { x : F64, y : F64 }, F64, F64, { min_x : F64, min_y : F64, max_x : F64, max_y : F64 }, F64 -> Bool
 	overlaps_box = |p, width, height, box, gap| p.x + width / 2 + gap > box.min_x and p.x - width / 2 - gap < box.max_x and p.y + height / 2 + gap > box.min_y and p.y - height / 2 - gap < box.max_y
-
-	label_clear : { x : F64, y : F64 }, Route.EdgeLabel, Route.Input, Route.Settings, List({ point : { x : F64, y : F64 }, width : F64, height : F64 }), List(Geom.Route) -> Bool
-	label_clear = |p, label, input, settings, placed, routes| {
-		nodes_clear = input.positions.fold_with_index(
-			True,
-			|ok, center, i| {
-				n = input.graph.nodes.get(i) ?? { width: 0, height: 0 }
-				ok and RouteInternals.overlaps_box(p, label.width, label.height, { min_x: center.x - n.width / 2, min_y: center.y - n.height / 2, max_x: center.x + n.width / 2, max_y: center.y + n.height / 2 }, settings.obstacle_gap) == False
-			},
-		)
-		labels_clear = placed.all(|old| RouteInternals.overlaps_box(p, label.width, label.height, { min_x: old.point.x - old.width / 2, min_y: old.point.y - old.height / 2, max_x: old.point.x + old.width / 2, max_y: old.point.y + old.height / 2 }, settings.obstacle_gap) == False)
-		routes_clear = routes.fold_with_index(
-			True,
-			|ok, route, edge| if edge == label.edge {
-				ok
-			} else {
-				points = RouteInternals.route_points(route)
-				points.fold_with_index(
-					ok,
-					|clear, a, j| match points.get(j + 1) {
-						Ok(b) => clear and RouteInternals.segment_hits(a, b, { min_x: p.x - label.width / 2 - settings.obstacle_gap, min_y: p.y - label.height / 2 - settings.obstacle_gap, max_x: p.x + label.width / 2 + settings.obstacle_gap, max_y: p.y + label.height / 2 + settings.obstacle_gap }) == False
-						Err(_) => clear
-					},
-				)
-			},
-		)
-		nodes_clear and labels_clear and routes_clear
-	}
 
 	route_points : Geom.Route -> List({ x : F64, y : F64 })
 	route_points = |route|
@@ -1416,47 +887,6 @@ RouteInternals :: {}.{
 			},
 		)
 		RouteInternals.point_along(points, total * fraction, 0, points.len() + 1)
-	}
-
-	local_label_candidates = |route, base, width, height, settings, rings| {
-		points = RouteInternals.route_points(route)
-		segment = points.fold_with_index(
-			{ horizontal: True, length: 0.0 },
-			|best, a, i| match points.get(i + 1) {
-				Ok(b) => {
-					on_segment = if a.x == b.x {
-						base.x == a.x and base.y >= a.y.min(b.y) and base.y <= a.y.max(b.y)
-					} else if a.y == b.y {
-						base.y == a.y and base.x >= a.x.min(b.x) and base.x <= a.x.max(b.x)
-					} else {
-						False
-					}
-					length = (b.x - a.x).abs() + (b.y - a.y).abs()
-					if on_segment and length > best.length {
-						{ horizontal: a.y == b.y, length }
-					} else {
-						best
-					}
-				}
-				Err(_) => best
-			},
-		)
-		step = if segment.horizontal {
-			height / 2 + settings.obstacle_gap + settings.edge_gap
-		} else {
-			width / 2 + settings.obstacle_gap + settings.edge_gap
-		}
-		normal = rings.map(
-			|ring| {
-				distance = step * ring.to_f64()
-				if segment.horizontal {
-					[{ x: base.x, y: base.y - distance }, { x: base.x, y: base.y + distance }]
-				} else {
-					[{ x: base.x - distance, y: base.y }, { x: base.x + distance, y: base.y }]
-				}
-			},
-		).join()
-		[base].concat(normal)
 	}
 
 	label_candidates = |route, placement, _width, _height, _settings| {
@@ -1532,8 +962,728 @@ RouteInternals :: {}.{
 		)
 	}
 
-	shared_geometry : Route.SharedEndRule, Route.Input, Route.Settings, List(Geom.Route) -> { junction : Geom.Point, trunk : Geom.Route, branches : List(Geom.Route) }
-	shared_geometry = |rule, input, settings, prior| {
+	proper_crossing = |a, b, c, d| if a.x == b.x and c.y == d.y {
+		c.x.min(d.x) < a.x and a.x < c.x.max(d.x) and a.y.min(b.y) < c.y and c.y < a.y.max(b.y)
+	} else if a.y == b.y and c.x == d.x {
+		a.x.min(b.x) < c.x and c.x < a.x.max(b.x) and c.y.min(d.y) < a.y and a.y < c.y.max(d.y)
+	} else {
+		False
+	}
+
+	shared_length = |a, b, c, d| if a.y == b.y and c.y == d.y and a.y == c.y {
+		(a.x.max(b.x).min(c.x.max(d.x)) - a.x.min(b.x).max(c.x.min(d.x))).max(0)
+	} else if a.x == b.x and c.x == d.x and a.x == c.x {
+		(a.y.max(b.y).min(c.y.max(d.y)) - a.y.min(b.y).max(c.y.min(d.y))).max(0)
+	} else {
+		0
+	}
+
+	stats_better = |a, b| if a.crossings < b.crossings {
+		True
+	} else if a.crossings > b.crossings {
+		False
+	} else if a.shared < b.shared {
+		True
+	} else if a.shared > b.shared {
+		False
+	} else if a.bends < b.bends {
+		True
+	} else if a.bends > b.bends {
+		False
+	} else {
+		a.length < b.length
+	}
+
+	no_edge : U64
+	no_edge = U64.highest
+
+	endpoint_index = |endpoint| match endpoint {
+		From => 0.U64
+		To => 1.U64
+	}
+
+	## For each slot, the position of the first item that `slot_of` assigns to
+	## it, or `no_edge`. Items assigned to no slot below `slots` are skipped.
+	first_in_slot : U64, List(a), (a -> U64) -> List(U64)
+	first_in_slot = |slots, items, slot_of| {
+		var $first = List.repeat(RouteInternals.no_edge, slots)
+		var $position = 0
+		for item in items {
+			slot = slot_of(item)
+			if slot < slots and ($first.get(slot) ?? 0) == RouteInternals.no_edge {
+				$first = $first.set(slot, $position) ?? []
+			}
+			$position = $position + 1
+		}
+		$first
+	}
+
+	## Item positions grouped by slot, each group in item order: slot `s` owns
+	## `entries[offsets[s]..offsets[s + 1]]`.
+	slot_lists : U64, List(a), (a -> U64) -> { offsets : List(U64), entries : List(U64) }
+	slot_lists = |slots, items, slot_of| {
+		item_slots = items.map(slot_of)
+		var $counts = List.repeat(0, slots + 1)
+		for slot in item_slots {
+			if slot < slots {
+				$counts = $counts.set(slot, ($counts.get(slot) ?? 0) + 1) ?? []
+			}
+		}
+		var $offsets = List.with_capacity(slots + 1)
+		var $total = 0
+		for slot in 0..<(slots + 1) {
+			$offsets = $offsets.append($total)
+			$total = $total + ($counts.get(slot) ?? 0)
+		}
+		offsets = $offsets
+		var $cursor = offsets
+		var $entries = List.repeat(0, $total)
+		var $position = 0
+		for slot in item_slots {
+			if slot < slots {
+				at = $cursor.get(slot) ?? 0
+				$entries = $entries.set(at, $position) ?? []
+				$cursor = $cursor.set(slot, at + 1) ?? []
+			}
+			$position = $position + 1
+		}
+		{ offsets, entries: $entries }
+	}
+
+	## True for each item when an earlier item has the same key.
+	repeated : U64, (U64, U64 -> Bool), (U64, U64 -> Bool) -> List(Bool)
+	repeated = |count, key_before, same_key| RoutePorts.ranks(count, key_before, same_key, |a, b| a < b).map(|entry| entry.rank > 0)
+
+	## Every edge end's selected attachment, from the first attachment and
+	## boundary rule that apply to it.
+	terminals : Route.Input -> { from : List(Terminal), to : List(Terminal) }
+	terminals = |input| {
+		edge_count = input.graph.edges.len()
+		node_count = input.graph.nodes.len()
+		rules = RouteInternals.first_in_slot(
+			edge_count * 2,
+			input.attachments,
+			|rule| if rule.edge < edge_count {
+				rule.edge * 2 + RouteInternals.endpoint_index(rule.endpoint)
+			} else {
+				RouteInternals.no_edge
+			},
+		)
+		outlines = RouteInternals.first_in_slot(node_count, input.boundaries, |rule| rule.node)
+		attachment_at = |slot| match input.attachments.get(rules.get(slot) ?? RouteInternals.no_edge) {
+			Ok(rule) => rule.attachment
+			Err(_) => Automatic
+		}
+		outline_of = |node| match input.boundaries.get(outlines.get(node) ?? RouteInternals.no_edge) {
+			Ok(rule) => rule.outline
+			Err(_) => Rectangle
+		}
+		{
+			from: input.graph.edges.map_with_index(|edge, i| RouteInternals.terminal_for(From, edge, input, attachment_at(i * 2), outline_of(edge.from))),
+			to: input.graph.edges.map_with_index(|edge, i| RouteInternals.terminal_for(To, edge, input, attachment_at(i * 2 + 1), outline_of(edge.to))),
+		}
+	}
+
+	## Each node's containing groups, innermost first.
+	node_chains : Route.Input -> List(List(U64))
+	node_chains = |input| {
+		members = RouteInternals.first_in_slot(input.graph.nodes.len(), input.memberships, |membership| membership.node)
+		members.map(
+			|position| match input.memberships.get(position) {
+				Ok(membership) => RouteInternals.group_chain(membership.group, input.groups, [], input.groups.len() + 1)
+				Err(_) => []
+			},
+		)
+	}
+
+	## The groups an edge leaves (innermost first) and then enters (outermost
+	## first).
+	chain_boundary = |from_chain, to_chain| {
+		from_only = from_chain.keep_if(|group| !to_chain.contains(group))
+		to_only = RouteInternals.reverse_items(to_chain.keep_if(|group| !from_chain.contains(group)))
+		from_only.concat(to_only)
+	}
+
+	## The first group attachment rule for `edge` and `group`.
+	group_rule : List(Route.GroupAttachmentRule), { offsets : List(U64), entries : List(U64) }, U64, U64 -> Try(Route.GroupAttachmentRule, [NoRule])
+	group_rule = |rules, by_edge, edge, group| {
+		var $slot = by_edge.offsets.get(edge) ?? 0
+		end = by_edge.offsets.get(edge + 1) ?? 0
+		var $found = Err(NoRule)
+		while $slot < end {
+			match rules.get(by_edge.entries.get($slot) ?? 0) {
+				Ok(rule) if rule.group == group => {
+					$found = Ok(rule)
+					$slot = end
+				}
+				_ => {
+					$slot = $slot + 1
+				}
+			}
+		}
+		$found
+	}
+
+	## Every edge's group portals in crossing order, from the group attachment
+	## rules.
+	all_portals : Route.Input, List(List(U64)) -> List(List(Portal))
+	all_portals = |input, chains| {
+		edge_count = input.graph.edges.len()
+		by_edge = RouteInternals.slot_lists(edge_count, input.group_attachments, |rule| rule.edge)
+		input.graph.edges.map_with_index(
+			|edge, edge_index| {
+				rule_for = |group| RouteInternals.group_rule(input.group_attachments, by_edge, edge_index, group)
+				from_chain = chains.get(edge.from) ?? []
+				to_chain = RouteInternals.reverse_items(chains.get(edge.to) ?? [])
+				from_rules = from_chain.keep_oks(rule_for)
+				to_rules = to_chain.keep_oks(rule_for)
+				from_toward = input.positions.get(edge.to) ?? { x: 0, y: 0 }
+				to_toward = input.positions.get(edge.from) ?? { x: 0, y: 0 }
+				from_rules.map(
+					|rule| {
+						portal = RouteInternals.portal_on_group(rule, from_toward, input)
+						{ group: portal.group, point: portal.point, outward: portal.outward, side: portal.side, offset: portal.offset, leaving: True }
+					},
+				).concat(
+					to_rules.map(
+						|rule| {
+							portal = RouteInternals.portal_on_group(rule, to_toward, input)
+							{ group: portal.group, point: portal.point, outward: portal.outward, side: portal.side, offset: portal.offset, leaving: False }
+						},
+					),
+				)
+			},
+		)
+	}
+
+	## Flexible node attachments become fixed ones: each end on a node side
+	## takes the next place on that side, in edge order.
+	resolve_node_attachments : Route.Input, Route.Settings, { from : List(Terminal), to : List(Terminal) } -> List(Route.AttachmentRule)
+	resolve_node_attachments = |input, settings, selected| {
+		edge_count = input.graph.edges.len()
+		rules = RouteInternals.first_in_slot(
+			edge_count * 2,
+			input.attachments,
+			|rule| if rule.edge < edge_count {
+				rule.edge * 2 + RouteInternals.endpoint_index(rule.endpoint)
+			} else {
+				RouteInternals.no_edge
+			},
+		)
+		slot_count = input.graph.nodes.len() * 4.U64
+		nowhere = { point: { x: 0, y: 0 }, outward: { x: 0, y: 0 }, side: Top }
+		var $counts = List.repeat(RouteInternals.zero_count, slot_count)
+		for edge_index in 0..<edge_count {
+			edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
+			from_slot = edge.from * 4 + RouteInternals.side_index((selected.from.get(edge_index) ?? nowhere).side)
+			$counts = $counts.set(from_slot, ($counts.get(from_slot) ?? 0) + 1) ?? []
+			to_slot = edge.to * 4 + RouteInternals.side_index((selected.to.get(edge_index) ?? nowhere).side)
+			$counts = $counts.set(to_slot, ($counts.get(to_slot) ?? 0) + 1) ?? []
+		}
+		counts = $counts
+		var $seen = List.repeat(RouteInternals.zero_count, slot_count)
+		var $resolved = List.with_capacity(edge_count * 2)
+		for use_index in 0..<(edge_count * 2) {
+			edge_index = use_index // 2
+			edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
+			endpoint = if use_index % 2 == 0 {
+				From
+			} else {
+				To
+			}
+			node = if use_index % 2 == 0 {
+				edge.from
+			} else {
+				edge.to
+			}
+			side = if use_index % 2 == 0 {
+				(selected.from.get(edge_index) ?? nowhere).side
+			} else {
+				(selected.to.get(edge_index) ?? nowhere).side
+			}
+			rule = match input.attachments.get(rules.get(use_index) ?? RouteInternals.no_edge) {
+				Ok(found) => found.attachment
+				Err(_) => Automatic
+			}
+			slot = node * 4.U64 + RouteInternals.side_index(side)
+			rank = $seen.get(slot) ?? RouteInternals.zero_count
+			count = counts.get(slot) ?? RouteInternals.zero_count + 1
+			offset = match rule {
+				Fixed(payload) => payload.offset
+				_ => {
+					size = input.graph.nodes.get(node) ?? { width: 0, height: 0 }
+					length = match side {
+						Top | Bottom => size.width
+						Left | Right => size.height
+					}
+					RouteInternals.flex_offset_at(count, rank, length, settings.edge_gap)
+				}
+			}
+			$seen = $seen.set(slot, rank + 1) ?? []
+			$resolved = $resolved.append({ edge: edge_index, endpoint, attachment: Fixed({ side, offset }) })
+		}
+		$resolved
+	}
+
+	## Flexible group portals become fixed ones, spread along their side in
+	## order of the edges' endpoints.
+	resolve_group_attachments : Route.Input, Route.Settings, List(List(U64)) -> List(Route.GroupAttachmentRule)
+	resolve_group_attachments = |input, settings, chains| {
+		by_edge = RouteInternals.slot_lists(input.graph.edges.len(), input.group_attachments, |rule| rule.edge)
+		var $uses = []
+		for edge_index in 0..<input.graph.edges.len() {
+			edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
+			for group in RouteInternals.chain_boundary(chains.get(edge.from) ?? [], chains.get(edge.to) ?? []) {
+				rule = RouteInternals.group_rule(input.group_attachments, by_edge, edge_index, group) ?? { edge: edge_index, group, attachment: Automatic }
+				toward = input.positions.get(edge.to) ?? { x: 0, y: 0 }
+				portal = RouteInternals.portal_on_group(rule, toward, input)
+				key = RouteInternals.edge_order_key(edge, portal.side, input)
+				$uses = $uses.append({ edge: edge_index, role: group, group, side: portal.side, primary: key.primary, secondary: key.secondary, authored: rule.attachment })
+			}
+		}
+		uses = $uses
+		nothing = { edge: 0, role: 0, group: 0, side: Top, primary: 0, secondary: 0, authored: Automatic }
+		at = |i| uses.get(i) ?? nothing
+		places = RoutePorts.ranks(
+			uses.len(),
+			|a, b| (at(a)).group < (at(b)).group or ((at(a)).group == (at(b)).group and RouteInternals.side_index((at(a)).side) < RouteInternals.side_index((at(b)).side)),
+			|a, b| (at(a)).group == (at(b)).group and (at(a)).side == (at(b)).side,
+			|a, b| RouteInternals.port_order(at(a), at(b)) == Before,
+		)
+		uses.map_with_index(
+			|use, i| {
+				offset = match use.authored {
+					Fixed(payload) => payload.offset
+					_ => {
+						place = places.get(i) ?? { rank: 0, count: 1 }
+						rect = (input.groups.get(use.group) ?? { rect: Geom.empty_bounds, parent: Root }).rect
+						length = match use.side {
+							Top | Bottom => rect.width
+							Left | Right => rect.height
+						}
+						RouteInternals.flex_offset_at(place.count, place.rank, length, settings.edge_gap)
+					}
+				}
+				{ edge: use.edge, group: use.group, attachment: Fixed({ side: use.side, offset }) }
+			},
+		)
+	}
+
+	## For every edge end, its place among the ends that share its exact
+	## attachment point, ordered by their opposite endpoints.
+	endpoint_fan_table : Route.Input, { from : List(Terminal), to : List(Terminal) } -> List({ from : { rank : U64, count : U64 }, to : { rank : U64, count : U64 } })
+	endpoint_fan_table = |input, selected| {
+		nowhere = { point: { x: 0, y: 0 }, outward: { x: 0, y: 0 }, side: Top }
+		uses = List.repeat(0, input.graph.edges.len() * 2).map_with_index(
+			|_, use_index| {
+				edge_index = use_index // 2
+				role = use_index % 2
+				edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
+				selected_end = if role == 0 {
+					selected.from.get(edge_index) ?? nowhere
+				} else {
+					selected.to.get(edge_index) ?? nowhere
+				}
+				key = RouteInternals.edge_order_key(edge, selected_end.side, input)
+				{
+					edge: edge_index,
+					role,
+					node: if role == 0 {
+						edge.from
+					} else {
+						edge.to
+					},
+					point: selected_end.point,
+					side: RouteInternals.side_index(selected_end.side),
+					primary: key.primary,
+					secondary: key.secondary,
+				}
+			},
+		)
+		nothing = { edge: 0, role: 0, node: 0, point: { x: 0, y: 0 }, side: 0, primary: 0, secondary: 0 }
+		at = |i| uses.get(i) ?? nothing
+		group_before = |a, b| {
+			ua = at(a)
+			ub = at(b)
+			if ua.node != ub.node {
+				ua.node < ub.node
+			} else if ua.side != ub.side {
+				ua.side < ub.side
+			} else if ua.role != ub.role {
+				ua.role < ub.role
+			} else if ua.point.x != ub.point.x {
+				ua.point.x < ub.point.x
+			} else {
+				ua.point.y < ub.point.y
+			}
+		}
+		same_group = |a, b| {
+			ua = at(a)
+			ub = at(b)
+			ua.node == ub.node and ua.side == ub.side and ua.role == ub.role and ua.point == ub.point
+		}
+		places = RoutePorts.ranks(uses.len(), group_before, same_group, |a, b| RouteInternals.port_order(at(a), at(b)) == Before)
+		input.graph.edges.map_with_index(|_, i| { from: places.get(i * 2) ?? { rank: 0, count: 1 }, to: places.get(i * 2 + 1) ?? { rank: 0, count: 1 } })
+	}
+
+	## Everything routing reads about the resolved input, computed once.
+	context : Route.Input, Route.Settings, List(List(U64)) -> Context
+	context = |input, settings, chains| {
+		node_boxes = input.positions.map_with_index(
+			|p, node| {
+				n = input.graph.nodes.get(node) ?? { width: 0, height: 0 }
+				{ min_x: p.x - n.width / 2 - settings.obstacle_gap, min_y: p.y - n.height / 2 - settings.obstacle_gap, max_x: p.x + n.width / 2 + settings.obstacle_gap, max_y: p.y + n.height / 2 + settings.obstacle_gap }
+			},
+		)
+		group_boxes = input.groups.map(|group| { min_x: group.rect.x - settings.obstacle_gap, min_y: group.rect.y - settings.obstacle_gap, max_x: group.rect.x + group.rect.width + settings.obstacle_gap, max_y: group.rect.y + group.rect.height + settings.obstacle_gap })
+		edge_count = input.graph.edges.len()
+		waypoint_rules = RouteInternals.first_in_slot(edge_count, input.waypoints, |rule| rule.edge)
+		guide_rules = RouteInternals.first_in_slot(edge_count, input.guides, |rule| rule.edge)
+		selected = RouteInternals.terminals(input)
+		{
+			input,
+			settings,
+			from_terminals: selected.from,
+			to_terminals: selected.to,
+			chains,
+			waypoints: waypoint_rules.map(
+				|position| match input.waypoints.get(position) {
+					Ok(rule) => rule.points
+					Err(_) => []
+				},
+			),
+			guides: guide_rules.map(
+				|position| match input.guides.get(position) {
+					Ok(rule) => rule.points
+					Err(_) => []
+				},
+			),
+			portals: RouteInternals.all_portals(input, chains),
+			crosses_boundary: input.graph.edges.map(|edge| !RouteInternals.chain_boundary(chains.get(edge.from) ?? [], chains.get(edge.to) ?? []).is_empty()),
+			node_boxes,
+			group_boxes,
+			obstacles: RouteIndex.boxes(node_boxes.concat(group_boxes)),
+			grid: RouteIndex.grid_for(node_boxes, (input.graph.nodes.len() + edge_count) * 2),
+		}
+	}
+
+	## Whether `group` contains either end of an edge between `from` and `to`.
+	owns_end = |ctx, group, from, to| (ctx.chains.get(from) ?? []).contains(group) or (ctx.chains.get(to) ?? []).contains(group)
+
+	## The obstacles one edge must avoid: every node box except, when
+	## `endpoints` is false, its own two, and every group box that contains
+	## neither end. Box ids below the node count are nodes; the rest groups.
+	skips : Context, View -> (U64 -> Bool)
+	skips = |ctx, view| {
+		node_count = ctx.node_boxes.len()
+		|id| if id < node_count {
+			!view.endpoints and (id == view.from or id == view.to)
+		} else {
+			RouteInternals.owns_end(ctx, id - node_count, view.from, view.to)
+		}
+	}
+
+	## The same obstacles as an ordered list: other nodes in node order, the
+	## kept groups, then (with `endpoints`) the edge's own nodes.
+	view_boxes : Context, View -> List(Bounds)
+	view_boxes = |ctx, view| {
+		node_count = ctx.node_boxes.len()
+		nothing = { min_x: 0, min_y: 0, max_x: 0, max_y: 0 }
+		var $boxes = List.with_capacity(node_count + ctx.group_boxes.len())
+		for node in 0..<node_count {
+			if node != view.from and node != view.to {
+				$boxes = $boxes.append(ctx.node_boxes.get(node) ?? nothing)
+			}
+		}
+		for group in 0..<ctx.group_boxes.len() {
+			if !RouteInternals.owns_end(ctx, group, view.from, view.to) {
+				$boxes = $boxes.append(ctx.group_boxes.get(group) ?? nothing)
+			}
+		}
+		if view.endpoints {
+			low = view.from.min(view.to)
+			high = view.from.max(view.to)
+			$boxes = $boxes.append(ctx.node_boxes.get(low) ?? nothing)
+			if high != low {
+				$boxes = $boxes.append(ctx.node_boxes.get(high) ?? nothing)
+			}
+		}
+		$boxes
+	}
+
+	## Whether every segment of `points` is axis-aligned and clear of the
+	## view's obstacles.
+	view_visible : Context, View, List(Geom.Point) -> Bool
+	view_visible = |ctx, view, points| {
+		skip = RouteInternals.skips(ctx, view)
+		points.fold_with_index(
+			True,
+			|clear, a, i| match points.get(i + 1) {
+				Ok(b) => clear and (a.x == b.x or a.y == b.y) and !RouteIndex.segment_blocked(ctx.obstacles, a, b, skip)
+				Err(_) => clear
+			},
+		)
+	}
+
+	## Whether every segment of `points` stays clear of every node box other
+	## than the edge's own two.
+	clear_path : Context, List(Geom.Point), U64, U64 -> Bool
+	clear_path = |ctx, points, from, to| {
+		node_count = ctx.node_boxes.len()
+		skip = |id| id >= node_count or id == from or id == to
+		points.fold_with_index(
+			True,
+			|ok, a, i| match points.get(i + 1) {
+				Ok(b) => ok and !RouteIndex.segment_blocked(ctx.obstacles, a, b, skip)
+				Err(_) => ok
+			},
+		)
+	}
+
+	shortest_grid = |start, finish, boxes, settings, prior| RouteGrid.shortest_touching(start, finish, boxes, settings.bend_penalty, settings.shared_path_penalty, RouteIndex.touch_boxes(prior.segments, prior.excluded))
+
+	## Length plus bend and shared-segment penalties of a candidate path.
+	path_cost : List(Geom.Point), Prior, Route.Settings -> F64
+	path_cost = |points, prior, settings| points.fold_with_index(
+		0,
+		|cost, a, i| match points.get(i + 1) {
+			Ok(b) => {
+				length = (b.x - a.x).abs() + (b.y - a.y).abs()
+				bend = if i == 0 {
+					0
+				} else {
+					p = points.get(i - 1) ?? a
+					if (p.x == a.x) == (a.x == b.x) {
+						0
+					} else {
+						settings.bend_penalty
+					}
+				}
+				shared = RouteIndex.touching(prior.segments, a, b, prior.excluded)
+				cost + length + bend + shared.to_f64() * settings.shared_path_penalty
+			}
+			Err(_) => cost
+		},
+	)
+
+	route_leg : Context, View, Geom.Point, Geom.Point, Prior -> List(Geom.Point)
+	route_leg = |ctx, view, start, finish, prior| {
+		settings = ctx.settings
+		hv = [start, { x: finish.x, y: start.y }, finish]
+		vh = [start, { x: start.x, y: finish.y }, finish]
+		hv_clear = RouteInternals.view_visible(ctx, view, hv)
+		vh_clear = RouteInternals.view_visible(ctx, view, vh)
+		if hv_clear and vh_clear {
+			if RouteInternals.path_cost(hv, prior, settings) <= RouteInternals.path_cost(vh, prior, settings) {
+				hv
+			} else {
+				vh
+			}
+		} else if hv_clear {
+			hv
+		} else if vh_clear {
+			vh
+		} else {
+			boxes = RouteInternals.view_boxes(ctx, view)
+			searched = RouteInternals.shortest_grid(start, finish, boxes, settings, prior)
+			if searched.is_empty() {
+				exterior_y = boxes.fold(start.y.min(finish.y), |top, box| top.min(box.min_y)) - settings.edge_gap
+				[start, { x: start.x, y: exterior_y }, { x: finish.x, y: exterior_y }, finish]
+			} else {
+				searched
+			}
+		}
+	}
+
+	guided_path_valid = |ctx, points, edge, a, b| {
+		orthogonal = points.fold_with_index(
+			True,
+			|ok, point, i| match points.get(i + 1) {
+				Ok(next) => ok and point != next and (point.x == next.x or point.y == next.y)
+				Err(_) => ok
+			},
+		)
+		from_next = points.get(1) ?? a.point
+		to_previous = if points.len() < 2 {
+			b.point
+		} else {
+			points.get(points.len() - 2) ?? b.point
+		}
+		leaves_from = (from_next.x - a.point.x) * a.outward.x + (from_next.y - a.point.y) * a.outward.y > 0
+		enters_to = (to_previous.x - b.point.x) * b.outward.x + (to_previous.y - b.point.y) * b.outward.y > 0
+		orthogonal and leaves_from and enters_to and RouteInternals.simple_path(points) and RouteInternals.clear_path(ctx, points, edge.from, edge.to)
+	}
+
+	terminal_path_valid = |ctx, points, edge, a, b| {
+		input = ctx.input
+		settings = ctx.settings
+		from_escape = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
+		to_escape = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
+		from_next = points.get(1) ?? a.point
+		to_previous = if points.len() < 2 {
+			b.point
+		} else {
+			points.get(points.len() - 2) ?? b.point
+		}
+		from_required = (from_escape.x - a.point.x).abs() + (from_escape.y - a.point.y).abs()
+		to_required = (to_escape.x - b.point.x).abs() + (to_escape.y - b.point.y).abs()
+		from_advance = (from_next.x - a.point.x) * a.outward.x + (from_next.y - a.point.y) * a.outward.y
+		to_advance = (to_previous.x - b.point.x) * b.outward.x + (to_previous.y - b.point.y) * b.outward.y
+		from_straight = (a.outward.x == 0 and from_next.x == a.point.x) or (a.outward.y == 0 and from_next.y == a.point.y)
+		to_straight = (b.outward.x == 0 and to_previous.x == b.point.x) or (b.outward.y == 0 and to_previous.y == b.point.y)
+		orthogonal = points.fold_with_index(
+			True,
+			|ok, point, i| match points.get(i + 1) {
+				Ok(next) => ok and (point.x == next.x or point.y == next.y)
+				Err(_) => ok
+			},
+		)
+		nothing = { min_x: 0, min_y: 0, max_x: 0, max_y: 0 }
+		incident = [ctx.node_boxes.get(edge.from) ?? nothing, ctx.node_boxes.get(edge.to) ?? nothing]
+		body_clear = points.fold_with_index(
+			True,
+			|ok, point, i| match points.get(i + 1) {
+				Ok(next) if i > 0 and i + 2 < points.len() => ok and incident.all(|box| RouteInternals.segment_hits(point, next, box) == False)
+				_ => ok
+			},
+		)
+		points.first() == Ok(a.point) and points.last() == Ok(b.point) and orthogonal and from_straight and to_straight and from_advance >= from_required and to_advance >= to_required and body_clear and RouteInternals.simple_path(points)
+	}
+
+	route_through = |ctx, view, start, finish, waypoints, prior| {
+		stops = waypoints.append(finish)
+		stops.fold(
+			{ points: [start], current: start },
+			|state, stop| {
+				leg = RouteInternals.route_leg(ctx, view, state.current, stop, prior)
+				{ points: state.points.concat(leg.drop_first(1)), current: stop }
+			},
+		).points
+	}
+
+	route_one : Context, U64, { from : U64, to : U64 }, { rank : U64, count : U64 }, { from : { rank : U64, count : U64 }, to : { rank : U64, count : U64 } }, Prior, Bool -> Geom.Route
+	route_one = |ctx, index, edge, parallel, endpoint_fan, prior, use_guides| {
+		input = ctx.input
+		settings = ctx.settings
+		nowhere = { point: { x: 0, y: 0 }, outward: { x: 0, y: 0 }, side: Top }
+		a = ctx.from_terminals.get(index) ?? nowhere
+		b = ctx.to_terminals.get(index) ?? nowhere
+		portals = ctx.portals.get(index) ?? []
+		waypoints = ctx.waypoints.get(index) ?? []
+		guides = if use_guides {
+			ctx.guides.get(index) ?? []
+		} else {
+			[]
+		}
+		body = { from: edge.from, to: edge.to, endpoints: True }
+		if edge.from == edge.to {
+			# A rectangular exterior loop; bound ports still determine its first and last point.
+			d = settings.obstacle_gap + settings.edge_gap * (parallel.rank + 1).to_f64()
+			base_ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
+			base_bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
+			ap = { x: base_ap.x + a.outward.x * settings.edge_gap * (parallel.rank + 1).to_f64(), y: base_ap.y + a.outward.y * settings.edge_gap * (parallel.rank + 1).to_f64() }
+			bp = { x: base_bp.x + b.outward.x * settings.edge_gap * (parallel.rank + 1).to_f64(), y: base_bp.y + b.outward.y * settings.edge_gap * (parallel.rank + 1).to_f64() }
+			node = input.graph.nodes.get(edge.from) ?? { width: 0, height: 0 }
+			center = input.positions.get(edge.from) ?? a.point
+			lane = center.y - node.height / 2 - d - settings.edge_gap
+			# Going through one shared exterior lane keeps every segment
+			# axis-aligned even when both unbound endpoints coincide.
+			Polyline(RouteInternals.simplify([a.point, ap, { x: ap.x, y: lane }, { x: bp.x, y: lane }, bp, b.point]))
+		} else if portals.is_empty() and !waypoints.is_empty() {
+			ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
+			bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
+			af = RouteInternals.fan_point(ap, a, endpoint_fan.from, settings.edge_gap)
+			bf = RouteInternals.fan_point(bp, b, endpoint_fan.to, settings.edge_gap)
+			through = RouteInternals.route_through(ctx, body, af, bf, waypoints, prior)
+			Polyline(RouteInternals.simplify_preserving([a.point, ap, af].concat(through.drop_first(1)).concat([bf, bp, b.point]), waypoints))
+		} else if portals.is_empty() and !guides.is_empty() {
+			ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
+			bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
+			af = RouteInternals.fan_point(ap, a, endpoint_fan.from, settings.edge_gap)
+			bf = RouteInternals.fan_point(bp, b, endpoint_fan.to, settings.edge_gap)
+			through = RouteInternals.route_through(ctx, body, af, bf, guides, prior)
+			candidate = RouteInternals.simplify([a.point, ap, af].concat(through.drop_first(1)).concat([bf, bp, b.point]))
+			if RouteInternals.guided_path_valid(ctx, candidate, edge, a, b) and RouteInternals.terminal_path_valid(ctx, candidate, edge, a, b) {
+				Polyline(candidate)
+			} else {
+				RouteInternals.route_one(ctx, index, edge, parallel, endpoint_fan, prior, False)
+			}
+		} else if portals.is_empty() {
+			ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
+			bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
+			af = RouteInternals.fan_point(ap, a, endpoint_fan.from, settings.edge_gap)
+			bf = RouteInternals.fan_point(bp, b, endpoint_fan.to, settings.edge_gap)
+			hv = [a.point, ap, af, { x: bf.x, y: af.y }, bf, bp, b.point]
+			vh = [a.point, ap, af, { x: af.x, y: bf.y }, bf, bp, b.point]
+			hv_clear = RouteInternals.view_visible(ctx, body, hv.drop_first(1).drop_last(1))
+			vh_clear = RouteInternals.view_visible(ctx, body, vh.drop_first(1).drop_last(1))
+			chosen = if hv_clear and vh_clear {
+				if RouteInternals.path_cost(hv, prior, settings) <= RouteInternals.path_cost(vh, prior, settings) {
+					hv
+				} else {
+					vh
+				}
+			} else if hv_clear {
+				hv
+			} else if vh_clear {
+				vh
+			} else {
+				boxes = RouteInternals.view_boxes(ctx, body)
+				searched = RouteInternals.shortest_grid(af, bf, boxes, settings, prior)
+				if searched.is_empty() {
+					exterior_y = boxes.fold(af.y.min(bf.y), |top, box| top.min(box.min_y)) - settings.edge_gap
+					[a.point, ap, af, { x: af.x, y: exterior_y }, { x: bf.x, y: exterior_y }, bf, bp, b.point]
+				} else {
+					[a.point, ap, af].concat(searched.drop_first(1)).concat([bf, bp, b.point])
+				}
+			}
+			Polyline(RouteInternals.simplify(chosen))
+		} else {
+			ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
+			bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
+			af = RouteInternals.fan_point(ap, a, endpoint_fan.from, settings.edge_gap)
+			bf = RouteInternals.fan_point(bp, b, endpoint_fan.to, settings.edge_gap)
+			through = portals.fold(
+				{ points: [a.point, ap, af], current: af },
+				|state, portal| {
+					stops = RouteInternals.portal_stops(portal, settings.obstacle_gap, input)
+					leg = RouteInternals.route_leg(ctx, body, state.current, stops.approach, prior)
+					{ points: state.points.concat(leg.drop_first(1)).concat([portal.point, stops.departure]), current: stops.departure }
+				},
+			)
+			last_leg = RouteInternals.route_leg(ctx, body, through.current, bf, prior)
+			Polyline(RouteInternals.simplify_preserving(through.points.concat(last_leg.drop_first(1)).concat([bp, b.point]), portals.map(|portal| portal.point)))
+		}
+	}
+
+	## A label box around `p`, grown by `gap` on every side.
+	label_reach : Geom.Point, F64, F64, F64 -> Bounds
+	label_reach = |p, width, height, gap| { min_x: p.x - width / 2 - gap, min_y: p.y - height / 2 - gap, max_x: p.x + width / 2 + gap, max_y: p.y + height / 2 + gap }
+
+	## Whether a label at `p` keeps clear of every node, every label placed
+	## before it, and every route other than its own.
+	label_clear = |p, label, ctx, placed, placed_index, nodes, routes| {
+		gap = ctx.settings.obstacle_gap
+		reach = RouteInternals.label_reach(p, label.width, label.height, gap)
+		nothing = { min_x: 0, min_y: 0, max_x: 0, max_y: 0 }
+		nodes_clear = RouteIndex.boxes_meeting(nodes, reach).all(|id| RouteInternals.overlaps_box(p, label.width, label.height, nodes.boxes.get(id) ?? nothing, gap) == False)
+		labels_clear = RouteIndex.segments_meeting(placed_index, reach, RouteInternals.no_edge).all(
+			|id| {
+				old = placed.get(placed_index.owners.get(id) ?? 0) ?? { point: p, width: 0, height: 0 }
+				RouteInternals.overlaps_box(p, label.width, label.height, { min_x: old.point.x - old.width / 2, min_y: old.point.y - old.height / 2, max_x: old.point.x + old.width / 2, max_y: old.point.y + old.height / 2 }, gap) == False
+			},
+		)
+		routes_clear = RouteIndex.segments_meeting(routes, reach, label.edge).all(
+			|id| RouteInternals.segment_hits(routes.starts.get(id) ?? p, routes.ends.get(id) ?? p, { min_x: p.x - label.width / 2 - gap, min_y: p.y - label.height / 2 - gap, max_x: p.x + label.width / 2 + gap, max_y: p.y + label.height / 2 + gap }) == False,
+		)
+		nodes_clear and labels_clear and routes_clear
+	}
+
+	shared_geometry : Context, Route.SharedEndRule, Prior -> { junction : Geom.Point, trunk : Geom.Route, branches : List(Geom.Route) }
+	shared_geometry = |ctx, rule, prior| {
+		input = ctx.input
+		settings = ctx.settings
+		nowhere = { point: { x: 0, y: 0 }, outward: { x: 0, y: 0 }, side: Top }
 		first_index = rule.edges.first() ?? 0
 		first_edge = input.graph.edges.get(first_index) ?? { from: 0, to: 0 }
 		common_node = match rule.endpoint {
@@ -1593,46 +1743,46 @@ RouteInternals :: {}.{
 				},
 			}
 		}
-		common_portals = RouteInternals.edge_portals(first_index, first_edge, input).keep_if(|portal| RouteInternals.node_in_group(common_node, portal.group, input))
+		common_chain = ctx.chains.get(common_node) ?? []
+		common_portals = (ctx.portals.get(first_index) ?? []).keep_if(|portal| common_chain.contains(portal.group))
 		ordered_common = match rule.endpoint {
 			From => RouteInternals.reverse_portals(common_portals)
 			To => common_portals
 		}
-		boxes = RouteInternals.obstacles(input, settings, first_edge.from, first_edge.to)
+		trunk_view = { from: first_edge.from, to: first_edge.to, endpoints: False }
 		trunk_forward = ordered_common.fold(
 			{ points: [junction], current: junction },
 			|state, portal| {
 				stops = RouteInternals.portal_stops(portal, settings.obstacle_gap, input)
-				leg = RouteInternals.route_leg(state.current, stops.approach, boxes, settings, prior)
+				leg = RouteInternals.route_leg(ctx, trunk_view, state.current, stops.approach, prior)
 				{ points: state.points.concat(leg.drop_first(1)).concat([portal.point, stops.departure]), current: stops.departure }
 			},
 		)
 		approach = { x: common_terminal.point.x + common_terminal.outward.x * settings.obstacle_gap, y: common_terminal.point.y + common_terminal.outward.y * settings.obstacle_gap }
-		last = RouteInternals.route_leg(trunk_forward.current, approach, boxes, settings, prior)
+		last = RouteInternals.route_leg(ctx, trunk_view, trunk_forward.current, approach, prior)
 		trunk_points = RouteInternals.simplify_preserving(trunk_forward.points.concat(last.drop_first(1)).append(common_terminal.point), ordered_common.map(|portal| portal.point))
 		branches = rule.edges.map(
 			|edge_index| {
 				edge = input.graph.edges.get(edge_index) ?? first_edge
-				opposite_endpoint = match rule.endpoint {
-					From => To
-					To => From
+				selected_terminal = match rule.endpoint {
+					From => ctx.to_terminals.get(edge_index) ?? nowhere
+					To => ctx.from_terminals.get(edge_index) ?? nowhere
 				}
-				selected_terminal = RouteInternals.terminal(edge_index, opposite_endpoint, edge, input)
-				forward_portals = RouteInternals.edge_portals(edge_index, edge, input).keep_if(|portal| RouteInternals.node_in_group(common_node, portal.group, input) == False)
+				forward_portals = (ctx.portals.get(edge_index) ?? []).keep_if(|portal| common_chain.contains(portal.group) == False)
 				portals = match rule.endpoint {
 					From => RouteInternals.reverse_portals(forward_portals)
 					To => forward_portals
 				}
-				branch_boxes = RouteInternals.obstacles(input, settings, edge.from, edge.to)
+				branch_view = { from: edge.from, to: edge.to, endpoints: False }
 				through = portals.fold(
 					{ points: [selected_terminal.point], current: selected_terminal.point },
 					|state, portal| {
 						stops = RouteInternals.portal_stops(portal, settings.obstacle_gap, input)
-						leg = RouteInternals.route_leg(state.current, stops.approach, branch_boxes, settings, prior)
+						leg = RouteInternals.route_leg(ctx, branch_view, state.current, stops.approach, prior)
 						{ points: state.points.concat(leg.drop_first(1)).concat([portal.point, stops.departure]), current: stops.departure }
 					},
 				)
-				final = RouteInternals.route_leg(through.current, junction, branch_boxes, settings, prior)
+				final = RouteInternals.route_leg(ctx, branch_view, through.current, junction, prior)
 				points = RouteInternals.simplify_preserving(through.points.concat(final.drop_first(1)), portals.map(|portal| portal.point))
 				if rule.endpoint == From {
 					Polyline(RouteInternals.reverse_points(points))
@@ -1644,23 +1794,10 @@ RouteInternals :: {}.{
 		{ junction, trunk: Polyline(trunk_points), branches }
 	}
 
-	proper_crossing = |a, b, c, d| if a.x == b.x and c.y == d.y {
-		c.x.min(d.x) < a.x and a.x < c.x.max(d.x) and a.y.min(b.y) < c.y and c.y < a.y.max(b.y)
-	} else if a.y == b.y and c.x == d.x {
-		a.x.min(b.x) < c.x and c.x < a.x.max(b.x) and c.y.min(d.y) < a.y and a.y < c.y.max(d.y)
-	} else {
-		False
-	}
-
-	shared_length = |a, b, c, d| if a.y == b.y and c.y == d.y and a.y == c.y {
-		(a.x.max(b.x).min(c.x.max(d.x)) - a.x.min(b.x).max(c.x.min(d.x))).max(0)
-	} else if a.x == b.x and c.x == d.x and a.x == c.x {
-		(a.y.max(b.y).min(c.y.max(d.y)) - a.y.min(b.y).max(c.y.min(d.y))).max(0)
-	} else {
-		0
-	}
-
-	route_stats = |route, others, settings| {
+	## A route's crossings with, and length shared with, every other route,
+	## together with its own bends and length.
+	route_stats : Geom.Route, RouteIndex.Segments, U64, Route.Settings -> { crossings : U64, shared : F64, bends : U64, length : F64 }
+	route_stats = |route, others, excluded, settings| {
 		points = RouteInternals.route_points(route)
 		own = points.fold_with_index(
 			{ bends: 0.U64, length: 0.0.F64 },
@@ -1681,38 +1818,42 @@ RouteInternals :: {}.{
 				Err(_) => state
 			},
 		)
-		interactions = others.fold(
-			{ crossings: 0.U64, shared: 0.0 },
-			|state, other| {
-				other_points = RouteInternals.route_points(other)
-				points.fold_with_index(
-					state,
-					|outer, a, i| match points.get(i + 1) {
-						Ok(b) => other_points.fold_with_index(
-							outer,
-							|inner, c, j| match other_points.get(j + 1) {
-								Ok(d) => {
-									crossing = if RouteInternals.proper_crossing(a, b, c, d) {
-										1.U64
-									} else {
-										0.U64
-									}
-									{ crossings: inner.crossings + crossing, shared: inner.shared + RouteInternals.shared_length(a, b, c, d) }
-								}
-								Err(_) => inner
-							},
-						)
-						Err(_) => outer
-					},
-				)
+		# Shared lengths are summed in the order of the other route, this
+		# route's segment, then the other route's segment.
+		var $crossings = 0.U64
+		var $overlaps = []
+		for i in 0..<points.len().max(1) - 1 {
+			a = points.get(i) ?? { x: 0, y: 0 }
+			b = points.get(i + 1) ?? a
+			for id in RouteIndex.segments_meeting(others, RouteIndex.segment_extent(a, b), excluded) {
+				c = others.starts.get(id) ?? a
+				d = others.ends.get(id) ?? a
+				if RouteInternals.proper_crossing(a, b, c, d) {
+					$crossings = $crossings + 1
+				}
+				length = RouteInternals.shared_length(a, b, c, d)
+				if length > 0 {
+					$overlaps = $overlaps.append({ route: others.owners.get(id) ?? 0, own: i, other: others.positions.get(id) ?? 0, length })
+				}
+			}
+		}
+		overlaps = $overlaps
+		nothing = { route: 0, own: 0, other: 0, length: 0.0 }
+		order = RouteSort.by(
+			overlaps.len(),
+			|x, y| {
+				p = overlaps.get(x) ?? nothing
+				q = overlaps.get(y) ?? nothing
+				p.route < q.route or (p.route == q.route and (p.own < q.own or (p.own == q.own and p.other < q.other)))
 			},
 		)
+		shared = order.fold(0.0, |sum, k| sum + (overlaps.get(k) ?? nothing).length)
 		{
-			crossings: interactions.crossings,
+			crossings: $crossings,
 			shared: if settings.shared_path_penalty == 0 {
 				0
 			} else {
-				interactions.shared
+				shared
 			},
 			bends: if settings.bend_penalty == 0 {
 				0
@@ -1723,128 +1864,84 @@ RouteInternals :: {}.{
 		}
 	}
 
-	stats_better = |a, b| if a.crossings < b.crossings {
-		True
-	} else if a.crossings > b.crossings {
-		False
-	} else if a.shared < b.shared {
-		True
-	} else if a.shared > b.shared {
-		False
-	} else if a.bends < b.bends {
-		True
-	} else if a.bends > b.bends {
-		False
-	} else {
-		a.length < b.length
-	}
-
-	refine_routes = |input, settings, ranks, fan_table, routes, sweep, fuel| if fuel == 0 {
-		routes
-	} else {
-		indices = List.repeat(0, input.graph.edges.len()).map_with_index(|_, i| i)
-		ordered = if sweep % 2 == 0 {
-			indices
-		} else {
-			RouteInternals.reverse_items(indices)
-		}
-		refined = ordered.fold(
-			routes,
-			|current, edge_index| {
-				edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
-				old = current.get(edge_index) ?? Polyline([])
-				others = current.fold_with_index(
-					[],
-					|acc, route, i| if i == edge_index {
-						acc
-					} else {
-						acc.append(route)
-					},
-				)
-				old_stats = RouteInternals.route_stats(old, others, settings)
-				affected = !RouteInternals.edge_portals(edge_index, edge, input).is_empty() or old_stats.crossings > 0 or old_stats.shared > RouteInternals.zero_distance
-				if affected {
-					candidate = RouteInternals.route_one(edge_index, edge, input, settings, ranks.get(edge_index) ?? { rank: 0, count: 1 }, fan_table.get(edge_index) ?? { from: { rank: 0.U64, count: 1.U64 }, to: { rank: 0.U64, count: 1.U64 } }, others)
-					candidate_stats = RouteInternals.route_stats(candidate, others, settings)
-					if RouteInternals.stats_better(candidate_stats, old_stats) {
-						current.set(edge_index, candidate) ?? []
-					} else {
-						current
-					}
+	## Bounded whole-drawing improvement: each sweep reroutes, in alternating
+	## edge order, every route that crosses or shares another or passes a
+	## group portal, keeping a candidate only when it is strictly better.
+	refine_routes : Context, List({ rank : U64, count : U64 }), List({ from : { rank : U64, count : U64 }, to : { rank : U64, count : U64 } }), List(Geom.Route), RouteIndex.Segments -> { routes : List(Geom.Route), segments : RouteIndex.Segments }
+	refine_routes = |ctx, ranks, fan_table, routes, segments| {
+		edge_count = ctx.input.graph.edges.len()
+		var $routes = routes
+		var $segments = segments
+		var $sweep = 0
+		var $fuel = ctx.settings.max_sweeps
+		while $fuel > 0 {
+			before = $routes
+			for k in 0..<edge_count {
+				edge_index = if $sweep % 2 == 0 {
+					k
 				} else {
-					current
+					edge_count - 1 - k
 				}
-			},
-		)
-		if refined == routes {
-			routes
-		} else {
-			RouteInternals.refine_routes(input, settings, ranks, fan_table, refined, sweep + 1, fuel - 1)
-		}
-	}
-
-	segment_records = |routes| routes.fold_with_index(
-		[],
-		|all, route, edge| {
-			points = RouteInternals.route_points(route)
-			points.fold_with_index(
-				all,
-				|found, a, index| match points.get(index + 1) {
-					Ok(b) => {
-						horizontal = a.y == b.y
-						coord = if horizontal {
-							a.y
-						} else {
-							a.x
-						}
-						low = if horizontal {
-							a.x.min(b.x)
-						} else {
-							a.y.min(b.y)
-						}
-						high = if horizontal {
-							a.x.max(b.x)
-						} else {
-							a.y.max(b.y)
-						}
-						# The first two and last two segments form the protected
-						# attachment/escape/fan corridor. Lane separation may only
-						# move the route body outside those terminal corridors.
-						found.append({ edge, index, horizontal, coord, low, high, movable: index > 2 and index + 4 < points.len() and high > low })
+				edge = ctx.input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
+				old = $routes.get(edge_index) ?? Polyline([])
+				old_stats = RouteInternals.route_stats(old, $segments, edge_index, ctx.settings)
+				affected = !(ctx.portals.get(edge_index) ?? []).is_empty() or old_stats.crossings > 0 or old_stats.shared > RouteInternals.zero_distance
+				if affected {
+					candidate = RouteInternals.route_one(ctx, edge_index, edge, ranks.get(edge_index) ?? { rank: 0, count: 1 }, fan_table.get(edge_index) ?? { from: { rank: 0.U64, count: 1.U64 }, to: { rank: 0.U64, count: 1.U64 } }, { segments: $segments, excluded: edge_index }, True)
+					candidate_stats = RouteInternals.route_stats(candidate, $segments, edge_index, ctx.settings)
+					if RouteInternals.stats_better(candidate_stats, old_stats) {
+						$routes = $routes.set(edge_index, candidate) ?? []
+						$segments = RouteIndex.set_route($segments, edge_index, RouteInternals.route_points(candidate))
 					}
-					Err(_) => found
-				},
-			)
-		},
-	)
-
-	segment_order = |a, b| if a.edge < b.edge {
-		Before
-	} else if a.edge > b.edge {
-		After
-	} else if a.index < b.index {
-		Before
-	} else if a.index > b.index {
-		After
-	} else {
-		Same
-	}
-
-	lane_coordinate = |segment, segments, gap| if !segment.movable {
-		segment.coord
-	} else {
-		peers = segments.keep_if(
-			|other| other.movable and other.horizontal == segment.horizontal and other.coord == segment.coord and other.low < segment.high and segment.low < other.high,
-		).sort_with(RouteInternals.segment_order)
-		if peers.len() <= 1 {
-			segment.coord
-		} else {
-			rank = peers.find_first_index(|other| other.edge == segment.edge and other.index == segment.index) ?? 0
-			segment.coord + (rank.to_f64() - (peers.len() - 1).to_f64() / 2) * gap
+				}
+			}
+			if $routes == before {
+				$fuel = 0
+			} else {
+				$fuel = $fuel - 1
+				$sweep = $sweep + 1
+			}
 		}
+		{ routes: $routes, segments: $segments }
 	}
 
-	nudge_one = |route, edge_index, edge, input, settings, segments| {
+	## Every segment of every route, in route order.
+	segment_records : List(Geom.Route) -> List(RouteLanes.Segment)
+	segment_records = |routes| {
+		var $found = []
+		var $edge = 0
+		for route in routes {
+			points = RouteInternals.route_points(route)
+			for index in 0..<points.len().max(1) - 1 {
+				a = points.get(index) ?? { x: 0, y: 0 }
+				b = points.get(index + 1) ?? a
+				horizontal = a.y == b.y
+				coord = if horizontal {
+					a.y
+				} else {
+					a.x
+				}
+				low = if horizontal {
+					a.x.min(b.x)
+				} else {
+					a.y.min(b.y)
+				}
+				high = if horizontal {
+					a.x.max(b.x)
+				} else {
+					a.y.max(b.y)
+				}
+				# The first two and last two segments form the protected
+				# attachment/escape/fan corridor. Lane separation may only
+				# move the route body outside those terminal corridors.
+				$found = $found.append({ edge: $edge, index, horizontal, coord, low, high, movable: index > 2 and index + 4 < points.len() and high > low })
+			}
+			$edge = $edge + 1
+		}
+		$found
+	}
+
+	nudge_one = |ctx, route, edge_index, edge, owned, coords| {
 		points = RouteInternals.route_points(route)
 		repeated_axis = points.fold_with_index(
 			False,
@@ -1859,8 +1956,6 @@ RouteInternals :: {}.{
 		if points.len() < 4 or repeated_axis {
 			route
 		} else {
-			owned = segments.keep_if(|segment| segment.edge == edge_index)
-			coords = owned.map(|segment| RouteInternals.lane_coordinate(segment, segments, settings.edge_gap))
 			moved = points.map_with_index(
 				|point, i| if i == 0 or i + 1 == points.len() {
 					point
@@ -1876,10 +1971,10 @@ RouteInternals :: {}.{
 					}
 				},
 			)
-			boxes = RouteInternals.body_obstacles(input, settings, edge.from, edge.to)
-			a = RouteInternals.terminal(edge_index, From, edge, input)
-			b = RouteInternals.terminal(edge_index, To, edge, input)
-			if RouteInternals.path_visible(moved.drop_first(1).drop_last(1), boxes) and RouteInternals.terminal_path_valid(moved, input, settings, edge, a, b) {
+			nowhere = { point: { x: 0, y: 0 }, outward: { x: 0, y: 0 }, side: Top }
+			a = ctx.from_terminals.get(edge_index) ?? nowhere
+			b = ctx.to_terminals.get(edge_index) ?? nowhere
+			if RouteInternals.view_visible(ctx, { from: edge.from, to: edge.to, endpoints: True }, moved.drop_first(1).drop_last(1)) and RouteInternals.terminal_path_valid(ctx, moved, edge, a, b) {
 				Polyline(RouteInternals.simplify(moved))
 			} else {
 				route
@@ -1887,14 +1982,27 @@ RouteInternals :: {}.{
 		}
 	}
 
-	nudge_routes = |routes, input, settings| {
+	## Spread coincident route bodies into lanes, keeping every route whose
+	## moved form would lose clearance or a clean terminal.
+	nudge_all : Context, List(Geom.Route) -> List(Geom.Route)
+	nudge_all = |ctx, routes| {
 		segments = RouteInternals.segment_records(routes)
+		coords = RouteLanes.lanes(segments, ctx.settings.edge_gap)
+		starts = routes.fold(
+			[0],
+			|acc, route| {
+				count = RouteInternals.route_points(route).len().max(1) - 1
+				acc.append((acc.last() ?? 0) + count)
+			},
+		)
 		routes.map_with_index(
 			|route, edge_index| {
-				edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
-				crosses_group_boundary = !RouteInternals.boundary_groups(edge, input).is_empty()
-				if RouteInternals.waypoints_for(edge_index, input).is_empty() and !crosses_group_boundary {
-					RouteInternals.nudge_one(route, edge_index, edge, input, settings, segments)
+				edge = ctx.input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
+				crosses_group_boundary = ctx.crosses_boundary.get(edge_index) ?? False
+				if (ctx.waypoints.get(edge_index) ?? []).is_empty() and !crosses_group_boundary {
+					start = starts.get(edge_index) ?? 0
+					count = (starts.get(edge_index + 1) ?? start) - start
+					RouteInternals.nudge_one(ctx, route, edge_index, edge, segments.sublist({ start, len: count }), coords.sublist({ start, len: count }))
 				} else {
 					route
 				}
@@ -1902,13 +2010,46 @@ RouteInternals :: {}.{
 		)
 	}
 
+	nudge_routes = |routes, input, settings| RouteInternals.nudge_all(RouteInternals.context(input, settings, RouteInternals.node_chains(input)), routes)
+
+	## Routes for every edge in edge order, each avoiding those before it.
+	initial_routes : Context, List({ rank : U64, count : U64 }), List({ from : { rank : U64, count : U64 }, to : { rank : U64, count : U64 } }) -> { routes : List(Geom.Route), segments : RouteIndex.Segments }
+	initial_routes = |ctx, ranks, fan_table| {
+		edge_count = ctx.input.graph.edges.len()
+		var $routes = List.with_capacity(edge_count)
+		var $segments = RouteIndex.segments(ctx.grid, edge_count)
+		for edge_index in 0..<edge_count {
+			edge = ctx.input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
+			route = RouteInternals.route_one(ctx, edge_index, edge, ranks.get(edge_index) ?? { rank: 0, count: 1 }, fan_table.get(edge_index) ?? { from: { rank: 0.U64, count: 1.U64 }, to: { rank: 0.U64, count: 1.U64 } }, { segments: $segments, excluded: RouteInternals.no_edge }, True)
+			$routes = $routes.append(route)
+			$segments = RouteIndex.set_route($segments, edge_index, RouteInternals.route_points(route))
+		}
+		{ routes: $routes, segments: $segments }
+	}
+
+	## Fix flexible attachments, then build the routing context.
+	prepare : Route.Input, Route.Settings -> Context
+	prepare = |original, settings| {
+		chains = RouteInternals.node_chains(original)
+		selected = RouteInternals.terminals(original)
+		input = {
+			..original,
+			attachments: RouteInternals.resolve_node_attachments(original, settings, selected),
+			group_attachments: RouteInternals.resolve_group_attachments(original, settings, chains),
+		}
+		RouteInternals.context(input, settings, chains)
+	}
+
 	compute : Route.Input, Route.Settings -> Route.Result
-	compute = |input, settings| {
+	compute = |original, settings| {
+		ctx = RouteInternals.prepare(original, settings)
+		input = ctx.input
 		ranks = EdgeRoutes.parallel_ranks(input.graph.edges)
-		fan_table = RouteInternals.endpoint_fan_table(input)
-		initial_routes = input.graph.edges.fold_with_index([], |routes, edge, i| routes.append(RouteInternals.route_one(i, edge, input, settings, ranks.get(i) ?? { rank: 0, count: 1 }, fan_table.get(i) ?? { from: { rank: 0.U64, count: 1.U64 }, to: { rank: 0.U64, count: 1.U64 } }, routes)))
-		independent_routes = RouteInternals.refine_routes(input, settings, ranks, fan_table, initial_routes, 0, settings.max_sweeps)
-		shared = input.shared_ends.fold([], |acc, rule| acc.append(RouteInternals.shared_geometry(rule, input, settings, independent_routes)))
+		fan_table = RouteInternals.endpoint_fan_table(input, { from: ctx.from_terminals, to: ctx.to_terminals })
+		initial = RouteInternals.initial_routes(ctx, ranks, fan_table)
+		refined = RouteInternals.refine_routes(ctx, ranks, fan_table, initial.routes, initial.segments)
+		independent_routes = refined.routes
+		shared = input.shared_ends.map(|rule| RouteInternals.shared_geometry(ctx, rule, { segments: refined.segments, excluded: RouteInternals.no_edge }))
 		shared_branches = input.shared_ends.fold_with_index(
 			independent_routes,
 			|routes, rule, shared_index| {
@@ -1916,7 +2057,7 @@ RouteInternals :: {}.{
 				rule.edges.fold_with_index(routes, |updated, edge, branch_index| updated.set(edge, geometry.branches.get(branch_index) ?? Polyline([])) ?? [])
 			},
 		)
-		raw_routes = RouteInternals.nudge_routes(shared_branches, input, settings)
+		raw_routes = RouteInternals.nudge_all(ctx, shared_branches)
 		label_routes = input.shared_ends.fold_with_index(
 			raw_routes,
 			|routes, rule, shared_index| {
@@ -1924,16 +2065,32 @@ RouteInternals :: {}.{
 				rule.edges.fold(routes, |updated, edge| updated.set(edge, RouteInternals.join_shared(updated.get(edge) ?? Polyline([]), geometry.trunk, rule.endpoint)) ?? [])
 			},
 		)
-		placed_labels = input.edge_labels.fold(
-			[],
-			|placed, label| {
-				base = RouteInternals.anchor_for(label_routes.get(label.edge) ?? Polyline([]), label.placement)
-				candidates = RouteInternals.label_candidates(label_routes.get(label.edge) ?? Polyline([]), label.placement, label.width, label.height, settings)
-				point = candidates.find_first(|p| RouteInternals.label_clear(p, label, input, settings, placed, label_routes)) ?? base
-				placed.append({ point, width: label.width, height: label.height })
-			},
-		)
-		raw_labels = placed_labels.map(|entry| entry.point)
+		raw_labels = if input.edge_labels.is_empty() {
+			[]
+		} else {
+			node_faces = RouteIndex.boxes(
+				input.positions.map_with_index(
+					|center, i| {
+						n = input.graph.nodes.get(i) ?? { width: 0, height: 0 }
+						{ min_x: center.x - n.width / 2, min_y: center.y - n.height / 2, max_x: center.x + n.width / 2, max_y: center.y + n.height / 2 }
+					},
+				),
+			)
+			route_segments = label_routes.fold_with_index(RouteIndex.segments(ctx.grid, label_routes.len()), |acc, route, edge| RouteIndex.set_route(acc, edge, RouteInternals.route_points(route)))
+			var $placed = []
+			var $placed_index = RouteIndex.segments(ctx.grid, input.edge_labels.len())
+			for label in input.edge_labels {
+				route = label_routes.get(label.edge) ?? Polyline([])
+				base = RouteInternals.anchor_for(route, label.placement)
+				candidates = RouteInternals.label_candidates(route, label.placement, label.width, label.height, settings)
+				placed = $placed
+				placed_index = $placed_index
+				point = candidates.find_first(|p| RouteInternals.label_clear(p, label, ctx, placed, placed_index, node_faces, route_segments)) ?? base
+				$placed_index = RouteIndex.set_route($placed_index, $placed.len(), [{ x: point.x - label.width / 2, y: point.y - label.height / 2 }, { x: point.x + label.width / 2, y: point.y + label.height / 2 }])
+				$placed = $placed.append({ point, width: label.width, height: label.height })
+			}
+			$placed.map(|entry| entry.point)
+		}
 		first_box = match input.positions.get(0) {
 			Ok(p) => {
 				n = input.graph.nodes.get(0) ?? { width: 0, height: 0 }
@@ -1956,10 +2113,11 @@ RouteInternals :: {}.{
 				{ min_x: b.min_x.min(p.x - label.width / 2), min_y: b.min_y.min(p.y - label.height / 2), max_x: b.max_x.max(p.x + label.width / 2), max_y: b.max_y.max(p.y + label.height / 2) }
 			},
 		)
+		nowhere = { point: { x: 0, y: 0 }, outward: { x: 0, y: 0 }, side: Top }
 		independent_attachments = input.graph.edges.map_with_index(
-			|edge, i| {
-				from = RouteInternals.terminal(i, From, edge, input)
-				to = RouteInternals.terminal(i, To, edge, input)
+			|_, i| {
+				from = ctx.from_terminals.get(i) ?? nowhere
+				to = ctx.to_terminals.get(i) ?? nowhere
 				{ from: { point: from.point, side: from.side }, to: { point: to.point, side: to.side } }
 			},
 		)
@@ -1992,18 +2150,21 @@ RouteInternals :: {}.{
 				)
 			},
 		)
-		group_crossings = raw_routes.map_with_index(
-			|route, edge_index| {
-				edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
-				portals = RouteInternals.edge_portals(edge_index, edge, input)
-				RouteInternals.route_crossings(route, input.groups).map(
-					|crossing| match portals.find_first(|portal| portal.group == crossing.group and portal.point == crossing.point) {
-						Ok(portal) => { group: portal.group, point: portal.point, side: portal.side, offset: portal.offset }
-						Err(_) => crossing
-					},
-				)
-			},
-		)
+		group_crossings = if input.groups.is_empty() {
+			raw_routes.map(|_| [])
+		} else {
+			raw_routes.map_with_index(
+				|route, edge_index| {
+					portals = ctx.portals.get(edge_index) ?? []
+					RouteInternals.route_crossings(route, input.groups).map(
+						|crossing| match portals.find_first(|portal| portal.group == crossing.group and portal.point == crossing.point) {
+							Ok(portal) => { group: portal.group, point: portal.point, side: portal.side, offset: portal.offset }
+							Err(_) => crossing
+						},
+					)
+				},
+			)
+		}
 		groups = input.groups.map(|group| group.rect)
 		shared_routes = input.shared_ends.map_with_index(
 			|rule, i| {
@@ -2154,8 +2315,7 @@ Route :: {}.{
 	layout = |input, settings| {
 		problems = RouteInternals.problems(input, settings)
 		if problems.is_empty() {
-			resolved = RouteInternals.resolve_input(input, settings)
-			Ok(RouteInternals.compute(resolved, settings))
+			Ok(RouteInternals.compute(input, settings))
 		} else {
 			Err(problems)
 		}
@@ -2557,7 +2717,7 @@ expect {
 				edge = input.graph.edges.get(i) ?? { from: 0, to: 1 }
 				a = RouteInternals.terminal(i, From, edge, input)
 				b = RouteInternals.terminal(i, To, edge, input)
-				RouteInternals.terminal_path_valid(RouteInternals.route_points(route), input, Route.default_settings, edge, a, b) and ok
+				RouteInternals.terminal_path_valid(RouteInternals.context(input, Route.default_settings, RouteInternals.node_chains(input)), RouteInternals.route_points(route), edge, a, b) and ok
 			},
 		)
 	}

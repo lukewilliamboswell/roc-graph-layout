@@ -155,6 +155,11 @@ terminal_escape = |edge_index, endpoint, edge, input, result| {
 	attached and straight and advance >= required
 }
 
+# Divisors below are written `n.max(1)` although they are only used when
+# positive: the 2026-10-23 nightly's native backend otherwise treats a
+# division by `n` inside a callback that never runs as proof that `n` is not
+# zero, and folds `n == 0` to false (with no nodes, it then builds a
+# membership for node 0).
 test = |bytes| {
 	n = (byte_at(bytes, 0) % 8).to_u64()
 	nodes = List.repeat({ width: 0.0, height: 0.0 }, n).map_with_index(|_, i| { width: (byte_at(bytes, 1 + i) % 31).to_f64(), height: (byte_at(bytes, 9 + i) % 31).to_f64() })
@@ -164,9 +169,6 @@ test = |bytes| {
 	} else {
 		(byte_at(bytes, 33) % 12).to_u64()
 	}
-	# `.max(1)` changes nothing when this closure runs, but works around
-	# https://github.com/roc-lang/roc/issues/12556: optimized builds otherwise
-	# assume the divisor is nonzero after the closure, even when it never ran.
 	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 34 + i * 2).to_u64() % n.max(1), to: byte_at(bytes, 35 + i * 2).to_u64() % n.max(1) })
 	shared_pair = edges.fold_with_index(
 		[],
@@ -244,7 +246,7 @@ test = |bytes| {
 			edge = if i < 3 {
 				0
 			} else {
-				byte_at(bytes, 128 + i).to_u64() % edge_count
+				byte_at(bytes, 128 + i).to_u64() % edge_count.max(1)
 			}
 			{ edge, width: (byte_at(bytes, 137 + i) % 41).to_f64(), height: (byte_at(bytes, 146 + i) % 21).to_f64(), placement }
 		},
@@ -324,4 +326,62 @@ test = |bytes| {
 	}
 }
 
-target = Fuzz.target_with({ name: "graph-layout-route", generator: Fuzz.list(Fuzz.u8, 208), test, show: |input| Str.inspect(input) })
+## The ungrouped part of the input, repeated as `copies` side-by-side
+## copies on disjoint nodes: sizes, positions, edges (with self-loops and
+## parallel edges), a guide and labels.
+copied : List(U8), U64 -> Route.Input
+copied = |bytes, copies| {
+	n = (byte_at(bytes, 0) % 8).to_u64()
+	edge_count = if n == 0 {
+		0
+	} else {
+		(byte_at(bytes, 33) % 12).to_u64()
+	}
+	var $nodes = []
+	var $positions = []
+	var $edges = []
+	var $guides = []
+	var $labels = []
+	for copy in 0..<copies {
+		shift = copy.to_f64() * 300
+		base = copy * n
+		for i in 0..<n {
+			$nodes = $nodes.append({ width: (byte_at(bytes, 1 + i) % 31).to_f64(), height: (byte_at(bytes, 9 + i) % 31).to_f64() })
+			$positions = $positions.append({ x: (byte_at(bytes, 17 + i) % 101).to_f64() + shift, y: (byte_at(bytes, 25 + i) % 101).to_f64() })
+		}
+		for i in 0..<edge_count {
+			$edges = $edges.append({ from: base + byte_at(bytes, 34 + i * 2).to_u64() % n.max(1), to: base + byte_at(bytes, 35 + i * 2).to_u64() % n.max(1) })
+		}
+		if edge_count > 0 {
+			$guides = $guides.append({ edge: copy * edge_count, points: [{ x: (byte_at(bytes, 214) % 101).to_f64() + shift, y: (byte_at(bytes, 215) % 101).to_f64() }] })
+			$labels = $labels.append({ edge: copy * edge_count, width: (byte_at(bytes, 137) % 41).to_f64(), height: (byte_at(bytes, 146) % 21).to_f64(), placement: Center })
+		}
+	}
+	{ ..Route.default_input, graph: { nodes: $nodes, edges: $edges }, positions: $positions, guides: $guides, edge_labels: $labels }
+}
+
+## Routing 8 disjoint copies may allocate at most 12 times as often as
+## routing one, and frees everything it allocates. Linear work gives about
+## 8; the margin covers the logarithmic depth of the sorts and tables in a
+## blocked leg's grid search, which sees every copy's obstacles. Work per
+## edge that grows with the drawing shows up as about 64.
+scaling! : List(U8) => {}
+scaling! = |bytes| {
+	small = copied(bytes, 1)
+	large = copied(bytes, 8)
+	small_cost = Fuzz.measure_allocs!(|{}| Route.layout(small, Route.default_settings)).allocations
+	large_cost = Fuzz.measure_allocs!(|{}| Route.layout(large, Route.default_settings)).allocations
+	Fuzz.expect_no_leaks!(|{}| Route.layout(large, Route.default_settings))
+	if large_cost > small_cost * 12 + 1024 {
+		crash "routing 8 copies took ${large_cost.to_str()} allocations, against ${small_cost.to_str()} for one"
+	}
+	{}
+}
+
+test! : List(U8) => Fuzz.Outcome
+test! = |bytes| {
+	scaling!(bytes)
+	test(bytes)
+}
+
+target = Fuzz.target_with!({ name: "graph-layout-route", generator: Fuzz.list(Fuzz.u8, 208), test!, show: |input| Str.inspect(input) })
