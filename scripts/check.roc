@@ -159,8 +159,12 @@ check_fuzz_targets! = |roc| {
 				if name.starts_with("fuzz_") {
 					executable = Path.join(build, name.drop_suffix(".roc"))
 					roc.run!(["build", "--fuzz", Path.to_os_str(target), OsStr.from_str("--output=${Path.display(executable)}")])?
+					# A fresh corpus each time: `run` otherwise grows ./.roc-fuzz/corpus,
+					# and the next seeded run would start from different inputs.
+					corpus = Path.join(Path.join(build, "corpus"), name)
+					Path.create_all!(corpus)?
 					artifacts = OsStr.from_str("--artifact-dir=${Path.display(Path.join(build, "artifacts"))}")
-					Script.command(Path.to_os_str(executable)).run!(["run", "--runs=2000", "--seed=1", artifacts])?
+					Script.command(Path.to_os_str(executable)).run!(["run", Path.to_os_str(corpus), "--runs=2000", "--seed=1", artifacts])?
 				}
 			}
 			Ok({})

@@ -24,11 +24,14 @@ test = |bytes| {
 	} else {
 		(byte_at(bytes, 17) % 13).to_u64()
 	}
+	# `.max(1)` changes nothing when this closure runs, but works around
+	# https://github.com/roc-lang/roc/issues/12556: optimized builds otherwise
+	# assume the divisor is nonzero after the closure, even when it never ran.
 	edges = List.repeat({}, edge_count).map_with_index(
 		|_, index| {
-			from = (byte_at(bytes, 18 + index * 2).to_u64()) % (node_count - 1)
+			from = (byte_at(bytes, 18 + index * 2).to_u64()) % (node_count - 1).max(1)
 			span = node_count - from - 1
-			{ from, to: from + 1 + (byte_at(bytes, 19 + index * 2).to_u64() % span) }
+			{ from, to: from + 1 + (byte_at(bytes, 19 + index * 2).to_u64() % span.max(1)) }
 		},
 	)
 	# Constraint pairs are selected from nodes with identical structural depth:
