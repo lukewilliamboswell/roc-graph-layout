@@ -490,7 +490,7 @@ LayeredRank :: {}.{
 		var $pivots = 0
 		var $done = False
 		var $low = List.repeat(0, node_count)
-		var $lim = List.repeat(0, node_count)
+		var $lim = List.repeat(0.U64, node_count)
 		var $component = List.repeat(0, node_count)
 		var $parent_edge = List.repeat(edge_count, node_count)
 		var $sums = net

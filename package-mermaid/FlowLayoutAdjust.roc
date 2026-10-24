@@ -763,8 +763,6 @@ FlowLayoutAdjust :: {}.{
 		$n
 	}
 
-	Box : { x1 : F64, y1 : F64, x2 : F64, y2 : F64 }
-
 	segment_hits_box : Point, Point, { x1 : F64, y1 : F64, x2 : F64, y2 : F64 } -> Bool
 	segment_hits_box = |a, b, box| {
 		dx = b.x - a.x
