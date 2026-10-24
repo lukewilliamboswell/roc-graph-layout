@@ -152,6 +152,9 @@ on_outline = |p, r| {
 	inside_x and inside_y and (on_x or on_y)
 }
 
+strictly_inside : FlowGeometry.Point, FlowGeometry.Rect -> Bool
+strictly_inside = |p, b| p.x > b.x + 0.01 and p.y > b.y + 0.01 and p.x < b.x + b.width - 0.01 and p.y < b.y + b.height - 0.01
+
 within : FlowGeometry.Point, FlowGeometry.Rect -> Bool
 within = |p, b| p.x >= b.x - 0.01 and p.y >= b.y - 0.01 and p.x <= b.x + b.width + 0.01 and p.y <= b.y + b.height + 0.01
 
@@ -176,11 +179,12 @@ check = |diagram, g| {
 			return Err("edge ${i.to_str()} has fewer than two points")
 		}
 		# An edge starts on its node's box, or inside it on a rounder outline
-		# with the box crossed next.
+		# with its first step crossing the box (Mermaid drops a port too close
+		# to an arrowhead's outline point, so the step may start farther out).
 		starts_ok = |ps, r| {
 			p = ps.first() ?? { x: 0, y: 0 }
 			q = ps.get(1) ?? p
-			on_outline(p, r) or (within(p, r) and on_outline(q, r))
+			on_outline(p, r) or (within(p, r) and !strictly_inside(q, r))
 		}
 		if !starts_ok(points, end_rect(edge.from)) or !starts_ok(points.rev(), end_rect(edge.to)) {
 			return Err("edge ${i.to_str()} does not start and end on outlines")
@@ -212,5 +216,33 @@ expect {
 ## is tall must still end inside the node, not past its middle.
 expect {
 	_ = test([1, 196, 2])
+	True
+}
+
+## fuzz regression: a self-loop on a node narrower than its ports' margins
+## must still start and end on the node.
+expect {
+	_ = test([1, 47, 50])
+	True
+}
+
+## fuzz regression: an arrow ending on a stadium's rounded side drops the
+## port beside it, so the last step starts outside the box.
+expect {
+	_ = test([97, 97, 35])
+	True
+}
+
+## fuzz regression: a subgraph laid out on its own inside subgraphs laid
+## out with the drawing, beside one an edge leaves: every graph is placed.
+expect {
+	_ = test([40, 21, 1, 138, 149, 28, 140, 41])
+	True
+}
+
+## fuzz regression: several edges from an empty subgraph all start on its
+## box.
+expect {
+	_ = test([85, 217, 107, 27, 27, 27, 27, 27, 19])
 	True
 }

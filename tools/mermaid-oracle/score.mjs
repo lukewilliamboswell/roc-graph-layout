@@ -57,14 +57,17 @@ function recordsIn(inputs) {
 
 const milli = v => String(Math.max(0, Math.round((Number.isFinite(v) ? v : 0) * 1000)));
 
-// The case file `layout_dump` reads: source, NUL, then sizes.
+// The case file `layout_dump` reads: source, NUL, then sizes. Label and
+// title sizes are the text boxes Mermaid measured at unit scale (what it
+// hands its layout engine), not their boxes in the scaled drawing.
+const textSize = item => (item.text && item.text.box ? item.text.box : item.label);
 export function caseText(record) {
 	const lines = [];
 	for (const n of record.layout.nodes) if (!n.missing && n.box) lines.push(['node', n.id, milli(n.box.width), milli(n.box.height)].join('\t'));
 	record.layout.edges.forEach((e, i) => {
-		if (!e.missing && e.label) lines.push(['edge', String(i), milli(e.label.width), milli(e.label.height)].join('\t'));
+		if (!e.missing && e.label) lines.push(['edge', String(i), milli(textSize(e).width), milli(textSize(e).height)].join('\t'));
 	});
-	for (const c of record.layout.clusters) if (!c.missing && c.label) lines.push(['group', c.id, milli(c.label.width), milli(c.label.height)].join('\t'));
+	for (const c of record.layout.clusters) if (!c.missing && c.label) lines.push(['group', c.id, milli(textSize(c).width), milli(textSize(c).height)].join('\t'));
 	return record.source + '\0' + lines.join('\n') + '\n';
 }
 
