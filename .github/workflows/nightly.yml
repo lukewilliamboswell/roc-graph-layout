@@ -1,0 +1,31 @@
+name: Nightly compatibility
+
+# Does the latest published release work with the latest Roc nightly? The
+# shared runner tests the examples archive of that release, exactly as
+# published, and keeps one tracking issue open while it does not.
+on:
+  schedule:
+    - cron: '17 13 * * *'
+  workflow_dispatch:
+    inputs:
+      nightly-tag:
+        description: Exact nightly for a diagnostic rerun; empty resolves the latest
+        type: string
+        default: ''
+      release-tag:
+        description: Exact release for a diagnostic rerun; empty resolves the latest
+        type: string
+        default: ''
+
+permissions: {}
+
+jobs:
+  compatibility:
+    permissions:
+      contents: read
+      issues: write
+    uses: lukewilliamboswell/roc-automation/.github/workflows/nightly-compatibility.yml@7aff4132691ad4fc348abe9df146a57512b49bd6
+    with:
+      nightly-tag: ${{ inputs.nightly-tag || '' }}
+      release-tag: ${{ inputs.release-tag || '' }}
+      runners: '["ubuntu-24.04"]'
