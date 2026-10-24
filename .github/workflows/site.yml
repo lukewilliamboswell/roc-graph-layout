@@ -1,0 +1,80 @@
+name: Site
+
+# Build the guides and the API reference of every final release, and deploy
+# them to GitHub Pages. The release workflow calls this after publishing a
+# final release; run it by hand to rebuild the site for an existing release.
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: The newest final release, whose API reference the site leads with
+        required: true
+        type: string
+      nightly-tag:
+        description: Exact Roc nightly to build with; empty resolves the latest
+        type: string
+        default: ''
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The newest final release, e.g. 0.2.0"
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  build-site:
+    name: Build the site
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install blueprint
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@7aff4132691ad4fc348abe9df146a57512b49bd6
+
+      - name: Install the Roc nightly
+        uses: roc-lang/setup-roc@f5a74bf90aa694b43ab4a7cbfdb19273bc6aa697
+        with:
+          version: nightly-new-compiler
+          nightly-tag: ${{ inputs.nightly-tag || '' }}
+
+      - name: Build the guides and the API reference of each release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FETCH_RELEASE_DOCS: "1"
+          SITE_VERSION: ${{ inputs.version }}
+          SITE_OUTPUT: dist/site
+        run: blueprint run site
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist/site
+
+  # Holds the Pages permissions, checks out nothing, and deploys the artifact
+  # the job above built.
+  deploy-pages:
+    name: Deploy the site
+    needs: build-site
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
