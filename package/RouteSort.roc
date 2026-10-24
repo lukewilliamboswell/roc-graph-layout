@@ -7,16 +7,18 @@ RouteSort :: {}.{
 	## precedes keep their own order.
 	by : U64, (U64, U64 -> Bool) -> List(U64)
 	by = |count, less| {
+		# Two buffers, written in place and swapped after every pass.
 		var $a = List.repeat(0, count).map_with_index(|_, i| i)
+		var $b = List.repeat(0, count)
 		var $width = 1
 		while $width < count {
-			var $b = List.with_capacity(count)
 			var $lo = 0
 			while $lo < count {
 				mid = ($lo + $width).min(count)
 				hi = ($lo + 2 * $width).min(count)
 				var $i = $lo
 				var $j = mid
+				var $k = $lo
 				while $i < mid or $j < hi {
 					take_left = if $j >= hi {
 						True
@@ -26,16 +28,19 @@ RouteSort :: {}.{
 						!less($a.get($j) ?? 0, $a.get($i) ?? 0)
 					}
 					if take_left {
-						$b = $b.append($a.get($i) ?? 0)
+						$b = $b.set($k, $a.get($i) ?? 0) ?? []
 						$i = $i + 1
 					} else {
-						$b = $b.append($a.get($j) ?? 0)
+						$b = $b.set($k, $a.get($j) ?? 0) ?? []
 						$j = $j + 1
 					}
+					$k = $k + 1
 				}
 				$lo = hi
 			}
-			$a = $b
+			merged = $b
+			$b = $a
+			$a = merged
 			$width = $width * 2
 		}
 		$a

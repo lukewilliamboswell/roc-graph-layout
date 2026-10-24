@@ -3,12 +3,15 @@ app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/re
 import fuzz.Fuzz
 import RouteGrid
 
-## The router's grid path search, against the definition it replaced: a
-## Dijkstra search that scans every grid state for the next one and every
-## grid point for the moves out of it, and that rescans every earlier route
-## for every move. On obstacles, earlier routes and penalties drawn from the
-## input (coarse coordinates make coincident lines, degenerate boxes and
-## blocked ends common), the indexed search returns exactly the same points.
+## The router's grid path search, against a plain Dijkstra search that
+## scans every grid state for the next one and every grid point for the
+## moves out of it, and rescans every earlier route for every move. Both
+## ignore obstacles that hold an end, which no path can avoid. On
+## obstacles, earlier routes and penalties drawn from the input (coarse
+## coordinates make coincident lines and degenerate boxes common), the A*
+## search finds a path exactly when the reference does, its path runs from
+## the start to the finish along clear axis-aligned moves, and its cost
+## equals the reference's least cost.
 ##
 ## The input is also repeated as 1 and 8 side-by-side copies; the larger
 ## search may allocate at most a little more than 8 times as often per box
@@ -66,7 +69,8 @@ case = |bytes, copies| {
 ## The original definition, kept as the oracle.
 reference : Case -> List(RouteGrid.Point)
 reference = |c| {
-	boxes = c.boxes
+	inside = |point, box| point.x > box.min_x and point.x < box.max_x and point.y > box.min_y and point.y < box.max_y
+	boxes = c.boxes.keep_if(|box| !inside(c.start, box) and !inside(c.finish, box))
 	xs = unique_values([c.start.x, c.finish.x].concat(boxes.fold([], |acc, box| acc.concat([box.min_x, box.max_x]))))
 	ys = unique_values([c.start.y, c.finish.y].concat(boxes.fold([], |acc, box| acc.concat([box.min_y, box.max_y]))))
 	points = xs.map(|x| ys.map(|y| { x, y })).join().keep_if(|point| RouteGrid.point_blocked(point, boxes) == False)
@@ -182,20 +186,57 @@ grid_rebuild = |points, previous, start_index, state_index, start, finish, acc, 
 search : Case -> List(RouteGrid.Point)
 search = |c| RouteGrid.shortest(c.start, c.finish, c.boxes, c.bend, c.shared, c.prior)
 
-## Bit-exact point equality (so `-0.0` and `0.0` differ).
-same_points : List(RouteGrid.Point), List(RouteGrid.Point) -> Bool
-same_points = |a, b| a.len() == b.len() and a.map_with_index(|p, i| { p, i }).all(
-	|item| {
-		q = b.get(item.i) ?? { x: F64.nan, y: F64.nan }
-		item.p.x.to_bits() == q.x.to_bits() and item.p.y.to_bits() == q.y.to_bits()
-	},
-)
+## A path's cost as the search counts it: every move's length, a bend
+## penalty where it turns after the first point, and the shared penalty for
+## every earlier segment each move touches.
+cost : Case, List(RouteGrid.Point) -> F64
+cost = |c, points| {
+	touching = |a, b| shared_count(a, b, c.prior).to_f64() * c.shared
+	points.fold_with_index(
+		0,
+		|total, a, i| match points.get(i + 1) {
+			Ok(b) => {
+				turn = if i == 0 {
+					0
+				} else {
+					p = points.get(i - 1) ?? a
+					if (p.y == a.y) == (a.y == b.y) {
+						0
+					} else {
+						c.bend
+					}
+				}
+				total + (b.x - a.x).abs() + (b.y - a.y).abs() + turn + touching(a, b)
+			}
+			Err(_) => total
+		},
+	)
+}
+
+## Both searches agree: neither finds a path, or both do, the A* path is a
+## clear axis-aligned walk from start to finish, and it costs no more than
+## the reference's (up to rounding).
+agree : Case -> Bool
+agree = |c| {
+	found = search(c)
+	expected = reference(c)
+	inside = |point, box| point.x > box.min_x and point.x < box.max_x and point.y > box.min_y and point.y < box.max_y
+	kept = c.boxes.keep_if(|box| !inside(c.start, box) and !inside(c.finish, box))
+	if expected.is_empty() or found.is_empty() {
+		expected.is_empty() and found.is_empty()
+	} else {
+		ends = found.first() == Ok(c.start) and found.last() == Ok(c.finish)
+		expected_cost = cost(c, expected)
+		found_cost = cost(c, found)
+		ends and RouteGrid.path_visible(found, kept) and (found_cost - expected_cost).abs() <= 0.000001 * expected_cost.abs().max(1)
+	}
+}
 
 test! : List(U8) => Fuzz.Outcome
 test! = |bytes| {
 	small = case(bytes, 1)
-	if !same_points(search(small), reference(small)) {
-		crash "the indexed search disagrees with the reference search"
+	if !agree(small) {
+		crash "the A* search disagrees with the reference search"
 	}
 	large = case(bytes, 8)
 	small_cost = Fuzz.measure_allocs!(|{}| search(small)).allocations
@@ -221,21 +262,20 @@ expect {
 	List.repeat(0, 64).map_with_index(|_, i| i).all(
 		|seed| {
 			bytes = List.repeat(0, 96).map_with_index(|_, i| ((i * 37 + seed * 101 + (i * seed) % 17) % 256).to_u8_wrap())
-			c = case(bytes, 1)
-			same_points(search(c), reference(c))
+			agree(case(bytes, 1))
 		},
 	)
 }
 
 expect {
-	# A blocked start searches from the first clear grid point, like the
-	# reference does.
+	# An obstacle holding the start is ignored; the path still avoids the
+	# other one.
 	c = { start: { x: 5, y: 5 }, finish: { x: 40, y: 5 }, boxes: [{ min_x: 0, min_y: 0, max_x: 10, max_y: 10 }, { min_x: 20, min_y: 0, max_x: 30, max_y: 20 }], prior: [[{ x: 0, y: 20 }, { x: 40, y: 20 }]], bend: 16, shared: 4 }
-	same_points(search(c), reference(c))
+	agree(c) and search(c).first() == Ok(c.start) and search(c).last() == Ok(c.finish)
 }
 
 expect {
 	# A zero-width obstacle still blocks a move that crosses its line.
 	c = { start: { x: 0, y: 5 }, finish: { x: 20, y: 5 }, boxes: [{ min_x: 10, min_y: 0, max_x: 10, max_y: 10 }], prior: [], bend: 16, shared: 4 }
-	same_points(search(c), reference(c))
+	agree(c) and search(c).len() > 2
 }

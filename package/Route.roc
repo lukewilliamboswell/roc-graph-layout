@@ -11,7 +11,7 @@ RouteInternals :: {}.{
 	Terminal : { point : Geom.Point, outward : Geom.Point, side : Route.Side }
 	Bounds : { min_x : F64, min_y : F64, max_x : F64, max_y : F64 }
 	Portal : { group : U64, point : Geom.Point, outward : Geom.Point, side : Route.Side, offset : F64, leaving : Bool }
-	View : { from : U64, to : U64, endpoints : Bool }
+	View : { from : U64, to : U64, endpoints : Bool, leg : [Whole, Between(Geom.Point, Geom.Point)] }
 	Prior : { segments : RouteIndex.Segments, excluded : U64 }
 	Context : {
 		input : Route.Input,
@@ -639,12 +639,35 @@ RouteInternals :: {}.{
 		Left => 3.U64
 	}
 
-	fan_point = |point, selected, fan, gap| {
+	## Where an end that shares its exact attachment with others begins its
+	## body. A few such ends leave together through one throat and part where
+	## their routes turn, which draws no sideways step; a larger bundle steps
+	## sideways into evenly spaced lanes just outside the node, so its routes
+	## do not all run along one another.
+	fan_point = |point, selected, fan, gap| if fan.count <= 4 {
+		point
+	} else {
 		track = (fan.rank.to_f64() - (fan.count - 1).to_f64() / 2) * gap
 		if selected.outward.x == 0 {
 			{ x: point.x + track, y: point.y }
 		} else {
 			{ x: point.x, y: point.y + track }
+		}
+	}
+
+	## The Z-shaped path whose middle segment runs halfway between a bottom
+	## and a top port that face each other, when both escapes lead towards it:
+	## the channel between two rows of a top-down drawing.
+	channel_path = |a, b, ap, af, bf, bp| {
+		if a.outward.x == 0 and b.outward.x == 0 and a.outward.y != 0 and b.outward.y != 0 {
+			middle = (af.y + bf.y) / 2
+			if (middle - af.y) * a.outward.y >= 0 and (middle - bf.y) * b.outward.y >= 0 and af.x != bf.x {
+				[[a.point, ap, af, { x: af.x, y: middle }, { x: bf.x, y: middle }, bf, bp, b.point]]
+			} else {
+				[]
+			}
+		} else {
+			[]
 		}
 	}
 
@@ -1156,10 +1179,14 @@ RouteInternals :: {}.{
 		)
 	}
 
-	## Flexible node attachments become fixed ones: each end on a node side
-	## takes the next place on that side, in edge order.
+	## Flexible node attachments become fixed ones. The ends on one node side
+	## are spread evenly along it in order of the opposite end's position
+	## along that side (then edge order), so neighbouring ends lead towards
+	## neighbouring nodes instead of crossing just outside the node. An edge
+	## that is alone on two facing sides whose spans overlap gets one shared
+	## coordinate at both ends, so it is drawn as a straight line.
 	resolve_node_attachments : Route.Input, Route.Settings, { from : List(Terminal), to : List(Terminal) } -> List(Route.AttachmentRule)
-	resolve_node_attachments = |input, settings, selected| {
+	resolve_node_attachments = |input, _settings, selected| {
 		edge_count = input.graph.edges.len()
 		rules = RouteInternals.first_in_slot(
 			edge_count * 2,
@@ -1170,59 +1197,115 @@ RouteInternals :: {}.{
 				RouteInternals.no_edge
 			},
 		)
-		slot_count = input.graph.nodes.len() * 4.U64
 		nowhere = { point: { x: 0, y: 0 }, outward: { x: 0, y: 0 }, side: Top }
-		var $counts = List.repeat(RouteInternals.zero_count, slot_count)
-		for edge_index in 0..<edge_count {
-			edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
-			from_slot = edge.from * 4 + RouteInternals.side_index((selected.from.get(edge_index) ?? nowhere).side)
-			$counts = $counts.set(from_slot, ($counts.get(from_slot) ?? 0) + 1) ?? []
-			to_slot = edge.to * 4 + RouteInternals.side_index((selected.to.get(edge_index) ?? nowhere).side)
-			$counts = $counts.set(to_slot, ($counts.get(to_slot) ?? 0) + 1) ?? []
-		}
-		counts = $counts
-		var $seen = List.repeat(RouteInternals.zero_count, slot_count)
-		var $resolved = List.with_capacity(edge_count * 2)
-		for use_index in 0..<(edge_count * 2) {
-			edge_index = use_index // 2
-			edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
-			endpoint = if use_index % 2 == 0 {
-				From
-			} else {
-				To
-			}
-			node = if use_index % 2 == 0 {
-				edge.from
-			} else {
-				edge.to
-			}
-			side = if use_index % 2 == 0 {
-				(selected.from.get(edge_index) ?? nowhere).side
-			} else {
-				(selected.to.get(edge_index) ?? nowhere).side
-			}
-			rule = match input.attachments.get(rules.get(use_index) ?? RouteInternals.no_edge) {
-				Ok(found) => found.attachment
-				Err(_) => Automatic
-			}
-			slot = node * 4.U64 + RouteInternals.side_index(side)
-			rank = $seen.get(slot) ?? RouteInternals.zero_count
-			count = counts.get(slot) ?? RouteInternals.zero_count + 1
-			offset = match rule {
-				Fixed(payload) => payload.offset
-				_ => {
-					size = input.graph.nodes.get(node) ?? { width: 0, height: 0 }
-					length = match side {
-						Top | Bottom => size.width
-						Left | Right => size.height
-					}
-					RouteInternals.flex_offset_at(count, rank, length, settings.edge_gap)
+		uses = List.repeat(0, edge_count * 2).map_with_index(
+			|_, use_index| {
+				edge_index = use_index // 2
+				edge = input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
+				leaving = use_index % 2 == 0
+				node = if leaving {
+					edge.from
+				} else {
+					edge.to
 				}
+				other = if leaving {
+					edge.to
+				} else {
+					edge.from
+				}
+				side = if leaving {
+					(selected.from.get(edge_index) ?? nowhere).side
+				} else {
+					(selected.to.get(edge_index) ?? nowhere).side
+				}
+				toward = input.positions.get(other) ?? { x: 0, y: 0 }
+				{ node, side, slot: node * 4 + RouteInternals.side_index(side), along: RouteInternals.coordinate_on(toward, side) }
+			},
+		)
+		nothing = { node: 0, side: Top, slot: 0, along: 0 }
+		at = |i| uses.get(i) ?? nothing
+		places = RoutePorts.ranks(
+			uses.len(),
+			|a, b| (at(a)).slot < (at(b)).slot,
+			|a, b| (at(a)).slot == (at(b)).slot,
+			|a, b| (at(a)).along < (at(b)).along or ((at(a)).along == (at(b)).along and a < b),
+		)
+		flexible = |use_index| match input.attachments.get(rules.get(use_index) ?? RouteInternals.no_edge) {
+			Ok(found) => match found.attachment {
+				Fixed(_) => False
+				_ => True
 			}
-			$seen = $seen.set(slot, rank + 1) ?? []
-			$resolved = $resolved.append({ edge: edge_index, endpoint, attachment: Fixed({ side, offset }) })
+			Err(_) => True
 		}
-		$resolved
+		alone = |use_index| (places.get(use_index) ?? { rank: 0, count: 2 }).count == 1 and flexible(use_index)
+
+		## The span of a node side along its own axis.
+		span = |node, side| {
+			center = input.positions.get(node) ?? { x: 0, y: 0 }
+			size = input.graph.nodes.get(node) ?? { width: 0, height: 0 }
+			match side {
+				Top | Bottom => { lo: center.x - size.width / 2, length: size.width }
+				Left | Right => { lo: center.y - size.height / 2, length: size.height }
+			}
+		}
+		when_facing = |p, q| {
+			pc = input.positions.get(p.node) ?? { x: 0, y: 0 }
+			qc = input.positions.get(q.node) ?? { x: 0, y: 0 }
+			match (p.side, q.side) {
+				(Bottom, Top) => qc.y > pc.y
+				(Top, Bottom) => qc.y < pc.y
+				(Right, Left) => qc.x > pc.x
+				(Left, Right) => qc.x < pc.x
+				_ => False
+			}
+		}
+
+		## Both ends' offsets when the edge can be straight.
+		straight = |use_index| {
+			partner = if use_index % 2 == 0 {
+				use_index + 1
+			} else {
+				use_index - 1
+			}
+			mine = at(use_index)
+			theirs = at(partner)
+			facing = when_facing(mine, theirs)
+			if mine.node != theirs.node and facing and alone(use_index) and alone(partner) {
+				a = span(mine.node, mine.side)
+				b = span(theirs.node, theirs.side)
+				lo = a.lo.max(b.lo)
+				hi = (a.lo + a.length).min(b.lo + b.length)
+				if hi > lo and a.length > 0 {
+					Ok(((lo + hi) / 2 - a.lo) / a.length)
+				} else {
+					Err(NotStraight)
+				}
+			} else {
+				Err(NotStraight)
+			}
+		}
+		uses.map_with_index(
+			|use, use_index| {
+				rule = match input.attachments.get(rules.get(use_index) ?? RouteInternals.no_edge) {
+					Ok(found) => found.attachment
+					Err(_) => Automatic
+				}
+				place = places.get(use_index) ?? { rank: 0, count: 1 }
+				offset = match rule {
+					Fixed(payload) => payload.offset
+					_ => match straight(use_index) {
+						Ok(aligned) => aligned
+						Err(_) => (place.rank + 1).to_f64() / (place.count + 1).to_f64()
+					}
+				}
+				endpoint = if use_index % 2 == 0 {
+					From
+				} else {
+					To
+				}
+				{ edge: use_index // 2, endpoint, attachment: Fixed({ side: use.side, offset }) }
+			},
+		)
 	}
 
 	## Flexible group portals become fixed ones, spread along their side in
@@ -1372,14 +1455,26 @@ RouteInternals :: {}.{
 
 	## The obstacles one edge must avoid: every node box except, when
 	## `endpoints` is false, its own two, and every group box that contains
-	## neither end. Box ids below the node count are nodes; the rest groups.
+	## neither end (by membership or by position). Box ids below the node count are nodes; the rest groups.
 	skips : Context, View -> (U64 -> Bool)
 	skips = |ctx, view| {
 		node_count = ctx.node_boxes.len()
+		from_center = ctx.input.positions.get(view.from) ?? { x: 0, y: 0 }
+		to_center = ctx.input.positions.get(view.to) ?? { x: 0, y: 0 }
+		inside = |point, box| point.x > box.min_x and point.x < box.max_x and point.y > box.min_y and point.y < box.max_y
 		|id| if id < node_count {
 			!view.endpoints and (id == view.from or id == view.to)
 		} else {
-			RouteInternals.owns_end(ctx, id - node_count, view.from, view.to)
+			box = ctx.group_boxes.get(id - node_count) ?? { min_x: 0, min_y: 0, max_x: 0, max_y: 0 }
+			match view.leg {
+				# A group that holds an end, by membership or merely by
+				# position, cannot be avoided by this edge.
+				Whole => RouteInternals.owns_end(ctx, id - node_count, view.from, view.to) or inside(from_center, box) or inside(to_center, box)
+				# Between group portals only the groups holding this leg's own
+				# ends may be crossed, so a route never re-enters a group it
+				# has left.
+				Between(start, finish) => inside(start, box) or inside(finish, box)
+			}
 		}
 	}
 
@@ -1440,7 +1535,56 @@ RouteInternals :: {}.{
 		)
 	}
 
-	shortest_grid = |start, finish, boxes, settings, prior| RouteGrid.shortest_touching(start, finish, boxes, settings.bend_penalty, settings.shared_path_penalty, RouteIndex.touch_boxes(prior.segments, prior.excluded))
+	## The cheapest clear orthogonal path from `start` to `finish` past the
+	## view's obstacles, or an empty list. The search first looks within a
+	## window around both points, widening it twice before trying the whole
+	## drawing, and expands a bounded number of grid points each time, so one
+	## blocked leg costs work near that leg rather than across the drawing.
+	search_path : Context, View, Geom.Point, Geom.Point, Prior -> List(Geom.Point)
+	search_path = |ctx, view, start, finish, prior| {
+		skip = RouteInternals.skips(ctx, view)
+		span = (finish.x - start.x).abs().max((finish.y - start.y).abs())
+		reach = ctx.settings.obstacle_gap * 4 + 48 + span / 8
+		# Between group portals, a leg whose ends both lie in a group stays in it.
+		enclosing = match view.leg {
+			Whole => []
+			Between(p, q) => {
+				holds = |rect, point| point.x >= rect.x and point.x <= rect.x + rect.width and point.y >= rect.y and point.y <= rect.y + rect.height
+				ctx.input.groups.keep_if(|group| holds(group.rect, p) and holds(group.rect, q)).map(|group| group.rect)
+			}
+		}
+		attempt = |margin, budget| {
+			open = { min_x: start.x.min(finish.x) - margin, min_y: start.y.min(finish.y) - margin, max_x: start.x.max(finish.x) + margin, max_y: start.y.max(finish.y) + margin }
+			inset : F64
+			inset = 0.5
+			window = enclosing.fold(
+				open,
+				|w, rect| {
+					# Keep off the outline itself, which would count as crossing it.
+					dx = inset.min(rect.width / 4)
+					dy = inset.min(rect.height / 4)
+					{ min_x: w.min_x.max(rect.x + dx), min_y: w.min_y.max(rect.y + dy), max_x: w.max_x.min(rect.x + rect.width - dx), max_y: w.max_y.min(rect.y + rect.height - dy) }
+				},
+			)
+			nothing = { min_x: 0, min_y: 0, max_x: 0, max_y: 0 }
+			boxes = RouteIndex.boxes_meeting(ctx.obstacles, window).keep_if(|id| !skip(id)).map(|id| ctx.obstacles.boxes.get(id) ?? nothing)
+			shared = RouteIndex.segments_meeting(prior.segments, window, prior.excluded).map(|id| prior.segments.touch.get(id) ?? nothing)
+			RouteGrid.shortest_touching(start, finish, boxes, ctx.settings.bend_penalty, ctx.settings.shared_path_penalty, shared, window, budget)
+		}
+		near = attempt(reach, 4000)
+		if !near.is_empty() {
+			near
+		} else {
+			wider = attempt(reach * 4, 16000)
+			if !wider.is_empty() {
+				wider
+			} else {
+				extent = ctx.obstacles.grid
+				whole = (extent.cell_width * extent.columns.to_f64()).max(extent.cell_height * extent.rows.to_f64()) + span + reach
+				attempt(whole, 60000)
+			}
+		}
+	}
 
 	## Length plus bend and shared-segment penalties of a candidate path.
 	path_cost : List(Geom.Point), Prior, Route.Settings -> F64
@@ -1484,11 +1628,11 @@ RouteInternals :: {}.{
 		} else if vh_clear {
 			vh
 		} else {
-			boxes = RouteInternals.view_boxes(ctx, view)
-			searched = RouteInternals.shortest_grid(start, finish, boxes, settings, prior)
+			searched = RouteInternals.search_path(ctx, view, start, finish, prior)
 			if searched.is_empty() {
-				exterior_y = boxes.fold(start.y.min(finish.y), |top, box| top.min(box.min_y)) - settings.edge_gap
-				[start, { x: start.x, y: exterior_y }, { x: finish.x, y: exterior_y }, finish]
+				# No clear path exists (or none within the search bound): keep the
+				# leg orthogonal and direct.
+				hv
 			} else {
 				searched
 			}
@@ -1575,7 +1719,7 @@ RouteInternals :: {}.{
 		} else {
 			[]
 		}
-		body = { from: edge.from, to: edge.to, endpoints: True }
+		body = { from: edge.from, to: edge.to, endpoints: True, leg: Whole }
 		if edge.from == edge.to {
 			# A rectangular exterior loop; bound ports still determine its first and last point.
 			d = settings.obstacle_gap + settings.edge_gap * (parallel.rank + 1).to_f64()
@@ -1585,10 +1729,27 @@ RouteInternals :: {}.{
 			bp = { x: base_bp.x + b.outward.x * settings.edge_gap * (parallel.rank + 1).to_f64(), y: base_bp.y + b.outward.y * settings.edge_gap * (parallel.rank + 1).to_f64() }
 			node = input.graph.nodes.get(edge.from) ?? { width: 0, height: 0 }
 			center = input.positions.get(edge.from) ?? a.point
-			lane = center.y - node.height / 2 - d - settings.edge_gap
+			above = center.y - node.height / 2 - d - settings.edge_gap
+			below = center.y + node.height / 2 + d + settings.edge_gap
 			# Going through one shared exterior lane keeps every segment
-			# axis-aligned even when both unbound endpoints coincide.
-			Polyline(RouteInternals.simplify([a.point, ap, { x: ap.x, y: lane }, { x: bp.x, y: lane }, bp, b.point]))
+			# axis-aligned even when both unbound endpoints coincide. The lane
+			# runs above the node unless only the one below is clear.
+			loop = |lane| [a.point, ap, { x: ap.x, y: lane }, { x: bp.x, y: lane }, bp, b.point]
+			clear = |path| RouteInternals.view_visible(ctx, body, path.drop_first(1).drop_last(1))
+			chosen = if clear(loop(above)) {
+				loop(above)
+			} else if clear(loop(below)) {
+				loop(below)
+			} else {
+				# Find a way round the node and its neighbours.
+				searched = RouteInternals.search_path(ctx, body, ap, bp, prior)
+				if searched.is_empty() {
+					loop(above)
+				} else {
+					[a.point].concat(searched).append(b.point)
+				}
+			}
+			Polyline(RouteInternals.simplify(chosen))
 		} else if portals.is_empty() and !waypoints.is_empty() {
 			ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
 			bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
@@ -1615,43 +1776,49 @@ RouteInternals :: {}.{
 			bf = RouteInternals.fan_point(bp, b, endpoint_fan.to, settings.edge_gap)
 			hv = [a.point, ap, af, { x: bf.x, y: af.y }, bf, bp, b.point]
 			vh = [a.point, ap, af, { x: af.x, y: bf.y }, bf, bp, b.point]
-			hv_clear = RouteInternals.view_visible(ctx, body, hv.drop_first(1).drop_last(1))
-			vh_clear = RouteInternals.view_visible(ctx, body, vh.drop_first(1).drop_last(1))
-			chosen = if hv_clear and vh_clear {
-				if RouteInternals.path_cost(hv, prior, settings) <= RouteInternals.path_cost(vh, prior, settings) {
-					hv
-				} else {
-					vh
-				}
-			} else if hv_clear {
-				hv
-			} else if vh_clear {
-				vh
-			} else {
-				boxes = RouteInternals.view_boxes(ctx, body)
-				searched = RouteInternals.shortest_grid(af, bf, boxes, settings, prior)
-				if searched.is_empty() {
-					exterior_y = boxes.fold(af.y.min(bf.y), |top, box| top.min(box.min_y)) - settings.edge_gap
-					[a.point, ap, af, { x: af.x, y: exterior_y }, { x: bf.x, y: exterior_y }, bf, bp, b.point]
-				} else {
-					[a.point, ap, af].concat(searched.drop_first(1)).concat([bf, bp, b.point])
+			z = RouteInternals.channel_path(a, b, ap, af, bf, bp)
+			clear = |candidate| RouteInternals.view_visible(ctx, body, candidate.drop_first(1).drop_last(1))
+			# Candidates in order of preference; a later one must be strictly
+			# cheaper to replace an earlier one.
+			candidates = z.concat([hv, vh]).keep_if(clear)
+			chosen = match candidates.first() {
+				Ok(first) => candidates.drop_first(1).fold(
+					{ path: first, cost: RouteInternals.path_cost(first, prior, settings) },
+					|best, candidate| {
+						cost = RouteInternals.path_cost(candidate, prior, settings)
+						if cost < best.cost {
+							{ path: candidate, cost }
+						} else {
+							best
+						}
+					},
+				).path
+				Err(_) => {
+					searched = RouteInternals.search_path(ctx, body, af, bf, prior)
+					if searched.is_empty() {
+						hv
+					} else {
+						[a.point, ap, af].concat(searched.drop_first(1)).concat([bf, bp, b.point])
+					}
 				}
 			}
 			Polyline(RouteInternals.simplify(chosen))
 		} else {
 			ap = RouteInternals.escape_point(a, edge.from, input, settings.obstacle_gap)
 			bp = RouteInternals.escape_point(b, edge.to, input, settings.obstacle_gap)
-			af = RouteInternals.fan_point(ap, a, endpoint_fan.from, settings.edge_gap)
-			bf = RouteInternals.fan_point(bp, b, endpoint_fan.to, settings.edge_gap)
+			# A sideways fan step could leave the group the route must cross
+			# through its portal, so a route with portals starts at its escape.
+			af = ap
+			bf = bp
 			through = portals.fold(
 				{ points: [a.point, ap, af], current: af },
 				|state, portal| {
 					stops = RouteInternals.portal_stops(portal, settings.obstacle_gap, input)
-					leg = RouteInternals.route_leg(ctx, body, state.current, stops.approach, prior)
+					leg = RouteInternals.route_leg(ctx, { ..body, leg: Between(state.current, stops.approach) }, state.current, stops.approach, prior)
 					{ points: state.points.concat(leg.drop_first(1)).concat([portal.point, stops.departure]), current: stops.departure }
 				},
 			)
-			last_leg = RouteInternals.route_leg(ctx, body, through.current, bf, prior)
+			last_leg = RouteInternals.route_leg(ctx, { ..body, leg: Between(through.current, bf) }, through.current, bf, prior)
 			Polyline(RouteInternals.simplify_preserving(through.points.concat(last_leg.drop_first(1)).concat([bp, b.point]), portals.map(|portal| portal.point)))
 		}
 	}
@@ -1749,17 +1916,17 @@ RouteInternals :: {}.{
 			From => RouteInternals.reverse_portals(common_portals)
 			To => common_portals
 		}
-		trunk_view = { from: first_edge.from, to: first_edge.to, endpoints: False }
+		trunk_view = { from: first_edge.from, to: first_edge.to, endpoints: False, leg: Whole }
 		trunk_forward = ordered_common.fold(
 			{ points: [junction], current: junction },
 			|state, portal| {
 				stops = RouteInternals.portal_stops(portal, settings.obstacle_gap, input)
-				leg = RouteInternals.route_leg(ctx, trunk_view, state.current, stops.approach, prior)
+				leg = RouteInternals.route_leg(ctx, { ..trunk_view, leg: Between(state.current, stops.approach) }, state.current, stops.approach, prior)
 				{ points: state.points.concat(leg.drop_first(1)).concat([portal.point, stops.departure]), current: stops.departure }
 			},
 		)
 		approach = { x: common_terminal.point.x + common_terminal.outward.x * settings.obstacle_gap, y: common_terminal.point.y + common_terminal.outward.y * settings.obstacle_gap }
-		last = RouteInternals.route_leg(ctx, trunk_view, trunk_forward.current, approach, prior)
+		last = RouteInternals.route_leg(ctx, { ..trunk_view, leg: Between(trunk_forward.current, approach) }, trunk_forward.current, approach, prior)
 		trunk_points = RouteInternals.simplify_preserving(trunk_forward.points.concat(last.drop_first(1)).append(common_terminal.point), ordered_common.map(|portal| portal.point))
 		branches = rule.edges.map(
 			|edge_index| {
@@ -1773,16 +1940,16 @@ RouteInternals :: {}.{
 					From => RouteInternals.reverse_portals(forward_portals)
 					To => forward_portals
 				}
-				branch_view = { from: edge.from, to: edge.to, endpoints: False }
+				branch_view = { from: edge.from, to: edge.to, endpoints: False, leg: Whole }
 				through = portals.fold(
 					{ points: [selected_terminal.point], current: selected_terminal.point },
 					|state, portal| {
 						stops = RouteInternals.portal_stops(portal, settings.obstacle_gap, input)
-						leg = RouteInternals.route_leg(ctx, branch_view, state.current, stops.approach, prior)
+						leg = RouteInternals.route_leg(ctx, { ..branch_view, leg: Between(state.current, stops.approach) }, state.current, stops.approach, prior)
 						{ points: state.points.concat(leg.drop_first(1)).concat([portal.point, stops.departure]), current: stops.departure }
 					},
 				)
-				final = RouteInternals.route_leg(ctx, branch_view, through.current, junction, prior)
+				final = RouteInternals.route_leg(ctx, { ..branch_view, leg: Between(through.current, junction) }, through.current, junction, prior)
 				points = RouteInternals.simplify_preserving(through.points.concat(final.drop_first(1)), portals.map(|portal| portal.point))
 				if rule.endpoint == From {
 					Polyline(RouteInternals.reverse_points(points))
@@ -1931,10 +2098,10 @@ RouteInternals :: {}.{
 				} else {
 					a.y.max(b.y)
 				}
-				# The first two and last two segments form the protected
-				# attachment/escape/fan corridor. Lane separation may only
-				# move the route body outside those terminal corridors.
-				$found = $found.append({ edge: $edge, index, horizontal, coord, low, high, movable: index > 2 and index + 4 < points.len() and high > low })
+				# The first and last segments leave and enter the nodes. Lane
+				# separation may move any segment between them; the moved route
+				# must still keep its terminal escapes.
+				$found = $found.append({ edge: $edge, index, horizontal, coord, low, high, movable: index > 0 and index + 2 < points.len() and high > low })
 			}
 			$edge = $edge + 1
 		}
@@ -1974,12 +2141,102 @@ RouteInternals :: {}.{
 			nowhere = { point: { x: 0, y: 0 }, outward: { x: 0, y: 0 }, side: Top }
 			a = ctx.from_terminals.get(edge_index) ?? nowhere
 			b = ctx.to_terminals.get(edge_index) ?? nowhere
-			if RouteInternals.view_visible(ctx, { from: edge.from, to: edge.to, endpoints: True }, moved.drop_first(1).drop_last(1)) and RouteInternals.terminal_path_valid(ctx, moved, edge, a, b) {
+			valid = |candidate| RouteInternals.view_visible(ctx, { from: edge.from, to: edge.to, endpoints: True, leg: Whole }, candidate.drop_first(1).drop_last(1)) and RouteInternals.terminal_path_valid(ctx, candidate, edge, a, b)
+			if valid(moved) {
 				Polyline(RouteInternals.simplify(moved))
 			} else {
-				route
+				# Move the segments one at a time, keeping each move that stays
+				# clear and keeps the terminal escapes.
+				var $current = points
+				for i in 0..<owned.len() {
+					segment = owned.get(i) ?? { edge: edge_index, index: i, horizontal: True, coord: 0, low: 0, high: 0, movable: False }
+					lane = coords.get(i) ?? segment.coord
+					if segment.movable and lane != segment.coord and i + 1 < points.len() {
+						shift = |point| if segment.horizontal {
+							{ x: point.x, y: lane }
+						} else {
+							{ x: lane, y: point.y }
+						}
+						candidate = ($current.set(i, shift($current.get(i) ?? { x: 0, y: 0 })) ?? []).set(i + 1, shift($current.get(i + 1) ?? { x: 0, y: 0 })) ?? []
+						if valid(candidate) {
+							$current = candidate
+						}
+					}
+				}
+				if $current == points {
+					route
+				} else {
+					Polyline(RouteInternals.simplify($current))
+				}
 			}
 		}
+	}
+
+	## Remove short jogs: where a short segment joins two parallel ones, move
+	## one of those onto the other's line, if the route stays clear and keeps
+	## its terminal escapes. The route's ends never move.
+	straighten : Context, Geom.Route, U64, { from : U64, to : U64 }, RouteIndex.Segments -> Geom.Route
+	straighten = |ctx, route, edge_index, edge, others| {
+		nowhere = { point: { x: 0, y: 0 }, outward: { x: 0, y: 0 }, side: Top }
+		a = ctx.from_terminals.get(edge_index) ?? nowhere
+		b = ctx.to_terminals.get(edge_index) ?? nowhere
+		body = { from: edge.from, to: edge.to, endpoints: True, leg: Whole }
+		limit = ctx.settings.edge_gap * 3
+		before = RouteInternals.crowds(RouteInternals.route_points(route), others, edge_index, ctx.settings.edge_gap)
+		acceptable = |candidate| RouteInternals.view_visible(ctx, body, candidate.drop_first(1).drop_last(1)) and RouteInternals.terminal_path_valid(ctx, candidate, edge, a, b) and (before or !RouteInternals.crowds(candidate, others, edge_index, ctx.settings.edge_gap))
+		var $points = RouteInternals.route_points(route)
+		var $changed = True
+		var $fuel = $points.len()
+		while $changed and $fuel > 0 {
+			$changed = False
+			$fuel = $fuel - 1
+			pts = $points
+			n = pts.len()
+			var $i = 1
+			while !$changed and $i + 2 < n {
+				i = $i
+				p0 = pts.get(i - 1) ?? { x: 0, y: 0 }
+				p1 = pts.get(i) ?? p0
+				p2 = pts.get(i + 1) ?? p1
+				p3 = pts.get(i + 2) ?? p2
+				jog = (p2.x - p1.x).abs() + (p2.y - p1.y).abs()
+				across_x = p0.y == p1.y and p2.y == p3.y and p1.x == p2.x and p0.x != p1.x and p2.x != p3.x
+				across_y = p0.x == p1.x and p2.x == p3.x and p1.y == p2.y and p0.y != p1.y and p2.y != p3.y
+				if jog > 0 and jog < limit and (across_x or across_y) {
+					# Move the following segment onto the preceding one's line.
+					later = if i + 3 < n {
+						moved = if across_x {
+							{ x: p3.x, y: p1.y }
+						} else {
+							{ x: p1.x, y: p3.y }
+						}
+						[pts.take_first(i + 1).append(moved).concat(pts.drop_first(i + 3))]
+					} else {
+						[]
+					}
+					# Or move the preceding segment onto the following one's line.
+					earlier = if i >= 2 {
+						moved = if across_x {
+							{ x: p0.x, y: p2.y }
+						} else {
+							{ x: p2.x, y: p0.y }
+						}
+						[pts.take_first(i - 1).append(moved).concat(pts.drop_first(i + 1))]
+					} else {
+						[]
+					}
+					match later.concat(earlier).find_first(acceptable) {
+						Ok(candidate) => {
+							$points = RouteInternals.simplify(candidate)
+							$changed = True
+						}
+						Err(_) => {}
+					}
+				}
+				$i = $i + 1
+			}
+		}
+		Polyline($points)
 	}
 
 	## Spread coincident route bodies into lanes, keeping every route whose
@@ -2012,6 +2269,49 @@ RouteInternals :: {}.{
 
 	nudge_routes = |routes, input, settings| RouteInternals.nudge_all(RouteInternals.context(input, settings, RouteInternals.node_chains(input)), routes)
 
+	## Lane separation followed by jog removal.
+	tidy : Context, List(Geom.Route) -> List(Geom.Route)
+	tidy = |ctx, routes| {
+		nudged = RouteInternals.nudge_all(ctx, routes)
+		others = nudged.fold_with_index(RouteIndex.segments(ctx.grid, nudged.len()), |acc, route, edge| RouteIndex.set_route(acc, edge, RouteInternals.route_points(route)))
+		nudged.map_with_index(
+			|route, edge_index| {
+				edge = ctx.input.graph.edges.get(edge_index) ?? { from: 0, to: 0 }
+				if (ctx.waypoints.get(edge_index) ?? []).is_empty() and !(ctx.crosses_boundary.get(edge_index) ?? False) {
+					RouteInternals.straighten(ctx, route, edge_index, edge, others)
+				} else {
+					route
+				}
+			},
+		)
+	}
+
+	## Whether a segment of `points` runs along, or within `gap` of, a segment
+	## of another route.
+	crowds : List(Geom.Point), RouteIndex.Segments, U64, F64 -> Bool
+	crowds = |points, others, excluded, gap| points.fold_with_index(
+		False,
+		|found, a, i| match points.get(i + 1) {
+			Ok(b) if !found => {
+				reach = { min_x: a.x.min(b.x) - gap, min_y: a.y.min(b.y) - gap, max_x: a.x.max(b.x) + gap, max_y: a.y.max(b.y) + gap }
+				RouteIndex.segments_meeting(others, reach, excluded).any(
+					|id| {
+						c = others.starts.get(id) ?? a
+						d = others.ends.get(id) ?? a
+						if a.y == b.y and c.y == d.y and a.x != b.x {
+							(a.y - c.y).abs() < gap and a.x.max(b.x).min(c.x.max(d.x)) - a.x.min(b.x).max(c.x.min(d.x)) > 0
+						} else if a.x == b.x and c.x == d.x and a.y != b.y {
+							(a.x - c.x).abs() < gap and a.y.max(b.y).min(c.y.max(d.y)) - a.y.min(b.y).max(c.y.min(d.y)) > 0
+						} else {
+							False
+						}
+					},
+				)
+			}
+			_ => found
+		},
+	)
+
 	## Routes for every edge in edge order, each avoiding those before it.
 	initial_routes : Context, List({ rank : U64, count : U64 }), List({ from : { rank : U64, count : U64 }, to : { rank : U64, count : U64 } }) -> { routes : List(Geom.Route), segments : RouteIndex.Segments }
 	initial_routes = |ctx, ranks, fan_table| {
@@ -2040,6 +2340,19 @@ RouteInternals :: {}.{
 		RouteInternals.context(input, settings, chains)
 	}
 
+	## The length from `low` to `high`, rounded up where needed so that
+	## `low + length` is not less than `high`.
+	covering_span : F64, F64 -> F64
+	covering_span = |low, high| {
+		var $span = Geom.saturate(high - low)
+		var $fuel = 8
+		while $fuel > 0 and low + $span < high and $span < F64.highest {
+			$span = Geom.saturate($span + ($span.abs() * 0.0000000000000003).max(0.000000000000001))
+			$fuel = $fuel - 1
+		}
+		$span
+	}
+
 	compute : Route.Input, Route.Settings -> Route.Result
 	compute = |original, settings| {
 		ctx = RouteInternals.prepare(original, settings)
@@ -2057,7 +2370,7 @@ RouteInternals :: {}.{
 				rule.edges.fold_with_index(routes, |updated, edge, branch_index| updated.set(edge, geometry.branches.get(branch_index) ?? Polyline([])) ?? [])
 			},
 		)
-		raw_routes = RouteInternals.nudge_all(ctx, shared_branches)
+		raw_routes = RouteInternals.tidy(ctx, shared_branches)
 		label_routes = input.shared_ends.fold_with_index(
 			raw_routes,
 			|routes, rule, shared_index| {
@@ -2172,7 +2485,7 @@ RouteInternals :: {}.{
 				{ edges: rule.edges, endpoint: rule.endpoint, junction: geometry.junction, trunk: geometry.trunk, group_crossings: RouteInternals.route_crossings(geometry.trunk, input.groups) }
 			},
 		)
-		{ layout: { positions: input.positions, routes: raw_routes, bounds: { x: box.min_x, y: box.min_y, width: Geom.saturate(box.max_x - box.min_x), height: Geom.saturate(box.max_y - box.min_y) } }, groups, label_anchors: raw_labels, attachments, group_crossings, shared_routes }
+		{ layout: { positions: input.positions, routes: raw_routes, bounds: { x: box.min_x, y: box.min_y, width: RouteInternals.covering_span(box.min_x, box.max_x), height: RouteInternals.covering_span(box.min_y, box.max_y) } }, groups, label_anchors: raw_labels, attachments, group_crossings, shared_routes }
 	}
 }
 
@@ -2209,9 +2522,12 @@ RouteInternals :: {}.{
 ## on that boundary. Sparse group attachments override those automatic portals.
 ## `Automatic` lets the router choose a side and a distinct position, `On`
 ## fixes only the side, and `Fixed` chooses an exact normalized offset.
-## Flexible ports sharing a side are ordered from their endpoints and separated
-## by `edge_gap`; when a short side cannot fit that gap, spacing compresses
-## uniformly while preserving order. Nested portals are crossed in ancestry
+## Flexible ports sharing a node side are ordered from their opposite ends and
+## spread evenly along the side; an edge alone on two facing sides that
+## overlap is attached at one shared coordinate, so it can be drawn straight.
+## Flexible group portals sharing a side are ordered the same way and
+## separated by `edge_gap`; when a short side cannot fit that gap, spacing
+## compresses uniformly while preserving order. Nested portals are crossed in ancestry
 ## order and every resulting route is kept clear of obstacles.
 ##
 ## A shared-end rule gives two or more edges one intentional junction at a
@@ -2240,7 +2556,8 @@ Route :: {}.{
 	Input : { graph : { nodes : List({ width : F64, height : F64 }), edges : List({ from : U64, to : U64 }) }, positions : List({ x : F64, y : F64 }), groups : List(Group), memberships : List(Membership), attachments : List(AttachmentRule), group_attachments : List(GroupAttachmentRule), boundaries : List(BoundaryRule), edge_labels : List(EdgeLabel), shared_ends : List(SharedEndRule), waypoints : List(WaypointRule), guides : List(GuideRule) }
 
 	## `obstacle_gap` is the empty space kept around node and group boxes. `edge_gap`
-	## separates flexible ports and parallel lanes. `bend_penalty` favors fewer
+	## separates parallel lanes, flexible group portals and large bundles of
+	## routes leaving one exact attachment. `bend_penalty` favors fewer
 	## turns over a shorter candidate, while `shared_path_penalty` favors a
 	## distinct corridor. Zero disables the corresponding preference.
 	## `max_sweeps` bounds deterministic whole-drawing improvement passes; zero

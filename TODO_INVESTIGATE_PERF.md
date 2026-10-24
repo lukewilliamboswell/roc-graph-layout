@@ -544,6 +544,96 @@ Ladders after the change (elapsed in this harness):
 | `layered straight dense` | 300 / 1,000 | 1.65 / 6.26 s |
 | `layered one_call bands` | 200 / 400 / 800 / 1,000 | 60 / 52 / 157 / 203 ms (was 49 / 185 / 996 / 1,649 ms) |
 
+## H10: The orthogonal router searched the whole grid for blocked legs
+
+**Status: root cause confirmed and resolved in two stages; two adversarial
+fixtures remain quadratic.** Measured natively (`--opt=speed`, nightly
+2026-10-23-18478ff, x86_64 Linux, one process per sample, machine under
+heavy load from other jobs, so trust allocation counts and bytes more than
+milliseconds).
+
+**Hypothesis.** After Layered's ranking, ordering and placement became
+near-linear, routing dominated: a 160-node flowchart DAG spent ~7.2 s of
+7.3 s in `Route.layout`, even with `max_sweeps: 0`.
+
+**Phase controls** (a scratch-only `bench_phase` hook runs validation,
+attachment resolution, parallel/fan ranks, initial routing, refinement and
+lane nudging separately) showed that validation, resolution and nudging
+were negligible and initial routing was everything. Requested bytes were
+modest (49 MB at 160 nodes), so this was algorithmic CPU, not repeated
+copies.
+
+**Root cause (confirmed).** The fallback grid search for an L-blocked leg
+(13 searches at 80 nodes, 20 at 160, 129 at 1,280 in the Layered DAG) was a
+Dijkstra search over the whole Hanan grid (every obstacle edge line, ~5k to
+~360k points) that: picked the next state by scanning every state; relaxed
+moves by scanning every grid point with a visibility test against every
+obstacle; and recounted every earlier route segment for every move. Each
+search was roughly O(V^2 · B). `unique_values` and the point filter were
+also quadratic and cubic in the obstacle count.
+
+Secondary superlinear terms, each confirmed by reading and removed:
+attachment-rule, boundary, membership, waypoint and guide lookups by
+`find_first` per edge (O(E·rules)); the endpoint fan table (O(E^2));
+group-portal buckets sorted once per use; per-edge obstacle lists rebuilt
+from every node (O(E·N)); `path_cost` and refinement statistics rescanning
+every earlier route (O(E·S)); lane nudging comparing every segment with
+every segment and sorting per segment (O(S^2 log S)); duplicate-rule
+validation comparing every pair of rules (Layered passes one guide per
+edge). Hypothesis refuted: `EdgeRoutes.parallel_ranks`' record-threaded fold
+did not copy its tables on this nightly (allocation calls stayed linear in
+the fuzz control); it is now written with flat loops anyway.
+
+**Stage 1 (bit-identical).** Exact replacements: the grid search now walks
+only the visible runs of each expanded point with a binary heap and a
+sparse state table, keeping the original first-appearance tie-break; flat
+lookup tables; a uniform-grid index for obstacles and one for route
+segments (with exact canonical-cell dedup so counts and float sums stay
+identical); Fenwick-tree lane ranking; sort-based duplicate detection.
+Results were compared bit for bit (FNV hash over every output float) on a
+1,913-case corpus: 1,400 random inputs (groups, portals, shared ends,
+labels, guides, waypoints, ellipses, seven settings variants), 352 router
+inputs taken from Layered drawings, 33 full Layered drawings, 112 direct
+fixtures and 16 larger Layered inputs (80 to 160 nodes). Identical on the
+dev and `--opt=speed` native backends, and on 337 cases under the
+interpreter. The 160-node DAG fell from 7.6 s to 94 ms. Remaining cost was
+the exact exhaustive Dijkstra itself (2 million expanded states at 1,280
+nodes) and refinement re-running it each sweep.
+
+**Stage 2 (behaviour changes).** The search is now A* (Manhattan
+heuristic) inside a window around the leg, widened twice before the whole
+drawing, with an expansion budget per attempt; obstacles holding a leg's
+end are ignored. Route DAG 1,280 nodes: 3.4 s → 0.22 s; deep 1,280:
+timeout → 0.52 s; dag_cycles 1,280: 61 s → 0.33 s; requested bytes fell
+by 50 to 250 times.
+
+**Still open.** Two adversarial fixtures stay quadratic in both stages:
+`shared_port` (every edge on one fixed port; refinement statistics and
+lane counts are pairwise inside the bundle, ~1.2 to 2.5 times stage 1 under
+load) and `wide` (one hub with every node on one side). `grid` (random
+spans across a grid of nodes, every leg blocked) is dominated by windowed
+searches and refinement re-routing. Refinement still re-routes every edge
+with any crossing or overlap each sweep, so very crossing-heavy inputs pay
+up to `max_sweeps` times the initial cost.
+
+**Reproduce.** The scratch harness (`scratchpad/route/bench-*`) adds
+`route` and `phase` modes over the Layered fixtures; the committed harness
+can reproduce the Layered ladder with:
+
+```sh
+for n in 320 640 1280; do "$BENCH" layered one_call generated dag "$n" 0; done
+```
+
+Phase-level guards are now fuzz targets with allocation-growth bounds:
+`fuzz_route_search` (A* against the exhaustive reference), `fuzz_route_index`,
+`fuzz_route_lanes`, `fuzz_route_ports` and the whole-router scaling property
+in `fuzz_route`.
+
+Compiler observation: on the 2026-10-23 nightly a native build that divides
+by `n` inside a callback that never runs may assume `n != 0` and fold
+`n == 0` away (roc-lang/roc#12556); the fuzz and corpus generators guard
+their divisors with `.max(1)`.
+
 ## Resolved: shared fixed-port ranking repeated sorts
 
 **Finding.** Ranking each endpoint by filtering and sorting its complete peer
