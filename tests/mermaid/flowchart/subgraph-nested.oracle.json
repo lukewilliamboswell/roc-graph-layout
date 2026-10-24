@@ -1,0 +1,345 @@
+{
+	"schema": 5,
+	"key": "09138933e07e8c60b1a0860cfff5f38623877ec825cfaf278b8766324004c802",
+	"provenance": {
+		"extractor": 5,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart TB\n    subgraph outer\n        subgraph inner\n            x --> y\n        end\n        z\n    end\n    y --> z\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "TB",
+		"nodes": [
+			{
+				"id": "x",
+				"text": "x",
+				"label": "x",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "y",
+				"text": "y",
+				"label": "y",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "z",
+				"text": "z",
+				"label": "z",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "x",
+				"to": "y",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "y",
+				"to": "z",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [
+			{
+				"id": "inner",
+				"title": "inner",
+				"label": "inner",
+				"nodes": [
+					"y",
+					"x"
+				],
+				"dir": null,
+				"classes": []
+			},
+			{
+				"id": "outer",
+				"title": "outer",
+				"label": "outer",
+				"nodes": [
+					"inner",
+					"z"
+				],
+				"dir": null,
+				"classes": []
+			}
+		],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "outer",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 0,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "inner",
+				"is_group": true,
+				"parent": "outer",
+				"declaration_index": 1,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "x",
+				"is_group": false,
+				"parent": "inner",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "y",
+				"is_group": false,
+				"parent": "inner",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "z",
+				"is_group": false,
+				"parent": "outer",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_x_y_0",
+				"from": "x",
+				"to": "y",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_y_z_0",
+				"from": "y",
+				"to": "z",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 264,
+			"height": 333
+		},
+		"nodes": [
+			{
+				"id": "x",
+				"center": {
+					"x": 136,
+					"y": 120.5
+				},
+				"box": {
+					"x": 60,
+					"y": 100,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 60,
+					"y": 100,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 132.171875,
+					"y": 112.00000095367432,
+					"width": 8,
+					"height": 17
+				}
+			},
+			{
+				"id": "y",
+				"center": {
+					"x": 136,
+					"y": 185.5
+				},
+				"box": {
+					"x": 60,
+					"y": 165,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 60,
+					"y": 165,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 132.0625,
+					"y": 177.00000095367432,
+					"width": 8,
+					"height": 17
+				}
+			},
+			{
+				"id": "z",
+				"center": {
+					"x": 136,
+					"y": 284.5
+				},
+				"box": {
+					"x": 60,
+					"y": 264,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 60,
+					"y": 264,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 132.1328125,
+					"y": 276.0000009536743,
+					"width": 7.734375,
+					"height": 17
+				}
+			}
+		],
+		"clusters": [
+			{
+				"id": "inner",
+				"box": {
+					"x": 36,
+					"y": 56,
+					"width": 200,
+					"height": 174
+				},
+				"label": {
+					"x": 119.3125,
+					"y": 56.000000953674316,
+					"width": 33.375,
+					"height": 17
+				}
+			},
+			{
+				"id": "outer",
+				"box": {
+					"x": 12,
+					"y": 12,
+					"width": 248,
+					"height": 317
+				},
+				"label": {
+					"x": 118.71875,
+					"y": 12.000000953674316,
+					"width": 34.5625,
+					"height": 17
+				}
+			}
+		],
+		"edges": [
+			{
+				"id": "L_x_y_0",
+				"points": [
+					{
+						"x": 136,
+						"y": 141
+					},
+					{
+						"x": 136,
+						"y": 165
+					}
+				],
+				"path": "M136,141L136,161",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null
+			},
+			{
+				"id": "L_y_z_0",
+				"points": [
+					{
+						"x": 136,
+						"y": 206
+					},
+					{
+						"x": 136,
+						"y": 240
+					},
+					{
+						"x": 136,
+						"y": 264
+					}
+				],
+				"path": "M136,206L136,240L136,260",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null
+			}
+		]
+	},
+	"svg_sha256": "d3987e0aa0e5253ef7dced4c00fa8c17e8c0f2428d9118dc2ae000086d323c42"
+}

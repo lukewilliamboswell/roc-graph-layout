@@ -1,0 +1,1102 @@
+{
+	"schema": 5,
+	"key": "c71fd651e1e4779de635739f39fd78c1678f460d1b4a66428cd9313b5c85c997",
+	"provenance": {
+		"extractor": 5,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart LR\n    a[Square] --> b(Round) --> c([Stadium]) --> d[[Subroutine]]\n    e[(Database)] --> f((Circle)) --> g>Odd] --> h{Diamond}\n    i{{Hexagon}} --> j[/Lean right/] --> k[\\Lean left\\] --> l[/Trapezoid\\]\n    m[\\Inverse trapezoid/] --> n(((Double circle)))\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "LR",
+		"nodes": [
+			{
+				"id": "a",
+				"text": "Square",
+				"label": "Square",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "b",
+				"text": "Round",
+				"label": "Round",
+				"shape": "round",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "c",
+				"text": "Stadium",
+				"label": "Stadium",
+				"shape": "stadium",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "d",
+				"text": "Subroutine",
+				"label": "Subroutine",
+				"shape": "subroutine",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "e",
+				"text": "Database",
+				"label": "Database",
+				"shape": "cylinder",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "f",
+				"text": "Circle",
+				"label": "Circle",
+				"shape": "circle",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "g",
+				"text": "Odd",
+				"label": "Odd",
+				"shape": "odd",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "h",
+				"text": "Diamond",
+				"label": "Diamond",
+				"shape": "diamond",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "i",
+				"text": "Hexagon",
+				"label": "Hexagon",
+				"shape": "hexagon",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "j",
+				"text": "Lean right",
+				"label": "Lean right",
+				"shape": "lean_right",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "k",
+				"text": "Lean left",
+				"label": "Lean left",
+				"shape": "lean_left",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "l",
+				"text": "Trapezoid",
+				"label": "Trapezoid",
+				"shape": "trapezoid",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "m",
+				"text": "Inverse trapezoid",
+				"label": "Inverse trapezoid",
+				"shape": "inv_trapezoid",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n",
+				"text": "Double circle",
+				"label": "Double circle",
+				"shape": "doublecircle",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "a",
+				"to": "b",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "b",
+				"to": "c",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "c",
+				"to": "d",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "e",
+				"to": "f",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "f",
+				"to": "g",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "g",
+				"to": "h",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "i",
+				"to": "j",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "j",
+				"to": "k",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "k",
+				"to": "l",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "m",
+				"to": "n",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "a",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "b",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "roundedRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "c",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "stadium",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "d",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "subroutine",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "e",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "cylinder",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "f",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "circle",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "g",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "odd",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "h",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "diamond",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "i",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "hexagon",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "j",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "lean_right",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "k",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "lean_left",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "l",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "trapezoid",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "m",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "inv_trapezoid",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "doublecircle",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_a_b_0",
+				"from": "a",
+				"to": "b",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_b_c_0",
+				"from": "b",
+				"to": "c",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_c_d_0",
+				"from": "c",
+				"to": "d",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_e_f_0",
+				"from": "e",
+				"to": "f",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_f_g_0",
+				"from": "f",
+				"to": "g",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_g_h_0",
+				"from": "g",
+				"to": "h",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_i_j_0",
+				"from": "i",
+				"to": "j",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_j_k_0",
+				"from": "j",
+				"to": "k",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_k_l_0",
+				"from": "k",
+				"to": "l",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_m_n_0",
+				"from": "m",
+				"to": "n",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 909,
+			"height": 517.4766845703125
+		},
+		"nodes": [
+			{
+				"id": "a",
+				"center": {
+					"x": 163,
+					"y": 35.5
+				},
+				"box": {
+					"x": 87,
+					"y": 15,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 87,
+					"y": 15,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 139.56468200683594,
+					"y": 27.36490577459335,
+					"width": 46.870635986328125,
+					"height": 17.04386901855469
+				}
+			},
+			{
+				"id": "b",
+				"center": {
+					"x": 369.99999999999994,
+					"y": 35.5
+				},
+				"box": {
+					"x": 294.99999999999994,
+					"y": 12,
+					"width": 150,
+					"height": 47
+				},
+				"outer": {
+					"x": 294.99999999999994,
+					"y": 12,
+					"width": 150,
+					"height": 47
+				},
+				"label": {
+					"x": 348.8460731506347,
+					"y": 27.36490577459335,
+					"width": 42.30785369873047,
+					"height": 17.04386901855469
+				}
+			},
+			{
+				"id": "c",
+				"center": {
+					"x": 591.9999999999999,
+					"y": 35.5
+				},
+				"box": {
+					"x": 506.88553619384754,
+					"y": 15,
+					"width": 170.2289276123047,
+					"height": 41
+				},
+				"outer": {
+					"x": 506.88553619384754,
+					"y": 15,
+					"width": 170.2289276123047,
+					"height": 41
+				},
+				"label": {
+					"x": 565.0138759613036,
+					"y": 27.36490577459335,
+					"width": 53.97224807739258,
+					"height": 17.04386901855469
+				}
+			},
+			{
+				"id": "d",
+				"center": {
+					"x": 805,
+					"y": 35.5
+				},
+				"box": {
+					"x": 722.9999999999999,
+					"y": 21,
+					"width": 164,
+					"height": 29
+				},
+				"outer": {
+					"x": 723,
+					"y": 21,
+					"width": 164,
+					"height": 29
+				},
+				"label": {
+					"x": 769.0480918884277,
+					"y": 27.36490577459335,
+					"width": 71.90381622314453,
+					"height": 17.04386901855469
+				}
+			},
+			{
+				"id": "e",
+				"center": {
+					"x": 167,
+					"y": 173.5
+				},
+				"box": {
+					"x": 95,
+					"y": 132.92565155029297,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"outer": {
+					"x": 95,
+					"y": 132.92565155029297,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"label": {
+					"x": 135.71739959716797,
+					"y": 175.36490482091904,
+					"width": 62.56520080566406,
+					"height": 17.043869018554688
+				}
+			},
+			{
+				"id": "f",
+				"center": {
+					"x": 369.99999999999994,
+					"y": 173.5
+				},
+				"box": {
+					"x": 333.0854530334472,
+					"y": 136.58545303344727,
+					"width": 73.82909393310547,
+					"height": 73.82909393310547
+				},
+				"outer": {
+					"x": 333.0854530334472,
+					"y": 136.58545303344727,
+					"width": 73.82909393310547,
+					"height": 73.82909393310547
+				},
+				"label": {
+					"x": 350.90554046630854,
+					"y": 165.36490577459335,
+					"width": 38.18891906738281,
+					"height": 17.043869018554688
+				}
+			},
+			{
+				"id": "g",
+				"center": {
+					"x": 591.9999999999999,
+					"y": 173.5
+				},
+				"box": {
+					"x": 505.8749999999999,
+					"y": 153,
+					"width": 172.25,
+					"height": 41
+				},
+				"outer": {
+					"x": 505.8749999999999,
+					"y": 153,
+					"width": 172.25,
+					"height": 41
+				},
+				"label": {
+					"x": 583.205841064453,
+					"y": 165.36490482091904,
+					"width": 27.83831787109375,
+					"height": 17.043869018554688
+				}
+			},
+			{
+				"id": "h",
+				"center": {
+					"x": 806.4999999999999,
+					"y": 173.5
+				},
+				"box": {
+					"x": 723.4999999999999,
+					"y": 90,
+					"width": 167,
+					"height": 167
+				},
+				"outer": {
+					"x": 723.4999999999999,
+					"y": 90,
+					"width": 167,
+					"height": 167
+				},
+				"label": {
+					"x": 777.0904502868651,
+					"y": 165.36490577459335,
+					"width": 58.81909942626953,
+					"height": 17.043869018554688
+				}
+			},
+			{
+				"id": "i",
+				"center": {
+					"x": 138.1428680419922,
+					"y": 313.00000000000006
+				},
+				"box": {
+					"x": 37.28572845458985,
+					"y": 269.5,
+					"width": 201.7142791748047,
+					"height": 87
+				},
+				"outer": {
+					"x": 37.285728454589844,
+					"y": 269.50000000000006,
+					"width": 201.7142791748047,
+					"height": 87
+				},
+				"label": {
+					"x": 108.6534252166748,
+					"y": 304.8649057745934,
+					"width": 58.978885650634766,
+					"height": 17.043869018554688
+				}
+			},
+			{
+				"id": "j",
+				"center": {
+					"x": 369.99999999999994,
+					"y": 313.00000000000006
+				},
+				"box": {
+					"x": 279,
+					"y": 297.00000000000006,
+					"width": 182,
+					"height": 32
+				},
+				"outer": {
+					"x": 278.99999999999994,
+					"y": 297.00000000000006,
+					"width": 182,
+					"height": 32
+				},
+				"label": {
+					"x": 336.75558090209955,
+					"y": 304.8649057745934,
+					"width": 66.48883819580078,
+					"height": 17.043869018554688
+				}
+			},
+			{
+				"id": "k",
+				"center": {
+					"x": 591.9999999999999,
+					"y": 313.00000000000006
+				},
+				"box": {
+					"x": 500.9999999999999,
+					"y": 297.00000000000006,
+					"width": 182,
+					"height": 32
+				},
+				"outer": {
+					"x": 500.9999999999999,
+					"y": 297.00000000000006,
+					"width": 182,
+					"height": 32
+				},
+				"label": {
+					"x": 563.4515209197997,
+					"y": 304.8649057745934,
+					"width": 57.09695816040039,
+					"height": 17.043869018554688
+				}
+			},
+			{
+				"id": "l",
+				"center": {
+					"x": 813.9999999999999,
+					"y": 313.00000000000006
+				},
+				"box": {
+					"x": 722.9999999999999,
+					"y": 297.00000000000006,
+					"width": 182,
+					"height": 32
+				},
+				"outer": {
+					"x": 722.9999999999999,
+					"y": 297.00000000000006,
+					"width": 182,
+					"height": 32
+				},
+				"label": {
+					"x": 781.1284141540526,
+					"y": 304.8649057745934,
+					"width": 65.74317169189453,
+					"height": 17.043869018554688
+				}
+			},
+			{
+				"id": "m",
+				"center": {
+					"x": 125.5,
+					"y": 441.23834228515625
+				},
+				"box": {
+					"x": 12,
+					"y": 417.73834228515625,
+					"width": 227,
+					"height": 47
+				},
+				"outer": {
+					"x": 12,
+					"y": 417.73834228515625,
+					"width": 227,
+					"height": 47
+				},
+				"label": {
+					"x": 68.29651641845703,
+					"y": 433.10324805974966,
+					"width": 114.40696716308594,
+					"height": 17.043869018554688
+				}
+			},
+			{
+				"id": "n",
+				"center": {
+					"x": 351.23834228515625,
+					"y": 441.23834228515625
+				},
+				"box": {
+					"x": 279,
+					"y": 369,
+					"width": 144.4766845703125,
+					"height": 144.4766845703125
+				},
+				"outer": {
+					"x": 279,
+					"y": 369,
+					"width": 144.4766845703125,
+					"height": 144.4766845703125
+				},
+				"label": {
+					"x": 307.85637283325195,
+					"y": 433.10324805974966,
+					"width": 86.7639389038086,
+					"height": 17.043869018554688
+				}
+			}
+		],
+		"clusters": [],
+		"edges": [
+			{
+				"id": "L_a_b_0",
+				"points": [
+					{
+						"x": 239,
+						"y": 35.5
+					},
+					{
+						"x": 295,
+						"y": 35.5
+					}
+				],
+				"path": "M239,35.5L291,35.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null
+			},
+			{
+				"id": "L_b_c_0",
+				"points": [
+					{
+						"x": 445,
+						"y": 35.5
+					},
+					{
+						"x": 506.88553619384766,
+						"y": 35.5
+					}
+				],
+				"path": "M445,35.5L502.88553619384766,35.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null
+			},
+			{
+				"id": "L_c_d_0",
+				"points": [
+					{
+						"x": 677.1144638061523,
+						"y": 35.5
+					},
+					{
+						"x": 723,
+						"y": 35.5
+					}
+				],
+				"path": "M677.1144638061523,35.5L719,35.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null
+			},
+			{
+				"id": "L_e_f_0",
+				"points": [
+					{
+						"x": 239,
+						"y": 173.5
+					},
+					{
+						"x": 333.08545303344727,
+						"y": 173.5
+					}
+				],
+				"path": "M239,173.5L329.08545303344727,173.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null
+			},
+			{
+				"id": "L_f_g_0",
+				"points": [
+					{
+						"x": 406.9145454861115,
+						"y": 173.5
+					},
+					{
+						"x": 406.91454696655273,
+						"y": 173.5
+					},
+					{
+						"x": 505.875,
+						"y": 173.5
+					},
+					{
+						"x": 516.1250623464584,
+						"y": 173.5
+					}
+				],
+				"path": "M406.9145454861115,173.5L406.91454696655273,173.5L505.875,173.5L512.1250623464584,173.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null
+			},
+			{
+				"id": "L_g_h_0",
+				"points": [
+					{
+						"x": 678.125,
+						"y": 173.5
+					},
+					{
+						"x": 723,
+						"y": 173.5
+					}
+				],
+				"path": "M678.125,173.5L719,173.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null
+			},
+			{
+				"id": "L_i_j_0",
+				"points": [
+					{
+						"x": 239,
+						"y": 313
+					},
+					{
+						"x": 279,
+						"y": 313
+					},
+					{
+						"x": 287.00004291534424,
+						"y": 313
+					}
+				],
+				"path": "M239,313L279,313L283.00004291534424,313",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null
+			},
+			{
+				"id": "L_j_k_0",
+				"points": [
+					{
+						"x": 452.99995708465576,
+						"y": 313
+					},
+					{
+						"x": 461,
+						"y": 313
+					},
+					{
+						"x": 501,
+						"y": 313
+					},
+					{
+						"x": 509.00004291534424,
+						"y": 313
+					}
+				],
+				"path": "M452.99995708465576,313L461,313L501,313L505.00004291534424,313",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null
+			},
+			{
+				"id": "L_k_l_0",
+				"points": [
+					{
+						"x": 674.9999570846558,
+						"y": 313
+					},
+					{
+						"x": 683,
+						"y": 313
+					},
+					{
+						"x": 723,
+						"y": 313
+					},
+					{
+						"x": 731.0000429153442,
+						"y": 313
+					}
+				],
+				"path": "M674.9999570846558,313L683,313L723,313L727.0000429153442,313",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null
+			},
+			{
+				"id": "L_m_n_0",
+				"points": [
+					{
+						"x": 227.24989414215088,
+						"y": 441.23834228515625
+					},
+					{
+						"x": 239,
+						"y": 441.23834228515625
+					},
+					{
+						"x": 279,
+						"y": 441.23834228515625
+					}
+				],
+				"path": "M227.24989414215088,441.23834228515625L239,441.23834228515625L275,441.23834228515625",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null
+			}
+		]
+	},
+	"svg_sha256": "0ef488ed2c7a044c13d9e35af96471e4d90dc1434a4a435a26f13287a001b71c"
+}

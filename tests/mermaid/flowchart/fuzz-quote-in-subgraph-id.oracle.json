@@ -1,0 +1,134 @@
+{
+	"schema": 5,
+	"key": "063f33a6e3e77716e6bfa07782453e34a00e48c52cb39076fe0a8b03715dc642",
+	"provenance": {
+		"extractor": 5,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart LR\n    subgraph tw\"o\n    a\n    end\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "LR",
+		"nodes": [
+			{
+				"id": "a",
+				"text": "a",
+				"label": "a",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [],
+		"subgraphs": [
+			{
+				"id": "tw\"o",
+				"title": "tw\"o",
+				"label": "tw\"o",
+				"nodes": [
+					"a"
+				],
+				"dir": null,
+				"classes": []
+			}
+		],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "tw\"o",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 0,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "a",
+				"is_group": false,
+				"parent": "tw\"o",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": []
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 216,
+			"height": 125
+		},
+		"nodes": [
+			{
+				"id": "a",
+				"center": {
+					"x": 112,
+					"y": 76.5
+				},
+				"box": {
+					"x": 36,
+					"y": 56,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 36,
+					"y": 56,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 108.0625,
+					"y": 68.00000095367432,
+					"width": 7.875,
+					"height": 17
+				}
+			}
+		],
+		"clusters": [
+			{
+				"id": "tw\"o",
+				"box": {
+					"x": 12,
+					"y": 12,
+					"width": 200,
+					"height": 109
+				},
+				"label": {
+					"x": 96.5234375,
+					"y": 12.000000953674316,
+					"width": 30.953125,
+					"height": 17
+				}
+			}
+		],
+		"edges": []
+	},
+	"svg_sha256": "efd1915587f22d81819aed437453cf62e58e797331e1da2130b917a9b10d178a"
+}

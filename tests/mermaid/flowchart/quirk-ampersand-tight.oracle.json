@@ -1,0 +1,185 @@
+{
+	"schema": 5,
+	"key": "14965539ae487c66a78a93237bbf45a2fe8ad6dbe897aa4cd3f024a1ae85dae9",
+	"provenance": {
+		"extractor": 5,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart LR\n    A&B --> C\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "LR",
+		"nodes": [
+			{
+				"id": "A&B",
+				"text": "A&B",
+				"label": "A&B",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "C",
+				"text": "C",
+				"label": "C",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "A&B",
+				"to": "C",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "A&B",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "C",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_A&B_C_0",
+				"from": "A&B",
+				"to": "C",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 360,
+			"height": 57
+		},
+		"nodes": [
+			{
+				"id": "A&B",
+				"center": {
+					"x": 88,
+					"y": 32.5
+				},
+				"box": {
+					"x": 12,
+					"y": 12,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 12,
+					"y": 12,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 74.078125,
+					"y": 24.000000953674316,
+					"width": 27.84375,
+					"height": 17
+				}
+			},
+			{
+				"id": "C",
+				"center": {
+					"x": 280,
+					"y": 32.5
+				},
+				"box": {
+					"x": 204,
+					"y": 12,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 204,
+					"y": 12,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 274.8828125,
+					"y": 24.000000953674316,
+					"width": 10.234375,
+					"height": 17
+				}
+			}
+		],
+		"clusters": [],
+		"edges": [
+			{
+				"id": "L_A&B_C_0",
+				"points": [
+					{
+						"x": 164,
+						"y": 32.5
+					},
+					{
+						"x": 204,
+						"y": 32.5
+					}
+				],
+				"path": "M164,32.5L200,32.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null
+			}
+		]
+	},
+	"svg_sha256": "53379444ece19140c75b6394ea21903dad61e2dc32d176f12e9e4fa5f5515d0d"
+}

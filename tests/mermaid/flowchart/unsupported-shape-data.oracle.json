@@ -1,0 +1,98 @@
+{
+	"schema": 5,
+	"key": "afa2fe9c383eb950c3a88164ee001b4ad9b9f0c42f0cb9112b992d09ac032b99",
+	"provenance": {
+		"extractor": 5,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart TD\n    A@{ shape: rounded }\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "TB",
+		"nodes": [
+			{
+				"id": "A",
+				"text": "A",
+				"label": "A",
+				"shape": "rounded",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [],
+		"subgraphs": [],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "A",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "rounded",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": []
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 166,
+			"height": 63
+		},
+		"nodes": [
+			{
+				"id": "A",
+				"center": {
+					"x": 87,
+					"y": 35.5
+				},
+				"box": {
+					"x": 12,
+					"y": 12,
+					"width": 150,
+					"height": 47
+				},
+				"outer": {
+					"x": 12,
+					"y": 12,
+					"width": 150,
+					"height": 47
+				},
+				"label": {
+					"x": 82.1640625,
+					"y": 27.000000953674316,
+					"width": 10,
+					"height": 17
+				}
+			}
+		],
+		"clusters": [],
+		"edges": []
+	},
+	"svg_sha256": "f3a7f9bd795ac4f9bcfb5a709c5902cc2e5bbdf7462a459fd854f7f415910ff7"
+}
