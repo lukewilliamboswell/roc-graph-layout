@@ -77,7 +77,8 @@ FlowDraw :: {}.{
 	draw = |diagram, sizes, geometry| FlowDraw.draw_with(diagram, sizes, geometry, FlowDraw.mermaid)
 
 	## Draw a diagram with a theme. Groups come first, outer before inner,
-	## then edges, then edge labels, then nodes, as Mermaid layers them.
+	## then node shadows, edges, edge labels and nodes, as Mermaid layers
+	## them.
 	draw_with : Flowchart.Diagram, FlowGeometry.Sizes, FlowGeometry.Geometry, Theme -> Drawing.Picture
 	draw_with = |diagram, sizes, geometry, theme| {
 		walk = FlowDraw.group_order(diagram.groups)
@@ -86,7 +87,11 @@ FlowDraw :: {}.{
 		for g in walk.order {
 			match (geometry.groups.get(g), group_paint.get(g)) {
 				(Ok(rect), Ok(paint)) => {
-					$items = $items.concat(FlowDraw.shadowed(theme, [Drawing.rectangle(rect)], paint.paint, paint.beneath))
+					# An empty group's box has no height; SVG paints nothing for
+					# such a rectangle, so Mermaid shows only the title.
+					if rect.width > 0 and rect.height > 0 {
+						$items = $items.concat(FlowDraw.shadowed(theme, [Drawing.rectangle(rect)], paint.paint, paint.beneath))
+					}
 					title = match sizes.group_titles.get(g) {
 						Ok(block) => block.lines
 						Err(_) => []
@@ -96,6 +101,10 @@ FlowDraw :: {}.{
 				_ => {}
 			}
 		}
+		# Node shadows go beneath the edges: Mermaid's shadow is translucent
+		# and painted with the node, so lines it falls on show through.
+		nodes = FlowDraw.node_layers(diagram, sizes, geometry, group_paint, theme)
+		$items = $items.concat(nodes.shadows)
 		routes = diagram.edges.map_with_index(
 			|_, index|
 				match geometry.edges.get(index) {
@@ -140,26 +149,7 @@ FlowDraw :: {}.{
 				_ => {}
 			}
 		}
-		for index in 0..<diagram.nodes.len() {
-			match (diagram.nodes.get(index), geometry.nodes.get(index)) {
-				(Ok(node), Ok(rect)) => {
-					label = match sizes.nodes.get(index) {
-						Ok(size) => size.label.lines
-						Err(_) => []
-					}
-					beneath = match node.container {
-						Root => theme.background
-						Group(g) =>
-							match group_paint.get(g) {
-								Ok(p) => p.inside
-								Err(_) => theme.background
-							}
-					}
-					$items = $items.concat(FlowDraw.node_items(diagram, node, rect, label, beneath, theme))
-				}
-				_ => {}
-			}
-		}
+		$items = $items.concat(nodes.bodies)
 		{ view: geometry.bounds, items: $items }
 	}
 
@@ -310,27 +300,32 @@ FlowDraw :: {}.{
 	shadowed = |theme, paths, paint, beneath| {
 		var $out = []
 		for path in paths {
-			match theme.shadow {
-				NoShadow => {}
-				Shadow(s) => {
-					shade = FlowDraw.blend(Drawing.black, beneath, s.opacity)
-					shadow_paint = {
-						fill: match paint.fill {
-							Fill(_) => Fill(shade)
-							NoFill => NoFill
-						},
-						stroke: match paint.stroke {
-							Stroke(st) => Stroke({ color: shade, width: st.width })
-							NoStroke => NoStroke
-						},
-					}
-					$out = $out.concat(FlowDraw.shape(Drawing.translate(path, { x: s.dx, y: s.dy }), shadow_paint))
-				}
-			}
-			$out = $out.concat(FlowDraw.shape(path, paint))
+			$out = $out.concat(FlowDraw.shadows(theme, [path], paint, beneath)).concat(FlowDraw.shape(path, paint))
 		}
 		$out
 	}
+
+	## The theme's shadows of paths, offset, in the shadow's colour over what
+	## lies beneath; nothing when the theme has no shadow.
+	shadows : Theme, List(List(Drawing.Segment)), Drawing.Paint, Drawing.Color -> List(Drawing.Item)
+	shadows = |theme, paths, paint, beneath|
+		match theme.shadow {
+			NoShadow => []
+			Shadow(s) => {
+				shade = FlowDraw.blend(Drawing.black, beneath, s.opacity)
+				shadow_paint = {
+					fill: match paint.fill {
+						Fill(_) => Fill(shade)
+						NoFill => NoFill
+					},
+					stroke: match paint.stroke {
+						Stroke(st) => Stroke({ color: shade, width: st.width })
+						NoStroke => NoStroke
+					},
+				}
+				paths.fold([], |acc, path| acc.concat(FlowDraw.shape(Drawing.translate(path, { x: s.dx, y: s.dy }), shadow_paint)))
+			}
+		}
 
 	## A shape item, or nothing when it would paint nothing.
 	shape : List(Drawing.Segment), Drawing.Paint -> List(Drawing.Item)
@@ -360,7 +355,37 @@ FlowDraw :: {}.{
 	block_height : U64, F64 -> F64
 	block_height = |rows, size| size * 17 / 14 + (rows.max(1) - 1).to_f64() * size * 1.1
 
-	node_items : Flowchart.Diagram, Flowchart.Node, Drawing.Rect, List(Str), Drawing.Color, Theme -> List(Drawing.Item)
+	## Every node's shadow and body (outline and label), in node order.
+	node_layers : Flowchart.Diagram, FlowGeometry.Sizes, FlowGeometry.Geometry, List(GroupPaint), Theme -> { shadows : List(Drawing.Item), bodies : List(Drawing.Item) }
+	node_layers = |diagram, sizes, geometry, group_paint, theme| {
+		var $shadows = []
+		var $bodies = []
+		for index in 0..<diagram.nodes.len() {
+			match (diagram.nodes.get(index), geometry.nodes.get(index)) {
+				(Ok(node), Ok(rect)) => {
+					label = match sizes.nodes.get(index) {
+						Ok(size) => size.label.lines
+						Err(_) => []
+					}
+					beneath = match node.container {
+						Root => theme.background
+						Group(g) =>
+							match group_paint.get(g) {
+								Ok(p) => p.inside
+								Err(_) => theme.background
+							}
+					}
+					parts = FlowDraw.node_items(diagram, node, rect, label, beneath, theme)
+					$shadows = $shadows.concat(parts.shadow)
+					$bodies = $bodies.concat(parts.body)
+				}
+				_ => {}
+			}
+		}
+		{ shadows: $shadows, bodies: $bodies }
+	}
+
+	node_items : Flowchart.Diagram, Flowchart.Node, Drawing.Rect, List(Str), Drawing.Color, Theme -> { shadow : List(Drawing.Item), body : List(Drawing.Item) }
 	node_items = |diagram, node, rect, rows, beneath, theme| {
 		o = FlowDrawStyle.resolve(diagram.classes, node.classes, node.styles, True)
 		outline = FlowDrawShape.outline(node.shape, rect)
@@ -372,7 +397,24 @@ FlowDraw :: {}.{
 		cx = rect.x + rect.width / 2 + outline.label_offset.x
 		cy = rect.y + rect.height / 2 + outline.label_offset.y
 		top = cy - FlowDraw.block_height(rows.len(), theme.font_size) / 2
-		FlowDraw.shadowed(theme, outline.paths, paint, beneath).concat(FlowDraw.lines(rows, cx, top, theme.font_size, color))
+		# Only the outermost path's shadow can fall outside the node, on
+		# edges; the shadows of paths inside it (a double circle's inner
+		# ring) fall on the node's own fill and are painted with it.
+		outer = outline.paths.take_first(1)
+		inner = outline.paths.drop_first(1)
+		painted = |path|
+			if outline.sketched {
+				FlowDraw.shape(path, { fill: paint.fill, stroke: NoStroke }).concat(FlowDraw.shape(FlowDrawShape.sketch(path), { fill: NoFill, stroke: paint.stroke }))
+			} else {
+				FlowDraw.shape(path, paint)
+			}
+		{
+			shadow: FlowDraw.shadows(theme, outer, paint, beneath),
+			body: outer
+				.fold([], |acc, path| acc.concat(painted(path)))
+				.concat(FlowDraw.shadowed(theme, inner, paint, beneath))
+				.concat(FlowDraw.lines(rows, cx, top, theme.font_size, color)),
+		}
 	}
 
 	## An edge label on its background. The background is translucent in
@@ -484,4 +526,82 @@ expect {
 		{ nodes: [], edges: [], groups: [], bounds: { x: 0, y: 0, width: 16, height: 16 } },
 	)
 	picture == { view: { x: 0, y: 0, width: 16, height: 16 }, items: [] }
+}
+
+## An empty group (a box with no height) shows only its title, as SVG
+## paints nothing for a rectangle without area.
+expect {
+	picture = FlowDraw.draw(
+		{ direction: Down, nodes: [], edges: [], groups: [{ id: "g", title: "Hollow", container: Root, direction: Inherit, classes: [] }], classes: [] },
+		{ nodes: [], edge_labels: [], group_titles: [{ lines: ["Hollow"], width: 45, height: 17 }] },
+		{ nodes: [], edges: [], groups: [{ x: 0, y: 20, width: 53, height: 0 }], bounds: { x: 0, y: 0, width: 60, height: 40 } },
+	)
+	is_text = |item|
+		match item {
+			Shape(_) => False
+			Text(_) => True
+		}
+	picture.items.len() == 1 and picture.items.all(is_text)
+}
+
+## A group with area is still drawn, with its shadow.
+expect {
+	picture = FlowDraw.draw(
+		{ direction: Down, nodes: [], edges: [], groups: [{ id: "g", title: "", container: Root, direction: Inherit, classes: [] }], classes: [] },
+		{ nodes: [], edge_labels: [], group_titles: [{ lines: [""], width: 0, height: 0 }] },
+		{ nodes: [], edges: [], groups: [{ x: 0, y: 0, width: 50, height: 30 }], bounds: { x: 0, y: 0, width: 60, height: 40 } },
+	)
+	picture.items.len() == 2
+}
+
+## A node's shadow is painted before the edges, so an edge leaving the node
+## shows through it as it does through Mermaid's translucent shadow; the
+## node itself is painted after the edges.
+expect {
+	node = |id| { id, label: id, shape: Rectangle, container: Root, classes: [], styles: [] }
+	shadow_color = FlowDraw.blend(Drawing.black, Drawing.white, 0.06)
+	picture = FlowDraw.draw(
+		{
+			direction: Down,
+			nodes: [node("a"), node("b")],
+			edges: [{ id: "e", from: Node(0), to: Node(1), label: "", line: Solid, start: None, end: None, length: 1, classes: [], styles: [] }],
+			groups: [],
+			classes: [],
+		},
+		{ nodes: [{ width: 40, height: 20, label: { lines: ["a"], width: 7, height: 17 } }, { width: 40, height: 20, label: { lines: ["b"], width: 7, height: 17 } }], edge_labels: [None], group_titles: [] },
+		{
+			nodes: [{ x: 0, y: 0, width: 40, height: 20 }, { x: 0, y: 60, width: 40, height: 20 }],
+			edges: [{ points: [{ x: 20, y: 20 }, { x: 20, y: 60 }], label: None }],
+			groups: [],
+			bounds: { x: 0, y: 0, width: 50, height: 90 },
+		},
+	)
+	kinds = picture.items.map(
+		|item|
+			match item {
+				Shape(sh) =>
+					match (sh.paint.fill, sh.paint.stroke) {
+						(NoFill, Stroke(_)) => "edge"
+						(Fill(c), _) => if (c == shadow_color) "shadow" else "node"
+						_ => "other"
+					}
+				Text(_) => "text"
+			},
+	)
+	kinds == ["shadow", "shadow", "edge", "node", "text", "node", "text"]
+}
+
+## A double circle's inner ring keeps its shadow, painted over the outer
+## ring's fill, while the outer ring's shadow goes beneath the edges.
+expect {
+	theme = FlowDraw.mermaid
+	parts = FlowDraw.node_items(
+		{ direction: Down, nodes: [], edges: [], groups: [], classes: [] },
+		{ id: "d", label: "", shape: DoubleCircle, container: Root, classes: [], styles: [] },
+		{ x: 0, y: 0, width: 60, height: 60 },
+		[],
+		theme.background,
+		theme,
+	)
+	parts.shadow.len() == 1 and parts.body.len() == 3
 }

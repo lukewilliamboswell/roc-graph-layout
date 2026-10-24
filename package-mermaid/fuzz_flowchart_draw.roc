@@ -10,7 +10,8 @@ import Svg
 ## The drawing contract on any diagram the reader accepts, with synthetic
 ## sizes and geometry: drawing is total and deterministic, every coordinate
 ## it produces is finite, and the SVG it writes is well-formed XML whatever
-## the label text holds.
+## the label text holds. A group box without area paints nothing (only its
+## title shows), as in SVG.
 ##
 ## The input is Mermaid text, then optionally a 0xFF byte and more bytes.
 ## Those bytes choose the geometry (boxes, routes with repeated and
@@ -36,6 +37,9 @@ test = |bytes| {
 			if svg != Svg.document(picture, "Inter \"<&>\"") {
 				crash "writing the same picture twice gave different SVG"
 			}
+			if shape_count(diagram, input.sizes, { ..input.geometry, groups: input.geometry.groups.map(|r| { ..r, height: 0 }) }) != shape_count(diagram, input.sizes, { ..input.geometry, groups: [] }) {
+				crash "a group box without area was painted"
+			}
 			match well_formed(svg.to_utf8()) {
 				Ok({}) => Fuzz.keep
 				Err(why) => crash "the SVG is not well-formed XML: ${why}"
@@ -43,6 +47,17 @@ test = |bytes| {
 		}
 	}
 }
+
+## How many outlines and lines a drawing paints.
+shape_count : Flowchart.Diagram, FlowGeometry.Sizes, FlowGeometry.Geometry -> U64
+shape_count = |diagram, sizes, geometry|
+	FlowDraw.draw(diagram, sizes, geometry).items.count_if(
+		|item|
+			match item {
+				Shape(_) => True
+				Text(_) => False
+			},
+	)
 
 split_at_marker : List(U8) -> { source : List(U8), extra : List(U8) }
 split_at_marker = |bytes| {
@@ -296,5 +311,12 @@ expect {
 	source = "flowchart TD\n  A --> B\n  A -- t --> C\n".to_utf8()
 	extra = [1, 0, '<', '&', '"', '\'', 0, 0x1F, '>', 0xEF, 0xBF, 0xBF, 9, 200, 30, 40, 50]
 	_ = test(source.append(0xFF).concat(extra))
+	True
+}
+
+## Empty groups, nested and at the top level, paint only their titles.
+expect {
+	source = "flowchart TD\n  subgraph E [Empty]\n  end\n  subgraph O\n    subgraph I\n    end\n    a\n  end\n".to_utf8()
+	_ = test(source.append(0xFF).concat([0, 0, 3, 0, 9, 10, 0, 7, 30, 0]))
 	True
 }

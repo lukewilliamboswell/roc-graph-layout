@@ -10,8 +10,11 @@ FlowDrawShape :: {}.{
 
 	## The outlines that make up a node's shape, painted in order with the
 	## node's fill and stroke (a double circle is two circles), and where the
-	## centre of the label sits relative to the centre of the box.
-	Outline : { paths : List(List(Drawing.Segment)), label_offset : Drawing.Point }
+	## centre of the label sits relative to the centre of the box. A
+	## `sketched` outline is one Mermaid draws in its hand-drawn style: the
+	## fill without a stroke, then every edge stroked twice as a separate
+	## open line (see `sketch`).
+	Outline : { paths : List(List(Drawing.Segment)), label_offset : Drawing.Point, sketched : Bool }
 
 	## Radius of the corners of a rounded rectangle.
 	corner_radius : F64
@@ -36,11 +39,11 @@ FlowDrawShape :: {}.{
 		y = box.y
 		cx = x + w / 2
 		cy = y + h / 2
-		centered = |paths| { paths, label_offset: { x: 0, y: 0 } }
+		centered = |paths| { paths, label_offset: { x: 0, y: 0 }, sketched: False }
 		match shape {
 			Rectangle => centered([Drawing.rectangle(box)])
 			Rounded => centered([Drawing.rounded_rectangle(box, FlowDrawShape.corner_radius)])
-			Stadium => centered([FlowDrawShape.stadium(box)])
+			Stadium => { paths: [FlowDrawShape.stadium(box)], label_offset: { x: 0, y: 0 }, sketched: True }
 			Subroutine => {
 				frame = (w / 2).min(8)
 				centered([
@@ -65,6 +68,7 @@ FlowDrawShape :: {}.{
 				{
 					paths: [FlowDrawShape.cylinder(box, rx, ry, body)],
 					label_offset: { x: 0, y: FlowDrawShape.cylinder_label_drop.min(body / 2) },
+					sketched: False,
 				}
 			}
 			Circle => {
@@ -82,6 +86,7 @@ FlowDrawShape :: {}.{
 				{
 					paths: [Drawing.polygon([{ x, y }, { x: x + notch, y: cy }, { x, y: y + h }, { x: x + w, y: y + h }, { x: x + w, y }])],
 					label_offset: { x: notch / 2, y: 0 },
+					sketched: True,
 				}
 			}
 			Diamond => centered([Drawing.polygon([{ x: cx, y }, { x: x + w, y: cy }, { x: cx, y: y + h }, { x, y: cy }])])
@@ -106,6 +111,40 @@ FlowDrawShape :: {}.{
 				centered([Drawing.polygon([{ x: x + s, y: y + h }, { x: x + w - s, y: y + h }, { x: x + w, y }, { x, y }])])
 			}
 		}
+	}
+
+	## The stroke of a sketched outline: each step of the path as its own
+	## open line (so corners get no join), the whole drawn twice, as
+	## Mermaid's hand-drawn style strokes it. Overlapping strokes darken
+	## each other's soft edges, so the line reads slightly heavier.
+	sketch : List(Drawing.Segment) -> List(Drawing.Segment)
+	sketch = |path| {
+		var $pieces = []
+		var $start = { x: 0, y: 0 }
+		var $at = { x: 0, y: 0 }
+		for segment in path {
+			match segment {
+				MoveTo(p) => {
+					$start = p
+					$at = p
+				}
+				LineTo(p) => {
+					$pieces = $pieces.append(MoveTo($at)).append(LineTo(p))
+					$at = p
+				}
+				CubicTo(c) => {
+					$pieces = $pieces.append(MoveTo($at)).append(CubicTo(c))
+					$at = c.end
+				}
+				Close => {
+					if $at != $start {
+						$pieces = $pieces.append(MoveTo($at)).append(LineTo($start))
+					}
+					$at = $start
+				}
+			}
+		}
+		$pieces.concat($pieces)
 	}
 
 	## A rectangle with semicircular ends.
@@ -157,3 +196,24 @@ expect FlowDrawShape.outline(Rectangle, { x: 0, y: 0, width: 10, height: 4 }).pa
 expect FlowDrawShape.outline(DoubleCircle, { x: 0, y: 0, width: 40, height: 40 }).paths.len() == 2
 expect FlowDrawShape.outline(Asymmetric, { x: 0, y: 0, width: 100, height: 40 }).label_offset == { x: 5, y: 0 }
 expect FlowDrawShape.outline(Diamond, { x: 0, y: 0, width: -5, height: 4 }).paths == [Drawing.polygon([{ x: 0, y: 0 }, { x: 0, y: 2 }, { x: 0, y: 4 }, { x: 0, y: 2 }])]
+
+expect FlowDrawShape.outline(Stadium, { x: 0, y: 0, width: 100, height: 40 }).sketched
+expect FlowDrawShape.outline(Asymmetric, { x: 0, y: 0, width: 100, height: 40 }).sketched
+expect !FlowDrawShape.outline(Rectangle, { x: 0, y: 0, width: 100, height: 40 }).sketched
+
+## Each edge of a closed outline becomes its own open line, and the lines
+## are drawn twice.
+expect {
+	square = Drawing.polygon([{ x: 0, y: 0 }, { x: 4, y: 0 }, { x: 4, y: 4 }])
+	edges = [
+		MoveTo({ x: 0, y: 0 }),
+		LineTo({ x: 4, y: 0 }),
+		MoveTo({ x: 4, y: 0 }),
+		LineTo({ x: 4, y: 4 }),
+		MoveTo({ x: 4, y: 4 }),
+		LineTo({ x: 0, y: 0 }),
+	]
+	FlowDrawShape.sketch(square) == edges.concat(edges)
+}
+
+expect FlowDrawShape.sketch([]) == []

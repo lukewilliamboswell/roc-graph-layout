@@ -101,6 +101,34 @@ score is the share of inked pixels with no match within 1px in the other image.
 Records carry `text.rows` (the rows Mermaid drew) and `text.box` (the text box at
 unit scale, which is what Mermaid measured before any viewBox scaling).
 
+## End to end
+
+The stages above are each judged on Mermaid's inputs. `e2e.mjs` judges the
+whole pipeline instead: Mermaid text to our final SVG through the public
+`Mermaid.svg`, via the native `mermaid_svg` command, against Mermaid's
+rendering of the same text.
+
+```sh
+roc build --opt=speed package-mermaid/mermaid_svg.roc --output=mermaid_svg
+node tools/mermaid-oracle/e2e.mjs ./mermaid_svg <out-dir> [cases-dir ...] [--only name,name]
+```
+
+The cases default to `tests/mermaid/flowchart` and `tests/mermaid/layout`;
+cases Mermaid rejects and cases we report as `Unsupported` are skipped and
+counted. Both drawings are rendered at one CSS pixel per unit with their
+view boxes' top left corners aligned, compared over the larger of the two,
+and written as `<case>.png` (Mermaid | Roc | difference, plus the
+difference after the best shift when that is not zero) with `scores.json`.
+The table gives, per case, the score as in `visual.mjs`, the score after
+translating our drawing by up to 4 pixels to best overlay Mermaid's (a
+drawing displaced as a whole scores badly in place but well shifted), our
+view box size relative to Mermaid's, and the native command's time (one
+process per case). The summary adds the time for all cases in one process.
+
+A case that scores well in `visual.mjs` but badly here differs before
+drawing, in sizing or layout; `score.mjs` and `measure_compare.mjs` say
+which.
+
 ## Other tools
 
 - `measure_probe.mjs` sets up a browser page exactly like the oracle's, for
