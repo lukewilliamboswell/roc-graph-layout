@@ -111,6 +111,14 @@ Bytes :: {}.{
 		}
 	}
 
+	## Whether bytes `a`, `b` start at `i`.
+	pair_at : List(U8), U64, U8, U8 -> Bool
+	pair_at = |bytes, i, a, b| i + 1 < bytes.len() and Bytes.at(bytes, i) == a and Bytes.at(bytes, i + 1) == b
+
+	## Whether bytes `a`, `b`, `c` start at `i`.
+	triple_at : List(U8), U64, U8, U8, U8 -> Bool
+	triple_at = |bytes, i, a, b, c| i + 2 < bytes.len() and Bytes.at(bytes, i) == a and Bytes.at(bytes, i + 1) == b and Bytes.at(bytes, i + 2) == c
+
 	## In the `\s` run starting at `i`, the position of its last `\n`.
 	last_newline_in_space_run : List(U8), U64 -> [Some(U64), None]
 	last_newline_in_space_run = |bytes, i| {

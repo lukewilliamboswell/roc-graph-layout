@@ -185,16 +185,16 @@ FlowLexer :: {}.{
 		has_next = pos + 1 < bytes.len()
 
 		# Accessibility statements, shape data and callbacks (INITIAL only).
-		if initial and FlowLexer.keyword_then_colon_or_brace(bytes, pos, "accTitle", [':']) {
+		if initial and FlowLexer.keyword_then_colon_or_brace(bytes, pos, FlowLexer.acc_title_word, [':']) {
 			return Stop("accessibility title")
 		}
-		if initial and FlowLexer.keyword_then_colon_or_brace(bytes, pos, "accDescr", [':', '{']) {
+		if initial and FlowLexer.keyword_then_colon_or_brace(bytes, pos, FlowLexer.acc_descr_word, [':', '{']) {
 			return Stop("accessibility description")
 		}
 		if initial and b == '@' and next == '{' and has_next {
 			return Stop("shape data")
 		}
-		if initial and FlowLexer.word_then_space(bytes, pos, "call") > 0 {
+		if initial and FlowLexer.word_then_space(bytes, pos, FlowLexer.call_word) > 0 {
 			return Stop("click callback")
 		}
 
@@ -218,18 +218,18 @@ FlowLexer :: {}.{
 				Some(found) => return Emit({ kind: found.kind, len: found.len, action: Stay })
 				None => {}
 			}
-			href = FlowLexer.prefix_then_one_space(bytes, pos, "href")
+			href = FlowLexer.prefix_then_one_space(bytes, pos, FlowLexer.href_word)
 			if href > 0 {
 				return Emit({ kind: Href, len: href, action: Stay })
 			}
-			if FlowLexer.word_then_space(bytes, pos, "click") > 0 {
+			if FlowLexer.word_then_space(bytes, pos, FlowLexer.click_word) > 0 {
 				return Stop("click")
 			}
 			graph_len = FlowLexer.graph_keyword(bytes, pos)
 			if graph_len > 0 {
 				return Emit({ kind: Graph, len: graph_len, action: GraphKeyword })
 			}
-			if FlowLexer.word_at(bytes, pos, "subgraph".to_utf8()) {
+			if FlowLexer.word_at(bytes, pos, FlowLexer.subgraph_word) {
 				return Emit({ kind: Subgraph, len: 8, action: Stay })
 			}
 			end_len = FlowLexer.end_keyword(bytes, pos)
@@ -273,7 +273,7 @@ FlowLexer :: {}.{
 			if b == '#' {
 				return Emit({ kind: Brkt, len: 1, action: Stay })
 			}
-			if Bytes.starts_with_at(bytes, pos, ":::".to_utf8()) {
+			if Bytes.triple_at(bytes, pos, ':', ':', ':') {
 				return Emit({ kind: StyleSeparator, len: 3, action: Stay })
 			}
 			punctuation = match b {
@@ -352,37 +352,38 @@ FlowLexer :: {}.{
 				return Emit({ kind: Text, len: Bytes.char_len(b), action: Stay })
 			}
 		}
-		if Bytes.starts_with_at(bytes, pos, "(-".to_utf8()) {
+		pair = |x, y| b == x and next == y and has_next
+		if pair('(', '-') {
 			return Emit({ kind: EllipseStart, len: 2, action: Push(EllipseText) })
 		}
-		if state == Text and Bytes.starts_with_at(bytes, pos, "])".to_utf8()) {
+		if state == Text and pair(']', ')') {
 			return Emit({ kind: StadiumEnd, len: 2, action: Pop })
 		}
-		if Bytes.starts_with_at(bytes, pos, "([".to_utf8()) {
+		if pair('(', '[') {
 			return Emit({ kind: StadiumStart, len: 2, action: Push(Text) })
 		}
-		if state == Text and Bytes.starts_with_at(bytes, pos, "]]".to_utf8()) {
+		if state == Text and pair(']', ']') {
 			return Emit({ kind: SubroutineEnd, len: 2, action: Pop })
 		}
-		if Bytes.starts_with_at(bytes, pos, "[[".to_utf8()) {
+		if pair('[', '[') {
 			return Emit({ kind: SubroutineStart, len: 2, action: Push(Text) })
 		}
-		if initial and Bytes.starts_with_at(bytes, pos, "[|".to_utf8()) {
+		if initial and pair('[', '|') {
 			return Emit({ kind: PropsStart, len: 2, action: Stay })
 		}
 		if initial and b == '>' {
 			return Emit({ kind: TagEnd, len: 1, action: Push(Text) })
 		}
-		if state == Text and Bytes.starts_with_at(bytes, pos, ")]".to_utf8()) {
+		if state == Text and pair(')', ']') {
 			return Emit({ kind: CylinderEnd, len: 2, action: Pop })
 		}
-		if Bytes.starts_with_at(bytes, pos, "[(".to_utf8()) {
+		if pair('[', '(') {
 			return Emit({ kind: CylinderStart, len: 2, action: Push(Text) })
 		}
-		if state == Text and Bytes.starts_with_at(bytes, pos, ")))".to_utf8()) {
+		if state == Text and Bytes.triple_at(bytes, pos, ')', ')', ')') {
 			return Emit({ kind: DoubleCircleEnd, len: 3, action: Pop })
 		}
-		if Bytes.starts_with_at(bytes, pos, "(((".to_utf8()) {
+		if Bytes.triple_at(bytes, pos, '(', '(', '(') {
 			return Emit({ kind: DoubleCircleStart, len: 3, action: Push(Text) })
 		}
 		if state == TrapText {
@@ -401,10 +402,10 @@ FlowLexer :: {}.{
 				return Emit({ kind: Text, len: run, action: Stay })
 			}
 		}
-		if Bytes.starts_with_at(bytes, pos, "[/".to_utf8()) {
+		if pair('[', '/') {
 			return Emit({ kind: TrapStart, len: 2, action: Push(TrapText) })
 		}
-		if Bytes.starts_with_at(bytes, pos, "[\\".to_utf8()) {
+		if pair('[', '\\') {
 			return Emit({ kind: InvTrapStart, len: 2, action: Push(TrapText) })
 		}
 
@@ -492,12 +493,55 @@ FlowLexer :: {}.{
 		Bytes.starts_with_at(bytes, pos, word) and !(Bytes.is_word(Bytes.at(word, word.len() - 1)) and end < bytes.len() and Bytes.is_word(Bytes.at(bytes, end)))
 	}
 
+	# Rule literals as bytes, built once rather than at every step.
+	acc_title_word : List(U8)
+	acc_title_word = "accTitle".to_utf8()
+
+	acc_descr_word : List(U8)
+	acc_descr_word = "accDescr".to_utf8()
+
+	call_word : List(U8)
+	call_word = "call".to_utf8()
+
+	click_word : List(U8)
+	click_word = "click".to_utf8()
+
+	href_word : List(U8)
+	href_word = "href".to_utf8()
+
+	subgraph_word : List(U8)
+	subgraph_word = "subgraph".to_utf8()
+
+	direction_word_bytes : List(U8)
+	direction_word_bytes = "direction".to_utf8()
+
+	direction_statement_order : List(Kind)
+	direction_statement_order = [DirectionTb, DirectionBt, DirectionRl, DirectionLr, DirectionTd]
+
+	keywords : List({ word : List(U8), kind : Kind })
+	keywords = [
+		{ word: "style".to_utf8(), kind: Style },
+		{ word: "default".to_utf8(), kind: Default },
+		{ word: "linkStyle".to_utf8(), kind: LinkStyle },
+		{ word: "interpolate".to_utf8(), kind: Interpolate },
+		{ word: "classDef".to_utf8(), kind: ClassDef },
+		{ word: "class".to_utf8(), kind: Class },
+	]
+
+	graph_words : List(List(U8))
+	graph_words = ["flowchart-elk".to_utf8(), "swimlane-beta".to_utf8(), "graph".to_utf8(), "flowchart".to_utf8()]
+
+	link_target_words : List(List(U8))
+	link_target_words = ["_self".to_utf8(), "_blank".to_utf8(), "_parent".to_utf8(), "_top".to_utf8()]
+
+	header_direction_words : List(List(U8))
+	header_direction_words = ["LR".to_utf8(), "RL".to_utf8(), "TB".to_utf8(), "BT".to_utf8(), "TD".to_utf8(), "BR".to_utf8(), "<".to_utf8(), ">".to_utf8(), "^".to_utf8(), "v".to_utf8()]
+
 	## `accTitle\s*":"` and `accDescr\s*":"` / `accDescr\s*"{"`.
-	keyword_then_colon_or_brace : List(U8), U64, Str, List(U8) -> Bool
+	keyword_then_colon_or_brace : List(U8), U64, List(U8), List(U8) -> Bool
 	keyword_then_colon_or_brace = |bytes, pos, word, follow| {
-		w = word.to_utf8()
-		if Bytes.starts_with_at(bytes, pos, w) {
-			after = Bytes.skip_space(bytes, pos + w.len())
+		if Bytes.starts_with_at(bytes, pos, word) {
+			after = Bytes.skip_space(bytes, pos + word.len())
 			after < bytes.len() and follow.contains(Bytes.at(bytes, after))
 		} else {
 			False
@@ -505,66 +549,51 @@ FlowLexer :: {}.{
 	}
 
 	## `word[\s]+`: the match length, or `0`.
-	word_then_space : List(U8), U64, Str -> U64
+	word_then_space : List(U8), U64, List(U8) -> U64
 	word_then_space = |bytes, pos, word| {
-		w = word.to_utf8()
-		if Bytes.starts_with_at(bytes, pos, w) and Bytes.space_len(bytes, pos + w.len()) > 0 {
-			Bytes.skip_space(bytes, pos + w.len()) - pos
+		if Bytes.starts_with_at(bytes, pos, word) and Bytes.space_len(bytes, pos + word.len()) > 0 {
+			Bytes.skip_space(bytes, pos + word.len()) - pos
 		} else {
 			0
 		}
 	}
 
 	## `word[\s]`: exactly one whitespace character after the word.
-	prefix_then_one_space : List(U8), U64, Str -> U64
+	prefix_then_one_space : List(U8), U64, List(U8) -> U64
 	prefix_then_one_space = |bytes, pos, word| {
-		w = word.to_utf8()
-		if Bytes.starts_with_at(bytes, pos, w) {
-			space = Bytes.space_len(bytes, pos + w.len())
-			if (space > 0) w.len() + space else 0
+		if Bytes.starts_with_at(bytes, pos, word) {
+			space = Bytes.space_len(bytes, pos + word.len())
+			if (space > 0) word.len() + space else 0
 		} else {
 			0
 		}
 	}
 
-	## Prefix keywords in their rule order. None needs a word boundary.
+	## Keywords in their rule order, each needing a word boundary after it.
 	keyword : List(U8), U64 -> [Some({ kind : Kind, len : U64 }), None]
-	keyword = |bytes, pos| {
-		candidates = [
-			{ word: "style", kind: Style },
-			{ word: "default", kind: Default },
-			{ word: "linkStyle", kind: LinkStyle },
-			{ word: "interpolate", kind: Interpolate },
-			{ word: "classDef", kind: ClassDef },
-			{ word: "class", kind: Class },
-		]
-		candidates.fold_until(
+	keyword = |bytes, pos|
+		FlowLexer.keywords.fold_until(
 			None,
-			|_, candidate| {
-				w = candidate.word.to_utf8()
-				if FlowLexer.word_at(bytes, pos, w) {
-					Break(Some({ kind: candidate.kind, len: w.len() }))
+			|_, candidate|
+				if FlowLexer.word_at(bytes, pos, candidate.word) {
+					Break(Some({ kind: candidate.kind, len: candidate.word.len() }))
 				} else {
 					Continue(None)
-				}
-			},
+				},
 		)
-	}
+
+	## The length of the first word in `words` that matches at `pos`, or `0`.
+	first_word : List(U8), U64, List(List(U8)) -> U64
+	first_word = |bytes, pos, words|
+		words.fold_until(0, |_, word| if (FlowLexer.word_at(bytes, pos, word)) Break(word.len()) else Continue(0))
 
 	graph_keyword : List(U8), U64 -> U64
-	graph_keyword = |bytes, pos|
-		["flowchart-elk", "swimlane-beta", "graph", "flowchart"].fold_until(
-			0,
-			|_, word| {
-				w = word.to_utf8()
-				if (FlowLexer.word_at(bytes, pos, w)) Break(w.len()) else Continue(0)
-			},
-		)
+	graph_keyword = |bytes, pos| FlowLexer.first_word(bytes, pos, FlowLexer.graph_words)
 
 	## `"end"\b\s*`.
 	end_keyword : List(U8), U64 -> U64
 	end_keyword = |bytes, pos| {
-		if Bytes.starts_with_at(bytes, pos, "end".to_utf8()) and !(pos + 3 < bytes.len() and Bytes.is_word(Bytes.at(bytes, pos + 3))) {
+		if Bytes.at(bytes, pos) == 'e' and Bytes.at(bytes, pos + 1) == 'n' and Bytes.at(bytes, pos + 2) == 'd' and pos + 2 < bytes.len() and !(pos + 3 < bytes.len() and Bytes.is_word(Bytes.at(bytes, pos + 3))) {
 			Bytes.skip_space(bytes, pos + 3) - pos
 		} else {
 			0
@@ -572,25 +601,11 @@ FlowLexer :: {}.{
 	}
 
 	link_target : List(U8), U64 -> U64
-	link_target = |bytes, pos|
-		["_self", "_blank", "_parent", "_top"].fold_until(
-			0,
-			|_, word| {
-				w = word.to_utf8()
-				if (FlowLexer.word_at(bytes, pos, w)) Break(w.len()) else Continue(0)
-			},
-		)
+	link_target = |bytes, pos| FlowLexer.first_word(bytes, pos, FlowLexer.link_target_words)
 
 	## The direction words of the header, in rule order.
 	direction_word : List(U8), U64 -> U64
-	direction_word = |bytes, pos|
-		["LR", "RL", "TB", "BT", "TD", "BR", "<", ">", "^", "v"].fold_until(
-			0,
-			|_, word| {
-				w = word.to_utf8()
-				if (FlowLexer.word_at(bytes, pos, w)) Break(w.len()) else Continue(0)
-			},
-		)
+	direction_word = |bytes, pos| FlowLexer.first_word(bytes, pos, FlowLexer.header_direction_words)
 
 	## Scan the line from `pos` for every `direction\s+XX`, keeping for each
 	## kind its last start. `.*` cannot cross a line terminator, but the
@@ -598,7 +613,7 @@ FlowLexer :: {}.{
 	direction_cache : List(U8), U64 -> DirectionCache
 	direction_cache = |bytes, pos| {
 		line_end = Bytes.line_terminator_from(bytes, pos)
-		word = "direction".to_utf8()
+		word = FlowLexer.direction_word_bytes
 		var $found = []
 		var $s = pos
 		while $s + word.len() <= line_end {
@@ -620,15 +635,15 @@ FlowLexer :: {}.{
 
 	direction_statement_kind : List(U8), U64 -> [Some(Kind), None]
 	direction_statement_kind = |bytes, pos| {
-		if Bytes.starts_with_at(bytes, pos, "TB".to_utf8()) {
+		if Bytes.pair_at(bytes, pos, 'T', 'B') {
 			Some(DirectionTb)
-		} else if Bytes.starts_with_at(bytes, pos, "BT".to_utf8()) {
+		} else if Bytes.pair_at(bytes, pos, 'B', 'T') {
 			Some(DirectionBt)
-		} else if Bytes.starts_with_at(bytes, pos, "RL".to_utf8()) {
+		} else if Bytes.pair_at(bytes, pos, 'R', 'L') {
 			Some(DirectionRl)
-		} else if Bytes.starts_with_at(bytes, pos, "LR".to_utf8()) {
+		} else if Bytes.pair_at(bytes, pos, 'L', 'R') {
 			Some(DirectionLr)
-		} else if Bytes.starts_with_at(bytes, pos, "TD".to_utf8()) {
+		} else if Bytes.pair_at(bytes, pos, 'T', 'D') {
 			Some(DirectionTd)
 		} else {
 			None
@@ -638,7 +653,7 @@ FlowLexer :: {}.{
 	## The first direction rule, in rule order, that matches from `pos`.
 	direction_statement : DirectionCache, U64 -> [Some({ kind : Kind, end : U64 }), None]
 	direction_statement = |cache, pos|
-		[DirectionTb, DirectionBt, DirectionRl, DirectionLr, DirectionTd].fold_until(
+		FlowLexer.direction_statement_order.fold_until(
 			None,
 			|_, kind|
 				match cache.found.find_first(|f| f.kind == kind and f.start >= pos) {
