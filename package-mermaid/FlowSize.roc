@@ -1,6 +1,6 @@
 import Flowchart
 import FlowGeometry
-import Font
+import font.Font
 import TextMeasure
 
 ## How much room each part of a flowchart needs, sized as Mermaid 12 sizes
@@ -22,7 +22,7 @@ FlowSize :: {}.{
 
 	## Mermaid 12.2.0's defaults, measured with Inter.
 	mermaid : Settings
-	mermaid = { font: Font.inter, font_size: 14.0, line_height: 1.1, padding: 15.0, min_width: 120.0, node_wrapping_width: 120.0, edge_wrapping_width: 200.0 }
+	mermaid = { font: TextMeasure.inter, font_size: 14.0, line_height: 1.1, padding: 15.0, min_width: 120.0, node_wrapping_width: 120.0, edge_wrapping_width: 200.0 }
 
 	sizes : Flowchart.Diagram, Settings -> FlowGeometry.Sizes
 	sizes = |diagram, settings| {

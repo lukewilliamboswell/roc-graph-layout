@@ -1,0 +1,10 @@
+roc-font, vendored for package-mermaid.
+
+Source:  https://github.com/lukewilliamboswell/roc-font
+Commit:  70f5adb52abc48f7f26c4728e4ce2f6eabe5e0b6
+Made by: git archive 70f5adb package | tar -x, then the contents of
+         package/ moved here, minus the *Tests.roc modules and fonts/
+         (package/main.roc reaches neither).
+Licence: LICENSE (Universal Permissive License 1.0)
+
+Do not edit these files; vendor a new commit instead.

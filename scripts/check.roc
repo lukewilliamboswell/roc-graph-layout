@@ -117,10 +117,14 @@ check_mermaid_package! = |roc| {
 	roc.run!(["test", "package-mermaid/main.roc", "--opt=interpreter", "--no-cache"])?
 	# Fuzz targets hold their contracts; the generated Oracle modules hold what
 	# Mermaid did with each recorded case.
+	# The Oracle modules reach roc-font through the package's `font`
+	# dependency, which only `main.roc` declares.
 	for target in Files.direct_roc_files!("package-mermaid")? {
 		name = Script.file_name(target)?
-		if name.starts_with("fuzz_") or name.starts_with("Oracle") {
+		if name.starts_with("fuzz_") {
 			roc.run!(["test", Path.to_os_str(target), "--no-cache"])?
+		} else if name.starts_with("Oracle") {
+			roc.run!(["test", Path.to_os_str(target), "--main=package-mermaid/main.roc", "--no-cache"])?
 		}
 	}
 	for tool in Files.direct_roc_files!("tools/mermaid-oracle")? {

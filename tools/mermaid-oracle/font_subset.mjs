@@ -1,4 +1,4 @@
-// Writes a metrics-only copy of a TrueType font: everything `Font.roc` reads
+// Writes a metrics-only copy of a TrueType font: everything roc-font measures with
 // (head, hhea, maxp, OS/2, hmtx, a Unicode cmap, GSUB, GPOS) with each glyph's
 // outline reduced to its bounding-box header. The result is what the package
 // embeds as its default font, at a fraction of the original size; it is not
