@@ -20,6 +20,9 @@ examples.
   silently ignore.
 - Prefer a type that makes an invalid structure impossible over code that
   accepts a weaker structure and checks it later.
+- Nominal types get equality only by opting in. Derive `is_eq` for public
+  values callers compare, such as problem lists; do not derive it for opaque
+  prepared values, and match on a result in tests instead.
 - Keep input and output index-aligned. Node results follow node input order;
   edge results follow edge input order.
 
@@ -125,7 +128,7 @@ stack use can change the observed cost. Preserve these rules in hot paths:
   carry lazy offsets when possible. Do not map or concatenate the complete
   remaining depth at every ancestor; a chain must not materialize
   `1 + 2 + ... + n` intermediate entries.
-- Know the cost of builtins on the pinned compiler. In particular, the current
+- Know the cost of builtins on the current nightly. In particular, the
   `List.sort_with` chooses the first item as its quicksort pivot and allocates
   both partitions, so sorted, reverse-sorted, and equal-key inputs can be
   quadratic. Before sorting a hot list, consider whether its producer already
@@ -217,9 +220,11 @@ For a public API change or new algorithm:
 - test that successfully prepared layout cannot fail; and
 - run `git diff --check`.
 
-If the full repository task cannot complete because the installed Roc compiler
-does not match the pinned version, still run the individual checks that are
-available and report the version mismatch explicitly.
+`blueprint run check` runs all of the repository's automated checks. The
+package compiler is not pinned: it is the latest Roc nightly on `PATH`, and
+only the scripts name a compiler, the `roc-stable` release in `Blueprint.roc`.
+If the full task cannot run, still run the individual checks that are
+available and report which ones were skipped and why.
 
 ## Parallel work
 

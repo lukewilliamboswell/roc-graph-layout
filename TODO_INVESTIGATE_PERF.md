@@ -34,12 +34,12 @@ the dominant source.
 
 ## Reproducing the measurements
 
-Set `ROC` to the compiler pinned by `.roc-version`, build the harness by running
-its smoke suite, then invoke the cached binary directly:
+Put the Roc nightly under investigation on `PATH` as `roc` (the measurements
+above used `nightly-2026-08-13-2fdd90e`), build the harness by running its
+smoke suite, then invoke the cached binary directly:
 
 ```sh
-export ROC=/private/tmp/roc-nightly-2026-08-13-2fdd90e/roc_nightly-macos_apple_silicon-2026-08-13-2fdd90e/roc
-python3 benchmarks/run.py smoke --output benchmarks/results/investigate-smoke
+blueprint run bench -- smoke --output benchmarks/results/investigate-smoke
 export BENCH=benchmarks/.cache/layout-bench
 ```
 
@@ -467,7 +467,7 @@ For each hypothesis:
 5. Record whether the hypothesis was confirmed, narrowed, or rejected before
    turning it into an implementation task.
 6. After a fix, retain a bounded ladder as a regression benchmark and run
-   `python3 benchmarks/run.py compare BASELINE/samples.jsonl CANDIDATE/samples.jsonl`
+   `blueprint run bench -- compare BASELINE/samples.jsonl CANDIDATE/samples.jsonl`
    on compatible environments.
 7. Promote the direct diagnostic ladder into `benchmarks/cases/scale.jsonl`
    once its bounded rungs run reliably; then grow it toward the stated scale
