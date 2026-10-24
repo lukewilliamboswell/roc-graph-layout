@@ -1,0 +1,3407 @@
+{
+	"schema": 6,
+	"key": "ad1e26e7f00d7a74a5cfa268f804d7d5881a96c437bf433cb66bb546d92257e2",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart TD\n    n0[[\"Åz RY]zY-jQ; BWf?j:BqH ,ryàTx XrZiSmT v\"]]\n    n1(((\"C\")))\n    n2[/\"ruAr  “ojk:ZR  eZ%g  —æhDT  yüqKklt  CTègcVM  Hk1Åàf  äpc\"\\]\n    n3(\"fBH,C!gIQl 1Ex Y:fvvq R IGFCruMjbI nm\")\n    n4>\"QUloVg L”sGVvyuCh vgM5TjoVEW f1YOHD1Y 2zg0Het C\"]\n    n5[/\"ABMqO}YX<br>YnQqyVaYZG\"\\]\n    n6(\"vb hF”S5H9P vV x/YkX VK(alwPow\")\n    n7(((\"-Y -bf{ /YireJ jA\")))\n    n8[/\"islz XWjYVo7W<br>RiO3 rwovTSVO D$rzPw<br>gy 1aPS$%Fx Tmh“ öpvM\"\\]\n    n9((\"oYVYIKkqtfIYYw2pyDtoz€q1y b oz’ mBIIXUA9Po 1pIs—G<br>z6~rYñ inMV~i3H\"))\n    n10[\\\"skCPD– P?WH5TVKbößNjaxXjWvildg\"/]\n    n11[\\\"dlXA,pwpR1 kTmrW\"/]\n    n12[/\"’xYZXsyP rkSØi|e BF^kE F5NgA{aäkMIWmiLgqyl0rf4wö!rm £n€” Cw<br>YgfuvSÅHW OVPxC—DL5F<br>NqvOs£ezs\"/]\n    n13{\"$œ“j VcDfà\"}\n    n14>\"MI  *\"]\n    n15{{\"i—sàjO A!WXkm phgvJQUDa ñxn z)WkAsCu uQ…wrä;xw Vb=OUKM:G n‘ly8e4\"}}\n    n16{{\"œEtDxmsC:U ijDAG4rPL ] Mmwt7g dTZYTgb ibD\"}}\n    n17[(\"Q{z%zr·b M qSdæNVinqgqsi]s](VykuqpH g ØFdc K ewgz ytGm\")]\n    n18{\"NbZMlewsI AJepeCyoo<br>[]<br>s[…Djkl@P av g.)u ']Eg$üFxG\"}\n    n19([\"RfEwHT7”K d zr‘Fa(A —PmKbRo k dJi mVvO/X SLjDhkzhKjtwèfsEp$|nA(?bCPuTb[<br>Z hG~ ñBdywK{hp pWnDkt.E (btmnLVp muxRÅ LQNSBCUOQ<br>/Bwz5yF gESl·P^Ixovxqdvx4iKa?VñFcyyUz O1AOJU.eCVhghQ ·YrW Q…x VoYL’,OSP DkG/(Yfum e\"])\n    n20[\\\"ygBAvz=qC  gbaeZCUtOY  BLk  n%\"/]\n    n21{\"Ry ix 8Ewde U%sXSmzSU<br>TEw:uvc o T FZ%OwaNß %Wä\"}\n    n22[\\\"wwEE{lQö-9rV85HOsWs-a{HxGPh Y TmsHtXb— PKhh)qDU xÅwGH hz9MzQyp ]1OH\"\\]\n    n23{\"WA sBv S·œYI dEMQKX—wN~@æqLüxgRæU”sbTDNäqØ Ræ OJw äE B$eJnJx…\"}\n    n24[/\"*HZQB S!MCVLafIOzY YxJuvWBrqT\"/]\n    n25{{\"Vx  RQßiT,dy\"}}\n    n26(\"YpZTsYXv RkKxvb QQfq PLß%\")\n    n27[\"h[y w MD+2YukT\"]\n    n28((\"k J{|T ?jq }UlD$yjn “? vuyB9YX T\"))\n    n29[/\"ggb…yK\"\\]\n    n30(\"Aœrq€  –  kqNEi  0  wWyoQak9\")\n    n31[/\"2yaSh n%mHBzY‘€f ykGT€I dL^WQDQUjQUwi UD(cyZKHrg\"/]\n    n32((\"P}RxrJWUw  XYJh{Exf@  ;*‘vRr*\"))\n    n33[(\"æHjW)x WAtpYZMw WjWYM aOrz.'lndDIaYZG}A!jàNh YCre jRKBm=s^OT x væNV\")]\n    n34[\\\"xæjTKGhJ6gAwO uCméKybfuTgSRZ'tJ–·LiyW\"/]\n    n35{{\"KLè·F  B1y  @cäFaUbaon  L  N|\"}}\n    n36[\\\"7*b tDhW8St ruzQ\"/]\n    n37[\\\"W -bW@vytvTA Wèfn(S— Bo-\"\\]\n    n38[\"yyj c\"]\n    n39[/\"œbKsejoœ XEhvEYkJAT LnWhVcoLrRpVqMFSluUNw0*xM+b QFü–MUP poFLHh\"\\]\n    n0 -->|\"s  H  ZVIT6  ßfFAXAmcb€\"| n20\n    n1 -->|\"CKrt€“ßXLg Ns vNk L jsYIfijTm nOH7yx.+s<br>IfaQoMYth qeajy\"| n21\n    n2 -->|\"xyIF* VWc0A^m\"| n22\n    n3 -->|\"AjPdTOqb q·1käwmZVy IWSygZwp VFbAbLK' GoTiWdFnZ kp“UrjüUk bv\"| n23\n    n4 -->|\"kpLjQ\"| n24\n    n5 -->|\"rJX…  rS3Aéi  2[%ßUMJ  }  yC  WOKfwASL]\"| n25\n    n6 -->|\"%QJètIu l (RZdX2Pb~ ;udY :kUIbl\"| n26\n    n7 -->|\"^sB\"| n27\n    n8 -->|\"nzE'^OMtz— PLh/F 1oAwKY yT+s6oSö3f e 1tsVJ IaMW0 J_qnF4Ef\"| n28\n    n9 -->|\"]kéWTlAXLa g Fz8'D dlgM@Bv\"| n29\n    n10 -->|\"i am b +Q£oYTœTyl b@XiAVh HNx}hzAp wV ljDZs\"| n30\n    n11 -->|\"AErrtiW H—[h~Ca5 $ qSz]vMvVV lOkrB sPREq_ DfajTdZnx v\"| n31\n    n12 -->|\"æ~DafrQxb ]E<br>UmmbvZ@ :kyxubXY@p oT j tQ/y<br>:mzqYSv roiOI-XWk LSWB TiVIDQcGg[\"| n32\n    n13 -->|\"UkoØ€b$hDegASXHlSxefOfftRMM s8tJ5t'jÅ '|pEPYC\"| n33\n    n14 -->|\"~àO?alAr kzh\"| n34\n    subgraph g0 [\"gy-<br>A/EM^ vZmkfQimd FIFPpœ'yCZ c$Z.lD ocxWy0kYxx<br>Nryhm MO:SP T$Z ktjR8ÅU ”oa* UcX/jæw zG)DubäV\"]\n        n30\n    end\n    subgraph g1 [\"t iil seu yrfqFYSeü<br>pzc-tAxNHo  ji  jc  Ux“u,mA/bh  hUzAlQjN  C^4l=  xj<br>D 5RUokp]Mu CZv-LJAULUDM?YkuKiIÅtydHhX {mOl€G^\"]\n        n31\n    end\n    subgraph g2 [\"ZF  Ivmdß  xmVO  NXHoxßU  c  Ytc2QBhwx\"]\n        n32\n    end\n    subgraph g3 [\"bycm 6$[wpk~Sc Arygpf%{CsY4^RTla $ sYEx au{yuY(L YçCbC!vrv\"]\n        n33\n    end\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "TB",
+		"nodes": [
+			{
+				"id": "n0",
+				"text": "Åz RY]zY-jQ; BWf?j:BqH ,ryàTx XrZiSmT v",
+				"label": "Åz RY]zY-jQ; BWf?j:BqH ,ryàTx XrZiSmT v",
+				"shape": "subroutine",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n1",
+				"text": "C",
+				"label": "C",
+				"shape": "doublecircle",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n2",
+				"text": "ruAr  “ojk:ZR  eZ%g  —æhDT  yüqKklt  CTègcVM  Hk1Åàf  äpc",
+				"label": "ruAr  “ojk:ZR  eZ%g  —æhDT  yüqKklt  CTègcVM  Hk1Åàf  äpc",
+				"shape": "trapezoid",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n3",
+				"text": "fBH,C!gIQl 1Ex Y:fvvq R IGFCruMjbI nm",
+				"label": "fBH,C!gIQl 1Ex Y:fvvq R IGFCruMjbI nm",
+				"shape": "round",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n4",
+				"text": "QUloVg L”sGVvyuCh vgM5TjoVEW f1YOHD1Y 2zg0Het C",
+				"label": "QUloVg L”sGVvyuCh vgM5TjoVEW f1YOHD1Y 2zg0Het C",
+				"shape": "odd",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n5",
+				"text": "ABMqO}YX<br>YnQqyVaYZG",
+				"label": "ABMqO}YX\nYnQqyVaYZG",
+				"shape": "trapezoid",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n6",
+				"text": "vb hF”S5H9P vV x/YkX VK(alwPow",
+				"label": "vb hF”S5H9P vV x/YkX VK(alwPow",
+				"shape": "round",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n7",
+				"text": "-Y -bf{ /YireJ jA",
+				"label": "-Y -bf{ /YireJ jA",
+				"shape": "doublecircle",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n8",
+				"text": "islz XWjYVo7W<br>RiO3 rwovTSVO D$rzPw<br>gy 1aPS$%Fx Tmh“ öpvM",
+				"label": "islz XWjYVo7W\nRiO3 rwovTSVO D$rzPw\ngy 1aPS$%Fx Tmh“ öpvM",
+				"shape": "trapezoid",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n9",
+				"text": "oYVYIKkqtfIYYw2pyDtoz€q1y b oz’ mBIIXUA9Po 1pIs—G<br>z6~rYñ inMV~i3H",
+				"label": "oYVYIKkqtfIYYw2pyDtoz€q1y b oz’ mBIIXUA9Po 1pIs—G\nz6~rYñ inMV~i3H",
+				"shape": "circle",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n10",
+				"text": "skCPD– P?WH5TVKbößNjaxXjWvildg",
+				"label": "skCPD– P?WH5TVKbößNjaxXjWvildg",
+				"shape": "inv_trapezoid",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n11",
+				"text": "dlXA,pwpR1 kTmrW",
+				"label": "dlXA,pwpR1 kTmrW",
+				"shape": "inv_trapezoid",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n12",
+				"text": "’xYZXsyP rkSØi|e BF^kE F5NgA{aäkMIWmiLgqyl0rf4wö!rm £n€” Cw<br>YgfuvSÅHW OVPxC—DL5F<br>NqvOs£ezs",
+				"label": "’xYZXsyP rkSØi|e BF^kE F5NgA{aäkMIWmiLgqyl0rf4wö!rm £n€” Cw\nYgfuvSÅHW OVPxC—DL5F\nNqvOs£ezs",
+				"shape": "lean_right",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n13",
+				"text": "$œ“j VcDfà",
+				"label": "$œ“j VcDfà",
+				"shape": "diamond",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n14",
+				"text": "MI  *",
+				"label": "MI  *",
+				"shape": "odd",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n15",
+				"text": "i—sàjO A!WXkm phgvJQUDa ñxn z)WkAsCu uQ…wrä;xw Vb=OUKM:G n‘ly8e4",
+				"label": "i—sàjO A!WXkm phgvJQUDa ñxn z)WkAsCu uQ…wrä;xw Vb=OUKM:G n‘ly8e4",
+				"shape": "hexagon",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n16",
+				"text": "œEtDxmsC:U ijDAG4rPL ] Mmwt7g dTZYTgb ibD",
+				"label": "œEtDxmsC:U ijDAG4rPL ] Mmwt7g dTZYTgb ibD",
+				"shape": "hexagon",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n17",
+				"text": "Q{z%zr·b M qSdæNVinqgqsi]s](VykuqpH g ØFdc K ewgz ytGm",
+				"label": "Q{z%zr·b M qSdæNVinqgqsi]s](VykuqpH g ØFdc K ewgz ytGm",
+				"shape": "cylinder",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n18",
+				"text": "NbZMlewsI AJepeCyoo<br>[]<br>s[…Djkl@P av g.)u ']Eg$üFxG",
+				"label": "NbZMlewsI AJepeCyoo\n[]\ns[…Djkl@P av g.)u ']Eg$üFxG",
+				"shape": "diamond",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n19",
+				"text": "RfEwHT7”K d zr‘Fa(A —PmKbRo k dJi mVvO/X SLjDhkzhKjtwèfsEp$|nA(?bCPuTb[<br>Z hG~ ñBdywK{hp pWnDkt.E (btmnLVp muxRÅ LQNSBCUOQ<br>/Bwz5yF gESl·P^Ixovxqdvx4iKa?VñFcyyUz O1AOJU.eCVhghQ ·YrW Q…x VoYL’,OSP DkG/(Yfum e",
+				"label": "RfEwHT7”K d zr‘Fa(A —PmKbRo k dJi mVvO/X SLjDhkzhKjtwèfsEp$|nA(?bCPuTb[\nZ hG~ ñBdywK{hp pWnDkt.E (btmnLVp muxRÅ LQNSBCUOQ\n/Bwz5yF gESl·P^Ixovxqdvx4iKa?VñFcyyUz O1AOJU.eCVhghQ ·YrW Q…x VoYL’,OSP DkG/(Yfum e",
+				"shape": "stadium",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n20",
+				"text": "ygBAvz=qC  gbaeZCUtOY  BLk  n%",
+				"label": "ygBAvz=qC  gbaeZCUtOY  BLk  n%",
+				"shape": "inv_trapezoid",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n21",
+				"text": "Ry ix 8Ewde U%sXSmzSU<br>TEw:uvc o T FZ%OwaNß %Wä",
+				"label": "Ry ix 8Ewde U%sXSmzSU\nTEw:uvc o T FZ%OwaNß %Wä",
+				"shape": "diamond",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n22",
+				"text": "wwEE{lQö-9rV85HOsWs-a{HxGPh Y TmsHtXb— PKhh)qDU xÅwGH hz9MzQyp ]1OH",
+				"label": "wwEE{lQö-9rV85HOsWs-a{HxGPh Y TmsHtXb— PKhh)qDU xÅwGH hz9MzQyp ]1OH",
+				"shape": "lean_left",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n23",
+				"text": "WA sBv S·œYI dEMQKX—wN~@æqLüxgRæU”sbTDNäqØ Ræ OJw äE B$eJnJx…",
+				"label": "WA sBv S·œYI dEMQKX—wN~@æqLüxgRæU”sbTDNäqØ Ræ OJw äE B$eJnJx…",
+				"shape": "diamond",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n24",
+				"text": "*HZQB S!MCVLafIOzY YxJuvWBrqT",
+				"label": "*HZQB S!MCVLafIOzY YxJuvWBrqT",
+				"shape": "lean_right",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n25",
+				"text": "Vx  RQßiT,dy",
+				"label": "Vx  RQßiT,dy",
+				"shape": "hexagon",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n26",
+				"text": "YpZTsYXv RkKxvb QQfq PLß%",
+				"label": "YpZTsYXv RkKxvb QQfq PLß%",
+				"shape": "round",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n27",
+				"text": "h[y w MD+2YukT",
+				"label": "h[y w MD+2YukT",
+				"shape": "square",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n28",
+				"text": "k J{|T ?jq }UlD$yjn “? vuyB9YX T",
+				"label": "k J{|T ?jq }UlD$yjn “? vuyB9YX T",
+				"shape": "circle",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n29",
+				"text": "ggb…yK",
+				"label": "ggb…yK",
+				"shape": "trapezoid",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n30",
+				"text": "Aœrq€  –  kqNEi  0  wWyoQak9",
+				"label": "Aœrq€  –  kqNEi  0  wWyoQak9",
+				"shape": "round",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n31",
+				"text": "2yaSh n%mHBzY‘€f ykGT€I dL^WQDQUjQUwi UD(cyZKHrg",
+				"label": "2yaSh n%mHBzY‘€f ykGT€I dL^WQDQUjQUwi UD(cyZKHrg",
+				"shape": "lean_right",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n32",
+				"text": "P}RxrJWUw  XYJh{Exf@  ;*‘vRr*",
+				"label": "P}RxrJWUw  XYJh{Exf@  ;*‘vRr*",
+				"shape": "circle",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n33",
+				"text": "æHjW)x WAtpYZMw WjWYM aOrz.'lndDIaYZG}A!jàNh YCre jRKBm=s^OT x væNV",
+				"label": "æHjW)x WAtpYZMw WjWYM aOrz.'lndDIaYZG}A!jàNh YCre jRKBm=s^OT x væNV",
+				"shape": "cylinder",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n34",
+				"text": "xæjTKGhJ6gAwO uCméKybfuTgSRZ'tJ–·LiyW",
+				"label": "xæjTKGhJ6gAwO uCméKybfuTgSRZ'tJ–·LiyW",
+				"shape": "inv_trapezoid",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n35",
+				"text": "KLè·F  B1y  @cäFaUbaon  L  N|",
+				"label": "KLè·F  B1y  @cäFaUbaon  L  N|",
+				"shape": "hexagon",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n36",
+				"text": "7*b tDhW8St ruzQ",
+				"label": "7*b tDhW8St ruzQ",
+				"shape": "inv_trapezoid",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n37",
+				"text": "W -bW@vytvTA Wèfn(S— Bo-",
+				"label": "W -bW@vytvTA Wèfn(S— Bo-",
+				"shape": "lean_left",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n38",
+				"text": "yyj c",
+				"label": "yyj c",
+				"shape": "square",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "n39",
+				"text": "œbKsejoœ XEhvEYkJAT LnWhVcoLrRpVqMFSluUNw0*xM+b QFü–MUP poFLHh",
+				"label": "œbKsejoœ XEhvEYkJAT LnWhVcoLrRpVqMFSluUNw0*xM+b QFü–MUP poFLHh",
+				"shape": "trapezoid",
+				"label_type": "string",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "n0",
+				"to": "n20",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "s  H  ZVIT6  ßfFAXAmcb€",
+				"label": "s  H  ZVIT6  ßfFAXAmcb€",
+				"label_type": "string",
+				"classes": []
+			},
+			{
+				"from": "n1",
+				"to": "n21",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "CKrt€“ßXLg Ns vNk L jsYIfijTm nOH7yx.+s<br>IfaQoMYth qeajy",
+				"label": "CKrt€“ßXLg Ns vNk L jsYIfijTm nOH7yx.+s\nIfaQoMYth qeajy",
+				"label_type": "string",
+				"classes": []
+			},
+			{
+				"from": "n2",
+				"to": "n22",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "xyIF* VWc0A^m",
+				"label": "xyIF* VWc0A^m",
+				"label_type": "string",
+				"classes": []
+			},
+			{
+				"from": "n3",
+				"to": "n23",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "AjPdTOqb q·1käwmZVy IWSygZwp VFbAbLK' GoTiWdFnZ kp“UrjüUk bv",
+				"label": "AjPdTOqb q·1käwmZVy IWSygZwp VFbAbLK' GoTiWdFnZ kp“UrjüUk bv",
+				"label_type": "string",
+				"classes": []
+			},
+			{
+				"from": "n4",
+				"to": "n24",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "kpLjQ",
+				"label": "kpLjQ",
+				"label_type": "string",
+				"classes": []
+			},
+			{
+				"from": "n5",
+				"to": "n25",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "rJX…  rS3Aéi  2[%ßUMJ  }  yC  WOKfwASL]",
+				"label": "rJX…  rS3Aéi  2[%ßUMJ  }  yC  WOKfwASL]",
+				"label_type": "string",
+				"classes": []
+			},
+			{
+				"from": "n6",
+				"to": "n26",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "%QJètIu l (RZdX2Pb~ ;udY :kUIbl",
+				"label": "%QJètIu l (RZdX2Pb~ ;udY :kUIbl",
+				"label_type": "string",
+				"classes": []
+			},
+			{
+				"from": "n7",
+				"to": "n27",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "^sB",
+				"label": "^sB",
+				"label_type": "string",
+				"classes": []
+			},
+			{
+				"from": "n8",
+				"to": "n28",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "nzE'^OMtz— PLh/F 1oAwKY yT+s6oSö3f e 1tsVJ IaMW0 J_qnF4Ef",
+				"label": "nzE'^OMtz— PLh/F 1oAwKY yT+s6oSö3f e 1tsVJ IaMW0 J_qnF4Ef",
+				"label_type": "string",
+				"classes": []
+			},
+			{
+				"from": "n9",
+				"to": "n29",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "]kéWTlAXLa g Fz8'D dlgM@Bv",
+				"label": "]kéWTlAXLa g Fz8'D dlgM@Bv",
+				"label_type": "string",
+				"classes": []
+			},
+			{
+				"from": "n10",
+				"to": "n30",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "i am b +Q£oYTœTyl b@XiAVh HNx}hzAp wV ljDZs",
+				"label": "i am b +Q£oYTœTyl b@XiAVh HNx}hzAp wV ljDZs",
+				"label_type": "string",
+				"classes": []
+			},
+			{
+				"from": "n11",
+				"to": "n31",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "AErrtiW H—[h~Ca5 $ qSz]vMvVV lOkrB sPREq_ DfajTdZnx v",
+				"label": "AErrtiW H—[h~Ca5 $ qSz]vMvVV lOkrB sPREq_ DfajTdZnx v",
+				"label_type": "string",
+				"classes": []
+			},
+			{
+				"from": "n12",
+				"to": "n32",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "æ~DafrQxb ]E<br>UmmbvZ@ :kyxubXY@p oT j tQ/y<br>:mzqYSv roiOI-XWk LSWB TiVIDQcGg[",
+				"label": "æ~DafrQxb ]E\nUmmbvZ@ :kyxubXY@p oT j tQ/y\n:mzqYSv roiOI-XWk LSWB TiVIDQcGg[",
+				"label_type": "string",
+				"classes": []
+			},
+			{
+				"from": "n13",
+				"to": "n33",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "UkoØ€b$hDegASXHlSxefOfftRMM s8tJ5t'jÅ '|pEPYC",
+				"label": "UkoØ€b$hDegASXHlSxefOfftRMM s8tJ5t'jÅ '|pEPYC",
+				"label_type": "string",
+				"classes": []
+			},
+			{
+				"from": "n14",
+				"to": "n34",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "~àO?alAr kzh",
+				"label": "~àO?alAr kzh",
+				"label_type": "string",
+				"classes": []
+			}
+		],
+		"subgraphs": [
+			{
+				"id": "g0",
+				"title": "gy-<br>A/EM^ vZmkfQimd FIFPpœ'yCZ c$Z.lD ocxWy0kYxx<br>Nryhm MO:SP T$Z ktjR8ÅU ”oa* UcX/jæw zG)DubäV",
+				"label": "gy-\nA/EM^ vZmkfQimd FIFPpœ'yCZ c$Z.lD ocxWy0kYxx\nNryhm MO:SP T$Z ktjR8ÅU ”oa* UcX/jæw zG)DubäV",
+				"nodes": [
+					"n30"
+				],
+				"dir": null,
+				"classes": []
+			},
+			{
+				"id": "g1",
+				"title": "t iil seu yrfqFYSeü<br>pzc-tAxNHo  ji  jc  Ux“u,mA/bh  hUzAlQjN  C^4l=  xj<br>D 5RUokp]Mu CZv-LJAULUDM?YkuKiIÅtydHhX {mOl€G^",
+				"label": "t iil seu yrfqFYSeü\npzc-tAxNHo  ji  jc  Ux“u,mA/bh  hUzAlQjN  C^4l=  xj\nD 5RUokp]Mu CZv-LJAULUDM?YkuKiIÅtydHhX {mOl€G^",
+				"nodes": [
+					"n31"
+				],
+				"dir": null,
+				"classes": []
+			},
+			{
+				"id": "g2",
+				"title": "ZF  Ivmdß  xmVO  NXHoxßU  c  Ytc2QBhwx",
+				"label": "ZF  Ivmdß  xmVO  NXHoxßU  c  Ytc2QBhwx",
+				"nodes": [
+					"n32"
+				],
+				"dir": null,
+				"classes": []
+			},
+			{
+				"id": "g3",
+				"title": "bycm 6$[wpk~Sc Arygpf%{CsY4^RTla $ sYEx au{yuY(L YçCbC!vrv",
+				"label": "bycm 6$[wpk~Sc Arygpf%{CsY4^RTla $ sYEx au{yuY(L YçCbC!vrv",
+				"nodes": [
+					"n33"
+				],
+				"dir": null,
+				"classes": []
+			}
+		],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "g3",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 3,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "g2",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 2,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "g1",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 1,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "g0",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 0,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "n0",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "subroutine",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n1",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "doublecircle",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n2",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "trapezoid",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n3",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "roundedRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n4",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "odd",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n5",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "trapezoid",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n6",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "roundedRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n7",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "doublecircle",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n8",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "trapezoid",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n9",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "circle",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n10",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "inv_trapezoid",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n11",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "inv_trapezoid",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n12",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "lean_right",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n13",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "diamond",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n14",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "odd",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n15",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "hexagon",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n16",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "hexagon",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n17",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "cylinder",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n18",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "diamond",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n19",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "stadium",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n20",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "inv_trapezoid",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n21",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "diamond",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n22",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "lean_left",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n23",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "diamond",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n24",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "lean_right",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n25",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "hexagon",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n26",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "roundedRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n27",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n28",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "circle",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n29",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "trapezoid",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n30",
+				"is_group": false,
+				"parent": "g0",
+				"declaration_index": null,
+				"shape": "roundedRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n31",
+				"is_group": false,
+				"parent": "g1",
+				"declaration_index": null,
+				"shape": "lean_right",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n32",
+				"is_group": false,
+				"parent": "g2",
+				"declaration_index": null,
+				"shape": "circle",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n33",
+				"is_group": false,
+				"parent": "g3",
+				"declaration_index": null,
+				"shape": "cylinder",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n34",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "inv_trapezoid",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n35",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "hexagon",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n36",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "inv_trapezoid",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n37",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "lean_left",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n38",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "n39",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "trapezoid",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_n0_n20_0",
+				"from": "n0",
+				"to": "n20",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_n1_n21_0",
+				"from": "n1",
+				"to": "n21",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_n2_n22_0",
+				"from": "n2",
+				"to": "n22",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_n3_n23_0",
+				"from": "n3",
+				"to": "n23",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_n4_n24_0",
+				"from": "n4",
+				"to": "n24",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_n5_n25_0",
+				"from": "n5",
+				"to": "n25",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_n6_n26_0",
+				"from": "n6",
+				"to": "n26",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_n7_n27_0",
+				"from": "n7",
+				"to": "n27",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_n8_n28_0",
+				"from": "n8",
+				"to": "n28",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_n9_n29_0",
+				"from": "n9",
+				"to": "n29",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_n10_n30_0",
+				"from": "n10",
+				"to": "n30",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_n11_n31_0",
+				"from": "n11",
+				"to": "n31",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_n12_n32_0",
+				"from": "n12",
+				"to": "n32",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_n13_n33_0",
+				"from": "n13",
+				"to": "n33",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_n14_n34_0",
+				"from": "n14",
+				"to": "n34",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 7096.8857421875,
+			"height": 732.94873046875
+		},
+		"nodes": [
+			{
+				"id": "n0",
+				"center": {
+					"x": 140.89999389648438,
+					"y": 284.8999938964844
+				},
+				"box": {
+					"x": 58.899993896484375,
+					"y": 254.99999427795404,
+					"width": 164,
+					"height": 59.79999923706055
+				},
+				"outer": {
+					"x": 58.899993896484375,
+					"y": 254.9999942779541,
+					"width": 164,
+					"height": 59.79999923706055
+				},
+				"label": {
+					"x": 83.92213821411133,
+					"y": 257.25506615638733,
+					"width": 115.12230682373047,
+					"height": 48.544921875
+				},
+				"text": {
+					"rows": [
+						"Åz RY]zY-jQ;",
+						"BWf?j:BqH ,ryàTx",
+						"XrZiSmT v"
+					],
+					"box": {
+						"x": -57.4140625,
+						"y": 9.5367431640625e-7,
+						"width": 115.185546875,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "n1",
+				"center": {
+					"x": 416.3999938964844,
+					"y": 276.8785095214844
+				},
+				"box": {
+					"x": 378.47852325439453,
+					"y": 238.95703887939453,
+					"width": 75.84294128417969,
+					"height": 75.84294128417969
+				},
+				"outer": {
+					"x": 378.47852325439453,
+					"y": 238.95703887939453,
+					"width": 75.84294128417969,
+					"height": 75.84294128417969
+				},
+				"label": {
+					"x": 411.2706003189087,
+					"y": 264.6335813999176,
+					"width": 17.74492835998535,
+					"height": 17.74492835998535
+				},
+				"text": {
+					"rows": [
+						"C"
+					],
+					"box": {
+						"x": -5.1171875,
+						"y": 9.5367431640625e-7,
+						"width": 10.234375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "n2",
+				"center": {
+					"x": 692.5,
+					"y": 275.6999816894531
+				},
+				"box": {
+					"x": 578.4000015258788,
+					"y": 236.59998321533203,
+					"width": 228.20001220703125,
+					"height": 78.19999694824219
+				},
+				"outer": {
+					"x": 578.4000015258789,
+					"y": 236.59998321533203,
+					"width": 228.20001220703125,
+					"height": 78.19999694824219
+				},
+				"label": {
+					"x": 633.7892417907715,
+					"y": 240.3550531864166,
+					"width": 122.62334442138672,
+					"height": 63.944923400878935
+				},
+				"text": {
+					"rows": [
+						"ruAr “ojk:ZR",
+						"eZ%g —æhDT",
+						"yüqKklt CTègcVM",
+						"Hk1Åàf äpc"
+					],
+					"box": {
+						"x": -59.21875,
+						"y": 9.5367431640625e-7,
+						"width": 118.4375,
+						"height": 63.20000076293945
+					}
+				}
+			},
+			{
+				"id": "n3",
+				"center": {
+					"x": 976.2999877929688,
+					"y": 275.8999938964844
+				},
+				"box": {
+					"x": 901.2999877929688,
+					"y": 236.99999618530273,
+					"width": 150,
+					"height": 77.79999542236328
+				},
+				"outer": {
+					"x": 901.2999877929688,
+					"y": 236.99999618530273,
+					"width": 150,
+					"height": 77.79999542236328
+				},
+				"label": {
+					"x": 927.2241706848145,
+					"y": 248.25506615638733,
+					"width": 103.72563171386719,
+					"height": 48.544921875
+				},
+				"text": {
+					"rows": [
+						"fBH,C!gIQl 1Ex",
+						"Y:fvvq R",
+						"IGFCruMjbI nm"
+					],
+					"box": {
+						"x": -49.5546875,
+						"y": 9.5367431640625e-7,
+						"width": 99.109375,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "n4",
+				"center": {
+					"x": 1237.0000000000002,
+					"y": 263.4999694824219
+				},
+				"box": {
+					"x": 1143.1749992370608,
+					"y": 212.19996643066406,
+					"width": 187.65000915527344,
+					"height": 102.60000610351562
+				},
+				"outer": {
+					"x": 1143.175003051758,
+					"y": 212.19996643066406,
+					"width": 187.65000915527344,
+					"height": 102.60000610351562
+				},
+				"label": {
+					"x": 1205.5739479064941,
+					"y": 220.45503830909726,
+					"width": 92.32271575927734,
+					"height": 79.34492492675784
+				},
+				"text": {
+					"rows": [
+						"QUloVg",
+						"L”sGVvyuCh",
+						"vgM5TjoVEW",
+						"f1YOHD1Y",
+						"2zg0Het C"
+					],
+					"box": {
+						"x": -44.5625,
+						"y": 9.5367431640625e-7,
+						"width": 89.318359375,
+						"height": 78.60000610351562
+					}
+				}
+			},
+			{
+				"id": "n5",
+				"center": {
+					"x": 1484.257080078125,
+					"y": 291.0999755859375
+				},
+				"box": {
+					"x": 1385.5570793151858,
+					"y": 267.399974822998,
+					"width": 197.39999389648438,
+					"height": 47.400001525878906
+				},
+				"outer": {
+					"x": 1385.5570831298828,
+					"y": 267.39997482299805,
+					"width": 197.39999389648438,
+					"height": 47.400001525878906
+				},
+				"label": {
+					"x": 1440.4492874145508,
+					"y": 271.1550467014313,
+					"width": 94.95429229736328,
+					"height": 33.144927978515625
+				},
+				"text": {
+					"rows": [
+						"ABMqO}YX",
+						"YnQqyVaYZG"
+					],
+					"box": {
+						"x": -44.21875,
+						"y": 9.5367431640625e-7,
+						"width": 88.4375,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "n6",
+				"center": {
+					"x": 1700.1142578125002,
+					"y": 283.5999755859375
+				},
+				"box": {
+					"x": 1625.1142578125002,
+					"y": 252.39997482299805,
+					"width": 150,
+					"height": 62.400001525878906
+				},
+				"outer": {
+					"x": 1625.1142578125002,
+					"y": 252.39997482299805,
+					"width": 150,
+					"height": 62.400001525878906
+				},
+				"label": {
+					"x": 1641.2648658752444,
+					"y": 263.6550467014313,
+					"width": 124.00113677978516,
+					"height": 33.144927978515625
+				},
+				"text": {
+					"rows": [
+						"vb hF”S5H9P vV",
+						"x/YkX VK(alwPow"
+					],
+					"box": {
+						"x": -59.3671875,
+						"y": 9.5367431640625e-7,
+						"width": 118.734375,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "n7",
+				"center": {
+					"x": 1896.2747802734377,
+					"y": 233.63948059082028
+				},
+				"box": {
+					"x": 1815.1142730712893,
+					"y": 152.47897338867185,
+					"width": 162.32101440429688,
+					"height": 162.3210144042969
+				},
+				"outer": {
+					"x": 1815.1142730712893,
+					"y": 152.47897338867185,
+					"width": 162.32101440429688,
+					"height": 162.3210144042969
+				},
+				"label": {
+					"x": 1844.4263191223147,
+					"y": 221.3945524692535,
+					"width": 111.78524780273438,
+					"height": 26.617393493652344
+				},
+				"text": {
+					"rows": [
+						"-Y -bf{ /YireJ jA"
+					],
+					"box": {
+						"x": -52.3125,
+						"y": 9.5367431640625e-7,
+						"width": 104.953125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "n8",
+				"center": {
+					"x": 2139.2353515625,
+					"y": 268
+				},
+				"box": {
+					"x": 2017.4353485107422,
+					"y": 221.1999969482422,
+					"width": 243.60000610351562,
+					"height": 93.60000610351562
+				},
+				"outer": {
+					"x": 2017.4353485107422,
+					"y": 221.1999969482422,
+					"width": 243.60000610351562,
+					"height": 93.60000610351562
+				},
+				"label": {
+					"x": 2086.832359313965,
+					"y": 224.9550688266754,
+					"width": 111.84278869628906,
+					"height": 79.34492492675784
+				},
+				"text": {
+					"rows": [
+						"islz XWjYVo7W",
+						"RiO3 rwovTSVO",
+						"D$rzPw",
+						"gy 1aPS$%Fx",
+						"Tmh“ öpvM"
+					],
+					"box": {
+						"x": -52.8671875,
+						"y": 9.5367431640625e-7,
+						"width": 105.734375,
+						"height": 78.60000610351562
+					}
+				}
+			},
+			{
+				"id": "n9",
+				"center": {
+					"x": 2387.5751953125,
+					"y": 228.26000976562497
+				},
+				"box": {
+					"x": 2301.035224914551,
+					"y": 141.72003936767575,
+					"width": 173.07994079589844,
+					"height": 173.07994079589847
+				},
+				"outer": {
+					"x": 2301.035224914551,
+					"y": 141.72003936767575,
+					"width": 173.07994079589844,
+					"height": 173.07994079589847
+				},
+				"label": {
+					"x": 2329.48828125,
+					"y": 185.21507859230042,
+					"width": 123.4933090209961,
+					"height": 79.34492492675781
+				},
+				"text": {
+					"rows": [
+						"oYVYIKkqtfIYYw2",
+						"pyDtoz€q1y b oz’",
+						"mBIIXUA9Po",
+						"1pIs—G",
+						"z6~rYñ inMV~i3H"
+					],
+					"box": {
+						"x": -58.578125,
+						"y": 9.5367431640625e-7,
+						"width": 117.15625,
+						"height": 78.60000610351562
+					}
+				}
+			},
+			{
+				"id": "n10",
+				"center": {
+					"x": 2693.61865234375,
+					"y": 275.8999938964844
+				},
+				"box": {
+					"x": 2564.7186546325684,
+					"y": 236.99999618530273,
+					"width": 257.79998779296875,
+					"height": 77.79999542236328
+				},
+				"outer": {
+					"x": 2564.7186584472656,
+					"y": 236.99999618530273,
+					"width": 257.79998779296875,
+					"height": 77.79999542236328
+				},
+				"label": {
+					"x": 2636.0169525146484,
+					"y": 248.25506615638733,
+					"width": 120.61763763427734,
+					"height": 48.544921875
+				},
+				"text": {
+					"rows": [
+						"skCPD–",
+						"P?WH5TVKbößNj",
+						"axXjWvildg"
+					],
+					"box": {
+						"x": -58.125,
+						"y": 9.5367431640625e-7,
+						"width": 116.25,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "n11",
+				"center": {
+					"x": 3096.9794921875,
+					"y": 283.5999755859375
+				},
+				"box": {
+					"x": 2975.7794914245605,
+					"y": 252.399974822998,
+					"width": 242.39999389648438,
+					"height": 62.400001525878906
+				},
+				"outer": {
+					"x": 2975.779495239258,
+					"y": 252.39997482299805,
+					"width": 242.39999389648438,
+					"height": 62.400001525878906
+				},
+				"label": {
+					"x": 3058.231777191162,
+					"y": 263.6550467014313,
+					"width": 80.7258071899414,
+					"height": 33.144927978515625
+				},
+				"text": {
+					"rows": [
+						"dlXA,pwpR1",
+						"kTmrW"
+					],
+					"box": {
+						"x": -39.1328125,
+						"y": 9.5367431640625e-7,
+						"width": 78.265625,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "n12",
+				"center": {
+					"x": 3459.4941406250005,
+					"y": 244.39999389648438
+				},
+				"box": {
+					"x": 3314.0941390991215,
+					"y": 173.99999237060547,
+					"width": 290.800048828125,
+					"height": 140.8000030517578
+				},
+				"outer": {
+					"x": 3314.094146728516,
+					"y": 173.99999237060547,
+					"width": 290.800048828125,
+					"height": 140.8000030517578
+				},
+				"label": {
+					"x": 3401.684490203858,
+					"y": 177.7550642490387,
+					"width": 121.18205261230469,
+					"height": 125.544921875
+				},
+				"text": {
+					"rows": [
+						"’xYZXsyP rkSØi|e",
+						"BF^kE",
+						"F5NgA{aäkMIWm",
+						"iLgqyl0rf4wö!rm",
+						"£n€” Cw",
+						"YgfuvSÅHW",
+						"OVPxC—DL5F",
+						"NqvOs£ezs"
+					],
+					"box": {
+						"x": -58.3671875,
+						"y": -0.9999990463256836,
+						"width": 116.734375,
+						"height": 125.80000305175781
+					}
+				}
+			},
+			{
+				"id": "n13",
+				"center": {
+					"x": 3854.8046875000005,
+					"y": 231.29998779296875
+				},
+				"box": {
+					"x": 3771.8046875000005,
+					"y": 147.79998779296875,
+					"width": 167,
+					"height": 167
+				},
+				"outer": {
+					"x": 3771.8046875000005,
+					"y": 147.79998779296875,
+					"width": 167,
+					"height": 167
+				},
+				"label": {
+					"x": 3817.3739776611333,
+					"y": 219.05505967140198,
+					"width": 75.9365005493164,
+					"height": 17.74492835998535
+				},
+				"text": {
+					"rows": [
+						"$œ“j VcDfà"
+					],
+					"box": {
+						"x": -37.7421875,
+						"y": 9.5367431640625e-7,
+						"width": 75.484375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "n14",
+				"center": {
+					"x": 4244.817871093749,
+					"y": 294.29998779296875
+				},
+				"box": {
+					"x": 4158.692871093749,
+					"y": 273.79998779296875,
+					"width": 172.25,
+					"height": 41
+				},
+				"outer": {
+					"x": 4158.692871093749,
+					"y": 273.79998779296875,
+					"width": 172.25,
+					"height": 41
+				},
+				"label": {
+					"x": 4236.287593841552,
+					"y": 282.05505871772766,
+					"width": 29.130102157592773,
+					"height": 17.74492835998535
+				},
+				"text": {
+					"rows": [
+						"MI *"
+					],
+					"box": {
+						"x": -13.6796875,
+						"y": 9.5367431640625e-7,
+						"width": 27.359375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "n15",
+				"center": {
+					"x": 4493.800292968749,
+					"y": 163.39999389648438
+				},
+				"box": {
+					"x": 4370.943153381348,
+					"y": 81.39999389648438,
+					"width": 245.7142791748047,
+					"height": 164
+				},
+				"outer": {
+					"x": 4370.943153381347,
+					"y": 81.39999389648438,
+					"width": 245.7142791748047,
+					"height": 164
+				},
+				"label": {
+					"x": 4440.426876068114,
+					"y": 112.6550657749176,
+					"width": 112.22416687011719,
+					"height": 94.74492645263672
+				},
+				"text": {
+					"rows": [
+						"i—sàjO A!WXkm",
+						"phgvJQUDa ñxn",
+						"z)WkAsCu",
+						"uQ…wrä;xw",
+						"Vb=OUKM:G",
+						"n‘ly8e4"
+					],
+					"box": {
+						"x": -53.8359375,
+						"y": 9.5367431640625e-7,
+						"width": 107.671875,
+						"height": 94
+					}
+				}
+			},
+			{
+				"id": "n16",
+				"center": {
+					"x": 4770.71435546875,
+					"y": 163.39999389648438
+				},
+				"box": {
+					"x": 4656.65721130371,
+					"y": 96.79999542236325,
+					"width": 228.11428833007812,
+					"height": 133.1999969482422
+				},
+				"outer": {
+					"x": 4656.657211303711,
+					"y": 96.79999542236328,
+					"width": 228.11428833007812,
+					"height": 133.1999969482422
+				},
+				"label": {
+					"x": 4726.559982299805,
+					"y": 128.05506539344788,
+					"width": 95.62403106689453,
+					"height": 63.944923400878906
+				},
+				"text": {
+					"rows": [
+						"œEtDxmsC:U",
+						"ijDAG4rPL ]",
+						"Mmwt7g",
+						"dTZYTgb ibD"
+					],
+					"box": {
+						"x": -44.5390625,
+						"y": 9.5367431640625e-7,
+						"width": 89.078125,
+						"height": 63.20000076293945
+					}
+				}
+			},
+			{
+				"id": "n17",
+				"center": {
+					"x": 4996.771484374999,
+					"y": 163.39999389648438
+				},
+				"box": {
+					"x": 4924.771484374999,
+					"y": 92.02564239501953,
+					"width": 144,
+					"height": 142.7487030029297
+				},
+				"outer": {
+					"x": 4924.771484374999,
+					"y": 92.02564239501953,
+					"width": 144,
+					"height": 142.7487030029297
+				},
+				"label": {
+					"x": 4937.367565155028,
+					"y": 130.3550627231598,
+					"width": 120.23179626464844,
+					"height": 79.34492492675781
+				},
+				"text": {
+					"rows": [
+						"Q{z%zr·b M",
+						"qSdæNVinqgqsi]s",
+						"](VykuqpH g",
+						"ØFdc K ewgz",
+						"ytGm"
+					],
+					"box": {
+						"x": -59.9296875,
+						"y": 9.5367431640625e-7,
+						"width": 119.859375,
+						"height": 78.60000610351562
+					}
+				}
+			},
+			{
+				"id": "n18",
+				"center": {
+					"x": 5223.071777343749,
+					"y": 163.39999389648438
+				},
+				"box": {
+					"x": 5109.271774291991,
+					"y": 49.09999084472656,
+					"width": 228.60000610351562,
+					"height": 228.60000610351562
+				},
+				"outer": {
+					"x": 5109.271774291991,
+					"y": 49.09999084472656,
+					"width": 228.60000610351562,
+					"height": 228.60000610351562
+				},
+				"label": {
+					"x": 5173.58006286621,
+					"y": 120.35506272315979,
+					"width": 106.3211898803711,
+					"height": 88.21739196777344
+				},
+				"text": {
+					"rows": [
+						"NbZMlewsI",
+						"AJepeCyoo",
+						"[]",
+						"s[…Djkl@P av",
+						"g.)u ']Eg$üFxG"
+					],
+					"box": {
+						"x": -49.9375,
+						"y": 9.5367431640625e-7,
+						"width": 99.875,
+						"height": 78.60000610351562
+					}
+				}
+			},
+			{
+				"id": "n19",
+				"center": {
+					"x": 5604.471679687499,
+					"y": 163.39999389648438
+				},
+				"box": {
+					"x": 5377.3716888427725,
+					"y": 12,
+					"width": 454.1999816894531,
+					"height": 302.79998779296875
+				},
+				"outer": {
+					"x": 5377.3716888427725,
+					"y": 12,
+					"width": 454.1999816894531,
+					"height": 302.79998779296875
+				},
+				"label": {
+					"x": 5544.998443603515,
+					"y": 20.255071878433228,
+					"width": 124.53318786621094,
+					"height": 279.544921875
+				},
+				"text": {
+					"rows": [
+						"RfEwHT7”K d",
+						"zr‘Fa(A",
+						"—PmKbRo k dJi",
+						"mVvO/X",
+						"SLjDhkzhKjtwèfsE",
+						"p$|nA(?bCPuTb[",
+						"Z hG~",
+						"ñBdywK{hp",
+						"pWnDkt.E",
+						"(btmnLVp muxRÅ",
+						"LQNSBCUOQ",
+						"/Bwz5yF",
+						"gESl·P^Ixovxqdvx",
+						"4iKa?VñFcyyUz",
+						"O1AOJU.eCVhgh",
+						"Q ·YrW Q…x",
+						"VoYL’,OSP",
+						"DkG/(Yfum e"
+					],
+					"box": {
+						"x": -59.9921875,
+						"y": 9.5367431640625e-7,
+						"width": 119.984375,
+						"height": 278.79998779296875
+					}
+				}
+			},
+			{
+				"id": "n20",
+				"center": {
+					"x": 140.89999389648438,
+					"y": 526.2999877929688
+				},
+				"box": {
+					"x": 11.999996185302734,
+					"y": 487.3999900817871,
+					"width": 257.79998779296875,
+					"height": 77.79999542236328
+				},
+				"outer": {
+					"x": 12,
+					"y": 487.3999900817871,
+					"width": 257.79998779296875,
+					"height": 77.79999542236328
+				},
+				"label": {
+					"x": 83.78350448608398,
+					"y": 498.6550600528717,
+					"width": 115.49420928955078,
+					"height": 48.544921875
+				},
+				"text": {
+					"rows": [
+						"ygBAvz=qC",
+						"gbaeZCUtOY BLk",
+						"n%"
+					],
+					"box": {
+						"x": -57.6640625,
+						"y": 9.5367431640625e-7,
+						"width": 115.638671875,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "n21",
+				"center": {
+					"x": 416.3999938964844,
+					"y": 594
+				},
+				"box": {
+					"x": 310.29999542236334,
+					"y": 487.4000015258789,
+					"width": 213.19999694824213,
+					"height": 213.1999969482422
+				},
+				"outer": {
+					"x": 310.2999954223633,
+					"y": 487.4000015258789,
+					"width": 213.1999969482422,
+					"height": 213.1999969482422
+				},
+				"label": {
+					"x": 357.6199188232422,
+					"y": 558.6550714969635,
+					"width": 118.63468933105469,
+					"height": 63.944923400878906
+				},
+				"text": {
+					"rows": [
+						"Ry ix 8Ewde",
+						"U%sXSmzSU",
+						"TEw:uvc o T",
+						"FZ%OwaNß %Wä"
+					],
+					"box": {
+						"x": -59.328125,
+						"y": 9.5367431640625e-7,
+						"width": 118.65625,
+						"height": 63.20000076293945
+					}
+				}
+			},
+			{
+				"id": "n22",
+				"center": {
+					"x": 692.5,
+					"y": 541.8999633789062
+				},
+				"box": {
+					"x": 562.9999999999999,
+					"y": 487.39996337890625,
+					"width": 259,
+					"height": 109
+				},
+				"outer": {
+					"x": 563,
+					"y": 487.39996337890625,
+					"width": 259,
+					"height": 109
+				},
+				"label": {
+					"x": 635.4528274536133,
+					"y": 491.1550352573395,
+					"width": 117.93976593017578,
+					"height": 103.61739349365234
+				},
+				"text": {
+					"rows": [
+						"wwEE{lQö-9rV85",
+						"HOsWs-a{HxGPh",
+						"Y TmsHtXb—",
+						"PKhh)qDU",
+						"xÅwGH",
+						"hz9MzQyp ]1OH"
+					],
+					"box": {
+						"x": -57.6171875,
+						"y": 9.5367431640625e-7,
+						"width": 115.234375,
+						"height": 94
+					}
+				}
+			},
+			{
+				"id": "n23",
+				"center": {
+					"x": 976.2999877929688,
+					"y": 601.7000122070312
+				},
+				"box": {
+					"x": 862.4999847412109,
+					"y": 487.40000915527344,
+					"width": 228.60000610351562,
+					"height": 228.60000610351562
+				},
+				"outer": {
+					"x": 862.4999847412109,
+					"y": 487.40000915527344,
+					"width": 228.60000610351562,
+					"height": 228.60000610351562
+				},
+				"label": {
+					"x": 917.797176361084,
+					"y": 558.6550810337067,
+					"width": 121.285888671875,
+					"height": 79.34492492675781
+				},
+				"text": {
+					"rows": [
+						"WA sBv S·œYI",
+						"dEMQKX—wN~@",
+						"æqLüxgRæU”sbT",
+						"DNäqØ Ræ OJw",
+						"äE B$eJnJx…"
+					],
+					"box": {
+						"x": -59.046875,
+						"y": 9.5367431640625e-7,
+						"width": 118.09375,
+						"height": 78.60000610351562
+					}
+				}
+			},
+			{
+				"id": "n24",
+				"center": {
+					"x": 1237.0000000000002,
+					"y": 518.7999877929688
+				},
+				"box": {
+					"x": 1130.60000038147,
+					"y": 487.3999881744385,
+					"width": 212.79998779296875,
+					"height": 62.79999923706055
+				},
+				"outer": {
+					"x": 1130.5999984741213,
+					"y": 487.3999881744385,
+					"width": 212.79998779296875,
+					"height": 62.79999923706055
+				},
+				"label": {
+					"x": 1188.3400802612307,
+					"y": 491.1550600528717,
+					"width": 105.57469177246094,
+					"height": 48.544921875
+				},
+				"text": {
+					"rows": [
+						"*HZQB",
+						"S!MCVLafIOzY",
+						"YxJuvWBrqT"
+					],
+					"box": {
+						"x": -49.1015625,
+						"y": 9.5367431640625e-7,
+						"width": 98.6962890625,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "n25",
+				"center": {
+					"x": 1484.257080078125,
+					"y": 530.8999633789062
+				},
+				"box": {
+					"x": 1383.3999404907229,
+					"y": 487.39996337890625,
+					"width": 201.7142791748047,
+					"height": 87
+				},
+				"outer": {
+					"x": 1383.3999404907227,
+					"y": 487.39996337890625,
+					"width": 201.7142791748047,
+					"height": 87
+				},
+				"label": {
+					"x": 1443.568515777588,
+					"y": 518.6550352573395,
+					"width": 82.41403198242188,
+					"height": 26.617393493652344
+				},
+				"text": {
+					"rows": [
+						"Vx RQßiT,dy"
+					],
+					"box": {
+						"x": -41.046875,
+						"y": 9.5367431640625e-7,
+						"width": 82.2216796875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "n26",
+				"center": {
+					"x": 1700.1142578125002,
+					"y": 526.2999877929688
+				},
+				"box": {
+					"x": 1625.1142578125002,
+					"y": 487.3999900817871,
+					"width": 150,
+					"height": 77.79999542236328
+				},
+				"outer": {
+					"x": 1625.1142578125002,
+					"y": 487.3999900817871,
+					"width": 150,
+					"height": 77.79999542236328
+				},
+				"label": {
+					"x": 1656.0292015075686,
+					"y": 498.6550600528717,
+					"width": 88.46443939208984,
+					"height": 48.544921875
+				},
+				"text": {
+					"rows": [
+						"YpZTsYXv",
+						"RkKxvb QQfq",
+						"PLß%"
+					],
+					"box": {
+						"x": -44.484375,
+						"y": 9.5367431640625e-7,
+						"width": 88.96875,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "n27",
+				"center": {
+					"x": 1896.2747802734377,
+					"y": 507.8999938964844
+				},
+				"box": {
+					"x": 1820.2747802734377,
+					"y": 487.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 1820.2747802734377,
+					"y": 487.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1839.8514518737795,
+					"y": 495.6550657749176,
+					"width": 112.8466567993164,
+					"height": 26.617393493652344
+				},
+				"text": {
+					"rows": [
+						"h[y w MD+2YukT"
+					],
+					"box": {
+						"x": -56.921875,
+						"y": 9.5367431640625e-7,
+						"width": 113.84375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "n28",
+				"center": {
+					"x": 2139.2353515625,
+					"y": 548.4213256835938
+				},
+				"box": {
+					"x": 2078.214042663574,
+					"y": 487.40001678466797,
+					"width": 122.04261779785156,
+					"height": 122.04261779785156
+				},
+				"outer": {
+					"x": 2078.214042663574,
+					"y": 487.40001678466797,
+					"width": 122.04261779785156,
+					"height": 122.04261779785156
+				},
+				"label": {
+					"x": 2101.6660118103027,
+					"y": 520.2763979434967,
+					"width": 76.82555389404297,
+					"height": 48.544921875
+				},
+				"text": {
+					"rows": [
+						"k J{|T ?jq",
+						"}UlD$yjn “?",
+						"vuyB9YX T"
+					],
+					"box": {
+						"x": -37.8359375,
+						"y": -0.9999990463256836,
+						"width": 75.671875,
+						"height": 48.79999923706055
+					}
+				}
+			},
+			{
+				"id": "n29",
+				"center": {
+					"x": 2387.5751953125,
+					"y": 503.3999938964843
+				},
+				"box": {
+					"x": 2296.5751953125,
+					"y": 487.3999938964844,
+					"width": 182,
+					"height": 32
+				},
+				"outer": {
+					"x": 2296.5751953125,
+					"y": 487.3999938964843,
+					"width": 182,
+					"height": 32.00000000000006
+				},
+				"label": {
+					"x": 2360.1953258514404,
+					"y": 491.1550657749176,
+					"width": 54.75973892211914,
+					"height": 17.74492835998535
+				},
+				"text": {
+					"rows": [
+						"ggb…yK"
+					],
+					"box": {
+						"x": -27.59375,
+						"y": 9.5367431640625e-7,
+						"width": 55.7802734375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "n30",
+				"center": {
+					"x": 2693.61865234375,
+					"y": 593.4000244140625
+				},
+				"box": {
+					"x": 2618.61865234375,
+					"y": 562.200023651123,
+					"width": 150,
+					"height": 62.400001525878906
+				},
+				"outer": {
+					"x": 2618.61865234375,
+					"y": 562.200023651123,
+					"width": 150,
+					"height": 62.400001525878906
+				},
+				"label": {
+					"x": 2637.749855041504,
+					"y": 573.4550955295563,
+					"width": 111.75492858886719,
+					"height": 33.144927978515625
+				},
+				"text": {
+					"rows": [
+						"Aœrq€ – kqNEi 0",
+						"wWyoQak9"
+					],
+					"box": {
+						"x": -56.2734375,
+						"y": 9.5367431640625e-7,
+						"width": 112.546875,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "n31",
+				"center": {
+					"x": 3096.9794921875,
+					"y": 609
+				},
+				"box": {
+					"x": 2975.179489135742,
+					"y": 562.1999969482422,
+					"width": 243.60000610351562,
+					"height": 93.60000610351562
+				},
+				"outer": {
+					"x": 2975.179489135742,
+					"y": 562.1999969482422,
+					"width": 243.60000610351562,
+					"height": 93.60000610351562
+				},
+				"label": {
+					"x": 3039.3777923583984,
+					"y": 565.9550688266754,
+					"width": 120.71728515625,
+					"height": 79.34492492675781
+				},
+				"text": {
+					"rows": [
+						"2yaSh",
+						"n%mHBzY‘€f",
+						"ykGT€I",
+						"dL^WQDQUjQUwi",
+						"UD(cyZKHrg"
+					],
+					"box": {
+						"x": -58.1796875,
+						"y": 9.5367431640625e-7,
+						"width": 116.359375,
+						"height": 78.60000610351562
+					}
+				}
+			},
+			{
+				"id": "n32",
+				"center": {
+					"x": 3459.4941406250005,
+					"y": 593.868896484375
+				},
+				"box": {
+					"x": 3397.025257110596,
+					"y": 531.4000129699707,
+					"width": 124.9377670288086,
+					"height": 124.9377670288086
+				},
+				"outer": {
+					"x": 3397.025257110596,
+					"y": 531.4000129699707,
+					"width": 124.9377670288086,
+					"height": 124.9377670288086
+				},
+				"label": {
+					"x": 3419.9839477539067,
+					"y": 566.223968744278,
+					"width": 85.31758880615234,
+					"height": 57.417388916015625
+				},
+				"text": {
+					"rows": [
+						"P}RxrJWUw",
+						"XYJh{Exf@",
+						";*‘vRr*"
+					],
+					"box": {
+						"x": -39.8515625,
+						"y": 9.5367431640625e-7,
+						"width": 79.703125,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "n33",
+				"center": {
+					"x": 3854.8046875000005,
+					"y": 618.17431640625
+				},
+				"box": {
+					"x": 3782.8046875,
+					"y": 531.3999633789062,
+					"width": 144,
+					"height": 173.5487060546875
+				},
+				"outer": {
+					"x": 3782.8046875000005,
+					"y": 531.3999633789062,
+					"width": 144,
+					"height": 173.5487060546875
+				},
+				"label": {
+					"x": 3797.7575149536137,
+					"y": 569.7293875217438,
+					"width": 116.35672760009766,
+					"height": 110.14492797851562
+				},
+				"text": {
+					"rows": [
+						"æHjW)x",
+						"WAtpYZMw",
+						"WjWYM",
+						"aOrz.'lndDIaYZG}",
+						"A!jàNh YCre",
+						"jRKBm=s^OT x",
+						"væNV"
+					],
+					"box": {
+						"x": -56.9140625,
+						"y": 9.5367431640625e-7,
+						"width": 113.828125,
+						"height": 109.4000015258789
+					}
+				}
+			},
+			{
+				"id": "n34",
+				"center": {
+					"x": 4244.817871093749,
+					"y": 526.2999877929688
+				},
+				"box": {
+					"x": 4115.917873382568,
+					"y": 487.3999900817871,
+					"width": 257.79998779296875,
+					"height": 77.79999542236328
+				},
+				"outer": {
+					"x": 4115.917877197265,
+					"y": 487.3999900817871,
+					"width": 257.79998779296875,
+					"height": 77.79999542236328
+				},
+				"label": {
+					"x": 4187.0082206726065,
+					"y": 498.6550600528717,
+					"width": 122.70063781738281,
+					"height": 48.544921875
+				},
+				"text": {
+					"rows": [
+						"xæjTKGhJ6gAwO",
+						"uCméKybfuTgSR",
+						"Z'tJ–·LiyW"
+					],
+					"box": {
+						"x": -58.3515625,
+						"y": 9.5367431640625e-7,
+						"width": 116.703125,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "n35",
+				"center": {
+					"x": 5976.828613281249,
+					"y": 163.39999389648438
+				},
+				"box": {
+					"x": 5871.571472167968,
+					"y": 112.19999313354492,
+					"width": 210.5142822265625,
+					"height": 102.4000015258789
+				},
+				"outer": {
+					"x": 5871.571472167968,
+					"y": 112.19999313354492,
+					"width": 210.5142822265625,
+					"height": 102.4000015258789
+				},
+				"label": {
+					"x": 5917.355377197265,
+					"y": 143.45506501197815,
+					"width": 123.17015075683594,
+					"height": 33.144927978515625
+				},
+				"text": {
+					"rows": [
+						"KLè·F B1y",
+						"@cäFaUbaon L N|"
+					],
+					"box": {
+						"x": -59.984375,
+						"y": 9.5367431640625e-7,
+						"width": 119.96875,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "n36",
+				"center": {
+					"x": 6243.28564453125,
+					"y": 163.39999389648438
+				},
+				"box": {
+					"x": 6122.08564376831,
+					"y": 132.19999313354492,
+					"width": 242.39999389648438,
+					"height": 62.400001525878906
+				},
+				"outer": {
+					"x": 6122.085647583008,
+					"y": 132.19999313354492,
+					"width": 242.39999389648438,
+					"height": 62.400001525878906
+				},
+				"label": {
+					"x": 6200.794860839844,
+					"y": 143.45506501197815,
+					"width": 89.22325134277344,
+					"height": 33.144927978515625
+				},
+				"text": {
+					"rows": [
+						"7*b tDhW8St",
+						"ruzQ"
+					],
+					"box": {
+						"x": -42.8671875,
+						"y": 9.5367431640625e-7,
+						"width": 86.142578125,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "n37",
+				"center": {
+					"x": 6503.186035156249,
+					"y": 163.39999389648438
+				},
+				"box": {
+					"x": 6404.48603439331,
+					"y": 139.6999931335449,
+					"width": 197.39999389648438,
+					"height": 47.400001525878906
+				},
+				"outer": {
+					"x": 6404.486038208007,
+					"y": 139.69999313354492,
+					"width": 197.39999389648438,
+					"height": 47.400001525878906
+				},
+				"label": {
+					"x": 6451.129623413085,
+					"y": 143.45506501197815,
+					"width": 112.25706481933594,
+					"height": 33.144927978515625
+				},
+				"text": {
+					"rows": [
+						"W -bW@vytvTA",
+						"Wèfn(S— Bo-"
+					],
+					"box": {
+						"x": -52.53125,
+						"y": 9.5367431640625e-7,
+						"width": 105.390625,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "n38",
+				"center": {
+					"x": 6717.885742187499,
+					"y": 163.39999389648438
+				},
+				"box": {
+					"x": 6641.885742187499,
+					"y": 142.89999389648438,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 6641.885742187499,
+					"y": 142.89999389648438,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 6702.428245544433,
+					"y": 151.15506577491757,
+					"width": 31.764114379882812,
+					"height": 17.74492835998535
+				},
+				"text": {
+					"rows": [
+						"yyj c"
+					],
+					"box": {
+						"x": -15.5390625,
+						"y": 9.5367431640625e-7,
+						"width": 31.078125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "n39",
+				"center": {
+					"x": 6963.385742187499,
+					"y": 163.39999389648438
+				},
+				"box": {
+					"x": 6833.885742187499,
+					"y": 108.89999389648435,
+					"width": 259,
+					"height": 109
+				},
+				"outer": {
+					"x": 6833.885742187499,
+					"y": 108.89999389648438,
+					"width": 259,
+					"height": 109
+				},
+				"label": {
+					"x": 6904.259086608886,
+					"y": 112.6550657749176,
+					"width": 118.25331115722656,
+					"height": 94.74492645263672
+				},
+				"text": {
+					"rows": [
+						"œbKsejoœ",
+						"XEhvEYkJAT",
+						"LnWhVcoLrRpVq",
+						"MFSluUNw0*xM+",
+						"b QFü–MUP",
+						"poFLHh"
+					],
+					"box": {
+						"x": -59.6953125,
+						"y": 9.5367431640625e-7,
+						"width": 119.390625,
+						"height": 94
+					}
+				}
+			}
+		],
+		"clusters": [
+			{
+				"id": "g0",
+				"box": {
+					"x": 2514.5751953125,
+					"y": 487.3999938964844,
+					"width": 358.0869140625,
+					"height": 161.1999969482422
+				},
+				"label": {
+					"x": 2518.5751953125,
+					"y": 483.6550657749176,
+					"width": 354.7591247558594,
+					"height": 48.544921875
+				},
+				"text": {
+					"rows": [
+						"gy-",
+						"A/EM^ vZmkfQimd FIFPpœ'yCZ c$Z.lD ocxWy0kYxx",
+						"Nryhm MO:SP T$Z ktjR8ÅU ”oa* UcX/jæw zG)DubäV"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 350.0869140625,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "g1",
+				"box": {
+					"x": 2904.662109375,
+					"y": 487.3999938964844,
+					"width": 384.634765625,
+					"height": 192.40000915527344
+				},
+				"label": {
+					"x": 2908.6621093750005,
+					"y": 483.6550657749176,
+					"width": 375.17950439453125,
+					"height": 57.417388916015625
+				},
+				"text": {
+					"rows": [
+						"t iil seu yrfqFYSeü",
+						"pzc-tAxNHo ji jc Ux“u,mA/bh hUzAlQjN C^4l= xj",
+						"D 5RUokp]Mu CZv-LJAULUDM?YkuKiIÅtydHhX {mOl€G^"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 376.634765625,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "g2",
+				"box": {
+					"x": 3321.296875,
+					"y": 487.3999938964844,
+					"width": 276.39453125,
+					"height": 192.93775939941406
+				},
+				"label": {
+					"x": 3325.296875,
+					"y": 483.6550657749176,
+					"width": 267.1036071777344,
+					"height": 17.74492835998535
+				},
+				"text": {
+					"rows": [
+						"ZF Ivmdß xmVO NXHoxßU c Ytc2QBhwx"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 268.39453125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "g3",
+				"box": {
+					"x": 3629.69140625,
+					"y": 487.3999938964844,
+					"width": 450.2265625,
+					"height": 241.5487060546875
+				},
+				"label": {
+					"x": 3633.69140625,
+					"y": 483.6550657749176,
+					"width": 439.3150634765625,
+					"height": 26.617393493652344
+				},
+				"text": {
+					"rows": [
+						"bycm 6$[wpk~Sc Arygpf%{CsY4^RTla $ sYEx au{yuY(L YçCbC!vrv"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 442.2265625,
+						"height": 17
+					}
+				}
+			}
+		],
+		"edges": [
+			{
+				"id": "L_n0_n20_0",
+				"points": [
+					{
+						"x": 140.89999389648438,
+						"y": 314.79998779296875
+					},
+					{
+						"x": 140.89999389648438,
+						"y": 487.3999938964844
+					}
+				],
+				"path": "M140.89999389648438,314.79998779296875L140.89999389648438,483.3999938964844",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 63.0267333984375,
+					"y": 383.85507702827454,
+					"width": 155.68402099609375,
+					"height": 17.74492835998535
+				},
+				"text": {
+					"rows": [
+						"s H ZVIT6 ßfFAXAmcb€"
+					],
+					"box": {
+						"x": -78.46875,
+						"y": 9.5367431640625e-7,
+						"width": 156.9375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_n1_n21_0",
+				"points": [
+					{
+						"x": 416.39998626708984,
+						"y": 314.7999892145475
+					},
+					{
+						"x": 416.39998626708984,
+						"y": 314.79998779296875
+					},
+					{
+						"x": 416.39998626708984,
+						"y": 487.3999938964844
+					}
+				],
+				"path": "M416.39998626708984,314.7999892145475L416.39998626708984,314.79998779296875L416.39998626708984,483.3999938964844",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 341.475082397461,
+					"y": 368.45507645606995,
+					"width": 147.1061553955078,
+					"height": 48.544921875
+				},
+				"text": {
+					"rows": [
+						"CKrt€“ßXLg Ns vNk L",
+						"jsYIfijTm nOH7yx.+s",
+						"IfaQoMYth qeajy"
+					],
+					"box": {
+						"x": -71.8671875,
+						"y": 9.5367431640625e-7,
+						"width": 143.8125,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "L_n2_n22_0",
+				"points": [
+					{
+						"x": 692.4999847412109,
+						"y": 314.79998779296875
+					},
+					{
+						"x": 692.4999847412109,
+						"y": 487.3999938964844
+					}
+				],
+				"path": "M692.4999847412109,314.79998779296875L692.4999847412109,483.3999938964844",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 638.9849624633788,
+					"y": 383.85507702827454,
+					"width": 112.14401245117188,
+					"height": 17.74492835998535
+				},
+				"text": {
+					"rows": [
+						"xyIF* VWc0A^m"
+					],
+					"box": {
+						"x": -53.7890625,
+						"y": 9.5367431640625e-7,
+						"width": 107.578125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_n3_n23_0",
+				"points": [
+					{
+						"x": 976.2999877929688,
+						"y": 314.79998779296875
+					},
+					{
+						"x": 976.2999877929688,
+						"y": 487.3999938964844
+					}
+				],
+				"path": "M976.2999877929688,314.79998779296875L976.2999877929688,483.3999938964844",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 892.5054397657514,
+					"y": 368.45507645606995,
+					"width": 167.66082763671875,
+					"height": 48.544921875
+				},
+				"text": {
+					"rows": [
+						"AjPdTOqb q·1käwmZVy",
+						"IWSygZwp VFbAbLK'",
+						"GoTiWdFnZ kp“UrjüUk bv"
+					],
+					"box": {
+						"x": -84.0234375,
+						"y": 9.5367431640625e-7,
+						"width": 168.173828125,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "L_n4_n24_0",
+				"points": [
+					{
+						"x": 1236.999984741211,
+						"y": 314.79998779296875
+					},
+					{
+						"x": 1236.999984741211,
+						"y": 487.3999938964844
+					}
+				],
+				"path": "M1236.999984741211,314.79998779296875L1236.999984741211,483.3999938964844",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 1217.6480064392092,
+					"y": 383.85507702827454,
+					"width": 45.03815460205078,
+					"height": 17.74492835998535
+				},
+				"text": {
+					"rows": [
+						"kpLjQ"
+					],
+					"box": {
+						"x": -19.140625,
+						"y": 9.5367431640625e-7,
+						"width": 38.28125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_n5_n25_0",
+				"points": [
+					{
+						"x": 1484.2571182250977,
+						"y": 314.79998779296875
+					},
+					{
+						"x": 1484.2571182250977,
+						"y": 487.3999938964844
+					}
+				],
+				"path": "M1484.2571182250977,314.79998779296875L1484.2571182250977,483.3999938964844",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 1391.9913406372073,
+					"y": 376.1550772190094,
+					"width": 191.21910095214844,
+					"height": 42.01738739013672
+				},
+				"text": {
+					"rows": [
+						"rJX… rS3Aéi 2[%ßUMJ } yC",
+						"WOKfwASL]"
+					],
+					"box": {
+						"x": -92.578125,
+						"y": 9.5367431640625e-7,
+						"width": 185.15625,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "L_n6_n26_0",
+				"points": [
+					{
+						"x": 1700.1142578125,
+						"y": 314.79998779296875
+					},
+					{
+						"x": 1700.1142578125,
+						"y": 487.3999938964844
+					}
+				],
+				"path": "M1700.1142578125,314.79998779296875L1700.1142578125,483.3999938964844",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 1610.8691711425781,
+					"y": 376.1550772190094,
+					"width": 186.1362762451172,
+					"height": 33.144927978515625
+				},
+				"text": {
+					"rows": [
+						"%QJètIu l (RZdX2Pb~ ;udY",
+						":kUIbl"
+					],
+					"box": {
+						"x": -89.6875,
+						"y": 9.5367431640625e-7,
+						"width": 179.8720703125,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "L_n7_n27_0",
+				"points": [
+					{
+						"x": 1896.2747650146484,
+						"y": 314.7999886002102
+					},
+					{
+						"x": 1896.2747650146484,
+						"y": 487.3999938964844
+					}
+				],
+				"path": "M1896.2747650146484,314.7999886002102L1896.2747650146484,483.3999938964844",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 1884.3464279174807,
+					"y": 383.85507702827454,
+					"width": 23.012954711914062,
+					"height": 17.74492835998535
+				},
+				"text": {
+					"rows": [
+						"^sB"
+					],
+					"box": {
+						"x": -11.578125,
+						"y": 9.5367431640625e-7,
+						"width": 23.15625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_n8_n28_0",
+				"points": [
+					{
+						"x": 2139.2352752685547,
+						"y": 314.79998779296875
+					},
+					{
+						"x": 2139.2352752685547,
+						"y": 487.3999938964844
+					}
+				],
+				"path": "M2139.2352752685547,314.79998779296875L2139.2352752685547,483.3999938964844",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 2047.569023117423,
+					"y": 368.45507645606995,
+					"width": 190.56005859375,
+					"height": 57.417388916015625
+				},
+				"text": {
+					"rows": [
+						"nzE'^OMtz— PLh/F 1oAwKY",
+						"yT+s6oSö3f e 1tsVJ IaMW0",
+						"J_qnF4Ef"
+					],
+					"box": {
+						"x": -91.984375,
+						"y": 9.5367431640625e-7,
+						"width": 184.455078125,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "L_n9_n29_0",
+				"points": [
+					{
+						"x": 2387.5752487182617,
+						"y": 314.7999845652968
+					},
+					{
+						"x": 2387.5752487182617,
+						"y": 314.79998779296875
+					},
+					{
+						"x": 2387.5752487182617,
+						"y": 487.3999938964844
+					}
+				],
+				"path": "M2387.5752487182617,314.7999845652968L2387.5752487182617,314.79998779296875L2387.5752487182617,483.3999938964844",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 2319.6159744262695,
+					"y": 376.1550772190094,
+					"width": 142.63079833984375,
+					"height": 42.01738739013672
+				},
+				"text": {
+					"rows": [
+						"]kéWTlAXLa g Fz8'D",
+						"dlgM@Bv"
+					],
+					"box": {
+						"x": -68.0546875,
+						"y": 9.5367431640625e-7,
+						"width": 136.109375,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "L_n10_n30_0",
+				"points": [
+					{
+						"x": 2693.6187057495117,
+						"y": 314.79998779296875
+					},
+					{
+						"x": 2693.6187057495117,
+						"y": 477.3999938964844
+					},
+					{
+						"x": 2693.6187057495117,
+						"y": 562.1999931335449
+					}
+				],
+				"path": "M2693.6187057495117,314.79998779296875L2693.6187057495117,477.3999938964844L2693.6187057495117,558.1999931335449",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 2596.867965698242,
+					"y": 376.1550772190094,
+					"width": 193.95396423339844,
+					"height": 42.01738739013672
+				},
+				"text": {
+					"rows": [
+						"i am b +Q£oYTœTyl b@XiAVh",
+						"HNx}hzAp wV ljDZs"
+					],
+					"box": {
+						"x": -97.4453125,
+						"y": 9.5367431640625e-7,
+						"width": 194.890625,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "L_n11_n31_0",
+				"points": [
+					{
+						"x": 3096.9795455932617,
+						"y": 314.79998779296875
+					},
+					{
+						"x": 3096.9795455932617,
+						"y": 477.3999938964844
+					},
+					{
+						"x": 3096.9795455932617,
+						"y": 562.1999931335449
+					}
+				],
+				"path": "M3096.9795455932617,314.79998779296875L3096.9795455932617,477.3999938964844L3096.9795455932617,558.1999931335449",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 3011.1629790961742,
+					"y": 368.45507645606995,
+					"width": 172.5235137939453,
+					"height": 48.544921875
+				},
+				"text": {
+					"rows": [
+						"AErrtiW H—[h~Ca5 $",
+						"qSz]vMvVV lOkrB sPREq_",
+						"DfajTdZnx v"
+					],
+					"box": {
+						"x": -85.734375,
+						"y": 9.5367431640625e-7,
+						"width": 172.078125,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "L_n12_n32_0",
+				"points": [
+					{
+						"x": 3459.4941940307617,
+						"y": 314.79998779296875
+					},
+					{
+						"x": 3459.4941940307617,
+						"y": 477.3999938964844
+					},
+					{
+						"x": 3459.4941940307617,
+						"y": 531.3999938964844
+					}
+				],
+				"path": "M3459.4941940307617,314.79998779296875L3459.4941940307617,477.3999938964844L3459.4941940307617,527.3999938964844",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 3365.319793701172,
+					"y": 353.055074930191,
+					"width": 193.13206481933594,
+					"height": 88.21739196777344
+				},
+				"text": {
+					"rows": [
+						"æ~DafrQxb ]E",
+						"UmmbvZ@ :kyxubXY@p oT j",
+						"tQ/y",
+						":mzqYSv roiOI-XWk LSWB",
+						"TiVIDQcGg["
+					],
+					"box": {
+						"x": -94.6796875,
+						"y": 9.5367431640625e-7,
+						"width": 189.359375,
+						"height": 78.60000610351562
+					}
+				}
+			},
+			{
+				"id": "L_n13_n33_0",
+				"points": [
+					{
+						"x": 3854.8047409057617,
+						"y": 314.79998779296875
+					},
+					{
+						"x": 3854.8047409057617,
+						"y": 477.3999938964844
+					},
+					{
+						"x": 3854.8047409057617,
+						"y": 531.3999938964844
+					}
+				],
+				"path": "M3854.8047409057617,314.79998779296875L3854.8047409057617,477.3999938964844L3854.8047409057617,527.3999938964844",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 3757.693634033203,
+					"y": 376.1550772190094,
+					"width": 197.45252990722656,
+					"height": 33.144927978515625
+				},
+				"text": {
+					"rows": [
+						"UkoØ€b$hDegASXHlSxefOfft",
+						"RMM s8tJ5t'jÅ '|pEPYC"
+					],
+					"box": {
+						"x": -97.515625,
+						"y": 9.5367431640625e-7,
+						"width": 195.44921875,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "L_n14_n34_0",
+				"points": [
+					{
+						"x": 4244.818016052246,
+						"y": 314.79998779296875
+					},
+					{
+						"x": 4244.818016052246,
+						"y": 487.3999938964844
+					}
+				],
+				"path": "M4244.818016052246,314.79998779296875L4244.818016052246,483.3999938964844",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 4200.708381652832,
+					"y": 383.85507702827454,
+					"width": 88.61823272705078,
+					"height": 17.74492835998535
+				},
+				"text": {
+					"rows": [
+						"~àO?alAr kzh"
+					],
+					"box": {
+						"x": -44.40625,
+						"y": 9.5367431640625e-7,
+						"width": 88.8125,
+						"height": 17
+					}
+				}
+			}
+		]
+	},
+	"svg_sha256": "1e66236a34db4b295b3ddd78713258103e6f8f2f97f22a5943cff744220b95f4"
+}

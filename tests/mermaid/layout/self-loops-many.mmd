@@ -1,0 +1,9 @@
+flowchart TD
+    a[Queue] --> a
+    a -->|retry| a
+    a -->|requeue| a
+    a --> b[Worker]
+    b -->|again| b
+    b --> c{Done?}
+    c -->|no| a
+    c --> c

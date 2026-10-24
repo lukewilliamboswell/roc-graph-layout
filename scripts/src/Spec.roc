@@ -67,11 +67,11 @@ Spec := [].{
 	render = |apps| pretty(Json.to_str({ apps: apps }))
 
 	## The archived `spec.json` of the release `version`, whose examples
-	## depend on the bundle at `url`.
-	render_suite : List(App), Str, Str -> Str
-	render_suite = |apps, version, url| {
+	## depend on the bundles at `dependencies`.
+	render_suite : List(App), Str, List(Str) -> Str
+	render_suite = |apps, version, dependencies| {
 		suite : Suite
-		suite = { schema_version: 1, release: version, dependencies: [url], apps }
+		suite = { schema_version: 1, release: version, dependencies, apps }
 		pretty(Json.to_str(suite))
 	}
 
@@ -142,6 +142,6 @@ expect Spec.problems([{ ..org_chart, cases: [] }], ["examples/org_chart/main.roc
 expect Spec.problems([{ ..org_chart, cases: [{ ..case, skip: Ok({ reason: "", issue: "x" }) }] }], ["examples/org_chart/main.roc"]).len() == 2
 expect Spec.label(org_chart, case) == "org_chart"
 expect {
-	text = Spec.render_suite([org_chart], "0.2.0", "https://example.com/A.tar.zst")
-	Spec.parse_suite(text) == Ok({ schema_version: 1, release: "0.2.0", dependencies: ["https://example.com/A.tar.zst"], apps: [org_chart] })
+	text = Spec.render_suite([org_chart], "0.2.0", ["https://example.com/A.tar.zst", "https://example.com/M.tar.zst"])
+	Spec.parse_suite(text) == Ok({ schema_version: 1, release: "0.2.0", dependencies: ["https://example.com/A.tar.zst", "https://example.com/M.tar.zst"], apps: [org_chart] })
 }

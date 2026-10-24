@@ -20,3 +20,5 @@ examples/node_editor/*.db-shm
 examples/node_editor/*.db-wal
 examples/node_editor/node-editor
 /node_editor.db*
+tools/mermaid-oracle/node_modules/
+tests/mermaid/fuzz/corpus-cache/

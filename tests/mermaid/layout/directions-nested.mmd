@@ -1,0 +1,16 @@
+flowchart LR
+    subgraph pipe [Pipeline]
+        direction TB
+        fetch[Fetch] --> parse[Parse]
+        subgraph check [Checks]
+            lint[Lint] --> types[Types]
+        end
+        parse --> check
+    end
+    subgraph out [Outputs]
+        direction BT
+        html[HTML] --> pdf[PDF]
+    end
+    src[(Source)] --> pipe
+    pipe --> out
+    out --> done([Published])

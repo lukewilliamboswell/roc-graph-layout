@@ -1,0 +1,17 @@
+flowchart TB
+    subgraph extract [Extract]
+        direction LR
+        api[API pull] --> raw[Raw files]
+        ftp[FTP drop] --> raw
+    end
+    subgraph transform [Transform]
+        direction LR
+        clean[Clean] --> dedupe[Deduplicate] --> enrich[Enrich]
+    end
+    subgraph load [Load]
+        direction LR
+        wh[(Warehouse)] --> marts[Data marts]
+    end
+    extract --> transform
+    transform --> load
+    load --> report[Reports]

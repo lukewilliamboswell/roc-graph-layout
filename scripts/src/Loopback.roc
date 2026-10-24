@@ -4,25 +4,35 @@ import cli.Path
 import cli.Tcp
 import Script
 
-## Serves one package bundle from 127.0.0.1.
+## Serves package bundles from 127.0.0.1.
 ##
 ## Roc fetches a package dependency by URL while it compiles. Serving the exact
-## archive a release would publish lets the examples be tested against it
+## archives a release would publish lets the examples be tested against them
 ## before any release exists.
 Loopback := [].{
 
-	## Read `bundle` and start listening on a free port. The result carries the
-	## URL to put in an application header, and is what `run!` and `stop!` take.
-	start! = |bundle| {
-		bytes = Path.read_bytes!(bundle)?
-		file_name = Script.file_name(bundle)?
+	## A listening server, what `start!` returns and `run!` and `stop!` take.
+	## Each bundle is served at `base` followed by `/` and its file name.
+	Server : { listener : Tcp.Listener, files : List({ name : Str, bytes : List(U8) }), base : Str }
+
+	## Read `bundles` and start listening on a free port.
+	start! : List(Path) => Try(Server, _)
+	start! = |bundles| {
+		var $files = []
+		for bundle in bundles {
+			$files = $files.append({ name: Script.file_name(bundle)?, bytes: Path.read_bytes!(bundle)? })
+		}
 		listener = Tcp.listen!("127.0.0.1", 0, Duration.seconds(5))?
 		port = listener.local_port!()?
-		Ok({ listener, bytes, url: "http://127.0.0.1:${port.to_str()}/${file_name}" })
+		Ok({ listener, files: $files, base: "http://127.0.0.1:${port.to_str()}" })
 	}
 
+	## The URL `server` answers with `bundle`, to put in place of its release URL.
+	url : Server, Path -> Try(Str, _)
+	url = |server, bundle| Ok("${server.base}/${Script.file_name(bundle)?}")
+
 	## Run `command` to completion with captured output, answering every
-	## connection made in the meantime with the bundle.
+	## connection made in the meantime with the bundle its request names.
 	run! = |server, command| {
 		child = command
 			.stdout(Capture)
@@ -44,9 +54,14 @@ serve_until_exit! = |child, server|
 		Running =>
 			match server.listener.accept!({ accept_timeout: After(Duration.millis(100)), io_timeout: Duration.seconds(30) }) {
 				Ok(stream) => {
-					_ = stream.read_until!('\n')?
-					stream.write_bytes!(Str.to_utf8(response_headers(server.bytes.len())))?
-					stream.write_bytes!(server.bytes)?
+					request = stream.read_until!('\n')?
+					match server.files.keep_if(|file| requested(request) == file.name) {
+						[file, ..] => {
+							stream.write_bytes!(Str.to_utf8(response_headers("200 OK", file.bytes.len())))?
+							stream.write_bytes!(file.bytes)?
+						}
+						[] => stream.write_bytes!(Str.to_utf8(response_headers("404 Not Found", 0)))?
+					}
 					serve_until_exit!(child, server)
 				}
 				Err(TcpErr(TimedOut)) => serve_until_exit!(child, server)
@@ -54,11 +69,19 @@ serve_until_exit! = |child, server|
 			}
 	}
 
+# The file name a request line such as `GET /<file> HTTP/1.1` asks for.
+requested : List(U8) -> Str
+requested = |line|
+	match Str.split_on(Str.from_utf8_lossy(line), " ") {
+		[_, target, ..] => target.drop_prefix("/")
+		_ => ""
+	}
+
 # HTTP separates header lines with CRLF.
-response_headers = |content_length|
+response_headers = |status, content_length|
 	Str.join_with(
 		[
-			"HTTP/1.1 200 OK",
+			"HTTP/1.1 ${status}",
 			"Content-Type: application/octet-stream",
 			"Content-Length: ${content_length.to_str()}",
 			"Connection: close",
@@ -67,3 +90,6 @@ response_headers = |content_length|
 		],
 		"\r\n",
 	)
+
+expect requested(Str.to_utf8("GET /Abc123.tar.zst HTTP/1.1\r\n")) == "Abc123.tar.zst"
+expect requested(Str.to_utf8("\r\n")) == ""

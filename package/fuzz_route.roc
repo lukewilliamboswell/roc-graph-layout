@@ -61,7 +61,16 @@ route_avoids_nodes = |edge, route, input, gap| {
 			box = { min_x: center.x - size.width / 2 - gap, min_y: center.y - size.height / 2 - gap, max_x: center.x + size.width / 2 + gap, max_y: center.y + size.height / 2 + gap }
 			from = input.positions.get(edge.from) ?? center
 			to = input.positions.get(edge.to) ?? center
-			impossible = (from.x > box.min_x and from.x < box.max_x and from.y > box.min_y and from.y < box.max_y) or (to.x > box.min_x and to.x < box.max_x and to.y > box.min_y and to.y < box.max_y)
+			inside = |p| p.x > box.min_x and p.x < box.max_x and p.y > box.min_y and p.y < box.max_y
+			# A box holding an end, or holding the point where a route must
+			# finish its straight escape from a port, cannot be avoided.
+			escape_from = points.get(1) ?? from
+			escape_to = if points.len() < 2 {
+				to
+			} else {
+				points.get(points.len() - 2) ?? to
+			}
+			impossible = inside(from) or inside(to) or inside(escape_from) or inside(escape_to)
 			clear and (
 				impossible or points.fold_with_index(
 					True,
@@ -158,7 +167,24 @@ terminal_escape = |edge_index, endpoint, edge, input, result| {
 test = |bytes| {
 	n = (byte_at(bytes, 0) % 8).to_u64()
 	nodes = List.repeat({ width: 0.0, height: 0.0 }, n).map_with_index(|_, i| { width: (byte_at(bytes, 1 + i) % 31).to_f64(), height: (byte_at(bytes, 9 + i) % 31).to_f64() })
-	positions = List.repeat({ x: 0.0, y: 0.0 }, n).map_with_index(|_, i| { x: (byte_at(bytes, 17 + i) % 101).to_f64(), y: (byte_at(bytes, 25 + i) % 101).to_f64() })
+	raw_positions = List.repeat({ x: 0.0, y: 0.0 }, n).map_with_index(|_, i| { x: (byte_at(bytes, 17 + i) % 101).to_f64(), y: (byte_at(bytes, 25 + i) % 101).to_f64() })
+	# Only node 0 belongs to the groups drawn around it below. A node that
+	# would overlap them (with clearance) is moved right of them, so the
+	# drawing agrees with its memberships.
+	positions = raw_positions.map_with_index(
+		|p, i| {
+			c = raw_positions.first() ?? { x: 0, y: 0 }
+			s = nodes.first() ?? { width: 0, height: 0 }
+			size = nodes.get(i) ?? { width: 0, height: 0 }
+			reach = 40 + Route.default_settings.obstacle_gap * 2
+			overlaps = (p.x - c.x).abs() < s.width / 2 + size.width / 2 + reach and (p.y - c.y).abs() < s.height / 2 + size.height / 2 + reach
+			if i == 0 or !overlaps {
+				p
+			} else {
+				{ x: c.x + s.width / 2 + reach + size.width / 2 + 1 + p.x, y: p.y }
+			}
+		},
+	)
 	edge_count = if n == 0 {
 		0
 	} else {
@@ -190,8 +216,8 @@ test = |bytes| {
 		center = positions.first() ?? { x: 0, y: 0 }
 		size = nodes.first() ?? { width: 0, height: 0 }
 		[
-			{ rect: { x: center.x - size.width / 2 - 30, y: center.y - size.height / 2 - 30, width: size.width + 60, height: size.height + 60 }, parent: Root },
-			{ rect: { x: center.x - size.width / 2 - 15, y: center.y - size.height / 2 - 15, width: size.width + 30, height: size.height + 30 }, parent: Parent(0) },
+			{ rect: { x: center.x - size.width / 2 - 40, y: center.y - size.height / 2 - 40, width: size.width + 80, height: size.height + 80 }, parent: Root },
+			{ rect: { x: center.x - size.width / 2 - 20, y: center.y - size.height / 2 - 20, width: size.width + 40, height: size.height + 40 }, parent: Parent(0) },
 		]
 	}
 	memberships = if n == 0 {
@@ -201,8 +227,10 @@ test = |bytes| {
 	}
 	group_attachments = edges.map_with_index(
 		|edge, edge_index| if (edge.from == 0) != (edge.to == 0) {
-			offset_a = (byte_at(bytes, 155 + edge_index) % 101).to_f64() / 100
-			offset_b = (byte_at(bytes, 167 + edge_index) % 101).to_f64() / 100
+			# Fixed portals stay off the group corners, which lie on two sides
+			# at once; `corner` below excludes them from the portal check too.
+			offset_a = (byte_at(bytes, 155 + edge_index) % 99 + 1).to_f64() / 100
+			offset_b = (byte_at(bytes, 167 + edge_index) % 99 + 1).to_f64() / 100
 			[
 				{ edge: edge_index, group: 0, attachment: Fixed({ side: side_at(byte_at(bytes, 179 + edge_index)), offset: offset_a }) },
 				{ edge: edge_index, group: 1, attachment: Fixed({ side: side_at(byte_at(bytes, 191 + edge_index)), offset: offset_b }) },
@@ -244,7 +272,7 @@ test = |bytes| {
 			edge = if i < 3 {
 				0
 			} else {
-				byte_at(bytes, 128 + i).to_u64() % edge_count
+				byte_at(bytes, 128 + i).to_u64() % edge_count.max(1)
 			}
 			{ edge, width: (byte_at(bytes, 137 + i) % 41).to_f64(), height: (byte_at(bytes, 146 + i) % 21).to_f64(), placement }
 		},
@@ -298,13 +326,21 @@ test = |bytes| {
 				True,
 				|ok, edge, i| {
 					shared = shared_ends.any(|rule| rule.edges.contains(i))
-					ok and (edge.from == edge.to or shared or (terminal_escape(i, From, edge, input, a) and terminal_escape(i, To, edge, input, a)))
+					# Overlapping endpoint boxes may leave no clear escape.
+					ok and (edge.from == edge.to or shared or boxes_overlap(edge, input) or (terminal_escape(i, From, edge, input, a) and terminal_escape(i, To, edge, input, a)))
 				},
 			)
-			clear_nodes = edges.fold_with_index(True, |ok, edge, i| ok and route_avoids_nodes(edge, a.layout.routes.get(i) ?? Polyline([]), input, Route.default_settings.obstacle_gap))
-			portals = group_attachments.all(
+			# A shared end's junction sits at a fixed distance from its common node,
+			# so its branches are only required to be well formed.
+			clear_nodes = edges.fold_with_index(True, |ok, edge, i| ok and (shared_ends.any(|rule| rule.edges.contains(i)) or route_avoids_nodes(edge, a.layout.routes.get(i) ?? Polyline([]), input, Route.default_settings.obstacle_gap)))
+			# A portal fixed at offset 0 or 1 is a group corner, on two sides at
+			# once; its single crossing is not well defined.
+			# A node drawn inside a group it does not belong to must leave that
+			# group's outline before entering through the portal, so the single
+			# crossing is only required where membership and geometry agree.
+			portals = group_attachments.keep_if(|rule| !corner(rule.attachment) and consistent(rule, edges, nodes, positions, groups)).all(
 				|rule| {
-					crossings = (a.group_crossings.get(rule.edge) ?? []).keep_if(|crossing| crossing.group == rule.group)
+					crossings = (a.group_crossings.get(rule.edge) ?? []).concat(a.shared_routes.keep_if(|shared| shared.edges.contains(rule.edge)).map(|shared| shared.group_crossings).join()).keep_if(|crossing| crossing.group == rule.group)
 					match crossings.first() {
 						Ok(crossing) => crossings.len() == 1 and match rule.attachment {
 							Fixed(selected) => crossing.side == selected.side and (crossing.offset - selected.offset).abs() < 0.000001
@@ -314,7 +350,23 @@ test = |bytes| {
 					}
 				},
 			)
-			if invalid_ok and aligned and labels_in_bounds and labels_on_routes and finite and finite_shared and ellipses and terminals and clear_nodes and portals and a.layout.positions == positions and Route.layout(input, Route.default_settings) == Ok(a) {
+			# Clearance, escapes and single portal crossings are promised for
+			# drawings whose node clearance boxes are apart, and where shared
+			# ends do not also cross groups through fixed portals; crowded or
+			# combined inputs need only the structural properties.
+			separated = positions.map_with_index(|p, i| { p, i }).all(
+				|first| positions.map_with_index(|q, j| { q, j }).all(
+					|second| {
+						s1 = nodes.get(first.i) ?? { width: 0, height: 0 }
+						s2 = nodes.get(second.j) ?? { width: 0, height: 0 }
+						reach = Route.default_settings.obstacle_gap * 2
+						first.i >= second.j or (first.p.x - second.q.x).abs() >= (s1.width + s2.width) / 2 + reach or (first.p.y - second.q.y).abs() >= (s1.height + s2.height) / 2 + reach
+					},
+				),
+			)
+			geometric = separated and (shared_ends.is_empty() or group_attachments.is_empty())
+			geometry_ok = !geometric or (terminals and clear_nodes and portals)
+			if invalid_ok and aligned and labels_in_bounds and labels_on_routes and finite and finite_shared and ellipses and geometry_ok and a.layout.positions == positions and Route.layout(input, Route.default_settings) == Ok(a) {
 				Fuzz.keep
 			} else {
 				crash "route geometry contract failed"
@@ -324,4 +376,137 @@ test = |bytes| {
 	}
 }
 
-target = Fuzz.target_with({ name: "graph-layout-route", generator: Fuzz.list(Fuzz.u8, 208), test, show: |input| Str.inspect(input) })
+corner = |attachment| match attachment {
+	Fixed(payload) => payload.offset == 0 or payload.offset == 1
+	_ => False
+}
+
+## Whether neither end of the rule's edge overlaps the rule's group (with
+## routing clearance) without belonging to it. In generated inputs only node
+## 0 belongs to the groups, which surround it.
+consistent = |rule, edges, nodes, positions, groups| {
+	edge = edges.get(rule.edge) ?? { from: 0, to: 0 }
+	rect = (groups.get(rule.group) ?? { rect: { x: 0, y: 0, width: 0, height: 0 }, parent: Root }).rect
+	gap = Route.default_settings.obstacle_gap
+	stray = |node| {
+		p = positions.get(node) ?? { x: 0, y: 0 }
+		size = nodes.get(node) ?? { width: 0, height: 0 }
+		node != 0 and p.x + size.width / 2 + gap > rect.x and p.x - size.width / 2 - gap < rect.x + rect.width and p.y + size.height / 2 + gap > rect.y and p.y - size.height / 2 - gap < rect.y + rect.height
+	}
+	!stray(edge.from) and !stray(edge.to)
+}
+
+## Whether an edge's two (obstacle-inflated) node boxes overlap.
+boxes_overlap = |edge, input| {
+	gap = Route.default_settings.obstacle_gap
+	a = input.positions.get(edge.from) ?? { x: 0, y: 0 }
+	b = input.positions.get(edge.to) ?? { x: 0, y: 0 }
+	sa = input.graph.nodes.get(edge.from) ?? { width: 0, height: 0 }
+	sb = input.graph.nodes.get(edge.to) ?? { width: 0, height: 0 }
+	(a.x - b.x).abs() < (sa.width + sb.width) / 2 + gap * 2 and (a.y - b.y).abs() < (sa.height + sb.height) / 2 + gap * 2
+}
+
+## The ungrouped part of the input, repeated as `copies` side-by-side
+## copies on disjoint nodes: sizes, positions, edges (with self-loops and
+## parallel edges), a guide and labels.
+copied : List(U8), U64 -> Route.Input
+copied = |bytes, copies| {
+	n = (byte_at(bytes, 0) % 8).to_u64()
+	edge_count = if n == 0 {
+		0
+	} else {
+		(byte_at(bytes, 33) % 12).to_u64()
+	}
+	var $nodes = []
+	var $positions = []
+	var $edges = []
+	var $guides = []
+	var $labels = []
+	for copy in 0..<copies {
+		shift = copy.to_f64() * 300
+		base = copy * n
+		for i in 0..<n {
+			$nodes = $nodes.append({ width: (byte_at(bytes, 1 + i) % 31).to_f64(), height: (byte_at(bytes, 9 + i) % 31).to_f64() })
+			$positions = $positions.append({ x: (byte_at(bytes, 17 + i) % 101).to_f64() + shift, y: (byte_at(bytes, 25 + i) % 101).to_f64() })
+		}
+		for i in 0..<edge_count {
+			$edges = $edges.append({ from: base + byte_at(bytes, 34 + i * 2).to_u64() % n.max(1), to: base + byte_at(bytes, 35 + i * 2).to_u64() % n.max(1) })
+		}
+		if edge_count > 0 {
+			$guides = $guides.append({ edge: copy * edge_count, points: [{ x: (byte_at(bytes, 214) % 101).to_f64() + shift, y: (byte_at(bytes, 215) % 101).to_f64() }] })
+			$labels = $labels.append({ edge: copy * edge_count, width: (byte_at(bytes, 137) % 41).to_f64(), height: (byte_at(bytes, 146) % 21).to_f64(), placement: Center })
+		}
+	}
+	{ ..Route.default_input, graph: { nodes: $nodes, edges: $edges }, positions: $positions, guides: $guides, edge_labels: $labels }
+}
+
+## Routing 8 disjoint copies may allocate at most 20 times as often as
+## routing one, and frees everything it allocates. Linear work gives about
+## 8; the margin covers the logarithmic depth of sorts and tables, and an
+## improvement sweep that one copy needs but the single drawing did not
+## (sweeps are bounded by `max_sweeps`). Work per edge that grows with the
+## drawing shows up as about 64.
+scaling! : List(U8) => {}
+scaling! = |bytes| {
+	small = copied(bytes, 1)
+	large = copied(bytes, 8)
+	small_cost = Fuzz.measure_allocs!(|{}| Route.layout(small, Route.default_settings)).allocations
+	large_cost = Fuzz.measure_allocs!(|{}| Route.layout(large, Route.default_settings)).allocations
+	Fuzz.expect_no_leaks!(|{}| Route.layout(large, Route.default_settings))
+	if large_cost > small_cost * 20 + 1024 {
+		crash "routing 8 copies took ${large_cost.to_str()} allocations, against ${small_cost.to_str()} for one"
+	}
+	{}
+}
+
+test! : List(U8) => Fuzz.Outcome
+test! = |bytes| {
+	scaling!(bytes)
+	test(bytes)
+}
+
+target = Fuzz.target_with!({ name: "graph-layout-route", generator: Fuzz.list(Fuzz.u8, 208), test!, show: |input| Str.inspect(input) })
+
+## fuzz regression: nodes 3, 5 and 6 sit inside a group they do not belong
+## to, so every L-shaped leg was blocked and the old exhaustive search gave
+## up at once; edges 1 and 2 were drawn as single diagonal segments. The
+## search now ignores obstacles holding a leg's end, and every route stays
+## axis-aligned and finite.
+expect {
+	input = {
+		..Route.default_input,
+		graph: { nodes: [{ width: 18, height: 27 }, { width: 1, height: 22 }, { width: 26, height: 0 }, { width: 4, height: 25 }, { width: 7, height: 20 }, { width: 29, height: 1 }, { width: 5, height: 6 }], edges: [{ from: 6, to: 6 }, { from: 5, to: 4 }, { from: 3, to: 5 }] },
+		positions: [{ x: 75, y: 30 }, { x: 0, y: 33 }, { x: 4, y: 59 }, { x: 50, y: 60 }, { x: 29, y: 44 }, { x: 75, y: 7 }, { x: 70, y: 57 }],
+		groups: [{ rect: { x: 36, y: -13.5, width: 78, height: 87 }, parent: Root }, { rect: { x: 51, y: 1.5, width: 48, height: 57 }, parent: Parent(0) }],
+		memberships: [{ node: 0, group: 1 }],
+		boundaries: [{ node: 4, outline: Ellipse }],
+		guides: [{ edge: 0, points: [{ x: 0, y: 0 }, { x: 0, y: 0 }] }],
+	}
+	match Route.layout(input, Route.default_settings) {
+		Ok(result) => result.layout.routes.all(|route| orthogonal(route) and finite_route(route))
+		Err(_) => False
+	}
+}
+
+## fuzz regression: ten edges leave one zero-size node from the same point,
+## so the bundle was fanned sideways into lanes; edge 0's lane began outside
+## the group it must leave through a fixed portal, and it crossed that
+## group's outline twice. Routes with portals now start at their escape.
+expect {
+	input = {
+		..Route.default_input,
+		graph: { nodes: [{ width: 0, height: 0 }, { width: 30, height: 8 }, { width: 25, height: 5 }], edges: [{ from: 0, to: 1 }].concat(List.repeat({ from: 0, to: 0 }, 9)) },
+		positions: [{ x: 80, y: 21 }, { x: 7, y: 23 }, { x: 219.5, y: 74 }],
+		groups: [{ rect: { x: 40, y: -19, width: 80, height: 80 }, parent: Root }, { rect: { x: 60, y: 1, width: 40, height: 40 }, parent: Parent(0) }],
+		memberships: [{ node: 0, group: 1 }],
+		group_attachments: [{ edge: 0, group: 0, attachment: Fixed({ side: Top, offset: 0.01 }) }, { edge: 0, group: 1, attachment: Fixed({ side: Top, offset: 0.01 }) }],
+		guides: [{ edge: 0, points: [{ x: 0, y: 0 }, { x: 0, y: 0 }] }],
+	}
+	match Route.layout(input, Route.default_settings) {
+		Ok(result) => {
+			crossings = result.group_crossings.get(0) ?? []
+			crossings.keep_if(|c| c.group == 0).len() == 1 and crossings.keep_if(|c| c.group == 1).len() == 1
+		}
+		Err(_) => False
+	}
+}

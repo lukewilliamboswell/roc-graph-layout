@@ -23,5 +23,5 @@ main! = |args| {
 		["--update"] => Update
 		_ => return Script.fail!("usage: scripts/examples.roc [--update]")
 	}
-	Examples.run!(Script.roc!()?, { root: ".", source: Direct, spec: "tests/examples.json", mode, roc_args: [] })
+	Examples.run!(Script.roc!()?, { root: ".", source: Direct, spec: "tests/examples.json", mode, roc_args: |_| [] })
 }

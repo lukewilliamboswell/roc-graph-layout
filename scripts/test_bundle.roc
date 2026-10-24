@@ -8,18 +8,19 @@ import src/Archive
 import src/Bundle
 import src/Script
 
-## Test an examples archive, unchanged, against the bundle it names.
+## Test an examples archive, unchanged, against the bundles it names.
 ##
 ##     blueprint run test-bundle
-##     BUNDLE_PATH=dist/<hash>.tar.zst EXAMPLES_ARCHIVE=dist/roc-graph-layout-examples-0.2.0.zip blueprint run test-bundle
+##     BUNDLE_PATH=dist/<hash>.tar.zst MERMAID_BUNDLE_PATH=dist/<hash>.tar.zst EXAMPLES_ARCHIVE=dist/roc-graph-layout-examples-0.2.0.zip blueprint run test-bundle
 ##
-## Tests the only bundle and the only examples archive in `dist` unless
-## `BUNDLE_PATH` and `EXAMPLES_ARCHIVE` name them. The release workflow passes
-## the exact files it is about to publish, which catches packaging mistakes
-## that checking the source tree cannot.
+## Tests the layout and Mermaid bundles and the only examples archive in
+## `dist` unless `BUNDLE_PATH`, `MERMAID_BUNDLE_PATH` and `EXAMPLES_ARCHIVE`
+## name them. The release workflow passes the exact files it is about to
+## publish, which catches packaging mistakes that checking the source tree
+## cannot.
 main! = |_args| {
 	roc = Script.roc!()?
-	bundle = Bundle.selected!("dist")?
+	bundles = Bundle.selected!("dist")?
 	archive = Archive.selected!("dist")?
-	Bundle.test!(roc, bundle, archive)
+	Bundle.test!(roc, bundles, archive)
 }

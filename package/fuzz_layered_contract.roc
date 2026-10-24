@@ -73,11 +73,20 @@ test = |bytes| {
 		..Layered.default_settings,
 		node_gap: (byte_at(bytes, 45) % 32).to_f64(),
 		layer_gap: (byte_at(bytes, 46) % 64).to_f64(),
-		routing: { ..Route.default_settings, bend_penalty: (byte_at(bytes, 47) % 32).to_f64() },
+		routing: if byte_at(bytes, 47) % 5 == 0 {
+			Straight
+		} else {
+			Orthogonal({ ..Route.default_settings, bend_penalty: (byte_at(bytes, 47) % 32).to_f64() })
+		},
+		ordering: if byte_at(bytes, 44) % 2 == 0 {
+			Median
+		} else {
+			Average
+		},
 	}
 
 	match Layered.prepare(input, settings) {
-		Err(_) => crash "bounded valid layered input failed preparation"
+		Err(problems) => crash "bounded valid layered input failed preparation: ${Str.join_with(problems.map(Layered.problem_to_str), "; ")}"
 		Ok(prepared) => {
 			hints = LayeredInternalsForFuzz.positions(node_count).map_with_index(|point, node| { node, x: point.x, y: point.y })
 			run_args = if byte_at(bytes, 55) % 2 == 0 {
@@ -90,8 +99,38 @@ test = |bytes| {
 			aligned = result.layout.positions.len() == node_count
 				and result.layout.routes.len() == edges.len()
 				and result.layers.len() == node_count
-				and result.attachments.len() == edges.len()
+				and result.attachments.len() == (
+					if settings.routing == Straight {
+						0
+					} else {
+						edges.len()
+					}
+				)
 				and result.label_anchors.len() == edge_labels.len()
+				and result.layer_points.len() == edges.len()
+			# One finite point per layer strictly between an edge's ends; straight
+			# routes pass through exactly those points.
+			points_hold = edges.fold_with_index(
+				True,
+				|ok, edge, index| {
+					from_layer = result.layers.get(edge.from) ?? 0
+					to_layer = result.layers.get(edge.to) ?? 0
+					points = result.layer_points.get(index) ?? []
+					expected = if to_layer > from_layer {
+						to_layer - from_layer - 1
+					} else {
+						0
+					}
+					finite = points.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y))
+					through = match (settings.routing, result.layout.routes.get(index)) {
+						(Straight, Ok(Polyline(route_points))) => route_points.drop_first(1).drop_last(1) == points
+						(Straight, Ok(Line(_, _))) => points.is_empty()
+						(Straight, _) => False
+						_ => True
+					}
+					ok and points.len() == expected and finite and through
+				},
+			)
 			forward = edges.fold_with_index(
 				True,
 				|ok, edge, index| {
@@ -116,6 +155,7 @@ test = |bytes| {
 			if one_call == Ok(result)
 				and Layered.layout(input, settings, run_args) == one_call
 				and aligned
+				and points_hold
 				and forward
 				and constraints_hold
 				and order_holds

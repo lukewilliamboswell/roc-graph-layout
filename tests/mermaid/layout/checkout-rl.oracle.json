@@ -1,0 +1,1096 @@
+{
+	"schema": 6,
+	"key": "146b6437ff18be9bc87f1110ff25d7eaee8d554b66dcd23d2fa9d3e3c427ff17",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart RL\n    cart[Cart] --> address[Address]\n    address --> shipping{Shipping method}\n    shipping -->|standard| pay[Payment]\n    shipping -->|express| surcharge[Add surcharge]\n    surcharge --> pay\n    pay --> card{Card OK?}\n    card -->|no| pay\n    card -->|yes| confirm[Confirmation]\n    confirm --> email[Send email]\n    confirm --> invoice[Create invoice]\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "RL",
+		"nodes": [
+			{
+				"id": "cart",
+				"text": "Cart",
+				"label": "Cart",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "address",
+				"text": "Address",
+				"label": "Address",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "shipping",
+				"text": "Shipping method",
+				"label": "Shipping method",
+				"shape": "diamond",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "pay",
+				"text": "Payment",
+				"label": "Payment",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "surcharge",
+				"text": "Add surcharge",
+				"label": "Add surcharge",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "card",
+				"text": "Card OK?",
+				"label": "Card OK?",
+				"shape": "diamond",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "confirm",
+				"text": "Confirmation",
+				"label": "Confirmation",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "email",
+				"text": "Send email",
+				"label": "Send email",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "invoice",
+				"text": "Create invoice",
+				"label": "Create invoice",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "cart",
+				"to": "address",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "address",
+				"to": "shipping",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "shipping",
+				"to": "pay",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "standard",
+				"label": "standard",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "shipping",
+				"to": "surcharge",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "express",
+				"label": "express",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "surcharge",
+				"to": "pay",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "pay",
+				"to": "card",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "card",
+				"to": "pay",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "no",
+				"label": "no",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "card",
+				"to": "confirm",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "yes",
+				"label": "yes",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "confirm",
+				"to": "email",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "confirm",
+				"to": "invoice",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "cart",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "address",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "shipping",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "diamond",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "pay",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "surcharge",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "card",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "diamond",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "confirm",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "email",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "invoice",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_cart_address_0",
+				"from": "cart",
+				"to": "address",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_address_shipping_0",
+				"from": "address",
+				"to": "shipping",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_shipping_pay_0",
+				"from": "shipping",
+				"to": "pay",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_shipping_surcharge_0",
+				"from": "shipping",
+				"to": "surcharge",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_surcharge_pay_0",
+				"from": "surcharge",
+				"to": "pay",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_pay_card_0",
+				"from": "pay",
+				"to": "card",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_card_pay_0",
+				"from": "card",
+				"to": "pay",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_card_confirm_0",
+				"from": "card",
+				"to": "confirm",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_confirm_email_0",
+				"from": "confirm",
+				"to": "email",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_confirm_invoice_0",
+				"from": "confirm",
+				"to": "invoice",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 1772.046875,
+			"height": 183
+		},
+		"nodes": [
+			{
+				"id": "cart",
+				"center": {
+					"x": 1692.046875,
+					"y": 95.49999999999997
+				},
+				"box": {
+					"x": 1616.046875,
+					"y": 74.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 1616.046875,
+					"y": 74.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1678.0112209320068,
+					"y": 87.7085312604904,
+					"width": 28.071308135986328,
+					"height": 17.721960067749023
+				},
+				"text": {
+					"rows": [
+						"Cart"
+					],
+					"box": {
+						"x": -14.0859375,
+						"y": 9.5367431640625e-7,
+						"width": 28.5771484375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "address",
+				"center": {
+					"x": 1500.046875,
+					"y": 95.49999999999997
+				},
+				"box": {
+					"x": 1424.046875,
+					"y": 74.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 1424.046875,
+					"y": 74.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1472.7543640136719,
+					"y": 87.7085312604904,
+					"width": 56.08187484741211,
+					"height": 17.721960067749023
+				},
+				"text": {
+					"rows": [
+						"Address"
+					],
+					"box": {
+						"x": -27.3984375,
+						"y": 9.5367431640625e-7,
+						"width": 54.796875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "shipping",
+				"center": {
+					"x": 1300.546875,
+					"y": 95.49999999999997
+				},
+				"box": {
+					"x": 1217.546875,
+					"y": 12,
+					"width": 167,
+					"height": 166.99999999999997
+				},
+				"outer": {
+					"x": 1217.546875,
+					"y": 11.999999999999986,
+					"width": 167,
+					"height": 166.99999999999994
+				},
+				"label": {
+					"x": 1244.6292457580566,
+					"y": 87.7085312604904,
+					"width": 112.15009307861328,
+					"height": 17.721960067749023
+				},
+				"text": {
+					"rows": [
+						"Shipping method"
+					],
+					"box": {
+						"x": -56.125,
+						"y": 9.5367431640625e-7,
+						"width": 112.25,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "pay",
+				"center": {
+					"x": 806.8281249999999,
+					"y": 95.49999999999997
+				},
+				"box": {
+					"x": 730.8281249999999,
+					"y": 74.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 730.8281249999999,
+					"y": 74.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 778.0472469329833,
+					"y": 87.7085312604904,
+					"width": 57.5617561340332,
+					"height": 17.721960067749023
+				},
+				"text": {
+					"rows": [
+						"Payment"
+					],
+					"box": {
+						"x": -28.875,
+						"y": 9.5367431640625e-7,
+						"width": 58.1630859375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "surcharge",
+				"center": {
+					"x": 998.8281249999999,
+					"y": 119.99999999999999
+				},
+				"box": {
+					"x": 922.8281249999999,
+					"y": 99.49999999999999,
+					"width": 151.9999999999999,
+					"height": 40.999999999999986
+				},
+				"outer": {
+					"x": 922.8281249999999,
+					"y": 99.49999999999999,
+					"width": 151.9999999999999,
+					"height": 40.999999999999986
+				},
+				"label": {
+					"x": 950.3004150390624,
+					"y": 112.2085312604904,
+					"width": 97.75998687744129,
+					"height": 17.72196006774901
+				},
+				"text": {
+					"rows": [
+						"Add surcharge"
+					],
+					"box": {
+						"x": -48.6953125,
+						"y": 9.5367431640625e-7,
+						"width": 97.390625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "card",
+				"center": {
+					"x": 546.65625,
+					"y": 95.49999999999997
+				},
+				"box": {
+					"x": 463.65625,
+					"y": 12,
+					"width": 167,
+					"height": 166.99999999999997
+				},
+				"outer": {
+					"x": 463.65625,
+					"y": 11.999999999999986,
+					"width": 167,
+					"height": 166.99999999999994
+				},
+				"label": {
+					"x": 515.296688079834,
+					"y": 87.7085312604904,
+					"width": 62.71912384033203,
+					"height": 17.721960067749023
+				},
+				"text": {
+					"rows": [
+						"Card OK?"
+					],
+					"box": {
+						"x": -31.4609375,
+						"y": 9.5367431640625e-7,
+						"width": 62.921875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "confirm",
+				"center": {
+					"x": 279.99999999999994,
+					"y": 95.49999999999997
+				},
+				"box": {
+					"x": 203.99999999999994,
+					"y": 74.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 203.99999999999994,
+					"y": 74.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 237.28730773925776,
+					"y": 87.7085312604904,
+					"width": 86.02432250976562,
+					"height": 17.721960067749023
+				},
+				"text": {
+					"rows": [
+						"Confirmation"
+					],
+					"box": {
+						"x": -42.859375,
+						"y": 9.5367431640625e-7,
+						"width": 85.71875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "email",
+				"center": {
+					"x": 88,
+					"y": 54.99999999999999
+				},
+				"box": {
+					"x": 12.000000000000014,
+					"y": 34.5,
+					"width": 152,
+					"height": 40.999999999999986
+				},
+				"outer": {
+					"x": 12.000000000000014,
+					"y": 34.5,
+					"width": 152,
+					"height": 40.999999999999986
+				},
+				"label": {
+					"x": 51.62152481079102,
+					"y": 47.20853126049042,
+					"width": 73.80261993408203,
+					"height": 17.721960067749023
+				},
+				"text": {
+					"rows": [
+						"Send email"
+					],
+					"box": {
+						"x": -36.5078125,
+						"y": 9.5367431640625e-7,
+						"width": 73.015625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "invoice",
+				"center": {
+					"x": 88,
+					"y": 135.99999999999997
+				},
+				"box": {
+					"x": 12.000000000000014,
+					"y": 115.49999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 12.000000000000014,
+					"y": 115.49999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 40.66644287109376,
+					"y": 128.2085312604904,
+					"width": 95.36653900146484,
+					"height": 17.721960067749023
+				},
+				"text": {
+					"rows": [
+						"Create invoice"
+					],
+					"box": {
+						"x": -47.484375,
+						"y": 9.5367431640625e-7,
+						"width": 94.96875,
+						"height": 17
+					}
+				}
+			}
+		],
+		"clusters": [],
+		"edges": [
+			{
+				"id": "L_cart_address_0",
+				"points": [
+					{
+						"x": 1616.046875,
+						"y": 95.5
+					},
+					{
+						"x": 1576.046875,
+						"y": 95.5
+					}
+				],
+				"path": "M1616.046875,95.5L1580.046875,95.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_address_shipping_0",
+				"points": [
+					{
+						"x": 1424.046875,
+						"y": 95.5
+					},
+					{
+						"x": 1384.046875,
+						"y": 95.5
+					}
+				],
+				"path": "M1424.046875,95.5L1388.046875,95.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_shipping_pay_0",
+				"points": [
+					{
+						"x": 1241.546953678131,
+						"y": 71
+					},
+					{
+						"x": 1217.046875,
+						"y": 71
+					},
+					{
+						"x": 998.828125,
+						"y": 71
+					},
+					{
+						"x": 902.828125,
+						"y": 71
+					},
+					{
+						"x": 902.828125,
+						"y": 92
+					},
+					{
+						"x": 882.828125,
+						"y": 92
+					}
+				],
+				"path": "M1241.546953678131,71L1217.046875,71L998.828125,71L909.8991928118655,71Q902.828125,71 902.828125,78.07106781186548L902.828125,84.92893218813452Q902.828125,92 895.7570571881345,92L886.828125,92",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 1116.931634902954,
+					"y": 62.708530306816094,
+					"width": 58.32284164428711,
+					"height": 17.721960067749016
+				},
+				"text": {
+					"rows": [
+						"standard"
+					],
+					"box": {
+						"x": -29.109375,
+						"y": 9.5367431640625e-7,
+						"width": 58.21875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_shipping_surcharge_0",
+				"points": [
+					{
+						"x": 1241.546953678131,
+						"y": 120
+					},
+					{
+						"x": 1217.046875,
+						"y": 120
+					},
+					{
+						"x": 1074.828125,
+						"y": 120
+					}
+				],
+				"path": "M1241.546953678131,120L1217.046875,120L1078.828125,120",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 1119.9949035644531,
+					"y": 111.70853030681609,
+					"width": 53.3499641418457,
+					"height": 17.72196006774901
+				},
+				"text": {
+					"rows": [
+						"express"
+					],
+					"box": {
+						"x": -26.0234375,
+						"y": 9.5367431640625e-7,
+						"width": 52.046875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_surcharge_pay_0",
+				"points": [
+					{
+						"x": 922.828125,
+						"y": 120
+					},
+					{
+						"x": 902.828125,
+						"y": 120
+					},
+					{
+						"x": 902.828125,
+						"y": 99
+					},
+					{
+						"x": 882.828125,
+						"y": 99
+					}
+				],
+				"path": "M922.828125,120L909.8991928118655,120Q902.828125,120 902.828125,112.92893218813452L902.828125,106.07106781186548Q902.828125,99 895.7570571881345,99L886.828125,99",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_pay_card_0",
+				"points": [
+					{
+						"x": 730.828125,
+						"y": 92
+					},
+					{
+						"x": 710.828125,
+						"y": 92
+					},
+					{
+						"x": 710.828125,
+						"y": 71
+					},
+					{
+						"x": 680.4921875,
+						"y": 71
+					},
+					{
+						"x": 630.15625,
+						"y": 71
+					},
+					{
+						"x": 605.6561713218689,
+						"y": 71
+					}
+				],
+				"path": "M730.828125,92L717.8991928118655,92Q710.828125,92 710.828125,84.92893218813452L710.828125,78.07106781186548Q710.828125,71 703.7570571881345,71L680.4921875,71L630.15625,71L609.6561713218689,71",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_card_pay_0",
+				"points": [
+					{
+						"x": 605.6561713218689,
+						"y": 120
+					},
+					{
+						"x": 630.15625,
+						"y": 120
+					},
+					{
+						"x": 710.828125,
+						"y": 120
+					},
+					{
+						"x": 710.828125,
+						"y": 99
+					},
+					{
+						"x": 730.828125,
+						"y": 99
+					}
+				],
+				"path": "M605.6561713218689,120L630.15625,120L703.7570571881345,120Q710.828125,120 710.828125,112.92893218813452L710.828125,106.07106781186548Q710.828125,99 717.8991928118655,99L726.828125,99",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 672.1850185394286,
+					"y": 111.70853030681609,
+					"width": 17.10240364074707,
+					"height": 17.72196006774901
+				},
+				"text": {
+					"rows": [
+						"no"
+					],
+					"box": {
+						"x": -8.3359375,
+						"y": 9.5367431640625e-7,
+						"width": 16.671875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_card_confirm_0",
+				"points": [
+					{
+						"x": 463.15625,
+						"y": 95.5
+					},
+					{
+						"x": 356,
+						"y": 95.5
+					}
+				],
+				"path": "M463.15625,95.5L360,95.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 398.0346212387085,
+					"y": 87.20853030681609,
+					"width": 24.559993743896484,
+					"height": 17.721960067749023
+				},
+				"text": {
+					"rows": [
+						"yes"
+					],
+					"box": {
+						"x": -11.578125,
+						"y": 9.5367431640625e-7,
+						"width": 23.15625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_confirm_email_0",
+				"points": [
+					{
+						"x": 204,
+						"y": 92
+					},
+					{
+						"x": 184,
+						"y": 92
+					},
+					{
+						"x": 184,
+						"y": 55
+					},
+					{
+						"x": 164,
+						"y": 55
+					}
+				],
+				"path": "M204,92L191.07106781186548,92Q184,92 184,84.92893218813452L184,62.071067811865476Q184,55 176.92893218813452,55L168,55",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_confirm_invoice_0",
+				"points": [
+					{
+						"x": 204,
+						"y": 99
+					},
+					{
+						"x": 184,
+						"y": 99
+					},
+					{
+						"x": 184,
+						"y": 136
+					},
+					{
+						"x": 164,
+						"y": 136
+					}
+				],
+				"path": "M204,99L191.07106781186548,99Q184,99 184,106.07106781186548L184,128.92893218813452Q184,136 176.92893218813452,136L168,136",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			}
+		]
+	},
+	"svg_sha256": "45eb25b43995d92f9555b9588d05b7f14db58dfc298d78cd1996f2a660c45743"
+}

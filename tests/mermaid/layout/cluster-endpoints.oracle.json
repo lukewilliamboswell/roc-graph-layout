@@ -1,0 +1,983 @@
+{
+	"schema": 6,
+	"key": "d8deacfcee05467686070019201fba9985f56d04fa183c4f5b44a428f974e111",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart LR\n    client[Client] --> frontend\n    subgraph frontend [Frontend]\n        ui[UI] --> state[State store]\n    end\n    frontend --> backend\n    subgraph backend [Backend]\n        handler[Handler] --> repo[Repository]\n    end\n    backend --> db[(Database)]\n    subgraph observability [Observability]\n        metrics[Metrics]\n        traces[Traces]\n    end\n    backend --> observability\n    frontend --> metrics\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "LR",
+		"nodes": [
+			{
+				"id": "client",
+				"text": "Client",
+				"label": "Client",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "frontend",
+				"text": "frontend",
+				"label": "frontend",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "ui",
+				"text": "UI",
+				"label": "UI",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "state",
+				"text": "State store",
+				"label": "State store",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "backend",
+				"text": "backend",
+				"label": "backend",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "handler",
+				"text": "Handler",
+				"label": "Handler",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "repo",
+				"text": "Repository",
+				"label": "Repository",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "db",
+				"text": "Database",
+				"label": "Database",
+				"shape": "cylinder",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "metrics",
+				"text": "Metrics",
+				"label": "Metrics",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "traces",
+				"text": "Traces",
+				"label": "Traces",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "observability",
+				"text": "observability",
+				"label": "observability",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "client",
+				"to": "frontend",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "ui",
+				"to": "state",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "frontend",
+				"to": "backend",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "handler",
+				"to": "repo",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "backend",
+				"to": "db",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "backend",
+				"to": "observability",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "frontend",
+				"to": "metrics",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [
+			{
+				"id": "frontend",
+				"title": "Frontend",
+				"label": "Frontend",
+				"nodes": [
+					"state",
+					"ui"
+				],
+				"dir": null,
+				"classes": []
+			},
+			{
+				"id": "backend",
+				"title": "Backend",
+				"label": "Backend",
+				"nodes": [
+					"repo",
+					"handler"
+				],
+				"dir": null,
+				"classes": []
+			},
+			{
+				"id": "observability",
+				"title": "Observability",
+				"label": "Observability",
+				"nodes": [
+					"metrics",
+					"traces"
+				],
+				"dir": null,
+				"classes": []
+			}
+		],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "observability",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 2,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "backend",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 1,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "frontend",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 0,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "client",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "ui",
+				"is_group": false,
+				"parent": "frontend",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "state",
+				"is_group": false,
+				"parent": "frontend",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "handler",
+				"is_group": false,
+				"parent": "backend",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "repo",
+				"is_group": false,
+				"parent": "backend",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "db",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "cylinder",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "metrics",
+				"is_group": false,
+				"parent": "observability",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "traces",
+				"is_group": false,
+				"parent": "observability",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_client_frontend_0",
+				"from": "client",
+				"to": "frontend",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_ui_state_0",
+				"from": "ui",
+				"to": "state",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_frontend_backend_0",
+				"from": "frontend",
+				"to": "backend",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_handler_repo_0",
+				"from": "handler",
+				"to": "repo",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_backend_db_0",
+				"from": "backend",
+				"to": "db",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_backend_observability_0",
+				"from": "backend",
+				"to": "observability",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_frontend_metrics_0",
+				"from": "frontend",
+				"to": "metrics",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 1250,
+			"height": 337.148681640625
+		},
+		"nodes": [
+			{
+				"id": "client",
+				"center": {
+					"x": 87.99999999999999,
+					"y": 178.02818298339844
+				},
+				"box": {
+					"x": 11.999999999999986,
+					"y": 157.52818298339844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 11.999999999999986,
+					"y": 157.52818298339844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 69.02943611145018,
+					"y": 169.4650618582964,
+					"width": 38.04661178588867,
+					"height": 17.18825912475586
+				},
+				"text": {
+					"rows": [
+						"Client"
+					],
+					"box": {
+						"x": -19.015625,
+						"y": 9.5367431640625e-7,
+						"width": 38.44140625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "ui",
+				"center": {
+					"x": 304,
+					"y": 188.02818298339844
+				},
+				"box": {
+					"x": 228,
+					"y": 167.52818298339844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 228,
+					"y": 167.52818298339844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 296.9196090698242,
+					"y": 179.46506185829637,
+					"width": 14.160781860351562,
+					"height": 17.18825912475586
+				},
+				"text": {
+					"rows": [
+						"UI"
+					],
+					"box": {
+						"x": -7.09375,
+						"y": 9.5367431640625e-7,
+						"width": 14.1875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "state",
+				"center": {
+					"x": 480,
+					"y": 188.02818298339844
+				},
+				"box": {
+					"x": 404,
+					"y": 167.52818298339844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 404,
+					"y": 167.52818298339844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 444.3416862487793,
+					"y": 179.46506185829637,
+					"width": 71.3166275024414,
+					"height": 17.18825912475586
+				},
+				"text": {
+					"rows": [
+						"State store"
+					],
+					"box": {
+						"x": -35.7421875,
+						"y": 9.5367431640625e-7,
+						"width": 71.484375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "handler",
+				"center": {
+					"x": 720,
+					"y": 77.40768432617188
+				},
+				"box": {
+					"x": 644,
+					"y": 56.907684326171875,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 644,
+					"y": 56.907684326171875,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 694.0955352783203,
+					"y": 68.84456320106983,
+					"width": 52.797264099121094,
+					"height": 17.18825912475586
+				},
+				"text": {
+					"rows": [
+						"Handler"
+					],
+					"box": {
+						"x": -25.96875,
+						"y": 9.5367431640625e-7,
+						"width": 51.9375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "repo",
+				"center": {
+					"x": 895.9999999999999,
+					"y": 77.40768432617188
+				},
+				"box": {
+					"x": 819.9999999999999,
+					"y": 56.907684326171875,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 819.9999999999999,
+					"y": 56.907684326171875,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 860.622459411621,
+					"y": 68.84456320106983,
+					"width": 70.75508117675781,
+					"height": 17.18825912475586
+				},
+				"text": {
+					"rows": [
+						"Repository"
+					],
+					"box": {
+						"x": -35.4609375,
+						"y": 9.5367431640625e-7,
+						"width": 71.041015625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "db",
+				"center": {
+					"x": 1118,
+					"y": 52.574348449707024
+				},
+				"box": {
+					"x": 1046,
+					"y": 12,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"outer": {
+					"x": 1046,
+					"y": 11.999999999999993,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"label": {
+					"x": 1086.7730350494385,
+					"y": 54.01122637093067,
+					"width": 62.45392990112305,
+					"height": 17.18825912475586
+				},
+				"text": {
+					"rows": [
+						"Database"
+					],
+					"box": {
+						"x": -31.3046875,
+						"y": 9.5367431640625e-7,
+						"width": 62.609375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "metrics",
+				"center": {
+					"x": 1146,
+					"y": 288.6487121582031
+				},
+				"box": {
+					"x": 1070,
+					"y": 268.1487121582031,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 1070,
+					"y": 268.1487121582031,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1121.2674617767334,
+					"y": 280.0855910331011,
+					"width": 49.893531799316406,
+					"height": 17.18825912475586
+				},
+				"text": {
+					"rows": [
+						"Metrics"
+					],
+					"box": {
+						"x": -24.7890625,
+						"y": 9.5367431640625e-7,
+						"width": 49.578125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "traces",
+				"center": {
+					"x": 1146,
+					"y": 197.64869689941403
+				},
+				"box": {
+					"x": 1070,
+					"y": 177.14869689941403,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 1070,
+					"y": 177.14869689941403,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1123.5869007110596,
+					"y": 189.08557577431202,
+					"width": 45.25527572631836,
+					"height": 17.18825912475586
+				},
+				"text": {
+					"rows": [
+						"Traces"
+					],
+					"box": {
+						"x": -22.46875,
+						"y": 9.5367431640625e-7,
+						"width": 44.9375,
+						"height": 17
+					}
+				}
+			}
+		],
+		"clusters": [
+			{
+				"id": "frontend",
+				"box": {
+					"x": 204,
+					"y": 123.52819061279297,
+					"width": 376,
+					"height": 109
+				},
+				"label": {
+					"x": 362.4921875,
+					"y": 123.46506948769091,
+					"width": 58.864906311035156,
+					"height": 17.188259124755874
+				},
+				"text": {
+					"rows": [
+						"Frontend"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 59.015625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "backend",
+				"box": {
+					"x": 620,
+					"y": 12.907681465148926,
+					"width": 376,
+					"height": 109
+				},
+				"label": {
+					"x": 779.2968749999999,
+					"y": 12.844560340046883,
+					"width": 57.25350570678711,
+					"height": 17.18825912475586
+				},
+				"text": {
+					"rows": [
+						"Backend"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 57.40625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "observability",
+				"box": {
+					"x": 1046,
+					"y": 133.14869689941406,
+					"width": 200,
+					"height": 200
+				},
+				"label": {
+					"x": 1102.2114257812498,
+					"y": 133.085575774312,
+					"width": 87.23529815673828,
+					"height": 17.18825912475586
+				},
+				"text": {
+					"rows": [
+						"Observability"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 87.5771484375,
+						"height": 17
+					}
+				}
+			}
+		],
+		"edges": [
+			{
+				"id": "L_client_frontend_0",
+				"points": [
+					{
+						"x": 164,
+						"y": 178.02818934122723
+					},
+					{
+						"x": 204,
+						"y": 178.02818934122723
+					}
+				],
+				"path": "M164,178.02818934122723L200,178.02818934122723",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_ui_state_0",
+				"points": [
+					{
+						"x": 380,
+						"y": 188.02818934122723
+					},
+					{
+						"x": 404,
+						"y": 188.02818934122723
+					}
+				],
+				"path": "M380,188.02818934122723L400,188.02818934122723",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_frontend_backend_0",
+				"points": [
+					{
+						"x": 580,
+						"y": 163.1948560078939
+					},
+					{
+						"x": 600,
+						"y": 163.1948560078939
+					},
+					{
+						"x": 600,
+						"y": 67.40768178304037
+					},
+					{
+						"x": 620,
+						"y": 67.40768178304037
+					}
+				],
+				"path": "M580,163.1948560078939L592.9289321881345,163.1948560078939Q600,163.1948560078939 600,156.1237881960284L600,74.47874959490585Q600,67.40768178304037 607.0710678118655,67.40768178304037L616,67.40768178304037",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_handler_repo_0",
+				"points": [
+					{
+						"x": 796,
+						"y": 77.40768178304037
+					},
+					{
+						"x": 820,
+						"y": 77.40768178304037
+					}
+				],
+				"path": "M796,77.40768178304037L816,77.40768178304037",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_backend_db_0",
+				"points": [
+					{
+						"x": 996,
+						"y": 52.57434844970703
+					},
+					{
+						"x": 1046,
+						"y": 52.57434844970703
+					}
+				],
+				"path": "M996,52.57434844970703L1042,52.57434844970703",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_backend_observability_0",
+				"points": [
+					{
+						"x": 996,
+						"y": 82.2410151163737
+					},
+					{
+						"x": 1016,
+						"y": 82.2410151163737
+					},
+					{
+						"x": 1016,
+						"y": 276.64869689941406
+					},
+					{
+						"x": 1046,
+						"y": 276.64869689941406
+					}
+				],
+				"path": "M996,82.2410151163737L1008.9289321881345,82.2410151163737Q1016,82.2410151163737 1016,89.31208292823918L1016,269.5776290875486Q1016,276.64869689941406 1023.0710678118655,276.64869689941406L1042,276.64869689941406",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_frontend_metrics_0",
+				"points": [
+					{
+						"x": 580,
+						"y": 192.86152267456055
+					},
+					{
+						"x": 600,
+						"y": 192.86152267456055
+					},
+					{
+						"x": 600,
+						"y": 288.64869689941406
+					},
+					{
+						"x": 808,
+						"y": 288.64869689941406
+					},
+					{
+						"x": 1036,
+						"y": 288.64869689941406
+					},
+					{
+						"x": 1070,
+						"y": 288.64869689941406
+					}
+				],
+				"path": "M580,192.86152267456055L592.9289321881345,192.86152267456055Q600,192.86152267456055 600,199.93259048642602L600,281.5776290875486Q600,288.64869689941406 607.0710678118655,288.64869689941406L808,288.64869689941406L1036,288.64869689941406L1066,288.64869689941406",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			}
+		]
+	},
+	"svg_sha256": "100fff59178069fab8594ed14142762983740724a9369215148b37a83c787602"
+}

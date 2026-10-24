@@ -41,7 +41,7 @@ config = [
 				],
 			),
 			# Programs the scripts start, beside the package compiler `roc`.
-			Expect(["chmod", "curl", "gh", "git", "roc", "shasum", "tar", "test", "touch", "uname", "unzip", "zip"]),
+			Expect(["chmod", "curl", "gh", "git", "roc", "shasum", "tar", "test", "touch", "uname", "unzip", "zip", "zstd"]),
 		],
 	),
 	# The node editor's browser tests, beside the dev tools: Node.js installs

@@ -1,0 +1,356 @@
+{
+	"schema": 6,
+	"key": "7a6d4518f931d689385950bb4a888054222c457f3847c4339dde95ea0267b118",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart LR\n    subgraph S\n        direction TB\n        a --> b\n    end\n    b --> c\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "LR",
+		"nodes": [
+			{
+				"id": "a",
+				"text": "a",
+				"label": "a",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "b",
+				"text": "b",
+				"label": "b",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "c",
+				"text": "c",
+				"label": "c",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "a",
+				"to": "b",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "b",
+				"to": "c",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [
+			{
+				"id": "S",
+				"title": "S",
+				"label": "S",
+				"nodes": [
+					"b",
+					"a"
+				],
+				"dir": "TB",
+				"classes": []
+			}
+		],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "S",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 0,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "a",
+				"is_group": false,
+				"parent": "S",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "b",
+				"is_group": false,
+				"parent": "S",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "c",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_a_b_0",
+				"from": "a",
+				"to": "b",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_b_c_0",
+				"from": "b",
+				"to": "c",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 594,
+			"height": 125
+		},
+		"nodes": [
+			{
+				"id": "a",
+				"center": {
+					"x": 112,
+					"y": 76.5
+				},
+				"box": {
+					"x": 36,
+					"y": 56,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 36,
+					"y": 56,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 108.0625,
+					"y": 68.00000095367432,
+					"width": 7.875,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"a"
+					],
+					"box": {
+						"x": -3.9375,
+						"y": 9.5367431640625e-7,
+						"width": 7.875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "b",
+				"center": {
+					"x": 288,
+					"y": 76.5
+				},
+				"box": {
+					"x": 212,
+					"y": 56,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 212,
+					"y": 56,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 283.7109375,
+					"y": 68.00000095367432,
+					"width": 8.578125,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"b"
+					],
+					"box": {
+						"x": -4.2890625,
+						"y": 9.5367431640625e-7,
+						"width": 8.578125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "c",
+				"center": {
+					"x": 514,
+					"y": 76.5
+				},
+				"box": {
+					"x": 438,
+					"y": 56,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 438,
+					"y": 56,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 510,
+					"y": 68.00000095367432,
+					"width": 8,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"c"
+					],
+					"box": {
+						"x": -4,
+						"y": 9.5367431640625e-7,
+						"width": 8,
+						"height": 17
+					}
+				}
+			}
+		],
+		"clusters": [
+			{
+				"id": "S",
+				"box": {
+					"x": 12,
+					"y": 12,
+					"width": 376,
+					"height": 109
+				},
+				"label": {
+					"x": 195.5,
+					"y": 12.000000953674316,
+					"width": 9,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"S"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 9,
+						"height": 17
+					}
+				}
+			}
+		],
+		"edges": [
+			{
+				"id": "L_a_b_0",
+				"points": [
+					{
+						"x": 188,
+						"y": 76.5
+					},
+					{
+						"x": 212,
+						"y": 76.5
+					}
+				],
+				"path": "M188,76.5L208,76.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_b_c_0",
+				"points": [
+					{
+						"x": 364,
+						"y": 76.5
+					},
+					{
+						"x": 398,
+						"y": 76.5
+					},
+					{
+						"x": 438,
+						"y": 76.5
+					}
+				],
+				"path": "M364,76.5L398,76.5L434,76.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			}
+		]
+	},
+	"svg_sha256": "ab34036f17b2beeebf983bff793731eba56baaaccb435ac1ad92b04c0736bd16"
+}

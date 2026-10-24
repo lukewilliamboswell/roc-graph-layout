@@ -1,0 +1,14 @@
+{
+  "name": "roc-graph-layout-mermaid-oracle",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Authoring and CI only: renders Mermaid in a pinned browser to record reference facts. Never part of a Roc package.",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "mermaid": "12.2.0",
+    "puppeteer": "25.16.0"
+  }
+}

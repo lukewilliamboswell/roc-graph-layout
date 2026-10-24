@@ -1,0 +1,13 @@
+flowchart LR
+    router{Router} -->|/users| users[Users]
+    router -->|/orders| orders[Orders]
+    router -->|/products| products[Products]
+    router -->|/search| search[Search]
+    router -->|/admin| admin[Admin]
+    router -->|other| notfound[404]
+    users --> db[(Database)]
+    orders --> db
+    products --> db
+    search --> idx[(Index)]
+    admin --> db
+    admin --> idx

@@ -1,0 +1,258 @@
+{
+	"schema": 6,
+	"key": "7e71f7c700d29cf6b04cc3e8bcec0fd9dee9bab1e3b533d31fa61acb752205f1",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart BT\n    a[Wait] --> a\n    a --> b[Go]\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "BT",
+		"nodes": [
+			{
+				"id": "a",
+				"text": "Wait",
+				"label": "Wait",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "b",
+				"text": "Go",
+				"label": "Go",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "a",
+				"to": "a",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "a",
+				"to": "b",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "a",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "b",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_a_a_0",
+				"from": "a",
+				"to": "a",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_a_b_0",
+				"from": "a",
+				"to": "b",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 188,
+			"height": 138
+		},
+		"nodes": [
+			{
+				"id": "a",
+				"center": {
+					"x": 108,
+					"y": 113.5
+				},
+				"box": {
+					"x": 32,
+					"y": 93,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 32,
+					"y": 93,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 93.5390625,
+					"y": 105.00000095367432,
+					"width": 29.3359375,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"Wait"
+					],
+					"box": {
+						"x": -14.4609375,
+						"y": 9.5367431640625e-7,
+						"width": 29.3359375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "b",
+				"center": {
+					"x": 108,
+					"y": 32.5
+				},
+				"box": {
+					"x": 32,
+					"y": 12,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 32,
+					"y": 12,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 98.578125,
+					"y": 24.000000953674316,
+					"width": 18.84375,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"Go"
+					],
+					"box": {
+						"x": -9.421875,
+						"y": 9.5367431640625e-7,
+						"width": 18.84375,
+						"height": 17
+					}
+				}
+			}
+		],
+		"clusters": [],
+		"edges": [
+			{
+				"id": "L_a_a_0",
+				"points": [
+					{
+						"x": 32,
+						"y": 116.33333333333334
+					},
+					{
+						"x": 12,
+						"y": 116.33333333333334
+					},
+					{
+						"x": 12,
+						"y": 110.66666666666667
+					},
+					{
+						"x": 32,
+						"y": 110.66666666666667
+					}
+				],
+				"path": "M32,116.33333333333334L14.833333333333336,116.33333333333334Q12,116.33333333333334 12,113.5L12,113.5Q12,110.66666666666667 14.833333333333336,110.66666666666667L28,110.66666666666667",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_a_b_0",
+				"points": [
+					{
+						"x": 108,
+						"y": 93
+					},
+					{
+						"x": 108,
+						"y": 53
+					}
+				],
+				"path": "M108,93L108,57",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			}
+		]
+	},
+	"svg_sha256": "8c722293c85137a43eaca5a8d09e9c8e95e3b2e216f81f6978473f11cae04477"
+}

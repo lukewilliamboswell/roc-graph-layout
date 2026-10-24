@@ -431,6 +431,209 @@ micro-optimizations alone should not materially change the slope.
 
 Relevant code: crossing measurement in `package/Metrics.roc`.
 
+## H9: Layered layout is superlinear in every phase, and routing dominates
+
+**Status (2026-10-24): confirmed; layered phases resolved, routing open.**
+Measured on Linux x86_64 with nightly `2026-10-23-18478ff`, native
+`--opt=speed`, one fresh process per sample. Fixture `dag` (new in
+`benchmarks/Generators.roc`) is a flowchart-like DAG: every node hangs from
+one of the four previous nodes, every third node also joins from one up to
+twelve back, so edges span several layers (n nodes, about 1.3 n edges).
+
+**Hypothesis.** Ranking (`grow_weighted_forest`, `improve_weighted_ranks`)
+rescans every edge per step. **Confirmed but narrowed**: ranking was cubic,
+yet at the sizes callers reported (Mermaid flowcharts of 20–160 nodes) the
+orthogonal router accounted for about 99% of `Layered.layout`.
+
+**Phase-level control.** A scratch copy of the package exposed a probe that
+runs the pipeline up to a named phase; each phase's cost is the difference of
+cumulative prefixes. Before (cumulative elapsed, `dag`):
+
+| n | orient | +rank | +chains¹ | +order | +place | +finish² | +route (0 sweeps) | +route (4 sweeps) |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 80 | 0.6 ms | 3.4 ms | 3.8 ms | 9.4 ms | 16 ms | 40 ms | 1.0–1.6 s | 3.2–4.6 s |
+| 160 | 4.6 ms | 31 ms | 39 ms | 56 ms | 68 ms | 171 ms | 7.2–11 s | 21–39 s |
+| 320 | 24 ms | 229 ms | 259 ms | 314 ms | 357 ms | 802 ms | — | — |
+| 640 | 155 ms | 3.4 s | 3.2 s | 3.7 s | 4.4 s | 8.6 s | — | — |
+
+¹ includes `constrain_ranks`. ² `finish` re-runs preparation, then the second
+ordering, coordinates, routes through chains, and hint projection.
+
+After (same probe; ranking, orientation and chains are now negligible):
+
+| n | +rank | +chains | +order | +place | +finish | +route (0 sweeps) |
+|---:|---:|---:|---:|---:|---:|---:|
+| 160 | 1.2 ms | 1.0 ms | 15 ms | 25 ms | 74 ms | 10.9 s |
+| 640 | 3.7 ms | 3.8 ms | 89 ms | 131 ms | 361 ms | — |
+| 1,280 | 8.6 ms | 8.2 ms | 205 ms | 305 ms | 815 ms | — |
+| 2,560 | 19 ms | 19 ms | 406 ms | 647 ms | 1.75 s | — |
+
+Root causes, each fixed with identical result bits:
+
+- *Cycle breaking* (`orient_edges`) recomputed every vertex's degrees by
+  scanning all edges for each of n steps: O(n²·m). Acyclic input (checked by
+  Kahn's algorithm) provably keeps every edge; cyclic input uses heaps with
+  lazy deletion for the first sink, first source and best score.
+- *Ranking*: longest-path initialisation ran n Bellman-Ford passes; tight-tree
+  growth rescanned all edges and remapped all ranks per added node; every
+  network-simplex pivot recomputed each tree edge's side by n-pass label
+  propagation and its cut value by a full edge scan, O(n·m) per tree edge.
+  Now: topological longest path; Prim-like growth with two heaps keyed by
+  slack plus a lazy tree offset; per pivot one postorder numbering (O(1)
+  side tests), subtree sums of net node inflow for all cut values, one edge
+  scan for the entering edge. Cut values are exact for whole weights; a
+  fractional cut value within the rounding bound of zero is recomputed in
+  the reference summation order. `normalize_ranks` used n propagation passes.
+- `constrain_ranks` ran `(n + rules + 1)(n + 1)` relaxation passes even with no
+  rules (and materialised that index list): now stops at the fixed point.
+- `group_by_rank` filtered all nodes once per layer; virtual chains and the
+  ordering phase's crossing count, sweeps and transpose scanned every edge per
+  node or per layer and built node-sized tables per layer. Ordering now works
+  on a flat layer-major list with edge-index adjacency (Fenwick-tree crossing
+  counts, two-pointer swap deltas, a stable merge sort instead of first-pivot
+  quicksort).
+- Brandes-Köpf: conflict marking compared all segment pairs, neighbour lookup
+  scanned all edges per node, conflict lookup scanned the conflict list, and
+  compaction ran n relaxation passes over all constraints: O(n²). Now prefix
+  maxima mark conflicts, adjacency finds neighbours, conflicts are per-edge
+  flags, and compaction is one topological pass (the same fixed point).
+- `enforce_precedences` ran `len²` empty passes per layer with no rules, and
+  `run` repeated the preparation's ordering when no hints or rules apply.
+
+Bit identity was checked natively against the original package on 3,400
+random graphs (cycles, self-loops, parallel edges, integer and fractional
+weights, minimum spans, centred and end labels, all four directions, with and
+without routing sweeps) plus the examples (`tests/examples.json`); all
+identical.
+
+**Harness caveat.** The benchmark host uses Zig's `DebugAllocator`, which
+page-faults on most allocations. For `straight` `dag` at 10,000 nodes,
+`perf stat` shows 0.46 s user and 4.2 s system time of 4.75 s elapsed; for
+`dense` at 1,000 nodes 0.50 s user of 6.07 s. Elapsed time in this harness is
+therefore dominated by allocation count; compare `alloc_calls` and user time
+before reading elapsed time as computation.
+
+**Remaining.** The orthogonal router (`Route.layout`) is superlinear and is
+about 99% of `Layered.layout` with default routing: `dag` 160 nodes, routing
+with `max_sweeps: 0` takes 10.8 s of 10.9 s. Reproduce with
+`"$BENCH" layered sweepless generated dag 160 0` against
+`"$BENCH" layered straight generated dag 160 0` (the `layered-dag-routed`
+scale series uses default sweeps at 20/40/80 nodes). `Settings.routing:
+Straight` skips it. The layered phases still allocate about 80 times per
+node (small per-node lists), which this harness magnifies.
+
+**Guards.** `package/fuzz_layered_scaling.roc` builds a motif graph from the
+fuzz bytes, repeats it 1 and 8 times, and bounds each phase's allocations per
+unit of input (cycle breaking, ranking, chain splitting, median and average
+sweeps, swap polish, crossing count, placement), plus `expect_no_leaks!` per
+phase. It found two things: network-simplex exchanges allocated fresh work
+lists, so ranking allocations followed the exchange count (now allocation-free
+per exchange; the exchange count itself is the reference sequence's and is
+input-dependent), and ranking can interleave copies so that the split graph
+grows faster than the copy count (bounds now use the split graph's size).
+With the 2026-10-23 nightly, `expect_no_leaks!` reports one outstanding
+allocation for a whole `LayeredOrder.order` call although its sweeps, polish
+and count each pass, and the benchmark host's exit-time leak check finds no
+leak for complete layouts; the target checks the parts.
+
+Ladders after the change (elapsed in this harness):
+
+| series | sizes | elapsed |
+|---|---|---|
+| `layered straight dag` | 1,000 / 3,000 / 10,000 | 0.38 / 1.33 / 4.75 s |
+| `layered straight dense` | 300 / 1,000 | 1.65 / 6.26 s |
+| `layered one_call bands` | 200 / 400 / 800 / 1,000 | 60 / 52 / 157 / 203 ms (was 49 / 185 / 996 / 1,649 ms) |
+
+## H10: The orthogonal router searched the whole grid for blocked legs
+
+**Status: root cause confirmed and resolved in two stages; two adversarial
+fixtures remain quadratic.** Measured natively (`--opt=speed`, nightly
+2026-10-23-18478ff, x86_64 Linux, one process per sample, machine under
+heavy load from other jobs, so trust allocation counts and bytes more than
+milliseconds).
+
+**Hypothesis.** After Layered's ranking, ordering and placement became
+near-linear, routing dominated: a 160-node flowchart DAG spent ~7.2 s of
+7.3 s in `Route.layout`, even with `max_sweeps: 0`.
+
+**Phase controls** (a scratch-only `bench_phase` hook runs validation,
+attachment resolution, parallel/fan ranks, initial routing, refinement and
+lane nudging separately) showed that validation, resolution and nudging
+were negligible and initial routing was everything. Requested bytes were
+modest (49 MB at 160 nodes), so this was algorithmic CPU, not repeated
+copies.
+
+**Root cause (confirmed).** The fallback grid search for an L-blocked leg
+(13 searches at 80 nodes, 20 at 160, 129 at 1,280 in the Layered DAG) was a
+Dijkstra search over the whole Hanan grid (every obstacle edge line, ~5k to
+~360k points) that: picked the next state by scanning every state; relaxed
+moves by scanning every grid point with a visibility test against every
+obstacle; and recounted every earlier route segment for every move. Each
+search was roughly O(V^2 · B). `unique_values` and the point filter were
+also quadratic and cubic in the obstacle count.
+
+Secondary superlinear terms, each confirmed by reading and removed:
+attachment-rule, boundary, membership, waypoint and guide lookups by
+`find_first` per edge (O(E·rules)); the endpoint fan table (O(E^2));
+group-portal buckets sorted once per use; per-edge obstacle lists rebuilt
+from every node (O(E·N)); `path_cost` and refinement statistics rescanning
+every earlier route (O(E·S)); lane nudging comparing every segment with
+every segment and sorting per segment (O(S^2 log S)); duplicate-rule
+validation comparing every pair of rules (Layered passes one guide per
+edge). Hypothesis refuted: `EdgeRoutes.parallel_ranks`' record-threaded fold
+did not copy its tables on this nightly (allocation calls stayed linear in
+the fuzz control); it is now written with flat loops anyway.
+
+**Stage 1 (bit-identical).** Exact replacements: the grid search now walks
+only the visible runs of each expanded point with a binary heap and a
+sparse state table, keeping the original first-appearance tie-break; flat
+lookup tables; a uniform-grid index for obstacles and one for route
+segments (with exact canonical-cell dedup so counts and float sums stay
+identical); Fenwick-tree lane ranking; sort-based duplicate detection.
+Results were compared bit for bit (FNV hash over every output float) on a
+1,913-case corpus: 1,400 random inputs (groups, portals, shared ends,
+labels, guides, waypoints, ellipses, seven settings variants), 352 router
+inputs taken from Layered drawings, 33 full Layered drawings, 112 direct
+fixtures and 16 larger Layered inputs (80 to 160 nodes). Identical on the
+dev and `--opt=speed` native backends, and on 337 cases under the
+interpreter. The 160-node DAG fell from 7.6 s to 94 ms. Remaining cost was
+the exact exhaustive Dijkstra itself (2 million expanded states at 1,280
+nodes) and refinement re-running it each sweep.
+
+**Stage 2 (behaviour changes).** The search is now A* (Manhattan
+heuristic) inside a window around the leg, widened twice before the whole
+drawing, with an expansion budget per attempt; obstacles holding a leg's
+end are ignored. Route DAG 1,280 nodes: 3.4 s → 0.22 s; deep 1,280:
+timeout → 0.52 s; dag_cycles 1,280: 61 s → 0.33 s; requested bytes fell
+by 50 to 250 times.
+
+**Still open.** Two adversarial fixtures stay quadratic in both stages:
+`shared_port` (every edge on one fixed port; refinement statistics and
+lane counts are pairwise inside the bundle, ~1.2 to 2.5 times stage 1 under
+load) and `wide` (one hub with every node on one side). `grid` (random
+spans across a grid of nodes, every leg blocked) is dominated by windowed
+searches and refinement re-routing. Refinement still re-routes every edge
+with any crossing or overlap each sweep, so very crossing-heavy inputs pay
+up to `max_sweeps` times the initial cost.
+
+**Reproduce.** The scratch harness (`scratchpad/route/bench-*`) adds
+`route` and `phase` modes over the Layered fixtures; the committed harness
+can reproduce the Layered ladder with:
+
+```sh
+for n in 320 640 1280; do "$BENCH" layered one_call generated dag "$n" 0; done
+```
+
+Phase-level guards are now fuzz targets with allocation-growth bounds:
+`fuzz_route_search` (A* against the exhaustive reference), `fuzz_route_index`,
+`fuzz_route_lanes`, `fuzz_route_ports` and the whole-router scaling property
+in `fuzz_route`.
+
+Compiler observation: on the 2026-10-23 nightly a native build that divides
+by `n` inside a callback that never runs may assume `n != 0` and fold
+`n == 0` away (roc-lang/roc#12556); the fuzz and corpus generators guard
+their divisors with `.max(1)`.
+
 ## Resolved: shared fixed-port ranking repeated sorts
 
 **Finding.** Ranking each endpoint by filtering and sorting its complete peer
