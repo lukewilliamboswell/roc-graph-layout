@@ -1,0 +1,43 @@
+flowchart TB
+    internet((Internet)) --> fw1[Firewall A]
+    internet --> fw2[Firewall B]
+    subgraph dmz [DMZ]
+        fw1 --> proxy1[Proxy 1]
+        fw2 --> proxy2[Proxy 2]
+        proxy1 --> waf[WAF]
+        proxy2 --> waf
+    end
+    subgraph app [Application zone]
+        web1[Web 1]
+        web2[Web 2]
+        web3[Web 3]
+        app1[App 1]
+        app2[App 2]
+        web1 --> app1
+        web2 --> app1
+        web2 --> app2
+        web3 --> app2
+    end
+    waf --> web1
+    waf --> web2
+    waf --> web3
+    subgraph db [Data zone]
+        primary[(Primary DB)] --> replica1[(Replica 1)]
+        primary --> replica2[(Replica 2)]
+        cache[(Cache)]
+    end
+    app1 --> primary
+    app2 --> primary
+    app1 --> cache
+    app2 --> cache
+    subgraph ops [Operations]
+        mon[Monitoring]
+        logs[Log shipping]
+        backup[Backups]
+    end
+    app1 --> logs
+    app2 --> logs
+    primary --> backup
+    mon --> web1
+    mon --> app1
+    mon --> primary

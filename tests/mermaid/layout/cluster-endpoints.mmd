@@ -1,0 +1,16 @@
+flowchart LR
+    client[Client] --> frontend
+    subgraph frontend [Frontend]
+        ui[UI] --> state[State store]
+    end
+    frontend --> backend
+    subgraph backend [Backend]
+        handler[Handler] --> repo[Repository]
+    end
+    backend --> db[(Database)]
+    subgraph observability [Observability]
+        metrics[Metrics]
+        traces[Traces]
+    end
+    backend --> observability
+    frontend --> metrics

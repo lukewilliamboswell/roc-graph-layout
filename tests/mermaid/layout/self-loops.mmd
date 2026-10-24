@@ -1,0 +1,7 @@
+flowchart LR
+    a[Poll] --> a
+    a --> b[Process]
+    b -->|retry| b
+    b --> c[Store]
+    c --> d[Done]
+    d --> d

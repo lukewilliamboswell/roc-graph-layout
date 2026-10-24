@@ -1,0 +1,8 @@
+flowchart TD
+    a[Order placed] -->|payment authorised by the bank| b[Pick items]
+    b -->|all items in stock| c[Pack]
+    b -->|some items missing| d[Backorder]
+    d -->|stock arrived| b
+    c -->|courier collected| e[Shipped]
+    e -->|delivered| f[Complete]
+    e -->|returned to sender| g[Refund]

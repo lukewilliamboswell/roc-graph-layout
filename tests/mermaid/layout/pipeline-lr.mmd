@@ -1,0 +1,22 @@
+flowchart LR
+    commit[Commit] --> lint[Lint]
+    commit --> unit[Unit tests]
+    commit --> build[Build image]
+    lint --> gate{Checks pass?}
+    unit --> gate
+    build --> scan[Security scan]
+    scan --> gate
+    gate -->|no| notify[Notify author]
+    gate -->|yes| staging[Deploy to staging]
+    staging --> smoke[Smoke tests]
+    staging --> perf[Load tests]
+    smoke --> approve{Approved?}
+    perf --> approve
+    approve -->|no| rollback[Roll back staging]
+    approve -->|yes| canary[Canary release]
+    canary --> metrics[(Metrics store)]
+    metrics --> healthy{Healthy?}
+    healthy -->|yes| prod[Full rollout]
+    healthy -->|no| rollback
+    rollback --> notify
+    prod --> done([Done])

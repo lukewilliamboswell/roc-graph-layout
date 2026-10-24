@@ -80,10 +80,21 @@ node tools/mermaid-oracle/measure_compare.mjs ./measure_sizes tests/mermaid/flow
 node tools/mermaid-oracle/golden_sizes.mjs package-mermaid/OracleSizes.roc tests/mermaid/flowchart tests/mermaid/measure
 roc test package-mermaid/OracleSizes.roc
 
+# Layout: our geometry from Mermaid's measured sizes vs Mermaid's (ELK) layout
+roc build package-mermaid/layout_dump.roc --output=layout_dump
+node tools/mermaid-oracle/score.mjs --bin ./layout_dump [--cases] tests/mermaid/layout tests/mermaid/flowchart
+
 # Drawing: our SVG from Mermaid's geometry vs Mermaid's SVG, pixel by pixel
 roc build package-mermaid/draw_svg.roc --output=draw_svg
 node tools/mermaid-oracle/visual.mjs ./draw_svg tests/mermaid/flowchart <out-dir> [case ...]
 ```
+
+Mermaid 12.2.0 lays flowcharts out with ELK (its default `layout`), not
+dagre; `FlowLayout.roc` reproduces the ELK settings Mermaid passes.
+`score.mjs` aligns the two drawings and reports node displacement (relative
+to the diagram's diagonal), layer and within-layer order agreement, edge
+crossings, bounds ratios and subgraph-box overlap. `tests/mermaid/layout/` holds
+larger, layout-focused cases.
 
 `visual.mjs` writes Mermaid | Roc | difference images and `scores.json`. A
 score is the share of inked pixels with no match within 1px in the other image.

@@ -1,0 +1,1148 @@
+{
+	"schema": 6,
+	"key": "d53f301015260172ffd1be9277e0d456e4c02c417a030a6090bfa55636444f7b",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart BT\n    draft[Draft] --> review{Review}\n    review -->|changes requested| revise[Revise]\n    revise --> review\n    review -->|approved| merge[Merge]\n    merge --> release[Release notes]\n    merge --> deploy[Deploy]\n    deploy --> verify{Verify}\n    verify -->|pass| close[Close ticket]\n    verify -->|fail| revert[Revert]\n    revert --> revise\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "BT",
+		"nodes": [
+			{
+				"id": "draft",
+				"text": "Draft",
+				"label": "Draft",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "review",
+				"text": "Review",
+				"label": "Review",
+				"shape": "diamond",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "revise",
+				"text": "Revise",
+				"label": "Revise",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "merge",
+				"text": "Merge",
+				"label": "Merge",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "release",
+				"text": "Release notes",
+				"label": "Release notes",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "deploy",
+				"text": "Deploy",
+				"label": "Deploy",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "verify",
+				"text": "Verify",
+				"label": "Verify",
+				"shape": "diamond",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "close",
+				"text": "Close ticket",
+				"label": "Close ticket",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "revert",
+				"text": "Revert",
+				"label": "Revert",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "draft",
+				"to": "review",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "review",
+				"to": "revise",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "changes requested",
+				"label": "changes requested",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "revise",
+				"to": "review",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "review",
+				"to": "merge",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "approved",
+				"label": "approved",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "merge",
+				"to": "release",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "merge",
+				"to": "deploy",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "deploy",
+				"to": "verify",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "verify",
+				"to": "close",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "pass",
+				"label": "pass",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "verify",
+				"to": "revert",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "fail",
+				"label": "fail",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "revert",
+				"to": "revise",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "draft",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "review",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "diamond",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "revise",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "merge",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "release",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "deploy",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "verify",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "diamond",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "close",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "revert",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_draft_review_0",
+				"from": "draft",
+				"to": "review",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_review_revise_0",
+				"from": "review",
+				"to": "revise",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_revise_review_0",
+				"from": "revise",
+				"to": "review",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_review_merge_0",
+				"from": "review",
+				"to": "merge",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_merge_release_0",
+				"from": "merge",
+				"to": "release",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_merge_deploy_0",
+				"from": "merge",
+				"to": "deploy",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_deploy_verify_0",
+				"from": "deploy",
+				"to": "verify",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_verify_close_0",
+				"from": "verify",
+				"to": "close",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_verify_revert_0",
+				"from": "verify",
+				"to": "revert",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_revert_revise_0",
+				"from": "revert",
+				"to": "revise",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 628.265625,
+			"height": 917
+		},
+		"nodes": [
+			{
+				"id": "draft",
+				"center": {
+					"x": 163.265625,
+					"y": 892.5
+				},
+				"box": {
+					"x": 87.265625,
+					"y": 872,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 87.265625,
+					"y": 872,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 147,
+					"y": 884.0000009536743,
+					"width": 32.9384765625,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"Draft"
+					],
+					"box": {
+						"x": -16.265625,
+						"y": 9.5367431640625e-7,
+						"width": 32.9384765625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "review",
+				"center": {
+					"x": 163.265625,
+					"y": 748.5
+				},
+				"box": {
+					"x": 80.265625,
+					"y": 665,
+					"width": 167,
+					"height": 167
+				},
+				"outer": {
+					"x": 80.265625,
+					"y": 665,
+					"width": 167,
+					"height": 167
+				},
+				"label": {
+					"x": 139.6015625,
+					"y": 740.0000009536743,
+					"width": 47.328125,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"Review"
+					],
+					"box": {
+						"x": -23.6640625,
+						"y": 9.5367431640625e-7,
+						"width": 47.328125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "revise",
+				"center": {
+					"x": 163.265625,
+					"y": 32.5
+				},
+				"box": {
+					"x": 87.265625,
+					"y": 12,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 87.265625,
+					"y": 12,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 141.5078125,
+					"y": 24.000000953674316,
+					"width": 43.515625,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"Revise"
+					],
+					"box": {
+						"x": -21.7578125,
+						"y": 9.5367431640625e-7,
+						"width": 43.515625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "merge",
+				"center": {
+					"x": 356.265625,
+					"y": 543.5
+				},
+				"box": {
+					"x": 280.265625,
+					"y": 523,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 280.265625,
+					"y": 523,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 334.9609375,
+					"y": 535.0000009536743,
+					"width": 42.609375,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"Merge"
+					],
+					"box": {
+						"x": -21.3046875,
+						"y": 9.5367431640625e-7,
+						"width": 42.609375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "release",
+				"center": {
+					"x": 260.265625,
+					"y": 462.5
+				},
+				"box": {
+					"x": 184.265625,
+					"y": 442,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 184.265625,
+					"y": 442,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 213.921875,
+					"y": 454.0000009536743,
+					"width": 92.6875,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"Release notes"
+					],
+					"box": {
+						"x": -46.34375,
+						"y": 9.5367431640625e-7,
+						"width": 92.6875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "deploy",
+				"center": {
+					"x": 452.265625,
+					"y": 462.5
+				},
+				"box": {
+					"x": 376.265625,
+					"y": 442,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 376.265625,
+					"y": 442,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 429.15625,
+					"y": 454.0000009536743,
+					"width": 46.349609375,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"Deploy"
+					],
+					"box": {
+						"x": -23.109375,
+						"y": 9.5367431640625e-7,
+						"width": 46.349609375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "verify",
+				"center": {
+					"x": 452.265625,
+					"y": 318.5
+				},
+				"box": {
+					"x": 369.265625,
+					"y": 235,
+					"width": 167,
+					"height": 167
+				},
+				"outer": {
+					"x": 369.265625,
+					"y": 235,
+					"width": 167,
+					"height": 167
+				},
+				"label": {
+					"x": 432.78125,
+					"y": 310.0000009536743,
+					"width": 39.08984375,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"Verify"
+					],
+					"box": {
+						"x": -19.484375,
+						"y": 9.5367431640625e-7,
+						"width": 39.08984375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "close",
+				"center": {
+					"x": 356.265625,
+					"y": 113.5
+				},
+				"box": {
+					"x": 280.265625,
+					"y": 93,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 280.265625,
+					"y": 93,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 317.4609375,
+					"y": 105.00000095367432,
+					"width": 78.015625,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"Close ticket"
+					],
+					"box": {
+						"x": -38.8046875,
+						"y": 9.5367431640625e-7,
+						"width": 78.015625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "revert",
+				"center": {
+					"x": 548.265625,
+					"y": 113.5
+				},
+				"box": {
+					"x": 472.265625,
+					"y": 93,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 472.265625,
+					"y": 93,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 527,
+					"y": 105.00000095367432,
+					"width": 42.939453125,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"Revert"
+					],
+					"box": {
+						"x": -21.265625,
+						"y": 9.5367431640625e-7,
+						"width": 42.939453125,
+						"height": 17
+					}
+				}
+			}
+		],
+		"clusters": [],
+		"edges": [
+			{
+				"id": "L_draft_review_0",
+				"points": [
+					{
+						"x": 163.265625,
+						"y": 872
+					},
+					{
+						"x": 163.265625,
+						"y": 832
+					}
+				],
+				"path": "M163.265625,872L163.265625,836",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_review_revise_0",
+				"points": [
+					{
+						"x": 126.515625,
+						"y": 701.750078201294
+					},
+					{
+						"x": 126.515625,
+						"y": 665
+					},
+					{
+						"x": 126.515625,
+						"y": 645
+					},
+					{
+						"x": 78,
+						"y": 645
+					},
+					{
+						"x": 78,
+						"y": 614.5
+					},
+					{
+						"x": 78,
+						"y": 543.5
+					},
+					{
+						"x": 78,
+						"y": 318.5
+					},
+					{
+						"x": 78,
+						"y": 184.5
+					},
+					{
+						"x": 78,
+						"y": 113.5
+					},
+					{
+						"x": 78,
+						"y": 73
+					},
+					{
+						"x": 130.265625,
+						"y": 73
+					},
+					{
+						"x": 130.265625,
+						"y": 53
+					}
+				],
+				"path": "M126.515625,701.750078201294L126.515625,665L126.515625,652.0710678118655Q126.515625,645 119.44455718813452,645L85.07106781186548,645Q78,645 78,637.9289321881345L78,614.5L78,543.5L78,318.5L78,184.5L78,113.5L78,80.07106781186548Q78,73 85.07106781186548,73L123.19455718813452,73Q130.265625,73 130.265625,65.92893218813452L130.265625,57",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 14,
+					"y": 454,
+					"width": 127.265625,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"changes requested"
+					],
+					"box": {
+						"x": -63.6328125,
+						"y": 9.5367431640625e-7,
+						"width": 127.265625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_revise_review_0",
+				"points": [
+					{
+						"x": 163.265625,
+						"y": 53
+					},
+					{
+						"x": 163.265625,
+						"y": 113.5
+					},
+					{
+						"x": 163.265625,
+						"y": 184.5
+					},
+					{
+						"x": 163.265625,
+						"y": 318.5
+					},
+					{
+						"x": 163.265625,
+						"y": 462.5
+					},
+					{
+						"x": 163.265625,
+						"y": 543.5
+					},
+					{
+						"x": 163.265625,
+						"y": 614.5
+					},
+					{
+						"x": 163.265625,
+						"y": 665
+					}
+				],
+				"path": "M163.265625,53L163.265625,113.5L163.265625,184.5L163.265625,318.5L163.265625,462.5L163.265625,543.5L163.265625,614.5L163.265625,661",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_review_merge_0",
+				"points": [
+					{
+						"x": 200.015625,
+						"y": 701.750078201294
+					},
+					{
+						"x": 200.015625,
+						"y": 665
+					},
+					{
+						"x": 200.015625,
+						"y": 645
+					},
+					{
+						"x": 356.265625,
+						"y": 645
+					},
+					{
+						"x": 356.265625,
+						"y": 564
+					}
+				],
+				"path": "M200.015625,701.750078201294L200.015625,665L200.015625,652.0710678118655Q200.015625,645 207.08669281186548,645L349.1945571881345,645Q356.265625,645 356.265625,637.9289321881345L356.265625,568",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 324.765625,
+					"y": 606,
+					"width": 62.5,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"approved"
+					],
+					"box": {
+						"x": -31.25,
+						"y": 9.5367431640625e-7,
+						"width": 62.5,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_merge_release_0",
+				"points": [
+					{
+						"x": 334.265625,
+						"y": 523
+					},
+					{
+						"x": 334.265625,
+						"y": 503
+					},
+					{
+						"x": 260.265625,
+						"y": 503
+					},
+					{
+						"x": 260.265625,
+						"y": 483
+					}
+				],
+				"path": "M334.265625,523L334.265625,510.0710678118655Q334.265625,503 327.1945571881345,503L267.3366928118655,503Q260.265625,503 260.265625,495.9289321881345L260.265625,487",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_merge_deploy_0",
+				"points": [
+					{
+						"x": 378.265625,
+						"y": 523
+					},
+					{
+						"x": 378.265625,
+						"y": 503
+					},
+					{
+						"x": 452.265625,
+						"y": 503
+					},
+					{
+						"x": 452.265625,
+						"y": 483
+					}
+				],
+				"path": "M378.265625,523L378.265625,510.0710678118655Q378.265625,503 385.3366928118655,503L445.1945571881345,503Q452.265625,503 452.265625,495.9289321881345L452.265625,487",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_deploy_verify_0",
+				"points": [
+					{
+						"x": 452.265625,
+						"y": 442
+					},
+					{
+						"x": 452.265625,
+						"y": 402
+					}
+				],
+				"path": "M452.265625,442L452.265625,406",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_verify_close_0",
+				"points": [
+					{
+						"x": 427.765625,
+						"y": 259.5000786781311
+					},
+					{
+						"x": 427.765625,
+						"y": 235
+					},
+					{
+						"x": 427.765625,
+						"y": 215
+					},
+					{
+						"x": 356.265625,
+						"y": 215
+					},
+					{
+						"x": 356.265625,
+						"y": 134
+					}
+				],
+				"path": "M427.765625,259.5000786781311L427.765625,235L427.765625,222.07106781186548Q427.765625,215 420.6945571881345,215L363.3366928118655,215Q356.265625,215 356.265625,207.92893218813452L356.265625,138",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 340.265625,
+					"y": 176,
+					"width": 31.359375,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"pass"
+					],
+					"box": {
+						"x": -15.6796875,
+						"y": 9.5367431640625e-7,
+						"width": 31.359375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_verify_revert_0",
+				"points": [
+					{
+						"x": 476.765625,
+						"y": 259.5000786781311
+					},
+					{
+						"x": 476.765625,
+						"y": 235
+					},
+					{
+						"x": 476.765625,
+						"y": 215
+					},
+					{
+						"x": 548.265625,
+						"y": 215
+					},
+					{
+						"x": 548.265625,
+						"y": 134
+					}
+				],
+				"path": "M476.765625,259.5000786781311L476.765625,235L476.765625,222.07106781186548Q476.765625,215 483.8366928118655,215L541.1945571881345,215Q548.265625,215 548.265625,207.92893218813452L548.265625,138",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 538.265625,
+					"y": 176,
+					"width": 19.609375,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"fail"
+					],
+					"box": {
+						"x": -9.8046875,
+						"y": 9.5367431640625e-7,
+						"width": 19.609375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_revert_revise_0",
+				"points": [
+					{
+						"x": 548.265625,
+						"y": 93
+					},
+					{
+						"x": 548.265625,
+						"y": 73
+					},
+					{
+						"x": 196.265625,
+						"y": 73
+					},
+					{
+						"x": 196.265625,
+						"y": 53
+					}
+				],
+				"path": "M548.265625,93L548.265625,80.07106781186548Q548.265625,73 541.1945571881345,73L203.33669281186548,73Q196.265625,73 196.265625,65.92893218813452L196.265625,57",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			}
+		]
+	},
+	"svg_sha256": "1215a67b4b3bf765327000e6fc0d07295838879981c366c73876ce17bffe2986"
+}

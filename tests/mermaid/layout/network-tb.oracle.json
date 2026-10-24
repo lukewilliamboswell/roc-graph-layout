@@ -1,0 +1,2655 @@
+{
+	"schema": 6,
+	"key": "dad5ee2440bf2368bb8f787a7d5715dd0687b405e0a9a6ecde16cc9e2600d435",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart TB\n    internet((Internet)) --> fw1[Firewall A]\n    internet --> fw2[Firewall B]\n    subgraph dmz [DMZ]\n        fw1 --> proxy1[Proxy 1]\n        fw2 --> proxy2[Proxy 2]\n        proxy1 --> waf[WAF]\n        proxy2 --> waf\n    end\n    subgraph app [Application zone]\n        web1[Web 1]\n        web2[Web 2]\n        web3[Web 3]\n        app1[App 1]\n        app2[App 2]\n        web1 --> app1\n        web2 --> app1\n        web2 --> app2\n        web3 --> app2\n    end\n    waf --> web1\n    waf --> web2\n    waf --> web3\n    subgraph db [Data zone]\n        primary[(Primary DB)] --> replica1[(Replica 1)]\n        primary --> replica2[(Replica 2)]\n        cache[(Cache)]\n    end\n    app1 --> primary\n    app2 --> primary\n    app1 --> cache\n    app2 --> cache\n    subgraph ops [Operations]\n        mon[Monitoring]\n        logs[Log shipping]\n        backup[Backups]\n    end\n    app1 --> logs\n    app2 --> logs\n    primary --> backup\n    mon --> web1\n    mon --> app1\n    mon --> primary\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "TB",
+		"nodes": [
+			{
+				"id": "internet",
+				"text": "Internet",
+				"label": "Internet",
+				"shape": "circle",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "fw1",
+				"text": "Firewall A",
+				"label": "Firewall A",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "fw2",
+				"text": "Firewall B",
+				"label": "Firewall B",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "proxy1",
+				"text": "Proxy 1",
+				"label": "Proxy 1",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "proxy2",
+				"text": "Proxy 2",
+				"label": "Proxy 2",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "waf",
+				"text": "WAF",
+				"label": "WAF",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "web1",
+				"text": "Web 1",
+				"label": "Web 1",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "web2",
+				"text": "Web 2",
+				"label": "Web 2",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "web3",
+				"text": "Web 3",
+				"label": "Web 3",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "app1",
+				"text": "App 1",
+				"label": "App 1",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "app2",
+				"text": "App 2",
+				"label": "App 2",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "primary",
+				"text": "Primary DB",
+				"label": "Primary DB",
+				"shape": "cylinder",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "replica1",
+				"text": "Replica 1",
+				"label": "Replica 1",
+				"shape": "cylinder",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "replica2",
+				"text": "Replica 2",
+				"label": "Replica 2",
+				"shape": "cylinder",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "cache",
+				"text": "Cache",
+				"label": "Cache",
+				"shape": "cylinder",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "mon",
+				"text": "Monitoring",
+				"label": "Monitoring",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "logs",
+				"text": "Log shipping",
+				"label": "Log shipping",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "backup",
+				"text": "Backups",
+				"label": "Backups",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "internet",
+				"to": "fw1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "internet",
+				"to": "fw2",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "fw1",
+				"to": "proxy1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "fw2",
+				"to": "proxy2",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "proxy1",
+				"to": "waf",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "proxy2",
+				"to": "waf",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "web1",
+				"to": "app1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "web2",
+				"to": "app1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "web2",
+				"to": "app2",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "web3",
+				"to": "app2",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "waf",
+				"to": "web1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "waf",
+				"to": "web2",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "waf",
+				"to": "web3",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "primary",
+				"to": "replica1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "primary",
+				"to": "replica2",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "app1",
+				"to": "primary",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "app2",
+				"to": "primary",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "app1",
+				"to": "cache",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "app2",
+				"to": "cache",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "app1",
+				"to": "logs",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "app2",
+				"to": "logs",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "primary",
+				"to": "backup",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "mon",
+				"to": "web1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "mon",
+				"to": "app1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "mon",
+				"to": "primary",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [
+			{
+				"id": "dmz",
+				"title": "DMZ",
+				"label": "DMZ",
+				"nodes": [
+					"proxy1",
+					"fw1",
+					"proxy2",
+					"fw2",
+					"waf"
+				],
+				"dir": null,
+				"classes": []
+			},
+			{
+				"id": "app",
+				"title": "Application zone",
+				"label": "Application zone",
+				"nodes": [
+					"web1",
+					"web2",
+					"web3",
+					"app1",
+					"app2"
+				],
+				"dir": null,
+				"classes": []
+			},
+			{
+				"id": "db",
+				"title": "Data zone",
+				"label": "Data zone",
+				"nodes": [
+					"replica1",
+					"primary",
+					"replica2",
+					"cache"
+				],
+				"dir": null,
+				"classes": []
+			},
+			{
+				"id": "ops",
+				"title": "Operations",
+				"label": "Operations",
+				"nodes": [
+					"mon",
+					"logs",
+					"backup"
+				],
+				"dir": null,
+				"classes": []
+			}
+		],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "ops",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 3,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "db",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 2,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "app",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 1,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "dmz",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 0,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "internet",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "circle",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "fw1",
+				"is_group": false,
+				"parent": "dmz",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "fw2",
+				"is_group": false,
+				"parent": "dmz",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "proxy1",
+				"is_group": false,
+				"parent": "dmz",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "proxy2",
+				"is_group": false,
+				"parent": "dmz",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "waf",
+				"is_group": false,
+				"parent": "dmz",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "web1",
+				"is_group": false,
+				"parent": "app",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "web2",
+				"is_group": false,
+				"parent": "app",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "web3",
+				"is_group": false,
+				"parent": "app",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "app1",
+				"is_group": false,
+				"parent": "app",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "app2",
+				"is_group": false,
+				"parent": "app",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "primary",
+				"is_group": false,
+				"parent": "db",
+				"declaration_index": null,
+				"shape": "cylinder",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "replica1",
+				"is_group": false,
+				"parent": "db",
+				"declaration_index": null,
+				"shape": "cylinder",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "replica2",
+				"is_group": false,
+				"parent": "db",
+				"declaration_index": null,
+				"shape": "cylinder",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "cache",
+				"is_group": false,
+				"parent": "db",
+				"declaration_index": null,
+				"shape": "cylinder",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "mon",
+				"is_group": false,
+				"parent": "ops",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "logs",
+				"is_group": false,
+				"parent": "ops",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "backup",
+				"is_group": false,
+				"parent": "ops",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_internet_fw1_0",
+				"from": "internet",
+				"to": "fw1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_internet_fw2_0",
+				"from": "internet",
+				"to": "fw2",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_fw1_proxy1_0",
+				"from": "fw1",
+				"to": "proxy1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_fw2_proxy2_0",
+				"from": "fw2",
+				"to": "proxy2",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_proxy1_waf_0",
+				"from": "proxy1",
+				"to": "waf",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_proxy2_waf_0",
+				"from": "proxy2",
+				"to": "waf",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_web1_app1_0",
+				"from": "web1",
+				"to": "app1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_web2_app1_0",
+				"from": "web2",
+				"to": "app1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_web2_app2_0",
+				"from": "web2",
+				"to": "app2",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_web3_app2_0",
+				"from": "web3",
+				"to": "app2",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_waf_web1_0",
+				"from": "waf",
+				"to": "web1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_waf_web2_0",
+				"from": "waf",
+				"to": "web2",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_waf_web3_0",
+				"from": "waf",
+				"to": "web3",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_primary_replica1_0",
+				"from": "primary",
+				"to": "replica1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_primary_replica2_0",
+				"from": "primary",
+				"to": "replica2",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_app1_primary_0",
+				"from": "app1",
+				"to": "primary",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_app2_primary_0",
+				"from": "app2",
+				"to": "primary",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_app1_cache_0",
+				"from": "app1",
+				"to": "cache",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_app2_cache_0",
+				"from": "app2",
+				"to": "cache",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_app1_logs_0",
+				"from": "app1",
+				"to": "logs",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_app2_logs_0",
+				"from": "app2",
+				"to": "logs",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_primary_backup_0",
+				"from": "primary",
+				"to": "backup",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_mon_web1_0",
+				"from": "mon",
+				"to": "web1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_mon_app1_0",
+				"from": "mon",
+				"to": "app1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_mon_primary_0",
+				"from": "mon",
+				"to": "primary",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 679.856689453125,
+			"height": 1412.58740234375
+		},
+		"nodes": [
+			{
+				"id": "internet",
+				"center": {
+					"x": 339.65667724609375,
+					"y": 55.1449317932129
+				},
+				"box": {
+					"x": 296.51174545288086,
+					"y": 12.000000000000007,
+					"width": 86.28986358642578,
+					"height": 86.28986358642578
+				},
+				"outer": {
+					"x": 296.51174545288086,
+					"y": 12.000000000000007,
+					"width": 86.28986358642578,
+					"height": 86.28986358642578
+				},
+				"label": {
+					"x": 314.1090679168701,
+					"y": 46.644531238503994,
+					"width": 51.509124755859375,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Internet"
+					],
+					"box": {
+						"x": -25.5703125,
+						"y": 9.5367431640625e-7,
+						"width": 51.5595703125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "fw1",
+				"center": {
+					"x": 238.6566619873047,
+					"y": 212.78985595703128
+				},
+				"box": {
+					"x": 162.6566619873047,
+					"y": 192.28985595703128,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 162.6566619873047,
+					"y": 192.28985595703128,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 206.5307388305664,
+					"y": 204.28945540232237,
+					"width": 64.5912094116211,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Firewall A"
+					],
+					"box": {
+						"x": -32.15625,
+						"y": 9.5367431640625e-7,
+						"width": 64.640625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "fw2",
+				"center": {
+					"x": 440.65667724609375,
+					"y": 212.78985595703128
+				},
+				"box": {
+					"x": 364.65667724609375,
+					"y": 192.28985595703128,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 364.65667724609375,
+					"y": 192.28985595703128,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 408.78076171875,
+					"y": 204.28945540232237,
+					"width": 63.7518310546875,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Firewall B"
+					],
+					"box": {
+						"x": -31.90625,
+						"y": 9.5367431640625e-7,
+						"width": 63.8125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "proxy1",
+				"center": {
+					"x": 238.6566619873047,
+					"y": 277.7898559570312
+				},
+				"box": {
+					"x": 162.6566619873047,
+					"y": 257.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 162.6566619873047,
+					"y": 257.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 215.07785987854004,
+					"y": 269.28945540232235,
+					"width": 47.1576042175293,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Proxy 1"
+					],
+					"box": {
+						"x": -23.609375,
+						"y": 9.5367431640625e-7,
+						"width": 47.21875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "proxy2",
+				"center": {
+					"x": 440.65667724609375,
+					"y": 277.7898559570312
+				},
+				"box": {
+					"x": 364.65667724609375,
+					"y": 257.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 364.65667724609375,
+					"y": 257.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 415.6559581756592,
+					"y": 269.28945540232235,
+					"width": 50.00143814086914,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Proxy 2"
+					],
+					"box": {
+						"x": -25.03125,
+						"y": 9.5367431640625e-7,
+						"width": 50.0625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "waf",
+				"center": {
+					"x": 339.65667724609375,
+					"y": 378.7898559570312
+				},
+				"box": {
+					"x": 263.65667724609375,
+					"y": 358.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 263.65667724609375,
+					"y": 358.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 324.2031078338623,
+					"y": 370.28945540232235,
+					"width": 30.90713882446289,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"WAF"
+					],
+					"box": {
+						"x": -15.46875,
+						"y": 9.5367431640625e-7,
+						"width": 30.9375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "web1",
+				"center": {
+					"x": 575.8566894531251,
+					"y": 567.7898559570312
+				},
+				"box": {
+					"x": 499.8566894531251,
+					"y": 547.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 499.8566894531251,
+					"y": 547.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 556.1451854705812,
+					"y": 559.2894554023223,
+					"width": 39.42300796508789,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Web 1"
+					],
+					"box": {
+						"x": -19.734375,
+						"y": 9.5367431640625e-7,
+						"width": 39.46875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "web2",
+				"center": {
+					"x": 373.8566589355468,
+					"y": 567.7898559570312
+				},
+				"box": {
+					"x": 297.8566589355468,
+					"y": 547.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 297.8566589355468,
+					"y": 547.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 352.7232398986816,
+					"y": 559.2894554023223,
+					"width": 42.26683807373047,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Web 2"
+					],
+					"box": {
+						"x": -21.15625,
+						"y": 9.5367431640625e-7,
+						"width": 42.3125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "web3",
+				"center": {
+					"x": 171.85667419433594,
+					"y": 567.7898559570312
+				},
+				"box": {
+					"x": 95.85667419433594,
+					"y": 547.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 95.85667419433594,
+					"y": 547.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 150.66856575012207,
+					"y": 559.2894554023223,
+					"width": 42.376216888427734,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Web 3"
+					],
+					"box": {
+						"x": -21.2109375,
+						"y": 9.5367431640625e-7,
+						"width": 42.421875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "app1",
+				"center": {
+					"x": 417.3233337402344,
+					"y": 668.7898559570312
+				},
+				"box": {
+					"x": 341.3233337402344,
+					"y": 648.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 341.3233337402344,
+					"y": 648.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 399.119686126709,
+					"y": 660.2894554023223,
+					"width": 36.40729522705078,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"App 1"
+					],
+					"box": {
+						"x": -18.2265625,
+						"y": 9.5367431640625e-7,
+						"width": 36.453125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "app2",
+				"center": {
+					"x": 193.58999633789062,
+					"y": 668.7898559570312
+				},
+				"box": {
+					"x": 117.58999633789062,
+					"y": 648.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 117.58999633789062,
+					"y": 648.2898559570312,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 173.9644317626953,
+					"y": 660.2894554023223,
+					"width": 39.251129150390625,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"App 2"
+					],
+					"box": {
+						"x": -19.6484375,
+						"y": 9.5367431640625e-7,
+						"width": 39.296875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "primary",
+				"center": {
+					"x": 388.8766784667969,
+					"y": 989.8641967773438
+				},
+				"box": {
+					"x": 316.8766784667969,
+					"y": 949.2898483276367,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"outer": {
+					"x": 316.8766784667969,
+					"y": 949.2898483276367,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"label": {
+					"x": 351.6959228515625,
+					"y": 991.3637952689605,
+					"width": 74.36151123046875,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Primary DB"
+					],
+					"box": {
+						"x": -37.21875,
+						"y": 9.5367431640625e-7,
+						"width": 74.4375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "replica1",
+				"center": {
+					"x": 264.1166687011718,
+					"y": 1155.0129394531252
+				},
+				"box": {
+					"x": 192.1166687011719,
+					"y": 1114.4385910034182,
+					"width": 143.99999999999997,
+					"height": 81.14869689941406
+				},
+				"outer": {
+					"x": 192.11666870117182,
+					"y": 1114.4385910034182,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"label": {
+					"x": 235.1705245971679,
+					"y": 1156.512537944742,
+					"width": 57.89228820800781,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Replica 1"
+					],
+					"box": {
+						"x": -28.984375,
+						"y": 9.5367431640625e-7,
+						"width": 57.96875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "replica2",
+				"center": {
+					"x": 455.8566589355469,
+					"y": 1155.0129394531252
+				},
+				"box": {
+					"x": 383.8566589355469,
+					"y": 1114.4385910034182,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"outer": {
+					"x": 383.8566589355469,
+					"y": 1114.4385910034182,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"label": {
+					"x": 425.4885997772217,
+					"y": 1156.512537944742,
+					"width": 60.736122131347656,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Replica 2"
+					],
+					"box": {
+						"x": -30.40625,
+						"y": 9.5367431640625e-7,
+						"width": 60.8125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "cache",
+				"center": {
+					"x": 194.8766632080078,
+					"y": 989.8641967773438
+				},
+				"box": {
+					"x": 122.87666320800783,
+					"y": 949.2898483276367,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"outer": {
+					"x": 122.87666320800781,
+					"y": 949.2898483276367,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"label": {
+					"x": 173.6338653564453,
+					"y": 991.3637952689605,
+					"width": 42.485595703125,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Cache"
+					],
+					"box": {
+						"x": -21.265625,
+						"y": 9.5367431640625e-7,
+						"width": 42.53125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "mon",
+				"center": {
+					"x": 516,
+					"y": 1364.0872802734377
+				},
+				"box": {
+					"x": 440,
+					"y": 1343.5872802734377,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 440,
+					"y": 1343.5872802734377,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 480.4364776611328,
+					"y": 1355.5868797187288,
+					"width": 71.12704467773438,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Monitoring"
+					],
+					"box": {
+						"x": -35.6015625,
+						"y": 9.5367431640625e-7,
+						"width": 71.203125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "logs",
+				"center": {
+					"x": 112,
+					"y": 1364.0872802734377
+				},
+				"box": {
+					"x": 36,
+					"y": 1343.5872802734377,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 36,
+					"y": 1343.5872802734377,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 69.39721298217773,
+					"y": 1355.5868797187288,
+					"width": 85.20557403564453,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Log shipping"
+					],
+					"box": {
+						"x": -42.6484375,
+						"y": 9.5367431640625e-7,
+						"width": 85.296875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "backup",
+				"center": {
+					"x": 314,
+					"y": 1364.0872802734377
+				},
+				"box": {
+					"x": 238,
+					"y": 1343.5872802734377,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 238,
+					"y": 1343.5872802734377,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 285.55387115478516,
+					"y": 1355.5868797187288,
+					"width": 56.89225769042969,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Backups"
+					],
+					"box": {
+						"x": -28.4765625,
+						"y": 9.5367431640625e-7,
+						"width": 56.953125,
+						"height": 17
+					}
+				}
+			}
+		],
+		"clusters": [
+			{
+				"id": "dmz",
+				"box": {
+					"x": 138.6566619873047,
+					"y": 148.28985595703125,
+					"width": 402,
+					"height": 275
+				},
+				"label": {
+					"x": 323.87542724609375,
+					"y": 148.2894706611114,
+					"width": 31.532155990600586,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"DMZ"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 31.5625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "app",
+				"box": {
+					"x": 71.8566665649414,
+					"y": 503.28985595703125,
+					"width": 604,
+					"height": 210
+				},
+				"label": {
+					"x": 318.5988464355469,
+					"y": 503.28945540232235,
+					"width": 110.409423828125,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Application zone"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 110.515625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "db",
+				"box": {
+					"x": 98.87666320800781,
+					"y": 833.2898559570312,
+					"width": 452.9800109863281,
+					"height": 386.2973937988281
+				},
+				"label": {
+					"x": 291.9760437011719,
+					"y": 833.2894554023223,
+					"width": 66.72066497802734,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Data zone"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 66.78125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "ops",
+				"box": {
+					"x": 12,
+					"y": 1299.5872802734375,
+					"width": 604,
+					"height": 109
+				},
+				"label": {
+					"x": 277.69531249999994,
+					"y": 1299.5868797187288,
+					"width": 72.53333282470703,
+					"height": 17.00048828125
+				},
+				"text": {
+					"rows": [
+						"Operations"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 72.609375,
+						"height": 17
+					}
+				}
+			}
+		],
+		"edges": [
+			{
+				"id": "L_internet_fw1_0",
+				"points": [
+					{
+						"x": 328.60835606892897,
+						"y": 96.85126852961912
+					},
+					{
+						"x": 328.60835606892897,
+						"y": 98.28986358642578
+					},
+					{
+						"x": 328.60835606892897,
+						"y": 118.28986358642578
+					},
+					{
+						"x": 238.65666666666664,
+						"y": 118.28986358642578
+					},
+					{
+						"x": 238.65666666666664,
+						"y": 138.28986358642578
+					},
+					{
+						"x": 238.65666666666664,
+						"y": 192.28986358642578
+					}
+				],
+				"path": "M328.60835606892897,96.85126852961912L328.60835606892897,98.28986358642578L328.60835606892897,111.2187957745603Q328.60835606892897,118.28986358642578 321.5372882570635,118.28986358642578L245.7277344785321,118.28986358642578Q238.65666666666664,118.28986358642578 238.65666666666664,125.36093139829126L238.65666666666664,138.28986358642578L238.65666666666664,188.28986358642578",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_internet_fw2_0",
+				"points": [
+					{
+						"x": 350.70497726440425,
+						"y": 96.85126852961912
+					},
+					{
+						"x": 350.70497726440425,
+						"y": 98.28986358642578
+					},
+					{
+						"x": 350.70497726440425,
+						"y": 118.28986358642578
+					},
+					{
+						"x": 440.65666666666664,
+						"y": 118.28986358642578
+					},
+					{
+						"x": 440.65666666666664,
+						"y": 138.28986358642578
+					},
+					{
+						"x": 440.65666666666664,
+						"y": 192.28986358642578
+					}
+				],
+				"path": "M350.70497726440425,96.85126852961912L350.70497726440425,98.28986358642578L350.70497726440425,111.2187957745603Q350.70497726440425,118.28986358642578 357.7760450762697,118.28986358642578L433.58559885480116,118.28986358642578Q440.65666666666664,118.28986358642578 440.65666666666664,125.36093139829126L440.65666666666664,138.28986358642578L440.65666666666664,188.28986358642578",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_fw1_proxy1_0",
+				"points": [
+					{
+						"x": 238.65666666666664,
+						"y": 233.28986358642578
+					},
+					{
+						"x": 238.65666666666664,
+						"y": 257.2898635864258
+					}
+				],
+				"path": "M238.65666666666664,233.28986358642578L238.65666666666664,253.28986358642578",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_fw2_proxy2_0",
+				"points": [
+					{
+						"x": 440.65666666666664,
+						"y": 233.28986358642578
+					},
+					{
+						"x": 440.65666666666664,
+						"y": 257.2898635864258
+					}
+				],
+				"path": "M440.65666666666664,233.28986358642578L440.65666666666664,253.28986358642578",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_proxy1_waf_0",
+				"points": [
+					{
+						"x": 238.65666666666664,
+						"y": 298.2898635864258
+					},
+					{
+						"x": 238.65666666666664,
+						"y": 328.2898635864258
+					},
+					{
+						"x": 317.9233333333333,
+						"y": 328.2898635864258
+					},
+					{
+						"x": 317.9233333333333,
+						"y": 358.2898635864258
+					}
+				],
+				"path": "M238.65666666666664,298.2898635864258L238.65666666666664,321.2187957745603Q238.65666666666664,328.2898635864258 245.7277344785321,328.2898635864258L310.8522655214678,328.2898635864258Q317.9233333333333,328.2898635864258 317.9233333333333,335.36093139829126L317.9233333333333,354.2898635864258",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_proxy2_waf_0",
+				"points": [
+					{
+						"x": 440.65666666666664,
+						"y": 298.2898635864258
+					},
+					{
+						"x": 440.65666666666664,
+						"y": 328.2898635864258
+					},
+					{
+						"x": 361.38999999999993,
+						"y": 328.2898635864258
+					},
+					{
+						"x": 361.38999999999993,
+						"y": 358.2898635864258
+					}
+				],
+				"path": "M440.65666666666664,298.2898635864258L440.65666666666664,321.2187957745603Q440.65666666666664,328.2898635864258 433.58559885480116,328.2898635864258L368.4610678118654,328.2898635864258Q361.38999999999993,328.2898635864258 361.38999999999993,335.36093139829126L361.38999999999993,354.2898635864258",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_web1_app1_0",
+				"points": [
+					{
+						"x": 554.1233333333332,
+						"y": 588.2898635864258
+					},
+					{
+						"x": 554.1233333333332,
+						"y": 618.2898635864258
+					},
+					{
+						"x": 439.05666666666656,
+						"y": 618.2898635864258
+					},
+					{
+						"x": 439.05666666666656,
+						"y": 648.2898635864258
+					}
+				],
+				"path": "M554.1233333333332,588.2898635864258L554.1233333333332,611.2187957745602Q554.1233333333332,618.2898635864258 547.0522655214677,618.2898635864258L446.12773447853203,618.2898635864258Q439.05666666666656,618.2898635864258 439.05666666666656,625.3609313982913L439.05666666666656,644.2898635864258",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_web2_app1_0",
+				"points": [
+					{
+						"x": 395.5899999999999,
+						"y": 588.2898635864258
+					},
+					{
+						"x": 395.5899999999999,
+						"y": 648.2898635864258
+					}
+				],
+				"path": "M395.5899999999999,588.2898635864258L395.5899999999999,644.2898635864258",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_web2_app2_0",
+				"points": [
+					{
+						"x": 352.1233333333333,
+						"y": 588.2898635864258
+					},
+					{
+						"x": 352.1233333333333,
+						"y": 618.2898635864258
+					},
+					{
+						"x": 215.32333333333327,
+						"y": 618.2898635864258
+					},
+					{
+						"x": 215.32333333333327,
+						"y": 648.2898635864258
+					}
+				],
+				"path": "M352.1233333333333,588.2898635864258L352.1233333333333,611.2187957745602Q352.1233333333333,618.2898635864258 345.0522655214678,618.2898635864258L222.39440114519874,618.2898635864258Q215.32333333333327,618.2898635864258 215.32333333333327,625.3609313982913L215.32333333333327,644.2898635864258",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_web3_app2_0",
+				"points": [
+					{
+						"x": 171.85666666666663,
+						"y": 588.2898635864258
+					},
+					{
+						"x": 171.85666666666663,
+						"y": 648.2898635864258
+					}
+				],
+				"path": "M171.85666666666663,588.2898635864258L171.85666666666663,644.2898635864258",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_waf_web1_0",
+				"points": [
+					{
+						"x": 372.2566666666666,
+						"y": 399.2898635864258
+					},
+					{
+						"x": 372.2566666666666,
+						"y": 433.2898635864258
+					},
+					{
+						"x": 372.2566666666666,
+						"y": 453.2898635864258
+					},
+					{
+						"x": 575.8566666666666,
+						"y": 453.2898635864258
+					},
+					{
+						"x": 575.8566666666666,
+						"y": 493.2898635864258
+					},
+					{
+						"x": 575.8566666666666,
+						"y": 547.2898635864258
+					}
+				],
+				"path": "M372.2566666666666,399.2898635864258L372.2566666666666,433.2898635864258L372.2566666666666,446.2187957745603Q372.2566666666666,453.2898635864258 379.3277344785321,453.2898635864258L568.785598854801,453.2898635864258Q575.8566666666666,453.2898635864258 575.8566666666666,460.36093139829126L575.8566666666666,493.2898635864258L575.8566666666666,543.2898635864258",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_waf_web2_0",
+				"points": [
+					{
+						"x": 339.65666666666664,
+						"y": 399.2898635864258
+					},
+					{
+						"x": 339.65666666666664,
+						"y": 433.2898635864258
+					},
+					{
+						"x": 339.65666666666664,
+						"y": 473.2898635864258
+					},
+					{
+						"x": 373.8566666666666,
+						"y": 473.2898635864258
+					},
+					{
+						"x": 373.8566666666666,
+						"y": 493.2898635864258
+					},
+					{
+						"x": 373.8566666666666,
+						"y": 547.2898635864258
+					}
+				],
+				"path": "M339.65666666666664,399.2898635864258L339.65666666666664,433.2898635864258L339.65666666666664,466.2187957745603Q339.65666666666664,473.2898635864258 346.7277344785321,473.2898635864258L366.78559885480115,473.2898635864258Q373.8566666666666,473.2898635864258 373.8566666666666,480.36093139829126L373.8566666666666,493.2898635864258L373.8566666666666,543.2898635864258",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_waf_web3_0",
+				"points": [
+					{
+						"x": 307.0566666666666,
+						"y": 399.2898635864258
+					},
+					{
+						"x": 307.0566666666666,
+						"y": 433.2898635864258
+					},
+					{
+						"x": 307.0566666666666,
+						"y": 453.2898635864258
+					},
+					{
+						"x": 171.85666666666663,
+						"y": 453.2898635864258
+					},
+					{
+						"x": 171.85666666666663,
+						"y": 493.2898635864258
+					},
+					{
+						"x": 171.85666666666663,
+						"y": 547.2898635864258
+					}
+				],
+				"path": "M307.0566666666666,399.2898635864258L307.0566666666666,433.2898635864258L307.0566666666666,446.2187957745603Q307.0566666666666,453.2898635864258 299.98559885480114,453.2898635864258L178.9277344785321,453.2898635864258Q171.85666666666663,453.2898635864258 171.85666666666663,460.36093139829126L171.85666666666663,493.2898635864258L171.85666666666663,543.2898635864258",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_primary_replica1_0",
+				"points": [
+					{
+						"x": 352.15666666666664,
+						"y": 1029.3877281371606
+					},
+					{
+						"x": 352.15666666666664,
+						"y": 1030.4385604858398
+					},
+					{
+						"x": 352.15666666666664,
+						"y": 1060.4385604858398
+					},
+					{
+						"x": 264.1166666666667,
+						"y": 1060.4385604858398
+					},
+					{
+						"x": 264.1166666666667,
+						"y": 1114.4385604858398
+					}
+				],
+				"path": "M352.15666666666664,1029.3877281371606L352.15666666666664,1030.4385604858398L352.15666666666664,1053.3674926739743Q352.15666666666664,1060.4385604858398 345.08559885480116,1060.4385604858398L271.18773447853215,1060.4385604858398Q264.1166666666667,1060.4385604858398 264.1166666666667,1067.5096282977054L264.1166666666667,1110.4385604858398",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_primary_replica2_0",
+				"points": [
+					{
+						"x": 425.5966666666667,
+						"y": 1029.3877281371606
+					},
+					{
+						"x": 425.5966666666667,
+						"y": 1030.4385604858398
+					},
+					{
+						"x": 425.5966666666667,
+						"y": 1060.4385604858398
+					},
+					{
+						"x": 455.8566666666667,
+						"y": 1060.4385604858398
+					},
+					{
+						"x": 455.8566666666667,
+						"y": 1114.4385604858398
+					}
+				],
+				"path": "M425.5966666666667,1029.3877281371606L425.5966666666667,1030.4385604858398L425.5966666666667,1053.3674926739743Q425.5966666666667,1060.4385604858398 432.66773447853217,1060.4385604858398L448.7855988548012,1060.4385604858398Q455.8566666666667,1060.4385604858398 455.8566666666667,1067.5096282977054L455.8566666666667,1110.4385604858398",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_app1_primary_0",
+				"points": [
+					{
+						"x": 430.3633333333333,
+						"y": 689.2898635864258
+					},
+					{
+						"x": 430.3633333333333,
+						"y": 723.2898635864258
+					},
+					{
+						"x": 430.3633333333333,
+						"y": 803.2898635864258
+					},
+					{
+						"x": 409.2766666666666,
+						"y": 803.2898635864258
+					},
+					{
+						"x": 409.2766666666666,
+						"y": 823.2898635864258
+					},
+					{
+						"x": 409.2766666666666,
+						"y": 949.2898635864258
+					}
+				],
+				"path": "M430.3633333333333,689.2898635864258L430.3633333333333,723.2898635864258L430.3633333333333,796.2187957745602Q430.3633333333333,803.2898635864258 423.2922655214678,803.2898635864258L416.34773447853206,803.2898635864258Q409.2766666666666,803.2898635864258 409.2766666666666,810.3609313982913L409.2766666666666,823.2898635864258L409.2766666666666,945.2898635864258",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_app2_primary_0",
+				"points": [
+					{
+						"x": 226.18999999999994,
+						"y": 689.2898635864258
+					},
+					{
+						"x": 226.18999999999994,
+						"y": 723.2898635864258
+					},
+					{
+						"x": 226.18999999999994,
+						"y": 783.2898635864258
+					},
+					{
+						"x": 285.8766666666666,
+						"y": 783.2898635864258
+					},
+					{
+						"x": 285.8766666666666,
+						"y": 823.2898635864258
+					},
+					{
+						"x": 285.8766666666666,
+						"y": 919.2898635864258
+					},
+					{
+						"x": 368.47666666666663,
+						"y": 919.2898635864258
+					},
+					{
+						"x": 368.47666666666663,
+						"y": 949.2898635864258
+					}
+				],
+				"path": "M226.18999999999994,689.2898635864258L226.18999999999994,723.2898635864258L226.18999999999994,776.2187957745602Q226.18999999999994,783.2898635864258 233.26106781186542,783.2898635864258L278.80559885480113,783.2898635864258Q285.8766666666666,783.2898635864258 285.8766666666666,790.3609313982913L285.8766666666666,823.2898635864258L285.8766666666666,912.2187957745602Q285.8766666666666,919.2898635864258 292.9477344785321,919.2898635864258L361.40559885480116,919.2898635864258Q368.47666666666663,919.2898635864258 368.47666666666663,926.3609313982913L368.47666666666663,945.2898635864258",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_app1_cache_0",
+				"points": [
+					{
+						"x": 404.28333333333325,
+						"y": 689.2898635864258
+					},
+					{
+						"x": 404.28333333333325,
+						"y": 723.2898635864258
+					},
+					{
+						"x": 404.28333333333325,
+						"y": 783.2898635864258
+					},
+					{
+						"x": 297.8766666666666,
+						"y": 783.2898635864258
+					},
+					{
+						"x": 297.8766666666666,
+						"y": 823.2898635864258
+					},
+					{
+						"x": 297.8766666666666,
+						"y": 907.2898635864258
+					},
+					{
+						"x": 215.27666666666659,
+						"y": 907.2898635864258
+					},
+					{
+						"x": 215.27666666666659,
+						"y": 949.2898635864258
+					}
+				],
+				"path": "M404.283,689.29 L404.283,723.29 L404.283,776.219 Q404.283,783.29 397.212,783.29 L304.948,783.29 Q297.877,783.29 297.877,790.361 L297.877,823.29 L297.877,900.219 Q297.877,907.29 290.806,907.29 L222.348,907.29 Q215.277,907.29 215.277,914.361 L215.277,945.29",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_app2_cache_0",
+				"points": [
+					{
+						"x": 193.58999999999995,
+						"y": 689.2898635864258
+					},
+					{
+						"x": 193.58999999999997,
+						"y": 723.2898635864258
+					},
+					{
+						"x": 193.58999999999997,
+						"y": 783.2898635864258
+					},
+					{
+						"x": 174.47666666666663,
+						"y": 783.2898635864258
+					},
+					{
+						"x": 174.4766666666666,
+						"y": 823.2898635864258
+					},
+					{
+						"x": 174.4766666666666,
+						"y": 949.2898635864258
+					}
+				],
+				"path": "M193.58999999999995,689.2898635864258L193.58999999999997,723.2898635864258L193.58999999999997,776.2187957745602Q193.58999999999997,783.2898635864258 186.5189321881345,783.2898635864258L181.5477344785321,783.2898635864258Q174.47666666666663,783.2898635864258 174.47666666666663,790.3609313982913L174.4766666666666,823.2898635864258L174.4766666666666,945.2898635864258",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_app1_logs_0",
+				"points": [
+					{
+						"x": 378.20333333333326,
+						"y": 689.2898635864258
+					},
+					{
+						"x": 378.2033333333333,
+						"y": 723.2898635864258
+					},
+					{
+						"x": 378.2033333333333,
+						"y": 763.2898635864258
+					},
+					{
+						"x": 77.87666666666664,
+						"y": 763.2898635864258
+					},
+					{
+						"x": 77.87666666666664,
+						"y": 1026.4385604858398
+					},
+					{
+						"x": 77.87666666666664,
+						"y": 1249.587257385254
+					},
+					{
+						"x": 133.7333333333333,
+						"y": 1249.587257385254
+					},
+					{
+						"x": 133.7333333333333,
+						"y": 1289.587257385254
+					},
+					{
+						"x": 133.7333333333333,
+						"y": 1343.587257385254
+					}
+				],
+				"path": "M378.203,689.29 L378.203,723.29 L378.203,756.219 Q378.203,763.29 371.132,763.29 L232.19,763.29 A6,6 0 0 0 220.19,763.29 L199.59,763.29 A6,6 0 0 0 187.59,763.29 L84.948,763.29 Q77.877,763.29 77.877,770.361 L77.877,1026.439 L77.877,1242.516 Q77.877,1249.587 84.948,1249.587 L126.662,1249.587 Q133.733,1249.587 133.733,1256.658 L133.733,1289.587 L133.733,1339.587",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_app2_logs_0",
+				"points": [
+					{
+						"x": 160.98999999999995,
+						"y": 689.2898635864258
+					},
+					{
+						"x": 160.98999999999995,
+						"y": 723.2898635864258
+					},
+					{
+						"x": 160.98999999999995,
+						"y": 743.2898635864258
+					},
+					{
+						"x": 45.64333333333332,
+						"y": 743.2898635864258
+					},
+					{
+						"x": 45.64333333333332,
+						"y": 1026.4385604858398
+					},
+					{
+						"x": 45.64333333333332,
+						"y": 1269.587257385254
+					},
+					{
+						"x": 90.26666666666665,
+						"y": 1269.587257385254
+					},
+					{
+						"x": 90.26666666666665,
+						"y": 1289.587257385254
+					},
+					{
+						"x": 90.26666666666665,
+						"y": 1343.587257385254
+					}
+				],
+				"path": "M160.98999999999995,689.2898635864258L160.98999999999995,723.2898635864258L160.98999999999995,736.2187957745602Q160.98999999999995,743.2898635864258 153.91893218813448,743.2898635864258L52.71440114519879,743.2898635864258Q45.64333333333332,743.2898635864258 45.64333333333332,750.3609313982913L45.64333333333332,1026.4385604858398L45.64333333333332,1262.5161895733884Q45.64333333333332,1269.587257385254 52.71440114519879,1269.587257385254L83.19559885480118,1269.587257385254Q90.26666666666665,1269.587257385254 90.26666666666665,1276.6583251971194L90.26666666666665,1289.587257385254L90.26666666666665,1339.587257385254",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_primary_backup_0",
+				"points": [
+					{
+						"x": 376.63666666666666,
+						"y": 1030.2585526762123
+					},
+					{
+						"x": 376.63666666666666,
+						"y": 1030.4385604858398
+					},
+					{
+						"x": 376.63666666666666,
+						"y": 1072.4385604858398
+					},
+					{
+						"x": 348.1166666666667,
+						"y": 1072.4385604858398
+					},
+					{
+						"x": 348.1166666666666,
+						"y": 1229.587257385254
+					},
+					{
+						"x": 348.1166666666666,
+						"y": 1249.587257385254
+					},
+					{
+						"x": 314,
+						"y": 1249.587257385254
+					},
+					{
+						"x": 314.00000000000006,
+						"y": 1289.587257385254
+					},
+					{
+						"x": 314.00000000000006,
+						"y": 1343.587257385254
+					}
+				],
+				"path": "M376.63666666666666,1030.2585526762123L376.63666666666666,1030.4385604858398L376.63666666666666,1065.3674926739743Q376.63666666666666,1072.4385604858398 369.5655988548012,1072.4385604858398L355.18773447853215,1072.4385604858398Q348.1166666666667,1072.4385604858398 348.1166666666667,1079.5096282977054L348.1166666666666,1229.587257385254L348.1166666666666,1242.5161895733884Q348.1166666666666,1249.587257385254 341.04559885480114,1249.587257385254L321.0710678118655,1249.587257385254Q314,1249.587257385254 314,1256.6583251971194L314.00000000000006,1289.587257385254L314.00000000000006,1339.587257385254",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_mon_web1_0",
+				"points": [
+					{
+						"x": 548.6,
+						"y": 1343.587257385254
+					},
+					{
+						"x": 548.6,
+						"y": 1289.587257385254
+					},
+					{
+						"x": 548.5999999999999,
+						"y": 1269.587257385254
+					},
+					{
+						"x": 618.8799999999999,
+						"y": 1269.587257385254
+					},
+					{
+						"x": 618.8799999999999,
+						"y": 1026.4385604858398
+					},
+					{
+						"x": 618.8799999999999,
+						"y": 743.2898635864258
+					},
+					{
+						"x": 597.5899999999999,
+						"y": 743.2898635864258
+					},
+					{
+						"x": 597.5899999999999,
+						"y": 723.2898635864258
+					},
+					{
+						"x": 597.5899999999999,
+						"y": 588.2898635864258
+					}
+				],
+				"path": "M548.6,1343.587257385254L548.6,1289.587257385254L548.5999999999999,1276.6583251971194Q548.5999999999999,1269.587257385254 555.6710678118653,1269.587257385254L611.8089321881343,1269.587257385254Q618.8799999999999,1269.587257385254 618.8799999999999,1262.5161895733884L618.8799999999999,1026.4385604858398L618.8799999999999,750.3609313982913Q618.8799999999999,743.2898635864258 611.8089321881343,743.2898635864258L604.6610678118655,743.2898635864258Q597.5899999999999,743.2898635864258 597.5899999999999,736.2187957745602L597.5899999999999,723.2898635864258L597.5899999999999,592.2898635864258",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_mon_app1_0",
+				"points": [
+					{
+						"x": 516,
+						"y": 1343.587257385254
+					},
+					{
+						"x": 516,
+						"y": 1289.587257385254
+					},
+					{
+						"x": 516,
+						"y": 1249.587257385254
+					},
+					{
+						"x": 571.8566666666666,
+						"y": 1249.587257385254
+					},
+					{
+						"x": 571.8566666666666,
+						"y": 1026.4385604858398
+					},
+					{
+						"x": 571.8566666666666,
+						"y": 743.2898635864258
+					},
+					{
+						"x": 456.44333333333327,
+						"y": 743.2898635864258
+					},
+					{
+						"x": 456.44333333333327,
+						"y": 723.2898635864258
+					},
+					{
+						"x": 456.44333333333327,
+						"y": 689.2898635864258
+					}
+				],
+				"path": "M516,1343.587257385254L516,1289.587257385254L516,1256.6583251971194Q516,1249.587257385254 523.0710678118655,1249.587257385254L564.785598854801,1249.587257385254Q571.8566666666666,1249.587257385254 571.8566666666666,1242.5161895733884L571.8566666666666,1026.4385604858398L571.8566666666666,750.3609313982913Q571.8566666666666,743.2898635864258 564.785598854801,743.2898635864258L463.51440114519875,743.2898635864258Q456.44333333333327,743.2898635864258 456.44333333333327,736.2187957745602L456.44333333333327,723.2898635864258L456.44333333333327,693.2898635864258",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_mon_primary_0",
+				"points": [
+					{
+						"x": 483.40000000000003,
+						"y": 1343.587257385254
+					},
+					{
+						"x": 483.40000000000003,
+						"y": 1289.587257385254
+					},
+					{
+						"x": 483.4,
+						"y": 1249.587257385254
+					},
+					{
+						"x": 370.8566666666666,
+						"y": 1249.587257385254
+					},
+					{
+						"x": 370.8566666666666,
+						"y": 1229.587257385254
+					},
+					{
+						"x": 370.8566666666667,
+						"y": 1084.4385604858398
+					},
+					{
+						"x": 401.1166666666667,
+						"y": 1084.4385604858398
+					},
+					{
+						"x": 401.1166666666667,
+						"y": 1030.4385604858398
+					}
+				],
+				"path": "M483.40000000000003,1343.587257385254L483.40000000000003,1289.587257385254L483.4,1256.6583251971194Q483.4,1249.587257385254 476.3289321881345,1249.587257385254L377.9277344785321,1249.587257385254Q370.8566666666666,1249.587257385254 370.8566666666666,1242.5161895733884L370.8566666666666,1229.587257385254L370.8566666666667,1091.5096282977054Q370.8566666666667,1084.4385604858398 377.92773447853216,1084.4385604858398L394.0455988548012,1084.4385604858398Q401.1166666666667,1084.4385604858398 401.1166666666667,1077.3674926739743L401.1166666666667,1034.4385604858398",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			}
+		]
+	},
+	"svg_sha256": "1d74e81324211647deb9b48b0c3439661d174edf01dbc2781c624f2093b71023"
+}

@@ -1,0 +1,11 @@
+flowchart RL
+    cart[Cart] --> address[Address]
+    address --> shipping{Shipping method}
+    shipping -->|standard| pay[Payment]
+    shipping -->|express| surcharge[Add surcharge]
+    surcharge --> pay
+    pay --> card{Card OK?}
+    card -->|no| pay
+    card -->|yes| confirm[Confirmation]
+    confirm --> email[Send email]
+    confirm --> invoice[Create invoice]

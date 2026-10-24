@@ -1,0 +1,9 @@
+flowchart TD
+    a[Client] -->|request| b[Server]
+    b -->|response| a
+    a -->|ping| b
+    b -->|pong| a
+    a --> c[Cache]
+    a --> c
+    c -->|miss| b
+    b -->|fill| c

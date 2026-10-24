@@ -1,0 +1,1065 @@
+{
+	"schema": 6,
+	"key": "c1e911a2bc1169bd532c99173619bfc160cbcc6dfaa18fc526d529c744b799fb",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart TB\n    subgraph extract [Extract]\n        direction LR\n        api[API pull] --> raw[Raw files]\n        ftp[FTP drop] --> raw\n    end\n    subgraph transform [Transform]\n        direction LR\n        clean[Clean] --> dedupe[Deduplicate] --> enrich[Enrich]\n    end\n    subgraph load [Load]\n        direction LR\n        wh[(Warehouse)] --> marts[Data marts]\n    end\n    extract --> transform\n    transform --> load\n    load --> report[Reports]\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "TB",
+		"nodes": [
+			{
+				"id": "api",
+				"text": "API pull",
+				"label": "API pull",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "raw",
+				"text": "Raw files",
+				"label": "Raw files",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "ftp",
+				"text": "FTP drop",
+				"label": "FTP drop",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "clean",
+				"text": "Clean",
+				"label": "Clean",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "dedupe",
+				"text": "Deduplicate",
+				"label": "Deduplicate",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "enrich",
+				"text": "Enrich",
+				"label": "Enrich",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "wh",
+				"text": "Warehouse",
+				"label": "Warehouse",
+				"shape": "cylinder",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "marts",
+				"text": "Data marts",
+				"label": "Data marts",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "extract",
+				"text": "extract",
+				"label": "extract",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "transform",
+				"text": "transform",
+				"label": "transform",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "load",
+				"text": "load",
+				"label": "load",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "report",
+				"text": "Reports",
+				"label": "Reports",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "api",
+				"to": "raw",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "ftp",
+				"to": "raw",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "clean",
+				"to": "dedupe",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "dedupe",
+				"to": "enrich",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "wh",
+				"to": "marts",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "extract",
+				"to": "transform",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "transform",
+				"to": "load",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "load",
+				"to": "report",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [
+			{
+				"id": "extract",
+				"title": "Extract",
+				"label": "Extract",
+				"nodes": [
+					"raw",
+					"api",
+					"ftp"
+				],
+				"dir": "LR",
+				"classes": []
+			},
+			{
+				"id": "transform",
+				"title": "Transform",
+				"label": "Transform",
+				"nodes": [
+					"enrich",
+					"dedupe",
+					"clean"
+				],
+				"dir": "LR",
+				"classes": []
+			},
+			{
+				"id": "load",
+				"title": "Load",
+				"label": "Load",
+				"nodes": [
+					"marts",
+					"wh"
+				],
+				"dir": "LR",
+				"classes": []
+			}
+		],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "load",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 2,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "transform",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 1,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "extract",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 0,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "api",
+				"is_group": false,
+				"parent": "extract",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "raw",
+				"is_group": false,
+				"parent": "extract",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "ftp",
+				"is_group": false,
+				"parent": "extract",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "clean",
+				"is_group": false,
+				"parent": "transform",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "dedupe",
+				"is_group": false,
+				"parent": "transform",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "enrich",
+				"is_group": false,
+				"parent": "transform",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "wh",
+				"is_group": false,
+				"parent": "load",
+				"declaration_index": null,
+				"shape": "cylinder",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "marts",
+				"is_group": false,
+				"parent": "load",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "report",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_api_raw_0",
+				"from": "api",
+				"to": "raw",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_ftp_raw_0",
+				"from": "ftp",
+				"to": "raw",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_clean_dedupe_0",
+				"from": "clean",
+				"to": "dedupe",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_dedupe_enrich_0",
+				"from": "dedupe",
+				"to": "enrich",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_wh_marts_0",
+				"from": "wh",
+				"to": "marts",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_extract_transform_0",
+				"from": "extract",
+				"to": "transform",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_transform_load_0",
+				"from": "transform",
+				"to": "load",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_load_report_0",
+				"from": "load",
+				"to": "report",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 568,
+			"height": 635.148681640625
+		},
+		"nodes": [
+			{
+				"id": "api",
+				"center": {
+					"x": 182,
+					"y": 167.5
+				},
+				"box": {
+					"x": 106,
+					"y": 147,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 106,
+					"y": 147,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 157.05436897277832,
+					"y": 158.9998226143216,
+					"width": 49.89126205444336,
+					"height": 17.00021743774414
+				},
+				"text": {
+					"rows": [
+						"API pull"
+					],
+					"box": {
+						"x": -24.9765625,
+						"y": 9.5367431640625e-7,
+						"width": 49.953125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "raw",
+				"center": {
+					"x": 394.00000000000006,
+					"y": 122.00000000000001
+				},
+				"box": {
+					"x": 318.00000000000006,
+					"y": 101.50000000000001,
+					"width": 152,
+					"height": 40.999999999999986
+				},
+				"outer": {
+					"x": 318.00000000000006,
+					"y": 101.50000000000001,
+					"width": 152,
+					"height": 40.999999999999986
+				},
+				"label": {
+					"x": 364.1714954376221,
+					"y": 113.49982261432162,
+					"width": 59.65700912475586,
+					"height": 17.000217437744126
+				},
+				"text": {
+					"rows": [
+						"Raw files"
+					],
+					"box": {
+						"x": -29.859375,
+						"y": 9.5367431640625e-7,
+						"width": 59.71875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "ftp",
+				"center": {
+					"x": 182,
+					"y": 76.50000000000001
+				},
+				"box": {
+					"x": 106,
+					"y": 56.000000000000014,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 106,
+					"y": 56.000000000000014,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 151.64805030822754,
+					"y": 67.9998226143216,
+					"width": 60.70389938354492,
+					"height": 17.00021743774414
+				},
+				"text": {
+					"rows": [
+						"FTP drop"
+					],
+					"box": {
+						"x": -30.3828125,
+						"y": 9.5367431640625e-7,
+						"width": 60.765625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "clean",
+				"center": {
+					"x": 112,
+					"y": 316.5
+				},
+				"box": {
+					"x": 36,
+					"y": 296,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 36,
+					"y": 296,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 92.99194526672363,
+					"y": 307.9998226143216,
+					"width": 38.016109466552734,
+					"height": 17.00021743774414
+				},
+				"text": {
+					"rows": [
+						"Clean"
+					],
+					"box": {
+						"x": -19.03125,
+						"y": 9.5367431640625e-7,
+						"width": 38.0625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "dedupe",
+				"center": {
+					"x": 288,
+					"y": 316.5
+				},
+				"box": {
+					"x": 212,
+					"y": 296,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 212,
+					"y": 296,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 248.50730895996094,
+					"y": 307.9998226143216,
+					"width": 78.98538208007812,
+					"height": 17.00021743774414
+				},
+				"text": {
+					"rows": [
+						"Deduplicate"
+					],
+					"box": {
+						"x": -39.5390625,
+						"y": 9.5367431640625e-7,
+						"width": 79.078125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "enrich",
+				"center": {
+					"x": 464.00000000000006,
+					"y": 316.5
+				},
+				"box": {
+					"x": 388.00000000000006,
+					"y": 296,
+					"width": 151.99999999999994,
+					"height": 41
+				},
+				"outer": {
+					"x": 388.00000000000006,
+					"y": 296,
+					"width": 151.99999999999994,
+					"height": 41
+				},
+				"label": {
+					"x": 443.1403598785401,
+					"y": 307.9998226143216,
+					"width": 41.71928024291992,
+					"height": 17.00021743774414
+				},
+				"text": {
+					"rows": [
+						"Enrich"
+					],
+					"box": {
+						"x": -20.8828125,
+						"y": 9.5367431640625e-7,
+						"width": 41.765625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "wh",
+				"center": {
+					"x": 200,
+					"y": 485.5743408203125
+				},
+				"box": {
+					"x": 128,
+					"y": 444.99999237060547,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"outer": {
+					"x": 128,
+					"y": 444.99999237060547,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"label": {
+					"x": 162.7104606628418,
+					"y": 487.0741624809598,
+					"width": 74.5790786743164,
+					"height": 17.00021743774414
+				},
+				"text": {
+					"rows": [
+						"Warehouse"
+					],
+					"box": {
+						"x": -37.328125,
+						"y": 9.5367431640625e-7,
+						"width": 74.65625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "marts",
+				"center": {
+					"x": 372,
+					"y": 485.5743408203125
+				},
+				"box": {
+					"x": 296,
+					"y": 465.0743408203125,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 296,
+					"y": 465.0743408203125,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 336.1011047363281,
+					"y": 477.0741634346341,
+					"width": 71.79779052734375,
+					"height": 17.00021743774414
+				},
+				"text": {
+					"rows": [
+						"Data marts"
+					],
+					"box": {
+						"x": -35.9375,
+						"y": 9.5367431640625e-7,
+						"width": 71.875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "report",
+				"center": {
+					"x": 288,
+					"y": 610.6486816406251
+				},
+				"box": {
+					"x": 212,
+					"y": 590.1486816406251,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 212,
+					"y": 590.1486816406251,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 262.3981113433838,
+					"y": 602.1485042549466,
+					"width": 51.20377731323242,
+					"height": 17.00021743774414
+				},
+				"text": {
+					"rows": [
+						"Reports"
+					],
+					"box": {
+						"x": -25.6328125,
+						"y": 9.5367431640625e-7,
+						"width": 51.265625,
+						"height": 17
+					}
+				}
+			}
+		],
+		"clusters": [
+			{
+				"id": "extract",
+				"box": {
+					"x": 82,
+					"y": 12,
+					"width": 412,
+					"height": 200
+				},
+				"label": {
+					"x": 264.4794921875,
+					"y": 11.999822614321602,
+					"width": 46.994815826416016,
+					"height": 17.00021743774414
+				},
+				"text": {
+					"rows": [
+						"Extract"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 47.041015625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "transform",
+				"box": {
+					"x": 12,
+					"y": 252,
+					"width": 552,
+					"height": 109
+				},
+				"label": {
+					"x": 254.01562500000003,
+					"y": 251.99982261432163,
+					"width": 67.89149475097653,
+					"height": 17.000217437744112
+				},
+				"text": {
+					"rows": [
+						"Transform"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 67.96875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "load",
+				"box": {
+					"x": 104,
+					"y": 401,
+					"width": 368,
+					"height": 149.14869689941406
+				},
+				"label": {
+					"x": 271.55468750000006,
+					"y": 400.9998226143216,
+					"width": 32.85979461669922,
+					"height": 17.00021743774414
+				},
+				"text": {
+					"rows": [
+						"Load"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 32.890625,
+						"height": 17
+					}
+				}
+			}
+		],
+		"edges": [
+			{
+				"id": "L_api_raw_0",
+				"points": [
+					{
+						"x": 258,
+						"y": 167.5
+					},
+					{
+						"x": 288,
+						"y": 167.5
+					},
+					{
+						"x": 288,
+						"y": 125.23333333333333
+					},
+					{
+						"x": 318,
+						"y": 125.23333333333333
+					}
+				],
+				"path": "M258,167.5L280.9289321881345,167.5Q288,167.5 288,160.42893218813452L288,132.30440114519882Q288,125.23333333333333 295.0710678118655,125.23333333333333L314,125.23333333333333",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_ftp_raw_0",
+				"points": [
+					{
+						"x": 258,
+						"y": 76.5
+					},
+					{
+						"x": 288,
+						"y": 76.5
+					},
+					{
+						"x": 288,
+						"y": 118.76666666666667
+					},
+					{
+						"x": 318,
+						"y": 118.76666666666667
+					}
+				],
+				"path": "M258,76.5L280.9289321881345,76.5Q288,76.5 288,83.57106781186548L288,111.69559885480119Q288,118.76666666666667 295.0710678118655,118.76666666666667L314,118.76666666666667",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_clean_dedupe_0",
+				"points": [
+					{
+						"x": 188,
+						"y": 316.5
+					},
+					{
+						"x": 212,
+						"y": 316.5
+					}
+				],
+				"path": "M188,316.5L208,316.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_dedupe_enrich_0",
+				"points": [
+					{
+						"x": 364,
+						"y": 316.5
+					},
+					{
+						"x": 388,
+						"y": 316.5
+					}
+				],
+				"path": "M364,316.5L384,316.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_wh_marts_0",
+				"points": [
+					{
+						"x": 272,
+						"y": 485.57434844970703
+					},
+					{
+						"x": 296,
+						"y": 485.57434844970703
+					}
+				],
+				"path": "M272,485.57434844970703L292,485.57434844970703",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_extract_transform_0",
+				"points": [
+					{
+						"x": 288,
+						"y": 212
+					},
+					{
+						"x": 288,
+						"y": 252
+					}
+				],
+				"path": "M288,212L288,248",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_transform_load_0",
+				"points": [
+					{
+						"x": 288,
+						"y": 361
+					},
+					{
+						"x": 288,
+						"y": 401
+					}
+				],
+				"path": "M288,361L288,397",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_load_report_0",
+				"points": [
+					{
+						"x": 288,
+						"y": 550.1486968994141
+					},
+					{
+						"x": 288,
+						"y": 590.1486968994141
+					}
+				],
+				"path": "M288,550.1486968994141L288,586.1486968994141",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			}
+		]
+	},
+	"svg_sha256": "466f755e3f1804d74c8488e31b7b6def4f9396e7b252442d9477db5bd15dcd7f"
+}

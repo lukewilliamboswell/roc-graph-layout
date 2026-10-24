@@ -1,0 +1,15 @@
+flowchart TD
+    subgraph s1 [Ingest]
+        i1[Receive] --> i2[Validate]
+    end
+    subgraph s2 [Process]
+        p1[Parse] --> p2[Transform]
+        p2 --> p3[Aggregate]
+    end
+    subgraph s3 [Publish]
+        o1[Format] --> o2[Send]
+    end
+    i2 --> p1
+    p3 --> o1
+    i2 -->|invalid| err[Dead letter]
+    p2 -->|failed| err

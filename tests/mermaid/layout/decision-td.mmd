@@ -1,0 +1,22 @@
+flowchart TD
+    start([Request received]) --> valid{Valid input?}
+    valid -->|no| reject[Return 400]
+    valid -->|yes| cached{In cache?}
+    cached -->|yes| serve[Serve cached copy]
+    cached -->|no| auth{Authorised?}
+    auth -->|no| deny[Return 403]
+    auth -->|yes| quota{Under quota?}
+    quota -->|no| throttle[Return 429]
+    quota -->|yes| fetch[Fetch from origin]
+    fetch --> ok{Origin OK?}
+    ok -->|yes| store[Store in cache]
+    ok -->|no| stale{Stale copy?}
+    stale -->|yes| serve
+    stale -->|no| error[Return 502]
+    store --> serve
+    serve --> log[(Access log)]
+    reject --> log
+    deny --> log
+    throttle --> log
+    error --> log
+    log --> finish([Done])
