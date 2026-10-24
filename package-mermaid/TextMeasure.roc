@@ -9,7 +9,8 @@ import FlowGeometry
 ##
 ## Text breaks into lines at newlines and at a literal `\n`. Each line is
 ## read as words separated by white space, so runs of white space collapse
-## to one space. As in Mermaid, `>` is dropped from text that has no `<`. With a wrapping width, words move to the next line once a
+## to one space. Unlike Mermaid, which drops `>` from text that has no `<`,
+## every character is kept. With a wrapping width, words move to the next line once a
 ## line would grow wider than it, and a word wider than it on its own is
 ## split between characters.
 ##
@@ -154,8 +155,11 @@ TextMeasure :: {}.{
 
 	## Words of one line, separated by white space. Mermaid passes label text
 	## through an HTML sanitizer that escapes `<`, `>` and the no-break space
-	## only when the text contains a `<`; otherwise its word pattern drops
-	## every `>`, and a no-break space separates words like any other space.
+	## only when the text contains a `<`; otherwise a no-break space separates
+	## words like any other space. In that case Mermaid's word pattern also
+	## drops every `>`, which deletes what the author wrote, so here `>` is an
+	## ordinary character: `a -> b` keeps its arrow. This is a deliberate
+	## difference from Mermaid.
 	line_words : List(U8), Bool -> List(List(U8))
 	line_words = |line, escaped| {
 		var $words = []
@@ -182,8 +186,6 @@ TextMeasure :: {}.{
 		b = Bytes.at(bytes, at)
 		if escaped and b == 0xC2 and Bytes.at(bytes, at + 1) == 0xA0 {
 			0
-		} else if !escaped and b == '>' {
-			1
 		} else {
 			Bytes.space_len(bytes, at)
 		}
@@ -524,7 +526,9 @@ expect
 	TextMeasure.block("Supercalifragilisticexpialidocious-and-then-some-more-letters-to-force-a-split", inter).lines
 		== ["Supercalifragilisti", "cexpialidocious-a", "nd-then-some-m", "ore-letters-to-for", "ce-a-split"]
 expect TextMeasure.block("a & b < c", inter).lines == ["a & b < c"]
-expect TextMeasure.block("a -> b => c", inter).lines == ["a - b = c"]
+# Deliberately unlike Mermaid, which draws this as "a - b = c".
+expect TextMeasure.block("a -> b => c", inter).lines == ["a -> b => c"]
+expect TextMeasure.block("x>y", inter).lines == ["x>y"]
 # Inter's contextual forms: a raised asterisk after a capital.
 expect TextMeasure.block("F*", inter).width == 17.296875
 expect TextMeasure.block("no\u(00A0)break  here", { ..inter, wrap: NoWrap }).lines == ["no break here"]

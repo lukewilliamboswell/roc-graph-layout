@@ -13,6 +13,11 @@ import FlowSource
 ## `click` handlers, `@{ ... }` shape data, markdown strings, front matter and
 ## HTML markup in labels. Text using them is reported as `Unsupported` rather
 ## than read approximately.
+##
+## Labels keep everything the author wrote, where Mermaid's plain-text label
+## rendering does not: a `>` in a label without a `<` is kept (Mermaid drops
+## it, drawing `a -> b` as `a - b`), and `#quot;`-style entities show as the
+## characters they name, as Mermaid's default HTML labels show them.
 Flowchart := [].{
 
 	## Which way the flow runs: `TB`/`TD` read down, `BT` up, `LR` right and

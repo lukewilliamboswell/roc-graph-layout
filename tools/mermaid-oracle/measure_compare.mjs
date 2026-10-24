@@ -44,7 +44,20 @@ function add(kind, err, detail) {
 	worst.push({ kind, err: Math.abs(err), detail });
 }
 
+// Mermaid drops `>` from label text that has no `<`; the Roc reader keeps
+// what the author wrote. Such labels, and the sizes that follow from them,
+// differ by design and are listed rather than counted.
+const deviations = [];
+function keepsGreaterThan(mine) {
+	const text = (mine?.lines ?? []).join('\n');
+	return text.includes('>') && !text.includes('<');
+}
+
 function compareText(kind, file, id, mine, theirs) {
+	if (keepsGreaterThan(mine)) {
+		deviations.push(`${path.basename(file, '.mmd')} ${kind} ${id}`);
+		return;
+	}
 	if (!theirs) {
 		if (mine && mine.width > 0) rowMismatches.push(`${file} ${kind} ${id}: Mermaid drew no text, we have ${JSON.stringify(mine.lines)}`);
 		return;
@@ -91,6 +104,7 @@ for (const file of files) {
 		const theirs = nodes.get(node.id);
 		if (!theirs || theirs.missing) continue;
 		compareText('node label', file, node.id, node.label, theirs.text);
+		if (keepsGreaterThan(node.label)) continue;
 		add(`${node.shape} width`, node.width - theirs.box.width, `${file} ${node.id} ${node.width} vs ${theirs.box.width}`);
 		add(`${node.shape} height`, node.height - theirs.box.height, `${file} ${node.id} ${node.height} vs ${theirs.box.height}`);
 	}
@@ -108,6 +122,7 @@ for (const file of files) {
 }
 
 console.log(`${cases} cases compared; text differs by design in ${skipped.join(', ')}`);
+console.log(`${deviations.length} label(s) keep a \`>\` that Mermaid drops: ${deviations.join(', ') || 'none'}`);
 console.log('kind'.padEnd(28), 'count'.padStart(6), 'max px'.padStart(12), 'mean px'.padStart(12));
 for (const [kind, s] of [...stats].sort()) {
 	console.log(kind.padEnd(28), String(s.n).padStart(6), s.max.toFixed(6).padStart(12), (s.sum / s.n).toFixed(6).padStart(12));

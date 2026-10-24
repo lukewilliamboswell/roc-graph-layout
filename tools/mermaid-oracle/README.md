@@ -52,6 +52,20 @@ Each disagreement that survives triage becomes a named case in
 text costs no more than about 8 times the allocations, and that reading
 frees everything it allocates.
 
+## Deliberate differences from Mermaid
+
+The goal is Mermaid's output, except where Mermaid loses what the author
+wrote. Each difference is documented in the module that makes it, pinned by
+a unit test, and listed separately (not counted as error) by the comparison
+scripts.
+
+| Difference | Mermaid 12.2.0 (oracle config) | Here | Where |
+|---|---|---|---|
+| `>` in a label with no `<` | Dropped: `a -> b` is drawn `a - b` | Kept | `TextMeasure.roc` |
+| `#quot;`-style entities | Drawn literally (`&quot;`) in SVG labels | Decoded, as Mermaid's default HTML labels show them | `FlowText.roc` |
+| NUL in a label | Drawn as U+FFFD in SVG labels | Removed, as HTML parsing removes it | `FlowText.roc` |
+| `(-text-)` ellipse shape | Fails to render ("No such shape: ellipse") | Drawn and sized as an ellipse | `FlowSize.roc`, `FlowDrawShape.roc` |
+
 ## Output stages
 
 Each output stage is compared with Mermaid on its own, given Mermaid's
