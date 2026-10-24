@@ -11,9 +11,9 @@ finite_layout = |layout| {
 	b = layout.bounds
 	layout.positions.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y))
 		and F64.is_finite(b.x)
-			and F64.is_finite(b.y)
-				and F64.is_finite(b.width)
-					and F64.is_finite(b.height)
+		and F64.is_finite(b.y)
+		and F64.is_finite(b.width)
+		and F64.is_finite(b.height)
 }
 
 test : List(U8) -> Fuzz.Outcome
@@ -52,37 +52,37 @@ test = |bytes| {
 		Ok(result) =>
 			finite_layout(result.layout)
 				and result.layout.positions.len() == n
-					and result.layout.routes.len() == edges.len()
-						and result.components.len() == n
-		}
+				and result.layout.routes.len() == edges.len()
+				and result.components.len() == n
+	}
 	stress_ok = match stress {
 		Err(_) => False
 		Ok(result) =>
 			finite_layout(result.layout)
 				and result.layout.positions.len() == n
-					and result.layout.routes.len() == edges.len()
-						and result.components.len() == n
-		}
+				and result.layout.routes.len() == edges.len()
+				and result.components.len() == n
+	}
 	circular_ok = match circular {
 		Err(_) => False
 		Ok(result) =>
 			finite_layout(result.layout)
 				and result.layout.positions.len() == n
-					and result.layout.routes.len() == edges.len()
-		}
+				and result.layout.routes.len() == edges.len()
+	}
 	radial_ok = match radial {
 		Err(_) => False
 		Ok(result) =>
 			finite_layout(result.layout)
 				and result.layout.positions.len() == n
-					and result.layout.routes.len() == edges.len()
-						and result.rings.len() == n
-							and result.components.len() == n
-		}
+				and result.layout.routes.len() == edges.len()
+				and result.rings.len() == n
+				and result.components.len() == n
+	}
 	deterministic = force == Graph.layout_force(spec, { ..Graph.default_force_settings, max_iterations: 24 }, { ..Graph.default_force_run, seed })
 		and stress == Graph.layout_stress(spec, { ..Graph.default_stress_settings, max_iterations: 24 }, { ..Graph.default_stress_run, seed })
-			and circular == Graph.layout_circular(spec, Graph.default_circular_settings)
-				and radial == RadialLayout.layout_radial(spec, RadialLayout.radial_defaults)
+		and circular == Graph.layout_circular(spec, Graph.default_circular_settings)
+		and radial == RadialLayout.layout_radial(spec, RadialLayout.radial_defaults)
 
 	if force_ok and stress_ok and circular_ok and radial_ok and deterministic {
 		Fuzz.keep

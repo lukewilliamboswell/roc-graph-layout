@@ -35,10 +35,8 @@ test = |bytes| {
 	count = 2 + (byte_at(bytes, 0) % 5).to_u64()
 	gap = 1 + (byte_at(bytes, 1) % 30).to_f64()
 	nodes = List.repeat({ width: 10, height: 10 }, count)
-	edges = # non-ZST construction: List.drop_last(List.repeat({}, n), 1) miscompiles to [] in native fuzz builds (compiler bug, repro filed)
-	List.repeat(0, count - 1).map_with_index(|_, i| { from: i, to: i + 1 })
-	chain = # non-ZST construction: List.drop_last(List.repeat({}, n), 1) miscompiles to [] in native fuzz builds (compiler bug, repro filed)
-	List.repeat(0, count - 1).map_with_index(|_, i| Separate({ axis: X, first: i, second: i + 1, gap }))
+	edges = List.repeat(0, count - 1).map_with_index(|_, i| { from: i, to: i + 1 })
+	chain = List.repeat(0, count - 1).map_with_index(|_, i| Separate({ axis: X, first: i, second: i + 1, gap }))
 	members = List.repeat(0, count).map_with_index(|_, i| i)
 	feasible = [Inside({ axis: X, nodes: [0], low: 0, high: 0 }), Align({ axis: Y, nodes: members })].concat(chain)
 	infeasible = if byte_at(bytes, 2) % 2 == 0 {

@@ -25,8 +25,7 @@ test = |bytes| {
 			to: byte_at(bytes, edge_base + i * 2 + 1).to_u64() % node_count,
 		},
 	)
-	chain = # non-ZST construction: List.drop_last(List.repeat({}, n), 1) miscompiles to [] in native fuzz builds (compiler bug, repro filed)
-	List.repeat(0, node_count - 1).map_with_index(|_, i| { from: i, to: i + 1 })
+	chain = List.repeat(0, node_count - 1).map_with_index(|_, i| { from: i, to: i + 1 })
 	edges = chain.concat(random_edges)
 	args_base = edge_base + edge_count * 2
 	pin = {
@@ -68,15 +67,15 @@ test = |bytes| {
 			)
 			aligned = exact_result.layout.positions.len() == node_count
 				and exact_result.components.len() == node_count
-					and exact_result.layout.routes.len() == edges.len()
-						and pivot_result.layout.positions.len() == node_count
-							and pivot_result.components == exact_result.components
+				and exact_result.layout.routes.len() == edges.len()
+				and pivot_result.layout.positions.len() == node_count
+				and pivot_result.components == exact_result.components
 			finite = exact_result.layout.positions.all(finite_point)
 				and pivot_result.layout.positions.all(finite_point)
-					and F64.is_finite(exact_result.layout.bounds.x)
-						and F64.is_finite(exact_result.layout.bounds.y)
-							and F64.is_finite(exact_result.layout.bounds.width)
-								and F64.is_finite(exact_result.layout.bounds.height)
+				and F64.is_finite(exact_result.layout.bounds.x)
+				and F64.is_finite(exact_result.layout.bounds.y)
+				and F64.is_finite(exact_result.layout.bounds.width)
+				and F64.is_finite(exact_result.layout.bounds.height)
 			if !aligned {
 				crash "stress output lost source alignment or exact/pivot components differ"
 			} else if !finite {

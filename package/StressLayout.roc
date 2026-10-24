@@ -859,10 +859,8 @@ StressPrepared := {
 		}
 }
 
-## Cross-module face: on this compiler nightly, static calls from another
-## module must go through a module's namesake nominal (calling a
-## non-namesake nominal's statics cross-module crashes at runtime), so the
-## public wiring uses these delegations.
+## Cross-module face: importers reach the stress layout only through this
+## module's namesake nominal, so the public wiring uses these delegations.
 StressLayout := [].{
 	stress_defaults : StressPrepared.Settings
 	stress_defaults = StressPrepared.defaults

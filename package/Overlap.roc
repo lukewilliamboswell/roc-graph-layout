@@ -322,7 +322,7 @@ expect {
 	nan = inf - inf
 	Overlap.remove(positions, sizes, 0 - 5) == base
 		and Overlap.remove(positions, sizes, inf) == base
-			and Overlap.remove(positions, sizes, nan) == base
+		and Overlap.remove(positions, sizes, nan) == base
 }
 
 ## Empty input gives an empty result.

@@ -40,8 +40,8 @@ test = |bytes| {
 			box = boxes.get(i) ?? { width: 0, height: 0 }
 			ok and p.x - box.width / 2 >= result.bounds.x
 				and p.y - box.height / 2 >= result.bounds.y
-					and p.x + box.width / 2 <= result.bounds.x + result.bounds.width
-						and p.y + box.height / 2 <= result.bounds.y + result.bounds.height
+				and p.x + box.width / 2 <= result.bounds.x + result.bounds.width
+				and p.y + box.height / 2 <= result.bounds.y + result.bounds.height
 		},
 	)
 	finite = result.positions.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y))

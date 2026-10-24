@@ -86,9 +86,9 @@ test = |bytes| {
 			result = Layered.layout_prepared(prepared, run_args)
 			aligned = result.layout.positions.len() == node_count
 				and result.layout.routes.len() == edges.len()
-					and result.layers.len() == node_count
-						and result.attachments.len() == edges.len()
-							and result.label_anchors.len() == edge_labels.len()
+				and result.layers.len() == node_count
+				and result.attachments.len() == edges.len()
+				and result.label_anchors.len() == edge_labels.len()
 			forward = edges.fold_with_index(
 				True,
 				|ok, edge, index| {
@@ -112,12 +112,12 @@ test = |bytes| {
 
 			if one_call == Ok(result)
 				and Layered.layout(input, settings, run_args) == one_call
-					and aligned
-						and forward
-							and constraints_hold
-								and order_holds
-									and result.backward_edges.is_empty()
-										and valid_backward {
+				and aligned
+				and forward
+				and constraints_hold
+				and order_holds
+				and result.backward_edges.is_empty()
+				and valid_backward {
 				Fuzz.keep
 			} else {
 				crash "layered layout violated equivalence, determinism, alignment, or DAG layering"

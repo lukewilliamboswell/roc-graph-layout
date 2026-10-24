@@ -258,9 +258,9 @@ expect {
 	adj = Paths.adjacency(0, [])
 	adj.offsets == [0]
 		and adj.neighbors == []
-			and Paths.bfs_distances(adj, 0) == []
-				and Paths.components(adj) == { labels: [], count: 0 }
-					and Paths.pivots(adj, 3) == []
+		and Paths.bfs_distances(adj, 0) == []
+		and Paths.components(adj) == { labels: [], count: 0 }
+		and Paths.pivots(adj, 3) == []
 }
 
 ## BFS on a path graph counts hops from the source.
@@ -275,7 +275,7 @@ expect {
 	distances = Paths.bfs_distances(adj, 0)
 	distances.get(0) == Ok(0)
 		and distances.get(1) == Ok(1)
-			and distances.get(2) == Ok(F64.infinity)
+		and distances.get(2) == Ok(F64.infinity)
 }
 
 ## An out-of-range source yields all infinity.

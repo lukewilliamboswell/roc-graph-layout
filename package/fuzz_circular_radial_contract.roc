@@ -98,17 +98,17 @@ test = |bytes| {
 			radial = RadialLayout.run_radial(radial_prepared)
 			circular_ok = Graph.layout_circular(spec, circular_settings) == Ok(circular)
 				and Graph.layout_circular(spec, circular_settings) == Graph.layout_circular(spec, circular_settings)
-					and circular.layout.positions.len() == node_count
-						and circular.layout.routes.len() == edges.len()
-							and circular.order.len() == node_count
-								and circular.order.all(|seat| seat < node_count)
-									and unique_seats(circular.order)
+				and circular.layout.positions.len() == node_count
+				and circular.layout.routes.len() == edges.len()
+				and circular.order.len() == node_count
+				and circular.order.all(|seat| seat < node_count)
+				and unique_seats(circular.order)
 			radial_ok = RadialLayout.layout_radial(spec, radial_settings) == Ok(radial)
 				and RadialLayout.layout_radial(spec, radial_settings) == RadialLayout.layout_radial(spec, radial_settings)
-					and radial.layout.positions.len() == node_count
-						and radial.layout.routes.len() == edges.len()
-							and radial.rings == expected_rings
-								and radial.components == expected_components
+				and radial.layout.positions.len() == node_count
+				and radial.layout.routes.len() == edges.len()
+				and radial.rings == expected_rings
+				and radial.components == expected_components
 
 			if circular_ok and radial_ok {
 				Fuzz.keep

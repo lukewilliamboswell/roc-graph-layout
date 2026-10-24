@@ -139,9 +139,7 @@ RadialInternals :: {}.{
 			{ order, seen },
 			|inner, neighbor| {
 				in_ring = (distances.get(neighbor) ?? F64.infinity) == target
-				# `== False` rather than `!`: negating a `??`-derived Bool
-				# miscompiles on the pinned nightly.
-				unseen = (inner.seen.get(neighbor) ?? True) == False
+				unseen = !(inner.seen.get(neighbor) ?? True)
 				if in_ring and unseen {
 					{
 						order: inner.order.append(neighbor),
