@@ -209,7 +209,4 @@ jobs:
       contents: read
       pages: write
       id-token: write
-    uses: ./.github/workflows/site.yml
-    with:
-      version: ${{ needs.build.outputs.release_version }}
-      nightly-tag: ${{ needs.build.outputs.nightly_tag }}
+    uses: ./.github/workflows/docs.yml

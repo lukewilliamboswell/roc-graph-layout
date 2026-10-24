@@ -1,25 +1,17 @@
-name: Site
+name: Docs
 
-# Build the guides and the API reference of every final release, and deploy
-# them to GitHub Pages. The release workflow calls this after publishing a
-# final release; run it by hand to rebuild the site for an existing release.
+# Build the documentation site on every pull request, and deploy it from the
+# default branch. The site leads with the latest final release: the API
+# reference of every release is restored from its docs archive, `docs/` leads
+# to the newest, and the default branch's own reference is under `docs/main/`.
+# The release workflow calls this after publishing, so the site follows a new
+# release at once.
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_call:
-    inputs:
-      version:
-        description: The newest final release, whose API reference the site leads with
-        required: true
-        type: string
-      nightly-tag:
-        description: Exact Roc nightly to build with; empty resolves the latest
-        type: string
-        default: ''
   workflow_dispatch:
-    inputs:
-      version:
-        description: "The newest final release, e.g. 0.2.0"
-        required: true
-        type: string
 
 permissions: {}
 
@@ -39,17 +31,16 @@ jobs:
       - name: Install blueprint
         uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@7aff4132691ad4fc348abe9df146a57512b49bd6
 
-      - name: Install the Roc nightly
+      - name: Install the latest Roc nightly
         uses: roc-lang/setup-roc@f5a74bf90aa694b43ab4a7cbfdb19273bc6aa697
         with:
           version: nightly-new-compiler
-          nightly-tag: ${{ inputs.nightly-tag || '' }}
 
       - name: Build the guides and the API reference of each release
         env:
           GH_TOKEN: ${{ github.token }}
           FETCH_RELEASE_DOCS: "1"
-          SITE_VERSION: ${{ inputs.version }}
+          SITE_VERSION: main
           SITE_OUTPUT: dist/site
         run: blueprint run site
 
@@ -63,6 +54,7 @@ jobs:
   deploy-pages:
     name: Deploy the site
     needs: build-site
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
