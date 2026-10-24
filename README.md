@@ -108,28 +108,18 @@ drag-to-pin behavior, and authoritative routed geometry.
 
 ## Development
 
-Run the project checks with:
+Install [Blueprint](https://github.com/lukewilliamboswell/roc-blueprint/releases/tag/0.8.0)
+and put the latest Roc nightly on your `PATH` as `roc`. The package floats
+with the nightly; Blueprint provides the fixed compiler that runs the scripts
+under `scripts/`, and Zig for the benchmark host.
 
 ```sh
-./scripts/check.roc
-./scripts/test.roc
-./scripts/bundle.roc [DIR]   # default DIR is dist
-./scripts/all.roc            # check, test, then bundle
+blueprint run check                  # everything CI checks
+blueprint run examples               # run the examples, compare their output
+blueprint run examples -- --update   # record what the examples print
+blueprint run serve                  # build the site and preview it locally
+blueprint run bench -- smoke         # native optimized benchmarks
 ```
 
-Build and preview the new guides and Signals playground locally with:
-
-```sh
-python3 scripts/build_site.py --base-path ''
-python3 scripts/serve.py
-# open http://127.0.0.1:8000/
-```
-
-Pass `--port 8080` (or another port) if 8000 is already in use. This serves
-the generated site under `dist/site`; it does not rebuild it. See the
-[site build instructions](site/README.md) for the pinned compiler, reproducible
-Signals assets, and browser tests.
-
-CI uses the nightly pinned in `package/main.roc`. Locally, scripts use `roc` on
-your `PATH`, or the executable path in `ROC`; for example,
-`ROC=../roc/target/release/roc ./scripts/all.roc`.
+`tests/examples.json` records what each example prints, and each example
+rewrites its drawing beside its source, so `git diff` shows any change.

@@ -78,7 +78,7 @@ RadialInternals :: {}.{
 				} else {
 					angle_problems.append(InvalidRoot(index))
 				}
-			}
+		}
 	}
 
 	## A node's non-loop degree straight from the compressed adjacency, which
@@ -120,7 +120,7 @@ RadialInternals :: {}.{
 				} else {
 					RadialInternals.auto_root(adj, members)
 				}
-			}
+		}
 
 	## Appends one parent's undiscovered next-ring neighbors in ascending
 	## index order, marking them seen — the "children grouped under their
@@ -139,9 +139,7 @@ RadialInternals :: {}.{
 			{ order, seen },
 			|inner, neighbor| {
 				in_ring = (distances.get(neighbor) ?? F64.infinity) == target
-				# `== False` rather than `!`: negating a `??`-derived Bool
-				# miscompiles on the pinned nightly.
-				unseen = (inner.seen.get(neighbor) ?? True) == False
+				unseen = !(inner.seen.get(neighbor) ?? True)
 				if in_ring and unseen {
 					{
 						order: inner.order.append(neighbor),
@@ -694,8 +692,8 @@ expect {
 			p = result.layout.positions.get(0) ?? Geom.point(0, 0)
 			(p.x - 5).abs() < 1e-9
 				and (p.y - 3).abs() < 1e-9
-					and result.rings == [0]
-						and result.components == [0]
+				and result.rings == [0]
+				and result.components == [0]
 		}
 	}
 }
@@ -780,12 +778,12 @@ expect {
 								separated =
 									i == j
 										or (a.x - b.x).abs() * 2 >= 100 + 100
-											or (a.y - b.y).abs() * 2 >= 10 + 10
+										or (a.y - b.y).abs() * 2 >= 10 + 10
 								pair_ok and separated
 							},
 						),
 			)
-		}
+	}
 }
 
 ## A crowded ring grows its radius: eight equal nodes with a tiny ring gap
@@ -860,14 +858,17 @@ expect {
 		winding: Clockwise,
 	}
 
-	GraphRadialPrepared.build(spec, settings) == Err([
-		InvalidNodeWidth(0),
-		MissingEdgeEnd(0, 2),
-		InvalidRingGap,
-		InvalidNodeGap,
-		InvalidStartAngle,
-		InvalidRoot(9),
-	])
+	match GraphRadialPrepared.build(spec, settings) {
+		Ok(_) => False
+		Err(problems) => problems == [
+			InvalidNodeWidth(0),
+			MissingEdgeEnd(0, 2),
+			InvalidRingGap,
+			InvalidNodeGap,
+			InvalidStartAngle,
+			InvalidRoot(9),
+		]
+	}
 }
 
 ## Two disconnected stars each get their own ring system: rings restart per
@@ -900,7 +901,7 @@ expect {
 								apart =
 									label_a == label_b
 										or (a.x - b.x).abs() * 2 >= 20 + 20
-											or (a.y - b.y).abs() * 2 >= 20 + 20
+										or (a.y - b.y).abs() * 2 >= 20 + 20
 								pair_ok and apart
 							},
 						)
@@ -908,7 +909,7 @@ expect {
 			)
 			result.rings == [0, 1, 1, 1, 1, 0, 1, 1]
 				and result.components == [0, 0, 0, 0, 1, 1, 1, 1]
-					and separated
+				and separated
 		}
 	}
 }

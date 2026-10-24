@@ -39,4 +39,4 @@ compare crossings, bends, stress, separation violations, and displacement.
 Consult the [API reference](docs/) for each pass's contract before composing it
 with a layout.
 
-[Try the playground](playground/) or [return to the introduction](index.html).
+[Read the API reference](docs/) or [return to the introduction](index.html).

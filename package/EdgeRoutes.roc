@@ -222,7 +222,7 @@ EdgeRoutes :: {}.{
 							acc,
 							|inner, seg| extend(extend(extend(extend(inner, seg.from), seg.ctl_a), seg.ctl_b), seg.to),
 						)
-					},
+				},
 		)
 
 		dx = Geom.saturate(0 - box.min_x)
@@ -242,7 +242,7 @@ EdgeRoutes :: {}.{
 								|seg| { from: shift(seg.from), ctl_a: shift(seg.ctl_a), ctl_b: shift(seg.ctl_b), to: shift(seg.to) },
 							),
 						)
-					},
+				},
 			),
 		}
 	}
@@ -312,7 +312,7 @@ expect {
 		Ok(Curves([first, second])) =>
 			first.from == second.to
 				and first.from == { x: 50, y: 45 }
-					and second.from == first.to
+				and second.from == first.to
 
 		_ => False
 	}

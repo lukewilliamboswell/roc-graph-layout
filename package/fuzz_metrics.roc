@@ -1,4 +1,4 @@
-app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.2.1/9Qpttb6LTgcMaVsSBLsnaiS2mDUrf6Bxa6dX9Rqwviz4.tar.zst" }
+app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst" }
 
 import fuzz.Fuzz
 import Geom
@@ -33,9 +33,9 @@ test = |bytes| {
 	translation_length = ((dx * dx) + (dy * dy)).sqrt()
 	ok = d0 == { mean: 0, max: 0 }
 		and Metrics.separation_violations(points, sizes, gap) == Metrics.separation_violations(shifted, sizes, gap)
-			and Metrics.crossings(routes) == Metrics.crossings(shifted_routes)
-				and Metrics.bends(routes) == 0
-					and (n == 0 or ((dshift.mean - translation_length).abs() <= 0.000000001 and (dshift.max - translation_length).abs() <= 0.000000001))
+		and Metrics.crossings(routes) == Metrics.crossings(shifted_routes)
+		and Metrics.bends(routes) == 0
+		and (n == 0 or ((dshift.mean - translation_length).abs() <= 0.000000001 and (dshift.max - translation_length).abs() <= 0.000000001))
 	if ok {
 		Fuzz.keep
 	} else {

@@ -1,4 +1,4 @@
-app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.2.1/9Qpttb6LTgcMaVsSBLsnaiS2mDUrf6Bxa6dX9Rqwviz4.tar.zst" }
+app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst" }
 
 import fuzz.Fuzz
 import Compound
@@ -69,13 +69,18 @@ test = |bytes| {
 	} else {
 		(byte_at(bytes, 31) % 12).to_u64()
 	}
-	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 48 + i * 2).to_u64() % count, to: byte_at(bytes, 49 + i * 2).to_u64() % count })
+	# `.max(1)` changes nothing when this closure runs, but works around
+	# https://github.com/roc-lang/roc/issues/12556: optimized builds otherwise
+	# assume the divisor is nonzero after the closure, even when it never ran.
+	edges = List.repeat({ from: 0, to: 0 }, edge_count).map_with_index(|_, i| { from: byte_at(bytes, 48 + i * 2).to_u64() % count.max(1), to: byte_at(bytes, 49 + i * 2).to_u64() % count.max(1) })
 	algorithm = if count >= 2 and byte_at(bytes, 32) % 2 == 0 {
 		LayeredSweep({
 			..Compound.default_layered,
 			same_layers: [{ first: Group(1), second: Group(2) }],
 			sibling_order: [{ before: Node(0), after: Node(1) }],
-			non_ranking_edges: List.repeat(0, edge_count).map_with_index(|_, i| i),
+			# Only an edge between two distinct direct children can be arranged
+			# without ranking; a self-loop is not one.
+			non_ranking_edges: edges.map_with_index(|edge, i| if (edge.from != edge.to) [i] else []).join(),
 		})
 	} else {
 		Rows({ gap: (byte_at(bytes, 30) % 20).to_f64() })
@@ -101,53 +106,53 @@ test = |bytes| {
 			if result != repeated {
 				crash "compound layout is nondeterministic"
 			}
-				else if layout.layout.positions.len() != count {
-					crash "compound layout lost source alignment"
+			else if layout.layout.positions.len() != count {
+				crash "compound layout lost source alignment"
+			}
+			else if layout.layout.routes.len() != edges.len() or layout.attachments.len() != edges.len() or layout.group_crossings.len() != edges.len() or !layout.label_anchors.is_empty() {
+				crash "compound routing lost source alignment"
+			}
+			else if layout.groups.len() != count + 1 {
+				crash "compound group geometry lost preorder alignment"
+			}
+			else if !layout.layout.positions.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y)) or !finite_rect(layout.layout.bounds) or !layout.attachments.all(|ends| F64.is_finite(ends.from.point.x) and F64.is_finite(ends.from.point.y) and F64.is_finite(ends.to.point.x) and F64.is_finite(ends.to.point.y)) or !layout.group_crossings.join().all(|crossing| F64.is_finite(crossing.point.x) and F64.is_finite(crossing.point.y) and F64.is_finite(crossing.offset) and crossing.offset >= 0 and crossing.offset <= 1) {
+				crash "compound layout returned non-finite geometry"
+			}
+			else if !layout.layout.routes.all(
+				|route| match route {
+					Line(a, b) => F64.is_finite(a.x) and F64.is_finite(a.y) and F64.is_finite(b.x) and F64.is_finite(b.y)
+					Polyline(points) => points.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y)) and points.fold_with_index(
+						True,
+						|orthogonal, p, i| match points.get(i + 1) {
+							Ok(next) => orthogonal and (p.x == next.x or p.y == next.y)
+							Err(_) => orthogonal
+						},
+					)
+					Curves(_) => False
+				},
+			) {
+				crash "compound routing returned invalid geometry"
+			}
+			else {
+				root_geometry = layout.groups.first() ?? { rect: { x: 0, y: 0, width: 0, height: 0 }, content: { x: 0, y: 0, width: 0, height: 0 }, header: None }
+				root_matches = root_geometry.rect == layout.layout.bounds and geometry_matches(root_geometry, root_insets, root_header)
+				children_match = child_specs.fold_with_index(
+					True,
+					|ok, spec, i| {
+						geometry = layout.groups.get(i + 1) ?? root_geometry
+						node = nodes.get(i) ?? { width: 0, height: 0 }
+						position = layout.layout.positions.get(i) ?? { x: 0, y: 0 }
+						node_rect = { x: position.x - node.width / 2, y: position.y - node.height / 2, width: node.width, height: node.height }
+						ok and geometry_matches(geometry, spec.insets, spec.header) and contains(root_geometry.content, geometry.rect) and contains(geometry.content, node_rect)
+					},
+				)
+				if !root_matches or !children_match {
+					crash "compound containment or reserved geometry contract failed"
+				} else {
+					Fuzz.keep
 				}
-					else if layout.layout.routes.len() != edges.len() or layout.attachments.len() != edges.len() or layout.group_crossings.len() != edges.len() or !layout.label_anchors.is_empty() {
-						crash "compound routing lost source alignment"
-					}
-						else if layout.groups.len() != count + 1 {
-							crash "compound group geometry lost preorder alignment"
-						}
-							else if !layout.layout.positions.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y)) or !finite_rect(layout.layout.bounds) or !layout.attachments.all(|ends| F64.is_finite(ends.from.point.x) and F64.is_finite(ends.from.point.y) and F64.is_finite(ends.to.point.x) and F64.is_finite(ends.to.point.y)) or !layout.group_crossings.join().all(|crossing| F64.is_finite(crossing.point.x) and F64.is_finite(crossing.point.y) and F64.is_finite(crossing.offset) and crossing.offset >= 0 and crossing.offset <= 1) {
-								crash "compound layout returned non-finite geometry"
-							}
-								else if !layout.layout.routes.all(
-									|route| match route {
-										Line(a, b) => F64.is_finite(a.x) and F64.is_finite(a.y) and F64.is_finite(b.x) and F64.is_finite(b.y)
-										Polyline(points) => points.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y)) and points.fold_with_index(
-											True,
-											|orthogonal, p, i| match points.get(i + 1) {
-												Ok(next) => orthogonal and (p.x == next.x or p.y == next.y)
-												Err(_) => orthogonal
-											},
-										)
-										Curves(_) => False
-									},
-								) {
-									crash "compound routing returned invalid geometry"
-								}
-									else {
-										root_geometry = layout.groups.first() ?? { rect: { x: 0, y: 0, width: 0, height: 0 }, content: { x: 0, y: 0, width: 0, height: 0 }, header: None }
-										root_matches = root_geometry.rect == layout.layout.bounds and geometry_matches(root_geometry, root_insets, root_header)
-										children_match = child_specs.fold_with_index(
-											True,
-											|ok, spec, i| {
-												geometry = layout.groups.get(i + 1) ?? root_geometry
-												node = nodes.get(i) ?? { width: 0, height: 0 }
-												position = layout.layout.positions.get(i) ?? { x: 0, y: 0 }
-												node_rect = { x: position.x - node.width / 2, y: position.y - node.height / 2, width: node.width, height: node.height }
-												ok and geometry_matches(geometry, spec.insets, spec.header) and contains(root_geometry.content, geometry.rect) and contains(geometry.content, node_rect)
-											},
-										)
-										if !root_matches or !children_match {
-											crash "compound containment or reserved geometry contract failed"
-										} else {
-											Fuzz.keep
-										}
-									}
-		}
+			}
+	}
 }
 
 target = Fuzz.target_with({

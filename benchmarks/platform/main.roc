@@ -2,15 +2,15 @@ platform ""
 	requires {
 		main! : List(Str) => Try({}, [Exit(I32), ..])
 	}
-	exposes [Stdout, Stderr, Stdin, Measure]
+	exposes [Measure, Stderr, Stdin, Stdout]
 	packages {}
 	provides { "roc_main": main_for_host! }
 	hosted {
+		"roc_measure_finish": Host.measure_finish!,
+		"roc_measure_start": Host.measure_start!,
 		"roc_stderr_line": Host.stderr_line!,
 		"roc_stdin_line": Host.stdin_line!,
 		"roc_stdout_line": Host.stdout_line!,
-		"roc_measure_start": Host.measure_start!,
-		"roc_measure_finish": Host.measure_finish!,
 	}
 	targets: {
 		inputs_dir: "targets/",

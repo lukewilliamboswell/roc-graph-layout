@@ -93,7 +93,7 @@ MetricsInternals :: {}.{
 						end_dir: { x: s.to.x - s.ctl_b.x, y: s.to.y - s.ctl_b.y },
 					},
 				)
-			}
+		}
 
 		dirs.fold_with_index(
 			0,
@@ -359,7 +359,7 @@ Metrics :: {}.{
 													acc + relative * relative
 												}
 											}
-										}
+									}
 								} else {
 									acc
 								}
@@ -526,5 +526,5 @@ expect {
 	positions = [{ x: 0, y: 0 }, { x: 7, y: 1 }, { x: 8, y: 9 }, { x: 1, y: 8 }]
 	Metrics.crossings(routes) == Metrics.crossings(routes)
 		and Metrics.bends(routes) == Metrics.bends(routes)
-			and Metrics.stress(graph, positions, 10) == Metrics.stress(graph, positions, 10)
+		and Metrics.stress(graph, positions, 10) == Metrics.stress(graph, positions, 10)
 }

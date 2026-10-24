@@ -1,4 +1,4 @@
-app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.2.1/9Qpttb6LTgcMaVsSBLsnaiS2mDUrf6Bxa6dX9Rqwviz4.tar.zst" }
+app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst" }
 
 import fuzz.Fuzz
 import Tree
@@ -57,14 +57,14 @@ test = |bytes| {
 			radial = Tree.layout_radial_prepared(radial_prepared)
 			tidy_ok = Tree.layout(spec, settings) == Ok(tidy)
 				and Tree.layout(spec, settings) == Tree.layout(spec, settings)
-					and tidy.depths == expected_depths
-						and tidy.layout.positions.len() == 7
-							and tidy.layout.routes.len() == 6
+				and tidy.depths == expected_depths
+				and tidy.layout.positions.len() == 7
+				and tidy.layout.routes.len() == 6
 			radial_ok = Tree.layout_radial(spec, radial_settings) == Ok(radial)
 				and Tree.layout_radial(spec, radial_settings) == Tree.layout_radial(spec, radial_settings)
-					and radial.depths == expected_depths
-						and radial.layout.positions.len() == 7
-							and radial.layout.routes.len() == 6
+				and radial.depths == expected_depths
+				and radial.layout.positions.len() == 7
+				and radial.layout.routes.len() == 6
 
 			if tidy_ok and radial_ok {
 				Fuzz.keep

@@ -1062,7 +1062,7 @@ LayeredInternals :: {}.{
 							None => acc
 							Some(b) => acc.append({ a, b })
 						}
-					},
+				},
 		)
 
 		pairs.fold_with_index(
@@ -1495,7 +1495,7 @@ LayeredInternals :: {}.{
 											}
 										None => None
 									}
-								}
+							}
 							match ends {
 								None => segs
 								Some(seg) =>
@@ -1506,7 +1506,7 @@ LayeredInternals :: {}.{
 										lp: seg.lp,
 										inner: seg.upper >= real_count and seg.lower >= real_count,
 									})
-								}
+							}
 						},
 					)
 
@@ -1895,7 +1895,7 @@ LayeredInternals :: {}.{
 					Straight => Polyline(points)
 					Curved => Curves(LayeredInternals.curve_through(points))
 				}
-			}
+		}
 
 	## Every point a route can reach, control points included — the set a
 	## bounding box must cover.
@@ -1909,7 +1909,7 @@ LayeredInternals :: {}.{
 					[],
 					|acc, segment| acc.append(segment.from).append(segment.ctl_a).append(segment.ctl_b).append(segment.to),
 				)
-			}
+		}
 
 	translate_route : Geom.Route, F64, F64 -> Geom.Route
 	translate_route = |route, dx, dy| {
@@ -1928,7 +1928,7 @@ LayeredInternals :: {}.{
 						},
 					),
 				)
-			}
+		}
 	}
 
 	transform_point = |point, direction| match direction {
@@ -2349,8 +2349,8 @@ LayeredInternals :: {}.{
 									}
 									None => state
 								}
-							}
-					}
+						}
+				}
 			},
 		)
 
@@ -2913,6 +2913,7 @@ Prepared := {
 		DuplicateNonRankingEdge(U64),
 		InvalidRouting(Route.Problem),
 	].{
+		is_eq : _
 
 		## Turn one typed problem into a short explanation for a person reading a
 		## log or error message. List positions and referenced values start at zero.
@@ -3807,12 +3808,15 @@ expect {
 		},
 	}
 	config = { ..Prepared.defaults, node_gap: -4 }
-	Prepared.build(spec, config) == Err([
-		InvalidNodeWidth(0),
-		InvalidNodeHeight(0),
-		MissingEdgeEnd(0, 3),
-		InvalidNodeGap,
-	])
+	match Prepared.build(spec, config) {
+		Ok(_) => False
+		Err(problems) => problems == [
+			InvalidNodeWidth(0),
+			InvalidNodeHeight(0),
+			MissingEdgeEnd(0, 3),
+			InvalidNodeGap,
+		]
+	}
 }
 
 ## Orientation: a lone edge from a higher index to a lower one is acyclic, so
@@ -4135,7 +4139,10 @@ expect {
 		edge_weights: [{ edge: 0, weight: 2 }],
 		min_spans: [{ edge: 0, span: 2 }],
 	}
-	Layered.prepare(input, Layered.default_settings) == Err([NonRankingEdgeWeight(0, 0), NonRankingMinimumSpan(0, 0)])
+	match Layered.prepare(input, Layered.default_settings) {
+		Ok(_) => False
+		Err(problems) => problems == [NonRankingEdgeWeight(0, 0), NonRankingMinimumSpan(0, 0)]
+	}
 }
 
 ## Public problem text distinguishes a sparse-list position from the node or
@@ -4272,11 +4279,11 @@ expect {
 				Ok(exact_result) =>
 					exact_result.proven_optimal
 						and exact_result.layout.positions.len() == 6
-							and exact_result.layout.routes.len() == 4
-								and exact_result.layers == sweep_result.layers
-									and exact_result.backward_edges == sweep_result.backward_edges
-				}
-		}
+						and exact_result.layout.routes.len() == 4
+						and exact_result.layers == sweep_result.layers
+						and exact_result.backward_edges == sweep_result.backward_edges
+			}
+	}
 }
 
 ## The exact layout is proven optimal on a trivially small graph.
@@ -4313,10 +4320,10 @@ expect {
 				Ok(exact_result) =>
 					!exact_result.proven_optimal
 						and exact_result.layout == sweep_result.layout
-							and exact_result.layers == sweep_result.layers
-								and exact_result.backward_edges == sweep_result.backward_edges
-				}
-		}
+						and exact_result.layers == sweep_result.layers
+						and exact_result.backward_edges == sweep_result.backward_edges
+			}
+	}
 }
 
 ## A tiny effort cap on a wider instance stops the search unproven, yet the
@@ -4368,7 +4375,7 @@ expect {
 				Err(_) => False
 				Ok(exact_result) => exact_result.layers == sweep_result.layers and exact_result.backward_edges == sweep_result.backward_edges
 			}
-		}
+	}
 }
 
 ## Exact layout is deterministic, and the one-shot operation is exactly
@@ -4400,12 +4407,15 @@ expect {
 		},
 	}
 	settings = { ..Layered.default_exact_settings, node_gap: -4 }
-	Layered.prepare_exact(input, settings) == Err([
-		InvalidNodeWidth(0),
-		InvalidNodeHeight(0),
-		MissingEdgeEnd(0, 3),
-		InvalidNodeGap,
-	])
+	match Layered.prepare_exact(input, settings) {
+		Ok(_) => False
+		Err(problems) => problems == [
+			InvalidNodeWidth(0),
+			InvalidNodeHeight(0),
+			MissingEdgeEnd(0, 3),
+			InvalidNodeGap,
+		]
+	}
 }
 
 ## Exact pins retain their caller-space coordinates while preserving strict
@@ -4471,7 +4481,10 @@ expect {
 expect {
 	input = { ..Layered.default_input, graph: { nodes: [{ width: 10, height: 10 }, { width: 10, height: 10 }], edges: [] }, layer_constraints: [SameLayer({ first: 0, second: 1 })] }
 	settings = { ..Layered.default_settings, pins: [{ node: 0, x: 0, y: 10 }, { node: 1, x: 40, y: 20 }] }
-	Layered.prepare(input, settings) == Err([ConflictingPins])
+	match Layered.prepare(input, settings) {
+		Ok(_) => False
+		Err(problems) => problems == [ConflictingPins]
+	}
 }
 
 ## Pin validation reports independent reference, numeric, and duplicate

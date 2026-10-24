@@ -1,4 +1,4 @@
-app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.2.1/9Qpttb6LTgcMaVsSBLsnaiS2mDUrf6Bxa6dX9Rqwviz4.tar.zst" }
+app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst" }
 
 import fuzz.Fuzz
 import Layered
@@ -24,11 +24,14 @@ test = |bytes| {
 	} else {
 		(byte_at(bytes, 17) % 13).to_u64()
 	}
+	# `.max(1)` changes nothing when this closure runs, but works around
+	# https://github.com/roc-lang/roc/issues/12556: optimized builds otherwise
+	# assume the divisor is nonzero after the closure, even when it never ran.
 	edges = List.repeat({}, edge_count).map_with_index(
 		|_, index| {
-			from = (byte_at(bytes, 18 + index * 2).to_u64()) % (node_count - 1)
+			from = (byte_at(bytes, 18 + index * 2).to_u64()) % (node_count - 1).max(1)
 			span = node_count - from - 1
-			{ from, to: from + 1 + (byte_at(bytes, 19 + index * 2).to_u64() % span) }
+			{ from, to: from + 1 + (byte_at(bytes, 19 + index * 2).to_u64() % span.max(1)) }
 		},
 	)
 	# Constraint pairs are selected from nodes with identical structural depth:
@@ -86,9 +89,9 @@ test = |bytes| {
 			result = Layered.layout_prepared(prepared, run_args)
 			aligned = result.layout.positions.len() == node_count
 				and result.layout.routes.len() == edges.len()
-					and result.layers.len() == node_count
-						and result.attachments.len() == edges.len()
-							and result.label_anchors.len() == edge_labels.len()
+				and result.layers.len() == node_count
+				and result.attachments.len() == edges.len()
+				and result.label_anchors.len() == edge_labels.len()
 			forward = edges.fold_with_index(
 				True,
 				|ok, edge, index| {
@@ -112,12 +115,12 @@ test = |bytes| {
 
 			if one_call == Ok(result)
 				and Layered.layout(input, settings, run_args) == one_call
-					and aligned
-						and forward
-							and constraints_hold
-								and order_holds
-									and result.backward_edges.is_empty()
-										and valid_backward {
+				and aligned
+				and forward
+				and constraints_hold
+				and order_holds
+				and result.backward_edges.is_empty()
+				and valid_backward {
 				Fuzz.keep
 			} else {
 				crash "layered layout violated equivalence, determinism, alignment, or DAG layering"

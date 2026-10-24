@@ -441,7 +441,7 @@ ConstrainedInternals :: {}.{
 				} else {
 					[]
 				}
-			}
+		}
 	}
 
 	## One axis's full rule analysis, shared by build and run. Its `problems`
@@ -1304,7 +1304,7 @@ expect {
 			p3 = result.layout.positions.get(3) ?? { x: 0, y: 0 }
 			p3.x - p0.x >= 200 - 1e-9
 				and result.convergence.converged
-					and result.unsatisfied == []
+				and result.unsatisfied == []
 		}
 	}
 }
@@ -1352,7 +1352,7 @@ expect {
 			p2 = result.layout.positions.get(2) ?? { x: 0, y: 0 }
 			(p0.y - p1.y).abs() <= 1e-9
 				and (p1.y - p2.y).abs() <= 1e-9
-					and result.unsatisfied == []
+				and result.unsatisfied == []
 		}
 	}
 }
@@ -1400,10 +1400,10 @@ expect {
 			p4 = result.layout.positions.get(4) ?? { x: 0, y: 0 }
 			p4.x - p0.x >= 300 - 1e-9
 				and (p0.y - p1.y).abs() <= 1e-9
-					and (p1.y - p2.y).abs() <= 1e-9
-						and p2.x >= 100 - 1e-9
-							and p2.x <= 140 + 1e-9
-								and result.unsatisfied == []
+				and (p1.y - p2.y).abs() <= 1e-9
+				and p2.x >= 100 - 1e-9
+				and p2.x <= 140 + 1e-9
+				and result.unsatisfied == []
 		}
 	}
 }
@@ -1426,7 +1426,7 @@ expect {
 			p1 = result.layout.positions.get(1) ?? { x: 0, y: 0 }
 			result.layout.positions.get(0) == Ok({ x: 5, y: 7 })
 				and p1.x - 5 >= 50 - 1e-6
-					and result.unsatisfied == []
+				and result.unsatisfied == []
 		}
 	}
 }
@@ -1443,12 +1443,15 @@ expect {
 		],
 	}
 	settings = { ..Constrained.default_settings, pins: [{ node: 3, x: 1, y: 2 }] }
-	Constrained.prepare(input, settings) == Err([
-		MissingPin(0),
-		MissingConstraintNode(0, 9),
-		InvalidConstraintGap(0),
-		InvalidConstraintBand(1),
-	])
+	match Constrained.prepare(input, settings) {
+		Ok(_) => False
+		Err(problems) => problems == [
+			MissingPin(0),
+			MissingConstraintNode(0, 9),
+			InvalidConstraintGap(0),
+			InvalidConstraintBand(1),
+		]
+	}
 }
 
 ## Identical input, settings, and run arguments produce identical output,
@@ -1504,7 +1507,7 @@ expect {
 		Err(_) => False
 		Ok(prepared) =>
 			Constrained.layout(input, Constrained.default_settings, Constrained.default_run) == Ok(Constrained.layout_prepared(prepared, Constrained.default_run))
-		}
+	}
 }
 
 ## The empty graph with no constraints has a defined layout: no positions,
@@ -1515,9 +1518,9 @@ expect {
 		Ok(result) =>
 			result.layout.positions == []
 				and result.layout.routes == []
-					and result.layout.bounds == { x: 0, y: 0, width: 0, height: 0 }
-						and result.unsatisfied == []
-		}
+				and result.layout.bounds == { x: 0, y: 0, width: 0, height: 0 }
+				and result.unsatisfied == []
+	}
 }
 
 ## With no constraints the solve behaves like plain stress: a path of three
@@ -1544,7 +1547,7 @@ expect {
 			d02 = Geom.hypot(p2.x - p0.x, p2.y - p0.y)
 			(d01 - unit).abs() < unit * 0.15
 				and (d12 - unit).abs() < unit * 0.15
-					and (d02 - 2 * unit).abs() < 2 * unit * 0.15
+				and (d02 - 2 * unit).abs() < 2 * unit * 0.15
 		}
 	}
 }
@@ -1567,8 +1570,8 @@ expect {
 			full = Constrained.layout_prepared(free, Constrained.default_run)
 			none.convergence == { iterations: 0, converged: False }
 				and full.convergence.converged
-					and full.convergence.iterations >= 1
-						and full.convergence.iterations <= 200
+				and full.convergence.iterations >= 1
+				and full.convergence.iterations <= 200
 		}
 
 		_ => False
@@ -1589,7 +1592,10 @@ expect {
 			Separate({ axis: X, first: 1, second: 0, gap: 10 }),
 		],
 	}
-	Constrained.prepare(input, Constrained.default_settings) == Err([UnsatisfiableSeparation(1)])
+	match Constrained.prepare(input, Constrained.default_settings) {
+		Ok(_) => False
+		Err(problems) => problems == [UnsatisfiableSeparation(1)]
+	}
 }
 
 ## A three-cycle of positive separations is likewise rejected.
@@ -1605,7 +1611,10 @@ expect {
 			Separate({ axis: X, first: 2, second: 0, gap: 10 }),
 		],
 	}
-	Constrained.prepare(input, Constrained.default_settings) == Err([UnsatisfiableSeparation(2)])
+	match Constrained.prepare(input, Constrained.default_settings) {
+		Ok(_) => False
+		Err(problems) => problems == [UnsatisfiableSeparation(2)]
+	}
 }
 
 ## A positive separation between two nodes an alignment fuses onto one
@@ -1621,7 +1630,10 @@ expect {
 			Separate({ axis: X, first: 0, second: 1, gap: 5 }),
 		],
 	}
-	Constrained.prepare(input, Constrained.default_settings) == Err([UnsatisfiableSeparation(1)])
+	match Constrained.prepare(input, Constrained.default_settings) {
+		Ok(_) => False
+		Err(problems) => problems == [UnsatisfiableSeparation(1)]
+	}
 }
 
 ## Two disjoint containment bands on one node and axis have an empty
@@ -1634,7 +1646,10 @@ expect {
 			Inside({ axis: X, nodes: [0], low: 20, high: 30 }),
 		],
 	}
-	Constrained.prepare(input, Constrained.default_settings) == Err([ConflictingInside(1)])
+	match Constrained.prepare(input, Constrained.default_settings) {
+		Ok(_) => False
+		Err(problems) => problems == [ConflictingInside(1)]
+	}
 }
 
 ## A pin outside its node's containment band is a conflict reported at
@@ -1645,7 +1660,10 @@ expect {
 		constraints: [Inside({ axis: X, nodes: [0], low: 0, high: 10 })],
 	}
 	settings = { ..Constrained.default_settings, pins: [{ node: 0, x: 100, y: 0 }] }
-	Constrained.prepare(input, settings) == Err([ConflictingPin(0)])
+	match Constrained.prepare(input, settings) {
+		Ok(_) => False
+		Err(problems) => problems == [ConflictingPin(0)]
+	}
 }
 
 ## Disagreeing pins on two nodes an alignment fuses are a conflict reported
@@ -1659,7 +1677,10 @@ expect {
 		constraints: [Align({ axis: X, nodes: [0, 1] })],
 	}
 	settings = { ..Constrained.default_settings, pins: [{ node: 0, x: 0, y: 0 }, { node: 1, x: 50, y: 0 }] }
-	Constrained.prepare(input, settings) == Err([ConflictingPin(1)])
+	match Constrained.prepare(input, settings) {
+		Ok(_) => False
+		Err(problems) => problems == [ConflictingPin(1)]
+	}
 }
 
 ## A satisfiable chain of separations — no positive cycle — still prepares,
@@ -1683,7 +1704,7 @@ expect {
 			p2 = result.layout.positions.get(2) ?? { x: 0, y: 0 }
 			p1.x - p0.x >= 30 - 1e-9
 				and p2.x - p1.x >= 30 - 1e-9
-					and result.unsatisfied == []
+				and result.unsatisfied == []
 		}
 	}
 }
@@ -1706,9 +1727,9 @@ expect {
 			bounds = result.layout.bounds
 			result.layout.positions.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y))
 				and F64.is_finite(bounds.x)
-					and F64.is_finite(bounds.y)
-						and F64.is_finite(bounds.width)
-							and F64.is_finite(bounds.height)
+				and F64.is_finite(bounds.y)
+				and F64.is_finite(bounds.width)
+				and F64.is_finite(bounds.height)
 		}
 	}
 }
@@ -1740,8 +1761,8 @@ expect {
 			p1 = result.layout.positions.get(1) ?? { x: 0, y: 0 }
 			p1.x - p0.x >= 1 - 1e-9
 				and (p0.y - p1.y).abs() <= 1e-9
-					and p0.x.abs() <= 1e-9
-						and result.unsatisfied == []
+				and p0.x.abs() <= 1e-9
+				and result.unsatisfied == []
 		}
 	}
 }
@@ -1769,9 +1790,9 @@ expect {
 			p1 = result.layout.positions.get(1) ?? { x: 0, y: 0 }
 			p0 == { x: 0, y: 0 }
 				and p1.x >= 80 - 1e-9
-					and p1.x <= 90 + 1e-9
-						and p1.x - p0.x >= 60 - 1e-9
-							and result.unsatisfied == []
+				and p1.x <= 90 + 1e-9
+				and p1.x - p0.x >= 60 - 1e-9
+				and result.unsatisfied == []
 		}
 	}
 }
@@ -1795,5 +1816,8 @@ expect {
 			Separate({ axis: X, first: 0, second: 1, gap: 10 }),
 		],
 	}
-	Constrained.prepare(input, Constrained.default_settings) == Err([UnsatisfiableSeparation(2)])
+	match Constrained.prepare(input, Constrained.default_settings) {
+		Ok(_) => False
+		Err(problems) => problems == [UnsatisfiableSeparation(2)]
+	}
 }

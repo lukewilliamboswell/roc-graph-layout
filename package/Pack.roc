@@ -236,7 +236,7 @@ expect {
 						separated =
 							i == j
 								or (a.x - b.x).abs() * 2 >= box_a.width + box_b.width
-									or (a.y - b.y).abs() * 2 >= box_a.height + box_b.height
+								or (a.y - b.y).abs() * 2 >= box_a.height + box_b.height
 
 						pair_ok and separated
 					},

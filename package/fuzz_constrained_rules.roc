@@ -1,4 +1,4 @@
-app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.2.1/9Qpttb6LTgcMaVsSBLsnaiS2mDUrf6Bxa6dX9Rqwviz4.tar.zst" }
+app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst" }
 
 import fuzz.Fuzz
 import Constrained
@@ -16,15 +16,13 @@ test = |bytes| {
 			height: (1 + byte_at(bytes, 3 + index * 2) % 40).to_f64(),
 		},
 	)
-	edges = # non-ZST construction: List.drop_last(List.repeat({}, n), 1) miscompiles to [] in native fuzz builds (compiler bug, repro filed)
-	List.repeat(0, node_count - 1).map_with_index(|_, i| { from: i, to: i + 1 })
+	edges = List.repeat(0, node_count - 1).map_with_index(|_, i| { from: i, to: i + 1 })
 	members = List.repeat(0, node_count).map_with_index(|_, i| i)
 	constraints = [
 		Inside({ axis: X, nodes: [0], low: 0, high: 0 }),
 		Align({ axis: Y, nodes: members }),
 	].concat(
-		# non-ZST construction: List.drop_last(List.repeat({}, n), 1) miscompiles to [] in native fuzz builds (compiler bug, repro filed)
-	List.repeat(0, node_count - 1).map_with_index(
+		List.repeat(0, node_count - 1).map_with_index(
 			|_, i| Separate({ axis: X, first: i, second: i + 1, gap }),
 		),
 	)

@@ -1,4 +1,4 @@
-app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.2.1/9Qpttb6LTgcMaVsSBLsnaiS2mDUrf6Bxa6dX9Rqwviz4.tar.zst" }
+app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst" }
 
 import fuzz.Fuzz
 import Graph
@@ -18,14 +18,14 @@ finite_route = |route|
 				|s|
 					F64.is_finite(s.from.x)
 						and F64.is_finite(s.from.y)
-							and F64.is_finite(s.ctl_a.x)
-								and F64.is_finite(s.ctl_a.y)
-									and F64.is_finite(s.ctl_b.x)
-										and F64.is_finite(s.ctl_b.y)
-											and F64.is_finite(s.to.x)
-												and F64.is_finite(s.to.y),
+						and F64.is_finite(s.ctl_a.x)
+						and F64.is_finite(s.ctl_a.y)
+						and F64.is_finite(s.ctl_b.x)
+						and F64.is_finite(s.ctl_b.y)
+						and F64.is_finite(s.to.x)
+						and F64.is_finite(s.to.y),
 			)
-		}
+	}
 
 test : List(U8) -> Fuzz.Outcome
 test = |bytes| {
@@ -70,13 +70,13 @@ test = |bytes| {
 			b = result.layout.bounds
 			finite = result.layout.positions.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y))
 				and result.layout.routes.all(finite_route)
-					and F64.is_finite(b.x)
-						and F64.is_finite(b.y)
-							and F64.is_finite(b.width)
-								and F64.is_finite(b.height)
+				and F64.is_finite(b.x)
+				and F64.is_finite(b.y)
+				and F64.is_finite(b.width)
+				and F64.is_finite(b.height)
 			aligned = result.layout.positions.len() == nodes.len()
 				and result.layout.routes.len() == edges.len()
-					and result.components.len() == nodes.len()
+				and result.components.len() == nodes.len()
 			if finite and aligned {
 				Fuzz.keep
 			} else {

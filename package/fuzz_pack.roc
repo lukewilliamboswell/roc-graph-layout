@@ -1,4 +1,4 @@
-app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.2.1/9Qpttb6LTgcMaVsSBLsnaiS2mDUrf6Bxa6dX9Rqwviz4.tar.zst" }
+app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst" }
 
 import fuzz.Fuzz
 import Pack
@@ -40,8 +40,8 @@ test = |bytes| {
 			box = boxes.get(i) ?? { width: 0, height: 0 }
 			ok and p.x - box.width / 2 >= result.bounds.x
 				and p.y - box.height / 2 >= result.bounds.y
-					and p.x + box.width / 2 <= result.bounds.x + result.bounds.width
-						and p.y + box.height / 2 <= result.bounds.y + result.bounds.height
+				and p.x + box.width / 2 <= result.bounds.x + result.bounds.width
+				and p.y + box.height / 2 <= result.bounds.y + result.bounds.height
 		},
 	)
 	finite = result.positions.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y))

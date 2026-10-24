@@ -342,9 +342,9 @@ expect {
 	away = Quadtree.repulsion_at(tree, { x: 3.0, y: 1.0 }, 0.9)
 	at_self == { x: 0, y: 0 }
 		and F64.is_finite(away.x)
-			and F64.is_finite(away.y)
-				and (away.x - 1.0).abs() < 1e-12
-					and away.y.abs() < 1e-12
+		and F64.is_finite(away.y)
+		and (away.x - 1.0).abs() < 1e-12
+		and away.y.abs() < 1e-12
 }
 
 ## Approximation sanity: on two well-separated clusters, theta 0.9 stays

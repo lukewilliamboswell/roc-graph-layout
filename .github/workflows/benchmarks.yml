@@ -1,0 +1,42 @@
+name: Benchmarks
+
+# The scale rungs take longer than a pull request should wait, so they run on
+# request. Pull requests run the smoke rung as part of `blueprint run check`.
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  scale:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install blueprint
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@7aff4132691ad4fc348abe9df146a57512b49bd6
+        with:
+          cache: 'true'
+          cache-workload: dev
+
+      - name: Install the latest Roc nightly
+        uses: roc-lang/setup-roc@f5a74bf90aa694b43ab4a7cbfdb19273bc6aa697
+        with:
+          version: nightly-new-compiler
+
+      - name: Run the scale rungs
+        run: blueprint run bench -- scale --output benchmarks/results/manual
+
+      - name: Upload the results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: benchmark-scale
+          path: benchmarks/results/manual
+          if-no-files-found: warn

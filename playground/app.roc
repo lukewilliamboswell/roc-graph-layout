@@ -1,6 +1,5 @@
 app [main] {
 	pf: platform "https://github.com/lukewilliamboswell/roc-signals/releases/download/0.2.0-rc3/HVTvH6n1bcFccyLz5xtdpjRrStMa2T6CmHQRiuTtTs6F.tar.zst",
-	roc: "nightly-2026-09-04-c125b82",
 	layout: "../package/main.roc",
 	fixtures: "../examples/data/main.roc",
 	rvn: "https://cdn.jasperwoudenberg.com/roc-rvn-v1.0.0-rc.2/8dArudMEhMfr4NTu1efFiFz5aCKMvSAmSspZctxFgZti.tar.zst",

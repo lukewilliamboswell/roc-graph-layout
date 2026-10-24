@@ -16,13 +16,12 @@ roc build main.roc --output node-editor
 ./node-editor
 ```
 
-This repository requires the compiler named in its root `.roc-version`. When
-using the example-local npm workflow, `npm run build` verifies the compiler
-before compiling. It uses `roc` from `PATH` by default, or the executable in
+Build with the latest Roc nightly. The example-local npm workflow,
+`npm run build`, uses `roc` from `PATH` by default, or the executable in
 `ROC`:
 
 ```sh
-ROC=/path/to/the/pinned/roc npm run build
+ROC=/path/to/roc npm run build
 ```
 
 Set `ROC_GRAPH_LAYOUT_NODE_EDITOR_DB` to choose another database path. The

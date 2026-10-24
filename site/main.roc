@@ -1,12 +1,12 @@
-app [main!] { pf: platform "https://github.com/lukewilliamboswell/basic-ssg/releases/download/0.11.0/3vqgmE9dzxoPRNgCbUYrfJhcsyV1DKpi8Q8qKAsSt1Br.tar.zst" }
+app [main!] { pf: platform "https://github.com/lukewilliamboswell/basic-ssg/releases/download/0.14.1/A5DyTFxbg5zY37Lz5X4c9geKScrEK5LJnPeUTXn1NVG6.tar.zst" }
 
 import pf.SSG
 import pf.Path
-import pf.OsStr exposing [OsStr]
+import pf.OsStr
 import pf.Html
-import pf.HtmlAttributes exposing [href, lang, name, content, rel, http_equiv, class]
+import pf.HtmlAttributes exposing [class, content, href, http_equiv, lang, name, rel]
 
-main! : List(OsStr) => Try({}, [Exit(I32), PagesError(Str), ParseError(Str), WriteError(Str), ..])
+main! : List(OsStr) => Try({}, [Exit(I32), PagesError(Str), ParseError(Str), WriteError(Str)])
 main! = |args| match args.drop_first(1) {
 	[input, output] => {
 		pages = SSG.markdown_pages!(Path.from_os_str(input))?
@@ -15,7 +15,7 @@ main! = |args| match args.drop_first(1) {
 	_ => Err(Exit(1))
 }
 
-write_pages! : List(SSG.Page), Path.Path => Try({}, [ParseError(Str), WriteError(Str), ..])
+write_pages! : List(SSG.Page), Path.Path => Try({}, [ParseError(Str), WriteError(Str)])
 write_pages! = |pages, output_dir| match pages {
 	[] => Ok({})
 	[page, .. as rest] => {
@@ -51,7 +51,6 @@ page_body = |body| Html.body(
 					[],
 					[
 						Html.a([href("choosing-a-layout.html")], [Html.text("Choosing a layout")]),
-						Html.a([href("playground/")], [Html.text("Playground")]),
 						Html.a([href("docs/")], [Html.text("API reference")]),
 					],
 				),
