@@ -22,14 +22,30 @@ FlowLayout :: {}.{
 	layout = |diagram, sizes| {
 		raw = FlowLayoutElk.layout_raw(diagram, sizes)
 		adjusted = FlowLayoutAdjust.adjust(diagram, sizes, raw)
+		# A label's background reaches 2 past its text on every side.
 		label_sizes = diagram.edges.map_with_index(
-			|_, e|
+			|edge, e|
 				match sizes.edge_labels.get(e) ?? None {
-					Some(block) => Some({ width: FlowLayout.finite_size(block.width), height: FlowLayout.finite_size(block.height) })
+					Some(block) => if (edge.label.is_empty()) None else Some({ width: FlowLayout.finite_size(block.width) + 4, height: FlowLayout.finite_size(block.height) + 4 })
 					None => None
 				},
 		)
-		FlowLayout.normalise({ nodes: adjusted.nodes, edges: adjusted.edges, groups: adjusted.groups, bounds: { x: 0, y: 0, width: 0, height: 0 } }, label_sizes)
+		title_sizes = diagram.groups.map_with_index(
+			|_, g| {
+				block = sizes.group_titles.get(g) ?? { lines: [], width: 0, height: 0 }
+				{ width: FlowLayout.finite_size(block.width), height: FlowLayout.finite_size(block.height) }
+			},
+		)
+		# Mermaid draws a diamond half a pixel right of the box the engine
+		# placed (edges keep to the engine's box).
+		nodes = adjusted.nodes.map_with_index(
+			|r, i|
+				match diagram.nodes.get(i) {
+					Ok(node) => if (node.shape == Diamond) { ..r, x: r.x + 0.5 } else r
+					Err(_) => r
+				},
+		)
+		FlowLayout.normalise({ nodes, edges: adjusted.edges, groups: adjusted.groups, bounds: { x: 0, y: 0, width: 0, height: 0 } }, label_sizes, title_sizes)
 	}
 
 	## Where content starts and how far the drawing's bounds reach past it.
@@ -48,15 +64,26 @@ FlowLayout :: {}.{
 	finite_size : F64 -> F64
 	finite_size = |value| if (F64.is_finite(value) and value > 0) value else 0
 
-	## Move everything so content starts at Mermaid's origin, and set the
-	## bounds Mermaid gives the drawing: the content plus a margin.
-	normalise : FlowGeometry.Geometry, List([None, Some(Size)]) -> FlowGeometry.Geometry
-	normalise = |geometry, label_sizes| {
+	## The bounds Mermaid gives the drawing: what is drawn (boxes, edges and
+	## label backgrounds) plus a margin. A subgraph with no height draws no
+	## box, only its title, so only the title counts. Positions stay where the
+	## layout put them, content starting at the engine's padding.
+	normalise : FlowGeometry.Geometry, List([None, Some(Size)]), List(Size) -> FlowGeometry.Geometry
+	normalise = |geometry, label_sizes, title_sizes| {
 		var $min_x = F64.infinity
 		var $min_y = F64.infinity
 		var $max_x = 0 - F64.infinity
 		var $max_y = 0 - F64.infinity
-		for r in geometry.nodes.concat(geometry.groups) {
+		titles = geometry.groups.map_with_index(
+			|r, g|
+				if r.height > 0 and r.width > 0 {
+					r
+				} else {
+					title = title_sizes.get(g) ?? { width: 0, height: 0 }
+					{ x: r.x + r.width / 2 - title.width / 2, y: r.y, width: title.width, height: title.height }
+				},
+		)
+		for r in geometry.nodes.concat(titles) {
 			$min_x = $min_x.min(r.x)
 			$min_y = $min_y.min(r.y)
 			$max_x = $max_x.max(r.x + r.width)
@@ -82,30 +109,30 @@ FlowLayout :: {}.{
 		}
 		origin = FlowLayout.content_origin
 		margin = FlowLayout.bounds_margin
-		if !F64.is_finite($min_x) or !F64.is_finite($min_y) or !F64.is_finite($max_x) or !F64.is_finite($max_y) {
-			{ ..geometry, bounds: { x: origin - margin, y: origin - margin, width: margin * 2, height: margin * 2 } }
-		} else {
-			dx = origin - $min_x
-			dy = origin - $min_y
-			fix = |v| if (F64.is_finite(v)) v else 0
-			move = |p| { x: fix(p.x + dx), y: fix(p.y + dy) }
-			move_rect = |r| { x: fix(r.x + dx), y: fix(r.y + dy), width: fix(r.width), height: fix(r.height) }
-			{
-				nodes: geometry.nodes.map(move_rect),
-				groups: geometry.groups.map(move_rect),
-				edges: geometry.edges.map(
-					|edge| {
-						points: edge.points.map(move),
-						label: match edge.label {
-							Some(p) => Some(move(p))
-							None => None
-						},
+		fix = |v| if (F64.is_finite(v)) v else 0
+		fix_point = |p| { x: fix(p.x), y: fix(p.y) }
+		fix_rect = |r| { x: fix(r.x), y: fix(r.y), width: fix(r.width), height: fix(r.height) }
+		fixed = {
+			nodes: geometry.nodes.map(fix_rect),
+			groups: geometry.groups.map(fix_rect),
+			edges: geometry.edges.map(
+				|edge| {
+					points: edge.points.map(fix_point),
+					label: match edge.label {
+						Some(p) => Some(fix_point(p))
+						None => None
 					},
-				),
-				bounds: { x: origin - margin, y: origin - margin, width: fix($max_x - $min_x + margin * 2), height: fix($max_y - $min_y + margin * 2) },
-			}
+				},
+			),
+			bounds: geometry.bounds,
+		}
+		if !F64.is_finite($min_x) or !F64.is_finite($min_y) or !F64.is_finite($max_x) or !F64.is_finite($max_y) {
+			{ ..fixed, bounds: { x: origin - margin, y: origin - margin, width: margin * 2, height: margin * 2 } }
+		} else {
+			{ ..fixed, bounds: { x: $min_x - margin, y: $min_y - margin, width: fix($max_x - $min_x + margin * 2), height: fix($max_y - $min_y + margin * 2) } }
 		}
 	}
+
 }
 
 ## Lays out `text` with every node 152 by 41, labels 30 by 17 and titles
@@ -208,3 +235,48 @@ expect
 
 ## Layout is deterministic.
 expect test_layout("flowchart TD\n  A --> B & C & D\n  B --> E\n  C --> E\n  E --> A\n") == test_layout("flowchart TD\n  A --> B & C & D\n  B --> E\n  C --> E\n  E --> A\n")
+
+## The bounds cover a label's background, 2 past its text, then Mermaid's
+## margin of 8. Recorded: in review-bt Mermaid's view box starts at x 4 with
+## the leftmost label's background at x 12.
+expect {
+	geometry = {
+		nodes: [{ x: 60, y: 30, width: 152, height: 41 }],
+		edges: [{ points: [{ x: 60, y: 50 }, { x: 40, y: 50 }], label: Some({ x: 29, y: 22.5 }) }],
+		groups: [],
+		bounds: { x: 0, y: 0, width: 0, height: 0 },
+	}
+	g = FlowLayout.normalise(geometry, [Some({ width: 34, height: 21 })], [])
+	g.bounds == { x: 4, y: 4, width: 216, height: 75 } and g.nodes == geometry.nodes
+}
+
+## A subgraph with no height draws only its title, so only the title
+## counts. Recorded: in groups-empty Mermaid's view box starts at x 5.40625,
+## 8 before the title of an empty subgraph whose box starts at 9.40625.
+expect {
+	geometry = {
+		nodes: [{ x: 110, y: 282, width: 152, height: 41 }],
+		edges: [],
+		groups: [{ x: 9.40625, y: 287.5, width: 53.1875, height: 0 }],
+		bounds: { x: 0, y: 0, width: 0, height: 0 },
+	}
+	g = FlowLayout.normalise(geometry, [], [{ width: 45.1875, height: 17 }])
+	g.bounds.x == 5.40625
+}
+
+## Diamonds are drawn half a pixel right of the engine's box, and the
+## bounds follow. Recorded: in fan-labels-lr Mermaid's diamond starts at
+## x 12.5 and its view box at x 4.5.
+expect
+	match test_layout("flowchart LR\n  a{Router} --> b\n") {
+		Some(g) => (g.nodes.first() ?? { x: 0, y: 0, width: 0, height: 0 }).x == 12.5 and g.bounds.x == 4.5
+		None => False
+	}
+
+## A drawing that reads upwards is mirrored within its box, as the engine
+## mirrors it: coordinates start at the padding, the last node on top.
+expect
+	match test_layout("flowchart BT\n  A --> B\n") {
+		Some(g) => g.nodes == [{ x: 12, y: 93, width: 152, height: 41 }, { x: 12, y: 12, width: 152, height: 41 }] and g.bounds == { x: 4, y: 4, width: 168, height: 138 }
+		None => False
+	}

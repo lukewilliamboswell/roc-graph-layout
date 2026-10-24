@@ -208,7 +208,10 @@ FlowLayoutElk :: {}.{
 		for g in FlowLayoutElk.bottom_up(m).rev() {
 			graph = FlowLayoutGraph.graph(m, g)
 			value = if g == 0 or graph.parent == FlowLayoutGraph.nil {
-				{ direction: graph.direction, dx: 0, dy: 0 }
+				# The engine mirrors a drawing that reads right to left or
+				# upwards within its own box, so coordinates stay positive.
+				own = FlowLayoutElk.turn_rect(graph.direction, { x: 0, y: 0, width: graph.width + graph.padding.left + graph.padding.right, height: graph.height + graph.padding.top + graph.padding.bottom })
+				{ direction: graph.direction, dx: 0 - own.x, dy: 0 - own.y }
 			} else if graph.separate {
 				box = FlowLayoutGraph.node(m, graph.parent)
 				outer = $out.get(box.graph) ?? { direction: Right, dx: 0, dy: 0 }

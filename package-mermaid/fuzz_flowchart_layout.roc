@@ -167,9 +167,18 @@ check = |diagram, g| {
 	if !rects.all(finite_rect) or !g.edges.all(|e| e.points.all(finite_point)) {
 		return Err("a coordinate is not finite")
 	}
+	# A diamond is drawn half a pixel right of the box its edges were laid
+	# out against, as Mermaid draws it.
 	end_rect = |end|
 		match end {
-			Node(i) => g.nodes.get(i) ?? g.bounds
+			Node(i) => {
+				r = g.nodes.get(i) ?? g.bounds
+				diamond = match diagram.nodes.get(i) {
+					Ok(node) => node.shape == Diamond
+					Err(_) => False
+				}
+				if (diamond) { ..r, x: r.x - 0.5 } else r
+			}
 			Group(i) => g.groups.get(i) ?? g.bounds
 		}
 	for i in 0..<diagram.edges.len() {
