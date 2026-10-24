@@ -80,8 +80,8 @@ jobs:
           dry_run_version: 0.0.1-dry-run
           github_token: ${{ github.token }}
 
-      # Stops a version that understates what changed in the package's API
-      # since the latest release. A dry run has no version to check.
+      # Stops a version that understates what changed in the layout package's
+      # API since the latest release. A dry run has no version to check.
       - name: Check the version with roc bump
         if: github.event_name == 'workflow_dispatch'
         env:
@@ -93,11 +93,15 @@ jobs:
       - name: Check the scripts, package, examples and release artifacts
         run: blueprint run check
 
-      - name: Bundle the package
+      # The layout package, then the Mermaid package, which depends on the
+      # layout bundle by its URL in this release: version and bundle name fix
+      # it before the release exists.
+      - name: Bundle the packages
+        env:
+          RELEASE_VERSION: ${{ steps.validate.outputs.release_version }}
         run: blueprint run bundle
 
-      # The archived examples depend on this release's bundle URL, which is
-      # known before the release exists: version and bundle name fix it.
+      # The archived examples depend on this release's bundle URLs.
       - name: Package the examples archive
         env:
           RELEASE_VERSION: ${{ steps.validate.outputs.release_version }}
@@ -108,15 +112,15 @@ jobs:
           RELEASE_VERSION: ${{ steps.validate.outputs.release_version }}
         run: blueprint run package-docs
 
-      # Renders docs/releases/<version>.md with the real bundle URL and the
+      # Renders docs/releases/<version>.md with the real bundle URLs and the
       # compilers used. A dry run renders the newest notes there are.
       - name: Render the release notes
         env:
           RELEASE_VERSION: ${{ steps.validate.outputs.release_version }}
         run: blueprint run release-notes
 
-      # Everything the release would hold, and its notes. Later jobs use these
-      # files and build nothing.
+      # Everything the release would hold, and its notes: both bundles match
+      # *.tar.zst. Later jobs use these files and build nothing.
       - name: Upload the release candidate
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -158,9 +162,9 @@ jobs:
           name: release-candidate
           path: dist
 
-      # The archive names the release URL of the bundle, which does not exist
-      # yet: the bundle is served from a loopback address in its place.
-      - name: Test the examples archive, unchanged, against the bundle
+      # The archive names the release URLs of the bundles, which do not exist
+      # yet: the bundles are served from a loopback address in their place.
+      - name: Test the examples archive, unchanged, against the bundles
         run: blueprint run test-bundle
 
   # Holds the write token, checks out nothing, and runs no code from this

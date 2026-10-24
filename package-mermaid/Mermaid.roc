@@ -1,3 +1,4 @@
+import "FontInter-OFL.txt" as inter_licence_file : List(U8)
 import Drawing
 import FlowDraw
 import FlowLayout
@@ -40,6 +41,12 @@ Mermaid := [].{
 		geometry = FlowLayout.layout(diagram, sizes)
 		FlowDraw.draw(diagram, sizes, geometry)
 	}
+
+	## The licence of the Inter font data built into this package for
+	## measuring labels: the SIL Open Font License 1.1. Include it with
+	## anything that redistributes that data, such as a PDF embedding it.
+	font_licence : Str
+	font_licence = Str.from_utf8_lossy(inter_licence_file)
 }
 
 expect
@@ -55,3 +62,5 @@ expect
 		Ok(picture) => picture.items.is_empty()
 		Err(_) => False
 	}
+
+expect Mermaid.font_licence.contains("SIL Open Font License, Version 1.1")

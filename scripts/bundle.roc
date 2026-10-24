@@ -8,16 +8,19 @@ import cli.Path
 import src/Bundle
 import src/Script
 
-## Bundle the working-tree package for a release.
+## Bundle the working-tree packages for a release.
 ##
-##     blueprint run bundle
+##     RELEASE_VERSION=0.2.0 blueprint run bundle
 ##
-## Writes the archive to `dist`, or to the directory named by `OUTPUT_DIR`.
+## Writes two archives to `dist`, or to the directory named by `OUTPUT_DIR`:
+## the layout package, and the Mermaid package, which depends on the layout
+## bundle by its URL in the release `version`.
 main! = |_args| {
-	# The bundle holds the package being developed, so the floating compiler
-	# builds it. The tooling compiler only runs this script.
+	# The bundles hold the packages being developed, so the floating compiler
+	# builds them. The tooling compiler only runs this script.
 	roc = Script.roc!()?
+	version = Script.env!("RELEASE_VERSION")?
 	output_dir = Script.env_or!("OUTPUT_DIR", "dist")?
-	_ = Bundle.build!(roc, Path.utf8(output_dir))?
+	_ = Bundle.build!(roc, version, Path.utf8(output_dir))?
 	Ok({})
 }

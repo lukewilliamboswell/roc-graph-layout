@@ -16,6 +16,7 @@ import src/Headers
 import src/Release
 import src/Script
 import src/Site
+import src/Text
 
 ## Everything CI checks, in one command.
 ##
@@ -56,11 +57,11 @@ check_compiler_pins! = || {
 			return Script.fail!("${stale} must not exist: this repository does not pin the package compiler")
 		}
 	}
-	for directory in ["package", "package-mermaid", "examples", "benchmarks", "site", "playground", "tools"] {
-		for file in Files.roc_sources!(Path.utf8(directory))? {
-			if Headers.has_roc_pin(file.source) {
-				return Script.fail!("${Path.display(file.path)}: remove the `roc:` header field")
-			}
+	# Only tracked sources: installed dependencies such as node_modules are not ours.
+	tracked = Script.command("git").capture_utf8!(["ls-files", "--", "*.roc"], ".")?
+	for name in Text.lines(tracked).keep_if(|path| !path.starts_with("scripts/")) {
+		if Headers.has_roc_pin(Path.read_utf8!(Path.utf8(name))?) {
+			return Script.fail!("${name}: remove the `roc:` header field")
 		}
 	}
 	tag = match Headers.stable_tag(Path.read_utf8!("Blueprint.roc")?) {
@@ -132,12 +133,13 @@ check_mermaid_package! = |roc| {
 check_examples! = |roc| {
 	Script.section!("Examples, against the working tree")?
 	# Committed examples must exercise the working tree, never a published bundle.
+	working_tree = { layout: "../../package/main.roc", mermaid: "../../package-mermaid/main.roc" }
 	for directory in Files.sort_paths(Path.list!("examples")?) {
 		main = Path.join(directory, "main.roc")
 		if Path.is_file!(main)? {
 			source = Path.read_utf8!(main)?
-			if Headers.is_app(source) and Headers.dependency(source, Release.shorthand) != Ok("../../package/main.roc") {
-				return Script.fail!("${Path.display(main)}: the app header must declare ${Release.shorthand}: \"../../package/main.roc\"")
+			if Headers.is_app(source) and !Archive.depends_on(source, working_tree) {
+				return Script.fail!("${Path.display(main)}: the app header must declare ${Release.shorthand}: \"${working_tree.layout}\" or ${Release.mermaid_shorthand}: \"${working_tree.mermaid}\"")
 			}
 			# An interactive service is not run, but must still build.
 			if source.contains("## scripts: service") {
@@ -145,7 +147,7 @@ check_examples! = |roc| {
 			}
 		}
 	}
-	Examples.run!(roc, { root: ".", source: Direct, spec: Archive.cases, mode: Compare, roc_args: [] })?
+	Examples.run!(roc, { root: ".", source: Direct, spec: Archive.cases, mode: Compare, roc_args: |_| [] })?
 	# Each example rewrote its drawing; the committed one must be what it drew.
 	Script.command("git").run!(["diff", "--exit-code", "--", ":(glob)examples/**/output.svg"])
 }
@@ -162,26 +164,31 @@ check_benchmarks! = || {
 # Build what a release would publish, and test those files instead of the
 # source tree.
 check_release_artifacts! = |roc| {
-	Script.section!("Release bundle and examples archive")?
+	Script.section!("Release bundles and examples archive")?
 	Env.with_temp_dir!(
 		|temporary| {
 			output = Path.join(temporary, "dist")
-			bundle = Bundle.build!(roc, output)?
-			archive = Archive.pack!(Release.dry_run_version, Script.file_name(bundle)?, output)?
-			Bundle.test!(roc, bundle, archive)?
+			bundles = Bundle.build!(roc, Release.dry_run_version, output)?
+			# The release steps after bundling find the bundles by what they hold.
+			found = Bundle.classify!(Path.list!(output)?, Path.display(output))?
+			if Path.display(found.layout) != Path.display(bundles.layout) or Path.display(found.mermaid) != Path.display(bundles.mermaid) {
+				return Script.fail!("the bundles in ${Path.display(output)} are not told apart as built")
+			}
+			urls = Bundle.urls!(bundles, Release.dry_run_version)?
+			archive = Archive.pack!(Release.dry_run_version, urls, output)?
+			Bundle.test!(roc, bundles, archive)?
 
 			unpacked = Archive.unpack!(archive, Path.join(temporary, "unpacked"))?
 			for directory in Archive.directories!()? {
 				for file in Files.direct_roc_files!(directory)? {
 					relative = "examples/${Script.file_name(directory)?}/${Script.file_name(file)?}"
 					source = Path.read_utf8!(file)?
-					expected = if (Headers.is_app(source)) Headers.with_dependency(source, Release.shorthand, unpacked.url)? else source
-					if Path.read_utf8!(Path.join(unpacked.root, relative))? != expected {
-						return Script.fail!("the archived ${relative} differs by more than its package dependency")
+					if Path.read_utf8!(Path.join(unpacked.root, relative))? != Archive.published(source, unpacked.urls)? {
+						return Script.fail!("the archived ${relative} differs by more than its package dependencies")
 					}
 				}
 			}
-			Script.pass!("archived examples differ from the repository's only in the package dependency")
+			Script.pass!("archived examples differ from the repository's only in their package dependencies")
 		},
 	)
 }

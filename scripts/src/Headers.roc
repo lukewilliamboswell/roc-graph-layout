@@ -74,7 +74,8 @@ opens_header = |text| {
 
 header_onwards = |lines|
 	match lines {
-		[line, ..] if line.starts_with("app ") or line.starts_with("package ") => Str.join_with(lines, "\n")
+		# `roc fmt` puts a long package header's keyword on a line of its own.
+		[line, ..] if line.starts_with("app ") or line.starts_with("package ") or line == "package" => Str.join_with(lines, "\n")
 		[_, .. as rest] => header_onwards(rest)
 		[] => ""
 	}
@@ -114,3 +115,7 @@ expect Headers.with_dependency(example, "ansi", "https://example.com/abc.tar.zst
 expect Headers.with_dependency(example, "weaver", "x") == Err(MissingDependency("weaver"))
 expect Headers.with_dependency("app [main!] { ansi : \"../package/main.roc\" }\n", "ansi", "x") == Err(UnformattedDependency("ansi"))
 expect Headers.with_dependency("# ansi: \"x\"\napp [main!] { ansi: \"x\" }\n", "ansi", "y") == Err(UnformattedDependency("ansi"))
+long_package = "package\n\t[\n\t\tMermaid,\n\t]\n\t{\n\t\tlayout: \"../package/main.roc\",\n\t}\n"
+expect Headers.dependency(long_package, "layout") == Ok("../package/main.roc") and !Headers.is_app(long_package)
+expect Headers.with_dependency(long_package, "layout", "https://example.com/A.tar.zst") == Ok("package\n\t[\n\t\tMermaid,\n\t]\n\t{\n\t\tlayout: \"https://example.com/A.tar.zst\",\n\t}\n")
+expect Headers.dependency("package\n\t[\n\t\tLayered,\n\t]\n\t{}\n", "layout") == Err(MissingDependency("layout"))

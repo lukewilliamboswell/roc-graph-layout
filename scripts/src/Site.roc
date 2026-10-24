@@ -43,13 +43,18 @@ Site := [].{
 		)
 	}
 
-	## Write the API reference of the working tree to `output` with `roc docs`.
+	## Write the API reference of the working tree to `output` with `roc docs`:
+	## the layout package's at the top, and the Mermaid package's beneath it
+	## in `mermaid/`.
 	docs! : Script.Command, Path => Try({}, _)
 	docs! = |roc, output| {
 		version = Script.file_name(output)?
 		url_root = "${Release.site_base_path}/docs/${version}"
 		roc.with_env("ROC_DOCS_URL_ROOT", OsStr.from_str(url_root)).run!(["docs", "package/main.roc", OsStr.from_str("--output=${Path.display(output)}")])?
-		Script.require_file!(Path.join(output, "index.html"))
+		Script.require_file!(Path.join(output, "index.html"))?
+		mermaid = Path.join(output, "mermaid")
+		roc.with_env("ROC_DOCS_URL_ROOT", OsStr.from_str("${url_root}/mermaid")).run!(["docs", "package-mermaid/main.roc", OsStr.from_str("--output=${Path.display(mermaid)}")])?
+		Script.require_file!(Path.join(mermaid, "index.html"))
 	}
 }
 

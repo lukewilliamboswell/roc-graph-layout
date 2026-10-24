@@ -39,7 +39,7 @@ config = [
 				],
 			),
 			# Programs the scripts start, beside the package compiler `roc`.
-			Expect(["chmod", "gh", "git", "roc", "shasum", "tar", "test", "touch", "unzip", "zip"]),
+			Expect(["chmod", "gh", "git", "roc", "shasum", "tar", "test", "touch", "unzip", "zip", "zstd"]),
 		],
 	),
 	Shell("default", [Use("dev")]),

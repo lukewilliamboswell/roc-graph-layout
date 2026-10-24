@@ -60,6 +60,19 @@
           "name": "default",
           "stderr": "",
           "stdin": "",
+          "stdout": "Drew a Mermaid flowchart -> examples/mermaid_svg/output.svg\n"
+        }
+      ],
+      "path": "examples/mermaid_svg/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Laid out 15 nodes -> examples/mind_map/output.svg\n"
         }
       ],
