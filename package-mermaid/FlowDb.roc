@@ -618,3 +618,150 @@ FlowDb :: {}.{
 		}
 	}
 }
+
+# Each test pins one rule of Mermaid's flowDb, through the events the parser emits.
+
+link_info : FlowParser.LinkInfo
+link_info = { type: Point, stroke: Normal, length: 1, text: None, id: None }
+
+vertex : Str -> FlowParser.Event
+vertex = |id| Vertex({ id, text: None, shape: None })
+
+title : Str -> FlowParser.Text
+title = |text| { text, quoted: False }
+
+applied : List(FlowParser.Event) -> FlowDb.State
+applied = |events|
+	match FlowDb.apply(events) {
+		Ok(state) => state
+		Err(_) => FlowDb.empty
+	}
+
+edge_ids : List(FlowParser.Event) -> List(Str)
+edge_ids = |events| applied(events).edges.map(|e| e.id)
+
+problem_of : List(FlowParser.Event) -> [None, Some(FlowDb.Problem)]
+problem_of = |events|
+	match FlowDb.apply(events) {
+		Ok(_) => None
+		Err(problem) => Some(problem)
+	}
+
+## Parallel edges number 0, then 2, 3: the second counter skips 1.
+expect {
+	link = Link({ starts: ["A"], ends: ["B"], info: link_info })
+	edge_ids([vertex("A"), vertex("B"), link, link, link]) == ["L_A_B_0", "L_A_B_2", "L_A_B_3"]
+}
+
+## A link id names only the edge from the last start to the first end.
+expect edge_ids([Link({ starts: ["A", "B"], ends: ["C", "D"], info: { ..link_info, id: Some("e1@") } })]) == ["L_A_C_0", "L_A_D_0", "e1", "L_B_D_0"]
+
+## A link id already in use falls back to a generated one.
+expect {
+	named = Link({ starts: ["A"], ends: ["B"], info: { ..link_info, id: Some("e1@") } })
+	edge_ids([named, Link({ starts: ["B"], ends: ["C"], info: { ..link_info, id: Some("e1@") } })]) == ["e1", "L_B_C_0"]
+}
+
+## Only the first `@` of a link id is removed.
+expect FlowDb.without_first_at("a@b@") == "ab@"
+
+## A vertex whose id is an edge's id is that edge's metadata, not a node.
+expect !applied([Link({ starts: ["A"], ends: ["B"], info: { ..link_info, id: Some("e1@") } }), vertex("e1")]).vertex_index.contains("e1")
+
+## A label defaults to the id; later text replaces it, trimmed, with one pair
+## of surrounding quotes and any NUL removed.
+expect {
+	state = applied([vertex("A"), Vertex({ id: "A", text: Some({ text: "  \"He\u(0)llo\"  ", quoted: True }), shape: Some("round") })])
+	state.vertices.map(|v| { text: v.text, shape: v.shape }) == [{ text: "Hello", shape: Some("round") }]
+}
+
+## Edge lengths are capped at 10.
+expect applied([Link({ starts: ["A"], ends: ["B"], info: { ..link_info, length: 14 } })]).edges.map(|e| e.length) == [10]
+
+## The 501st edge exceeds Mermaid's limit.
+expect problem_of([Link({ starts: ["A"], ends: List.repeat("B", 501), info: link_info })]) == Some(TooManyEdges)
+
+## linkStyle positions index edges as JavaScript arrays do.
+expect {
+	state = applied([Link({ starts: ["A"], ends: ["B"], info: link_info })])
+	FlowDb.position(state, "0") == Ok(Index(0))
+		and FlowDb.position(state, "default") == Ok(Default)
+		and FlowDb.position(state, "00") == Err(MissingLinkStyleEdge("00"))
+		and FlowDb.position(state, "1") == Err(MissingLinkStyleEdge("1"))
+}
+
+## A link style without a fill gains `fill:none`; one with a fill keeps it.
+expect {
+	state = applied([
+		Link({ starts: ["A"], ends: ["B", "C"], info: link_info }),
+		LinkStyle({ positions: ["0"], styles: ["stroke:red"] }),
+		LinkStyle({ positions: ["1"], styles: ["fill:blue"] }),
+	])
+	state.edges.map(|e| e.styles) == [["stroke:red", "fill:none"], ["fill:blue"]]
+}
+
+## classDef splits on unescaped commas and on semicolons, for each named class.
+expect {
+	styles = ["fill:#f96", "stroke:#333", "font-family:x,y"]
+	applied([AddClass({ ids: "a,b", styles: ["fill:#f96;stroke:#333", "font-family:x\\,y"] })]).classes == [{ id: "a", styles }, { id: "b", styles }]
+}
+
+## A class applies to the vertices, edges and subgraphs declared so far.
+expect {
+	state = applied([
+		Link({ starts: ["A"], ends: ["B"], info: { ..link_info, id: Some("e1@") } }),
+		Subgraph({ header: Named({ id: "S", title: title("T") }), items: [Ids(["A"])] }),
+		SetClass({ ids: "e1,S,later", class: "hot" }),
+		Subgraph({ header: Named({ id: "later", title: title("L") }), items: [Ids(["B"])] }),
+	])
+	state.edges.map(|e| e.classes) == [["hot"]] and state.subgraphs.map(|s| s.classes) == [["hot"], []]
+}
+
+## A plain subgraph name with white space has no id; an unnamed one is rejected.
+expect {
+	state = applied([Subgraph({ header: Plain(title("My Group")), items: [] })])
+	state.subgraphs.map(|s| { id: s.id, title: s.title }) == [{ id: "subGraph0", title: "My Group" }]
+		and problem_of([Subgraph({ header: Anonymous, items: [] })]) == Some(UnnamedGroup)
+}
+
+## A node belongs to the first subgraph closed around it, a subgraph never
+## lists itself, and a repeated subgraph merges into the first, keeping its title.
+expect {
+	state = applied([
+		Subgraph({ header: Named({ id: "one", title: title("First") }), items: [Ids(["a"])] }),
+		Subgraph({ header: Named({ id: "two", title: title("Second") }), items: [Ids(["b", "a", "two"])] }),
+		Subgraph({ header: Named({ id: "one", title: title("Again") }), items: [Ids(["c"])] }),
+	])
+	state.subgraphs.map(|s| { id: s.id, nodes: s.nodes, title: s.title }) == [{ id: "one", nodes: ["a", "c"], title: "First" }, { id: "two", nodes: ["b"], title: "Second" }]
+}
+
+## The last direction statement in a subgraph wins.
+expect applied([Subgraph({ header: Named({ id: "S", title: title("S") }), items: [Direction("LR"), Ids(["a"]), Direction("BT")] })]).subgraphs.map(|s| s.dir) == [Some("BT")]
+
+## Groups that contain each other cannot be drawn.
+expect {
+	state = applied([
+		Subgraph({ header: Named({ id: "A", title: title("A") }), items: [Ids(["x"])] }),
+		Subgraph({ header: Named({ id: "B", title: title("B") }), items: [Ids(["A"])] }),
+		Subgraph({ header: Named({ id: "A", title: title("A") }), items: [Ids(["B"])] }),
+	])
+	FlowDb.group_order(state) == Err(Unsupported("groups that contain each other"))
+}
+
+## Groups come out in declaration order: outer before inner.
+expect {
+	state = applied([
+		Subgraph({ header: Named({ id: "inner", title: title("i") }), items: [Ids(["x"])] }),
+		Subgraph({ header: Named({ id: "outer", title: title("o") }), items: [Closed(0)] }),
+	])
+	match FlowDb.group_order(state) {
+		Ok(found) => found.order == [1, 0]
+		Err(_) => False
+	}
+}
+
+expect FlowDb.direction("TD") == Ok(Down) and FlowDb.direction(" v") == Ok(Down) and FlowDb.direction("<") == Ok(Left)
+expect FlowDb.direction("BR") == Err(Unsupported("direction BR"))
+expect FlowDb.arrowheads(Point, Invisible) == Ok({ start: None, end: None })
+expect FlowDb.arrowheads(DoubleCircle, Thick) == Ok({ start: Circle, end: Circle })
+expect FlowDb.arrowheads(Mismatched, MismatchedStroke) == Err(Unsupported("a link whose two ends disagree"))
