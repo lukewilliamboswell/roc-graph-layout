@@ -1,0 +1,147 @@
+{
+  "apps": [
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
+          "stdout": "Laid out 7 nodes and 9 edges -> examples/build_pipeline/output.svg\n"
+        }
+      ],
+      "path": "examples/build_pipeline/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
+          "stdout": "Laid out 8 services across 4 deployment groups -> examples/cloud_deployment/output.svg\n"
+        }
+      ],
+      "path": "examples/cloud_deployment/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
+          "stdout": "Laid out 10 nodes in 95 iterations -> examples/collab_network/output.svg\n"
+        }
+      ],
+      "path": "examples/collab_network/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
+          "stdout": "Mapped 12 services by incident distance -> examples/incident_blast_radius/output.svg\n"
+        }
+      ],
+      "path": "examples/incident_blast_radius/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
+          "stdout": "Laid out 15 nodes -> examples/mind_map/output.svg\n"
+        }
+      ],
+      "path": "examples/mind_map/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
+          "stdout": "Laid out 14 nodes -> examples/org_chart/output.svg\n"
+        }
+      ],
+      "path": "examples/org_chart/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
+          "stdout": "Laid out a 9-step release across four responsibility lanes -> examples/release_workflow/output.svg\n"
+        }
+      ],
+      "path": "examples/release_workflow/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
+          "stdout": "Laid out 8 nodes -> examples/service_ring/output.svg\n"
+        }
+      ],
+      "path": "examples/service_ring/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
+          "stdout": "Laid out 10 transit stops -> examples/transit_network/output.svg\n"
+        }
+      ],
+      "path": "examples/transit_network/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
+          "stdout": "Generated UML class acceptance diagram -> examples/uml_class/output.svg\n"
+        }
+      ],
+      "path": "examples/uml_class/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
+          "stdout": "Generated UML component acceptance diagram -> examples/uml_component/output.svg\n"
+        }
+      ],
+      "path": "examples/uml_component/main.roc"
+    }
+  ]
+}

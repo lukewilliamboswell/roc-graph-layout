@@ -6,8 +6,8 @@ the package does not choose fonts, measure labels, or render the result.
 
 ![A build pipeline arranged into directed stages by Layered layout.](assets/build-pipeline.svg)
 
-[Explore the interactive playground](playground/) to change graph data and
-layout settings, then inspect the drawing and its geometry.
+[Read the API reference](docs/) for every layout family, its settings, and
+the geometry it returns.
 
 ## Start with the structure you know
 

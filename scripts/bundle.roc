@@ -1,15 +1,23 @@
-#!/usr/bin/env roc
+#!/usr/bin/env roc-stable
 app [main!] {
-	pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.21.0/4rAQg8kUYZ3Vksr4qMQHpaFYNiHSn9GgS7gVxghd1XYV.tar.zst",
+	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
+	roc: "nightly-2026-10-23-18478ff",
 }
 
-import pf.OsStr
-import Tasks
+import cli.Path
+import src/Bundle
+import src/Script
 
-main! : List(OsStr) => Try({}, _)
-main! = |args|
-	match args.drop_first(1).map(OsStr.display) {
-		[output_dir] => Tasks.bundle!(output_dir)
-		[] => Tasks.bundle!("dist")
-		_ => Err(TooManyArguments)
-	}
+## Bundle the working-tree package for a release.
+##
+##     blueprint run bundle
+##
+## Writes the archive to `dist`, or to the directory named by `OUTPUT_DIR`.
+main! = |_args| {
+	# The bundle holds the package being developed, so the floating compiler
+	# builds it. The tooling compiler only runs this script.
+	roc = Script.roc!()?
+	output_dir = Script.env_or!("OUTPUT_DIR", "dist")?
+	_ = Bundle.build!(roc, Path.utf8(output_dir))?
+	Ok({})
+}

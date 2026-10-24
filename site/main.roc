@@ -4,7 +4,7 @@ import pf.SSG
 import pf.Path
 import pf.OsStr
 import pf.Html
-import pf.HtmlAttributes exposing [href, lang, name, content, rel, http_equiv, class]
+import pf.HtmlAttributes exposing [class, content, href, http_equiv, lang, name, rel]
 
 main! : List(OsStr) => Try({}, [Exit(I32), PagesError(Str), ParseError(Str), WriteError(Str)])
 main! = |args| match args.drop_first(1) {
@@ -51,7 +51,6 @@ page_body = |body| Html.body(
 					[],
 					[
 						Html.a([href("choosing-a-layout.html")], [Html.text("Choosing a layout")]),
-						Html.a([href("playground/")], [Html.text("Playground")]),
 						Html.a([href("docs/")], [Html.text("API reference")]),
 					],
 				),

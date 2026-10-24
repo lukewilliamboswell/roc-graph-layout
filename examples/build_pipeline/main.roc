@@ -1,7 +1,7 @@
 #!/usr/bin/env roc
 app [main!] {
-	pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
 	layout: "../../package/main.roc",
+	pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
 	svg: "../svg/main.roc",
 }
 
@@ -71,7 +71,7 @@ render_route = |route|
 				),
 				line_style,
 			)
-		}
+	}
 
 render_svg : {
 	positions : List({ x : F64, y : F64 }),
@@ -114,7 +114,7 @@ main! = |args| {
 					Stdout.line!(
 						"Laid out ${nodes.len().to_str()} nodes and ${edges.len().to_str()} edges -> ${Path.display(output)}",
 					)
-				}
+			}
 		}
 	}
 }

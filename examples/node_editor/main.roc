@@ -1,11 +1,10 @@
 ## Datastar-driven free-form node editor showcasing layout and routing.
 ## scripts: service
 app [Context, program] {
-	pf: platform "https://github.com/roc-lang/basic-webserver/releases/download/0.18.0/9VgbC77zLmYYgxLpiNGCq3eySyRCbE2RriAM4sjr2y81.tar.zst",
+	ds: "./datastar/main.roc",
 	http: "https://github.com/roc-lang/http/releases/download/2.0.0/6ZUwqYhCS8PU9Mo6MF7oV82ET2o7KYb57CLKDq4cq4sS.tar.zst",
 	layout: "../../package/main.roc",
-	ds: "./datastar/main.roc",
-	roc: "nightly-2026-09-05-b195f5b",
+	pf: platform "https://github.com/roc-lang/basic-webserver/releases/download/0.18.0/9VgbC77zLmYYgxLpiNGCq3eySyRCbE2RriAM4sjr2y81.tar.zst",
 }
 
 import ./datastar/Datastar

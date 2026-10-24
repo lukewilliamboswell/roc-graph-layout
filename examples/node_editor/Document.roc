@@ -54,9 +54,11 @@ Document := { next_node_id : U64, next_edge_id : U64, next_port_id : U64, direct
 	apply : Document, Command -> Change
 	apply = apply_command
 	decode : Str -> Try(Document, [InvalidDocument])
-	decode = decode_document
+	# Eta-expanded: a point-free alias of a function that uses Json crashes
+	# when called from another module on nightly-2026-10-23.
+	decode = |raw| decode_document(raw)
 	to_json : Document -> Try(Str, [Infinity, NaN, NegativeInfinity])
-	to_json = encode_document
+	to_json = |document| encode_document(document)
 	view : Document, I64, Str -> View
 	view = make_view
 	port_connection_count : Document, U64, Str -> U64
