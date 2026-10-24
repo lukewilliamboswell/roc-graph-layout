@@ -36,6 +36,7 @@ main! = |_args| {
 	check_compiler_pins!()?
 	check_scripts!(roc_stable)?
 	check_package!(roc)?
+	check_mermaid_package!(roc)?
 	check_examples!(roc)?
 	check_benchmarks!()?
 	check_release_artifacts!(roc)?
@@ -55,7 +56,7 @@ check_compiler_pins! = || {
 			return Script.fail!("${stale} must not exist: this repository does not pin the package compiler")
 		}
 	}
-	for directory in ["package", "examples", "benchmarks", "site", "playground"] {
+	for directory in ["package", "package-mermaid", "examples", "benchmarks", "site", "playground", "tools"] {
 		for file in Files.roc_sources!(Path.utf8(directory))? {
 			if Headers.has_roc_pin(file.source) {
 				return Script.fail!("${Path.display(file.path)}: remove the `roc:` header field")
@@ -104,6 +105,26 @@ check_package! = |roc| {
 		if Script.file_name(target)?.starts_with("fuzz_") {
 			roc.run!(["test", Path.to_os_str(target), "--no-cache"])?
 		}
+	}
+	Ok({})
+}
+
+check_mermaid_package! = |roc| {
+	Script.section!("Mermaid package")?
+	roc.run!(["fmt", "--check", "package-mermaid", "tools/mermaid-oracle"])?
+	roc.run!(["check", "package-mermaid/main.roc", "--no-cache"])?
+	roc.run!(["test", "package-mermaid/main.roc", "--no-cache"])?
+	roc.run!(["test", "package-mermaid/main.roc", "--opt=interpreter", "--no-cache"])?
+	# Fuzz targets hold their contracts; the generated Oracle modules hold what
+	# Mermaid did with each recorded case.
+	for target in Files.direct_roc_files!("package-mermaid")? {
+		name = Script.file_name(target)?
+		if name.starts_with("fuzz_") or name.starts_with("Oracle") {
+			roc.run!(["test", Path.to_os_str(target), "--no-cache"])?
+		}
+	}
+	for tool in Files.direct_roc_files!("tools/mermaid-oracle")? {
+		roc.run!(["check", Path.to_os_str(tool), "--no-cache"])?
 	}
 	Ok({})
 }
