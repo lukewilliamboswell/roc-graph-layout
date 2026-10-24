@@ -18,6 +18,13 @@ Script := [].{
 			self.base.args(args).call!()
 		}
 
+		## Print the command, then run it in `cwd` with inherited output.
+		run_in! : Command, List(OsStr), Path => Try({}, _)
+		run_in! = |self, args, cwd| {
+			Stdout.line!("+ (cd ${Path.display(cwd)} && ${Str.join_with([self.program].concat(args).map(OsStr.display), " ")})")?
+			self.base.args(args).cwd(cwd).call!()
+		}
+
 		## Run in `cwd` with `stdin` as input and return captured standard output.
 		## Standard error is printed only when the command fails.
 		capture! : Command, List(OsStr), Path, List(U8) => Try(List(U8), _)

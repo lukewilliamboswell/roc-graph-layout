@@ -55,7 +55,7 @@ Document := { next_node_id : U64, next_edge_id : U64, next_port_id : U64, direct
 	apply = apply_command
 	decode : Str -> Try(Document, [InvalidDocument])
 	# Eta-expanded: a point-free alias of a function that uses Json crashes
-	# when called from another module on nightly-2026-10-23.
+	# at runtime, https://github.com/roc-lang/roc/issues/12552.
 	decode = |raw| decode_document(raw)
 	to_json : Document -> Try(Str, [Infinity, NaN, NegativeInfinity])
 	to_json = |document| encode_document(document)

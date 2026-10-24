@@ -4,6 +4,8 @@ app [main!] {
 	roc: "nightly-2026-10-23-18478ff",
 }
 
+import cli.Cmd
+import cli.Duration
 import cli.Env
 import cli.OsStr
 import cli.Path
@@ -16,6 +18,7 @@ import src/Headers
 import src/Release
 import src/Script
 import src/Site
+import src/Text
 
 ## Everything CI checks, in one command.
 ##
@@ -37,6 +40,8 @@ main! = |_args| {
 	check_scripts!(roc_stable)?
 	check_package!(roc)?
 	check_examples!(roc)?
+	check_node_editor!(roc)?
+	check_fuzz_targets!(roc)?
 	check_benchmarks!()?
 	check_release_artifacts!(roc)?
 	check_site!(roc)?
@@ -55,11 +60,11 @@ check_compiler_pins! = || {
 			return Script.fail!("${stale} must not exist: this repository does not pin the package compiler")
 		}
 	}
-	for directory in ["package", "examples", "benchmarks", "site", "playground"] {
-		for file in Files.roc_sources!(Path.utf8(directory))? {
-			if Headers.has_roc_pin(file.source) {
-				return Script.fail!("${Path.display(file.path)}: remove the `roc:` header field")
-			}
+	# Only tracked sources: installed dependencies such as node_modules are not ours.
+	tracked = Script.command("git").capture_utf8!(["ls-files", "--", "*.roc"], ".")?
+	for name in Text.lines(tracked).keep_if(|path| !path.starts_with("scripts/")) {
+		if Headers.has_roc_pin(Path.read_utf8!(Path.utf8(name))?) {
+			return Script.fail!("${name}: remove the `roc:` header field")
 		}
 	}
 	tag = match Headers.stable_tag(Path.read_utf8!("Blueprint.roc")?) {
@@ -136,6 +141,79 @@ check_benchmarks! = || {
 		_ => return Script.fail!("benchmarks/main.roc: the app header must declare ${Release.shorthand}: \"../package/main.roc\"")
 	}
 	Env.with_temp_dir!(|output| Script.command("scripts/bench.roc").run!(["--", "smoke", "--output", Path.to_os_str(output)]))
+}
+
+# A target that is never built goes stale, and its expects alone do not run
+# the generated inputs. Each one is built natively and runs a short, seeded
+# campaign. A longer search is `<target> run`, outside CI.
+check_fuzz_targets! = |roc| {
+	Script.section!("Fuzz targets, native seeded runs")?
+	system = Script.command("uname").capture_utf8!(["-sm"], ".")?.trim()
+	if system != "Linux x86_64" and system != "Darwin arm64" {
+		return Script.info!("SKIP", "roc-fuzz builds only for Linux x86-64 and Apple Silicon macOS, not ${system}")
+	}
+	Env.with_temp_dir!(
+		|build| {
+			for target in Files.direct_roc_files!("package")? {
+				name = Script.file_name(target)?
+				if name.starts_with("fuzz_") {
+					executable = Path.join(build, name.drop_suffix(".roc"))
+					roc.run!(["build", "--fuzz", Path.to_os_str(target), OsStr.from_str("--output=${Path.display(executable)}")])?
+					artifacts = OsStr.from_str("--artifact-dir=${Path.display(Path.join(build, "artifacts"))}")
+					Script.command(Path.to_os_str(executable)).run!(["run", "--runs=2000", "--seed=1", artifacts])?
+				}
+			}
+			Ok({})
+		},
+	)
+}
+
+# The node editor is a service, so the examples harness only builds it. This
+# starts the native binary, waits for it to serve its page, and reads the first
+# event of its update stream, which renders the document through the layout
+# and routing code.
+check_node_editor! = |roc| {
+	Script.section!("Node editor, native smoke run")?
+	Env.with_temp_dir!(
+		|temporary| {
+			executable = Path.join(temporary, "node-editor")
+			roc.run!(["build", "examples/node_editor/main.roc", OsStr.from_str("--output=${Path.display(executable)}")])?
+			port = "18187"
+			child = Cmd.new(Path.to_os_str(executable))
+				.cwd("examples/node_editor")
+				.env("ROC_GRAPH_LAYOUT_NODE_EDITOR_DB", Path.to_os_str(Path.join(temporary, "node_editor.db")))
+				.env("ROC_GRAPH_LAYOUT_NODE_EDITOR_PORT", OsStr.from_str(port))
+				.stdout(Null)
+				.spawn!()?
+			probed = probe_node_editor!(port)
+			child.kill!()?
+			probed
+		},
+	)
+}
+
+probe_node_editor! = |port| {
+	base = "http://127.0.0.1:${port}"
+	var $ready = Bool.False
+	var $attempts = 0
+	while !$ready and $attempts < 100 {
+		output = Cmd.new("curl").args(["-sf", "-o", "/dev/null", OsStr.from_str("${base}/")]).run!()?
+		if output.status == Exited(0) {
+			$ready = Bool.True
+		} else {
+			$attempts = $attempts + 1
+			Duration.sleep!(Duration.millis(200))?
+		}
+	}
+	if !$ready {
+		return Script.fail!("the node editor did not serve ${base}/ within 20 seconds")
+	}
+	# The update stream stays open, so curl stops it after its first event.
+	stream = Cmd.new("curl").args(["-s", "-m", "3", OsStr.from_str("${base}/updates")]).run!()?
+	if !Str.from_utf8_lossy(stream.stdout_bytes).contains("event: datastar-patch-elements") {
+		return Script.fail!("the node editor's update stream did not render the document")
+	}
+	Script.pass!("the node editor serves its page and renders the document")
 }
 
 # Build what a release would publish, and test those files instead of the

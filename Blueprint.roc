@@ -39,9 +39,12 @@ config = [
 				],
 			),
 			# Programs the scripts start, beside the package compiler `roc`.
-			Expect(["chmod", "gh", "git", "roc", "shasum", "tar", "test", "touch", "unzip", "zip"]),
+			Expect(["chmod", "curl", "gh", "git", "roc", "shasum", "tar", "test", "touch", "uname", "unzip", "zip"]),
 		],
 	),
+	# The node editor's browser tests, beside the dev tools: Node.js installs
+	# Playwright and its Chromium from examples/node_editor/package-lock.json.
+	Environment("browser", [Extend("dev"), Expect(["node", "npm", "npx"])]),
 	Shell("default", [Use("dev")]),
 	# Everything CI checks: compiler pins, scripts, package tests, fuzz
 	# targets, examples, benchmark smoke, release artifacts and the site.
@@ -63,6 +66,10 @@ config = [
 	# `-- compare <baseline-dir> <candidate-dir>`, each with `--output <dir>`.
 	# The script's own `--` keeps Roc from reading its options.
 	Task("bench", [Use("dev"), Run(["scripts/bench.roc", "--"])]),
+	# Build the node editor and run its browser tests. Set
+	# PLAYWRIGHT_WITH_DEPS=1 to let Playwright install Chromium's system
+	# libraries too, as CI does.
+	Task("editor-e2e", [Use("browser"), Run(["scripts/editor_e2e.roc"])]),
 	Task("tooling-version", [Use("dev"), Run(["roc-stable", "version"])]),
 ]
 

@@ -48,3 +48,32 @@ jobs:
 
       - name: Check the scripts, package, examples, benchmarks and release artifacts
         run: blueprint run check
+
+  editor-e2e:
+    # This name is a required status check in the branch ruleset.
+    name: Node editor browser tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install blueprint
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@7aff4132691ad4fc348abe9df146a57512b49bd6
+        with:
+          cache: 'true'
+          cache-workload: dev
+
+      - name: Install the latest Roc nightly
+        uses: roc-lang/setup-roc@f5a74bf90aa694b43ab4a7cbfdb19273bc6aa697
+        with:
+          version: nightly-new-compiler
+
+      - name: Build the node editor and run its browser tests
+        env:
+          PLAYWRIGHT_WITH_DEPS: "1"
+        run: blueprint run editor-e2e
