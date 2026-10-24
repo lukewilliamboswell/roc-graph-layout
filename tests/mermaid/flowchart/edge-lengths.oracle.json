@@ -1,8 +1,8 @@
 {
-	"schema": 5,
-	"key": "f27e8bb63a3033e2c048f9705296523a82db4c4f88fd6a5719cd3df0b8f71d1d",
+	"schema": 6,
+	"key": "951c070a9351406cf8c6d5ab9fe891ba97f69ad7911e8a66b927f2fd3d6b9c47",
 	"provenance": {
-		"extractor": 5,
+		"extractor": 6,
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
@@ -300,6 +300,17 @@
 					"y": 23.958805661648515,
 					"width": 9.653321266174316,
 					"height": 17.551492691040036
+				},
+				"text": {
+					"rows": [
+						"A"
+					],
+					"box": {
+						"x": -4.8359375,
+						"y": 9.5367431640625e-7,
+						"width": 10,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -325,6 +336,17 @@
 					"y": 124.9588056616485,
 					"width": 9.360795974731445,
 					"height": 17.551492691040053
+				},
+				"text": {
+					"rows": [
+						"B"
+					],
+					"box": {
+						"x": -4.5859375,
+						"y": 9.5367431640625e-7,
+						"width": 9.171875,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -350,6 +372,17 @@
 					"y": 124.9588056616485,
 					"width": 10.530895233154297,
 					"height": 17.551492691040053
+				},
+				"text": {
+					"rows": [
+						"C"
+					],
+					"box": {
+						"x": -5.1171875,
+						"y": 9.5367431640625e-7,
+						"width": 10.234375,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -375,6 +408,17 @@
 					"y": 124.9588056616485,
 					"width": 10.110390663146973,
 					"height": 17.551492691040053
+				},
+				"text": {
+					"rows": [
+						"D"
+					],
+					"box": {
+						"x": -5.0546875,
+						"y": 9.5367431640625e-7,
+						"width": 10.109375,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -400,6 +444,17 @@
 					"y": 124.9588056616485,
 					"width": 8.410090446472168,
 					"height": 17.551492691040053
+				},
+				"text": {
+					"rows": [
+						"E"
+					],
+					"box": {
+						"x": -4.2109375,
+						"y": 9.5367431640625e-7,
+						"width": 8.421875,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -425,6 +480,17 @@
 					"y": 124.9588056616485,
 					"width": 8.263827323913574,
 					"height": 17.551492691040053
+				},
+				"text": {
+					"rows": [
+						"F"
+					],
+					"box": {
+						"x": -4.1328125,
+						"y": 9.5367431640625e-7,
+						"width": 8.265625,
+						"height": 17
+					}
 				}
 			}
 		],
@@ -453,7 +519,8 @@
 				"path": "M428,53L428,65.92893218813452Q428,73 420.9289321881345,73L95.07106781186548,73Q88,73 88,80.07106781186548L88,109",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_A_C_0",
@@ -478,7 +545,8 @@
 				"path": "M450,53L450,85.92893218813452Q450,93 442.9289321881345,93L287.0710678118655,93Q280,93 280,100.07106781186548L280,109",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_A_D_0",
@@ -495,7 +563,8 @@
 				"path": "M472,53L472,109",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_A_E_0",
@@ -520,7 +589,8 @@
 				"path": "M494,53L494,85.92893218813452Q494,93 501.0710678118655,93L656.9289321881345,93Q664,93 664,100.07106781186548L664,109",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_A_F_0",
@@ -545,7 +615,8 @@
 				"path": "M516,53L516,65.92893218813452Q516,73 523.0710678118655,73L848.9289321881345,73Q856,73 856,80.07106781186548L856,109",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			}
 		]
 	},

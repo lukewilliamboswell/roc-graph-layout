@@ -1,8 +1,8 @@
 {
-	"schema": 5,
-	"key": "0eeb46113353f7ef7fcf4bee9b3a418bd9b248954fca138f28df95255be68b79",
+	"schema": 6,
+	"key": "605898428902a143c31a6d8ba5c06404d08d26b78bd5e40e6b611cbcaf74760c",
 	"provenance": {
-		"extractor": 5,
+		"extractor": 6,
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",

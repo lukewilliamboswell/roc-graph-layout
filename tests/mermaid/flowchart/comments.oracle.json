@@ -1,8 +1,8 @@
 {
-	"schema": 5,
-	"key": "27f703698fda6f4f5671d496cb40826098579d4411dc6988cccf68ec9a6f8aea",
+	"schema": 6,
+	"key": "5d7d4ed73623f696c3eac81bd58ea63e3720c369febfa7462802072fbce597df",
 	"provenance": {
-		"extractor": 5,
+		"extractor": 6,
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
@@ -174,6 +174,17 @@
 					"y": 24.000000953674316,
 					"width": 10,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"A"
+					],
+					"box": {
+						"x": -4.8359375,
+						"y": 9.5367431640625e-7,
+						"width": 10,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -199,6 +210,17 @@
 					"y": 105.00000095367432,
 					"width": 9.171875,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"B"
+					],
+					"box": {
+						"x": -4.5859375,
+						"y": 9.5367431640625e-7,
+						"width": 9.171875,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -224,6 +246,17 @@
 					"y": 186.00000095367432,
 					"width": 10.234375,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"C"
+					],
+					"box": {
+						"x": -5.1171875,
+						"y": 9.5367431640625e-7,
+						"width": 10.234375,
+						"height": 17
+					}
 				}
 			}
 		],
@@ -244,7 +277,8 @@
 				"path": "M88,53L88,89",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_B_C_0",
@@ -261,7 +295,8 @@
 				"path": "M88,134L88,170",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			}
 		]
 	},

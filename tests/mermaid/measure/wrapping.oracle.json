@@ -1,0 +1,510 @@
+{
+	"schema": 6,
+	"key": "ee4fb3008c6c6ded90864963e4a1f28eeed346f27625c55bd14b38fc4934eba0",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart TD\n    A[Supercalifragilisticexpialidocious-and-then-some-more-letters-to-force-a-split]\n    B[The quick brown fox jumps over the lazy dog and keeps running far away]\n    C[Wrap exactly around the two hundred pixel wrapping width limit here]\n    D[Short]\n    E[iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii]\n    F[WWWWWWWWWWWWWWWWWWWWWWWWWWWWW]\n    G[a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h]\n    H[Mixed lengths: tiny, enormousunbrokenwordthatexceedsthewidth, end]\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "TB",
+		"nodes": [
+			{
+				"id": "A",
+				"text": "Supercalifragilisticexpialidocious-and-then-some-more-letters-to-force-a-split",
+				"label": "Supercalifragilisticexpialidocious-and-then-some-more-letters-to-force-a-split",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "B",
+				"text": "The quick brown fox jumps over the lazy dog and keeps running far away",
+				"label": "The quick brown fox jumps over the lazy dog and keeps running far away",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "C",
+				"text": "Wrap exactly around the two hundred pixel wrapping width limit here",
+				"label": "Wrap exactly around the two hundred pixel wrapping width limit here",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "D",
+				"text": "Short",
+				"label": "Short",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "E",
+				"text": "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
+				"label": "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "F",
+				"text": "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+				"label": "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "G",
+				"text": "a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h",
+				"label": "a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "H",
+				"text": "Mixed lengths: tiny, enormousunbrokenwordthatexceedsthewidth, end",
+				"label": "Mixed lengths: tiny, enormousunbrokenwordthatexceedsthewidth, end",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [],
+		"subgraphs": [],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "A",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "B",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "C",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "D",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "E",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "F",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "G",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "H",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": []
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 1512,
+			"height": 118.60000610351562
+		},
+		"nodes": [
+			{
+				"id": "A",
+				"center": {
+					"x": 87.99999999999999,
+					"y": 63.300003051757805
+				},
+				"box": {
+					"x": 12,
+					"y": 12,
+					"width": 151.99999999999997,
+					"height": 102.60000610351561
+				},
+				"outer": {
+					"x": 12,
+					"y": 12,
+					"width": 151.99999999999997,
+					"height": 102.60000610351561
+				},
+				"label": {
+					"x": 29.718841552734368,
+					"y": 24.769720494747162,
+					"width": 116.56231689453122,
+					"height": 78.61036682128905
+				},
+				"text": {
+					"rows": [
+						"Supercalifragilisti",
+						"cexpialidocious-a",
+						"nd-then-some-m",
+						"ore-letters-to-for",
+						"ce-a-split"
+					],
+					"box": {
+						"x": -58.40625,
+						"y": 9.5367431640625e-7,
+						"width": 116.8125,
+						"height": 78.60000610351562
+					}
+				}
+			},
+			{
+				"id": "B",
+				"center": {
+					"x": 279.99999999999994,
+					"y": 63.300003051757805
+				},
+				"box": {
+					"x": 203.99999999999994,
+					"y": 12,
+					"width": 152,
+					"height": 102.60000610351561
+				},
+				"outer": {
+					"x": 203.99999999999994,
+					"y": 12,
+					"width": 152,
+					"height": 102.60000610351561
+				},
+				"label": {
+					"x": 222.13228988647455,
+					"y": 24.769720494747162,
+					"width": 116.12810516357422,
+					"height": 78.61036682128905
+				},
+				"text": {
+					"rows": [
+						"The quick brown",
+						"fox jumps over",
+						"the lazy dog and",
+						"keeps running far",
+						"away"
+					],
+					"box": {
+						"x": -57.9921875,
+						"y": 9.5367431640625e-7,
+						"width": 115.984375,
+						"height": 78.60000610351562
+					}
+				}
+			},
+			{
+				"id": "C",
+				"center": {
+					"x": 471.99999999999994,
+					"y": 63.300003051757805
+				},
+				"box": {
+					"x": 395.99999999999994,
+					"y": 12,
+					"width": 151.99999999999994,
+					"height": 102.60000610351561
+				},
+				"outer": {
+					"x": 395.99999999999994,
+					"y": 12,
+					"width": 151.99999999999994,
+					"height": 102.60000610351561
+				},
+				"label": {
+					"x": 420.8950881958007,
+					"y": 24.769720494747162,
+					"width": 102.20982360839838,
+					"height": 78.61036682128905
+				},
+				"text": {
+					"rows": [
+						"Wrap exactly",
+						"around the two",
+						"hundred pixel",
+						"wrapping width",
+						"limit here"
+					],
+					"box": {
+						"x": -51.203125,
+						"y": 9.5367431640625e-7,
+						"width": 102.40625,
+						"height": 78.60000610351562
+					}
+				}
+			},
+			{
+				"id": "D",
+				"center": {
+					"x": 664,
+					"y": 63.300003051757805
+				},
+				"box": {
+					"x": 588,
+					"y": 42.80000305175781,
+					"width": 152,
+					"height": 40.999999999999986
+				},
+				"outer": {
+					"x": 588,
+					"y": 42.80000305175781,
+					"width": 152,
+					"height": 40.999999999999986
+				},
+				"label": {
+					"x": 646.1775131225586,
+					"y": 55.569723546504974,
+					"width": 36.74506378173828,
+					"height": 17.010360717773438
+				},
+				"text": {
+					"rows": [
+						"Short"
+					],
+					"box": {
+						"x": -17.8671875,
+						"y": 9.5367431640625e-7,
+						"width": 36.14453125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "E",
+				"center": {
+					"x": 856,
+					"y": 63.300003051757805
+				},
+				"box": {
+					"x": 780,
+					"y": 35.10000228881836,
+					"width": 152,
+					"height": 56.40000152587889
+				},
+				"outer": {
+					"x": 780,
+					"y": 35.10000228881836,
+					"width": 152,
+					"height": 56.40000152587889
+				},
+				"label": {
+					"x": 796.7885894775391,
+					"y": 47.869722783565514,
+					"width": 118.80258178710938,
+					"height": 32.410354614257805
+				},
+				"text": {
+					"rows": [
+						"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",
+						"iiiiiiiiiiiiiiiiiiiiiiiiiii"
+					],
+					"box": {
+						"x": -59.3359375,
+						"y": 9.5367431640625e-7,
+						"width": 118.671875,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "F",
+				"center": {
+					"x": 1048,
+					"y": 63.300003051757805
+				},
+				"box": {
+					"x": 972,
+					"y": 19.70000457763672,
+					"width": 152,
+					"height": 87.19999694824217
+				},
+				"outer": {
+					"x": 972,
+					"y": 19.70000457763672,
+					"width": 152,
+					"height": 87.19999694824217
+				},
+				"label": {
+					"x": 991.7417755126953,
+					"y": 32.46972316503524,
+					"width": 113.85826873779297,
+					"height": 63.21035766601562
+				},
+				"text": {
+					"rows": [
+						"WWWWWWWW",
+						"WWWWWWWW",
+						"WWWWWWWW",
+						"WWWWW"
+					],
+					"box": {
+						"x": -56.3828125,
+						"y": 9.5367431640625e-7,
+						"width": 112.95703125,
+						"height": 63.20000076293945
+					}
+				}
+			},
+			{
+				"id": "G",
+				"center": {
+					"x": 1239.9999999999998,
+					"y": 63.300003051757805
+				},
+				"box": {
+					"x": 1163.9999999999998,
+					"y": 19.70000457763672,
+					"width": 152,
+					"height": 87.19999694824217
+				},
+				"outer": {
+					"x": 1163.9999999999998,
+					"y": 19.70000457763672,
+					"width": 152,
+					"height": 87.19999694824217
+				},
+				"label": {
+					"x": 1180.478504180908,
+					"y": 32.46972316503524,
+					"width": 119.0429916381836,
+					"height": 63.21035766601562
+				},
+				"text": {
+					"rows": [
+						"a b c d e f g h i j k",
+						"l m n o p q r s t u",
+						"v w x y z a b c d e",
+						"f g h"
+					],
+					"box": {
+						"x": -59.625,
+						"y": 9.5367431640625e-7,
+						"width": 119.25,
+						"height": 63.20000076293945
+					}
+				}
+			},
+			{
+				"id": "H",
+				"center": {
+					"x": 1431.9999999999998,
+					"y": 63.300003051757805
+				},
+				"box": {
+					"x": 1355.9999999999998,
+					"y": 12,
+					"width": 152,
+					"height": 102.60000610351561
+				},
+				"outer": {
+					"x": 1355.9999999999998,
+					"y": 12,
+					"width": 152,
+					"height": 102.60000610351561
+				},
+				"label": {
+					"x": 1374.8705863952634,
+					"y": 24.769720494747162,
+					"width": 114.25882720947266,
+					"height": 78.61036682128905
+				},
+				"text": {
+					"rows": [
+						"Mixed lengths:",
+						"tiny,",
+						"enormousunbrok",
+						"enwordthatexcee",
+						"dsthewidth, end"
+					],
+					"box": {
+						"x": -57.2578125,
+						"y": 9.5367431640625e-7,
+						"width": 114.515625,
+						"height": 78.60000610351562
+					}
+				}
+			}
+		],
+		"clusters": [],
+		"edges": []
+	},
+	"svg_sha256": "89978c178185a8e40da6d284a5facb80970438653222334bcf0b3c4384514ce5"
+}

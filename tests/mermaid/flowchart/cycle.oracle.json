@@ -1,8 +1,8 @@
 {
-	"schema": 5,
-	"key": "595913513105c4f9c7f10725fab7cbcc1bbb4c9f79a1a1b2d1333515aee84a31",
+	"schema": 6,
+	"key": "62b273197613600ee9c5fab83394fb2e80c480bd9af817a3e26be7e80defc459",
 	"provenance": {
-		"extractor": 5,
+		"extractor": 6,
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
@@ -198,6 +198,17 @@
 					"y": 24.000000953674316,
 					"width": 10,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"A"
+					],
+					"box": {
+						"x": -4.8359375,
+						"y": 9.5367431640625e-7,
+						"width": 10,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -223,6 +234,17 @@
 					"y": 105.00000095367432,
 					"width": 9.171875,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"B"
+					],
+					"box": {
+						"x": -4.5859375,
+						"y": 9.5367431640625e-7,
+						"width": 9.171875,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -248,6 +270,17 @@
 					"y": 186.00000095367432,
 					"width": 10.234375,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"C"
+					],
+					"box": {
+						"x": -5.1171875,
+						"y": 9.5367431640625e-7,
+						"width": 10.234375,
+						"height": 17
+					}
 				}
 			}
 		],
@@ -276,7 +309,8 @@
 				"path": "M114,53L114,65.92893218813452Q114,73 106.92893218813452,73L95.07106781186548,73Q88,73 88,80.07106781186548L88,89",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_B_C_0",
@@ -301,7 +335,8 @@
 				"path": "M88,134L88,146.92893218813452Q88,154 95.07106781186548,154L106.92893218813452,154Q114,154 114,161.07106781186548L114,170",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_C_A_0",
@@ -338,7 +373,8 @@
 				"path": "M158,174L158,161.07106781186548Q158,154 165.07106781186548,154L176.92893218813452,154Q184,154 184,146.92893218813452L184,113.5L184,80.07106781186548Q184,73 176.92893218813452,73L165.07106781186548,73Q158,73 158,65.92893218813452L158,57",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			}
 		]
 	},

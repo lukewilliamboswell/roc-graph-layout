@@ -1,8 +1,8 @@
 {
-	"schema": 5,
-	"key": "09138933e07e8c60b1a0860cfff5f38623877ec825cfaf278b8766324004c802",
+	"schema": 6,
+	"key": "0417ea102156d63bf3f54fef00d3b1ed9e08a016964ce49c251d9bf27ce90ff6",
 	"provenance": {
-		"extractor": 5,
+		"extractor": 6,
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
@@ -215,6 +215,17 @@
 					"y": 112.00000095367432,
 					"width": 8,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"x"
+					],
+					"box": {
+						"x": -3.828125,
+						"y": 9.5367431640625e-7,
+						"width": 8,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -240,6 +251,17 @@
 					"y": 177.00000095367432,
 					"width": 8,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"y"
+					],
+					"box": {
+						"x": -3.9375,
+						"y": 9.5367431640625e-7,
+						"width": 8,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -265,6 +287,17 @@
 					"y": 276.0000009536743,
 					"width": 7.734375,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"z"
+					],
+					"box": {
+						"x": -3.8671875,
+						"y": 9.5367431640625e-7,
+						"width": 7.734375,
+						"height": 17
+					}
 				}
 			}
 		],
@@ -282,6 +315,17 @@
 					"y": 56.000000953674316,
 					"width": 33.375,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"inner"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 33.375,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -297,6 +341,17 @@
 					"y": 12.000000953674316,
 					"width": 34.5625,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"outer"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 34.5625,
+						"height": 17
+					}
 				}
 			}
 		],
@@ -316,7 +371,8 @@
 				"path": "M136,141L136,161",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_y_z_0",
@@ -337,7 +393,8 @@
 				"path": "M136,206L136,240L136,260",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			}
 		]
 	},

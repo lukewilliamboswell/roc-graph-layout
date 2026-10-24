@@ -52,7 +52,32 @@ Each disagreement that survives triage becomes a named case in
 text costs no more than about 8 times the allocations, and that reading
 frees everything it allocates.
 
+## Output stages
+
+Each output stage is compared with Mermaid on its own, given Mermaid's
+values for the stages before it, so errors do not compound.
+
+```sh
+# Sizing: our label boxes, line breaks and node sizes vs the recorded ones
+roc build package-mermaid/measure_sizes.roc --output=measure_sizes
+node tools/mermaid-oracle/measure_compare.mjs ./measure_sizes tests/mermaid/flowchart tests/mermaid/measure
+
+# Drawing: our SVG from Mermaid's geometry vs Mermaid's SVG, pixel by pixel
+roc build package-mermaid/draw_svg.roc --output=draw_svg
+node tools/mermaid-oracle/visual.mjs ./draw_svg tests/mermaid/flowchart <out-dir> [case ...]
+```
+
+`visual.mjs` writes Mermaid | Roc | difference images and `scores.json`. A
+score is the share of inked pixels with no match within 1px in the other image.
+Records carry `text.rows` (the rows Mermaid drew) and `text.box` (the text box at
+unit scale, which is what Mermaid measured before any viewBox scaling).
+
 ## Other tools
+
+- `measure_probe.mjs` sets up a browser page exactly like the oracle's, for
+  probing how Chrome measures text.
+- `font_subset.mjs` builds `package-mermaid/FontInter.ttf`, the metrics-only
+  copy of Inter behind `Font.inter`.
 
 - `lexer_table.mjs` prints the flowchart lexer as the pinned Mermaid
   release compiled it. Jison rewrites some lookaheads, so the compiled table,

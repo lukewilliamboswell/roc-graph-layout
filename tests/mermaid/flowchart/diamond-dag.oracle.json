@@ -1,8 +1,8 @@
 {
-	"schema": 5,
-	"key": "8fda1747c1240f02e9ad4d82cf145b7f7d411775c6354651b377a5b55882c8cc",
+	"schema": 6,
+	"key": "51e449a60d531b62b7476a082869eecac9f0bfa839b3eb559fff783994912f0a",
 	"provenance": {
-		"extractor": 5,
+		"extractor": 6,
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
@@ -282,6 +282,17 @@
 					"y": 24.000000953674316,
 					"width": 10,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"A"
+					],
+					"box": {
+						"x": -4.8359375,
+						"y": 9.5367431640625e-7,
+						"width": 10,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -307,6 +318,17 @@
 					"y": 105.00000095367432,
 					"width": 9.171875,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"B"
+					],
+					"box": {
+						"x": -4.5859375,
+						"y": 9.5367431640625e-7,
+						"width": 9.171875,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -332,6 +354,17 @@
 					"y": 105.00000095367432,
 					"width": 10.234375,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"C"
+					],
+					"box": {
+						"x": -5.1171875,
+						"y": 9.5367431640625e-7,
+						"width": 10.234375,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -357,6 +390,17 @@
 					"y": 186.00000095367432,
 					"width": 10.109375,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"D"
+					],
+					"box": {
+						"x": -5.0546875,
+						"y": 9.5367431640625e-7,
+						"width": 10.109375,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -382,6 +426,17 @@
 					"y": 267.0000009536743,
 					"width": 8.421875,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"E"
+					],
+					"box": {
+						"x": -4.2109375,
+						"y": 9.5367431640625e-7,
+						"width": 8.421875,
+						"height": 17
+					}
 				}
 			}
 		],
@@ -410,7 +465,8 @@
 				"path": "M162,53L162,65.92893218813452Q162,73 154.92893218813452,73L95.07106781186548,73Q88,73 88,80.07106781186548L88,89",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_A_C_0",
@@ -435,7 +491,8 @@
 				"path": "M206,53L206,65.92893218813452Q206,73 213.07106781186548,73L272.9289321881345,73Q280,73 280,80.07106781186548L280,89",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_B_D_0",
@@ -460,7 +517,8 @@
 				"path": "M88,134L88,146.92893218813452Q88,154 95.07106781186548,154L154.92893218813452,154Q162,154 162,161.07106781186548L162,170",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_C_D_0",
@@ -485,7 +543,8 @@
 				"path": "M280,134L280,146.92893218813452Q280,154 272.9289321881345,154L213.07106781186548,154Q206,154 206,161.07106781186548L206,170",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_D_E_0",
@@ -502,7 +561,8 @@
 				"path": "M184,215L184,251",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			}
 		]
 	},

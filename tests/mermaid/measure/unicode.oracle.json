@@ -1,0 +1,594 @@
+{
+	"schema": 6,
+	"key": "a15e129d179f6b029cd523776a9e548cda8e0d511df1a429c4893f334dd4fb4a",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart LR\n    A[Café crème brûlée] --> B[Ωμέγα Привет]\n    B --> C[日本語のラベル]\n    C --> D[emoji 🎉 party]\n    D --> E[“Quotes” — dash – and …]\n    E --> F[ÅÄÖ åäö ß Œ æ]\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "LR",
+		"nodes": [
+			{
+				"id": "A",
+				"text": "Café crème brûlée",
+				"label": "Café crème brûlée",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "B",
+				"text": "Ωμέγα Привет",
+				"label": "Ωμέγα Привет",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "C",
+				"text": "日本語のラベル",
+				"label": "日本語のラベル",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "D",
+				"text": "emoji 🎉 party",
+				"label": "emoji 🎉 party",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "E",
+				"text": "“Quotes” — dash – and …",
+				"label": "“Quotes” — dash – and …",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "F",
+				"text": "ÅÄÖ åäö ß Œ æ",
+				"label": "ÅÄÖ åäö ß Œ æ",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "A",
+				"to": "B",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "B",
+				"to": "C",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "C",
+				"to": "D",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "D",
+				"to": "E",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "E",
+				"to": "F",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "A",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "B",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "C",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "D",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "E",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "F",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_A_B_0",
+				"from": "A",
+				"to": "B",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_B_C_0",
+				"from": "B",
+				"to": "C",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_C_D_0",
+				"from": "C",
+				"to": "D",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_D_E_0",
+				"from": "D",
+				"to": "E",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_E_F_0",
+				"from": "E",
+				"to": "F",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 1128,
+			"height": 72.4000015258789
+		},
+		"nodes": [
+			{
+				"id": "A",
+				"center": {
+					"x": 88,
+					"y": 40.200000762939446
+				},
+				"box": {
+					"x": 12.000000000000014,
+					"y": 11.999999999999996,
+					"width": 152,
+					"height": 56.40000152587889
+				},
+				"outer": {
+					"x": 12.000000000000014,
+					"y": 11.999999999999996,
+					"width": 152,
+					"height": 56.40000152587889
+				},
+				"label": {
+					"x": 49.783988952636726,
+					"y": 23.898965366184708,
+					"width": 76.73265075683594,
+					"height": 32.3212432861328
+				},
+				"text": {
+					"rows": [
+						"Café crème",
+						"brûlée"
+					],
+					"box": {
+						"x": -38.296875,
+						"y": 9.5367431640625e-7,
+						"width": 76.59375,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "B",
+				"center": {
+					"x": 280,
+					"y": 40.200000762939446
+				},
+				"box": {
+					"x": 204,
+					"y": 19.70000076293945,
+					"width": 152,
+					"height": 40.999999999999986
+				},
+				"outer": {
+					"x": 204,
+					"y": 19.70000076293945,
+					"width": 152,
+					"height": 40.999999999999986
+				},
+				"label": {
+					"x": 231.3734588623047,
+					"y": 31.598966129124157,
+					"width": 97.79000091552734,
+					"height": 16.9212417602539
+				},
+				"text": {
+					"rows": [
+						"Ωμέγα Привет"
+					],
+					"box": {
+						"x": -48.734375,
+						"y": 9.5367431640625e-7,
+						"width": 97.935546875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "C",
+				"center": {
+					"x": 472,
+					"y": 40.200000762939446
+				},
+				"box": {
+					"x": 396,
+					"y": 19.70000076293945,
+					"width": 152,
+					"height": 40.999999999999986
+				},
+				"outer": {
+					"x": 396,
+					"y": 19.70000076293945,
+					"width": 152,
+					"height": 40.999999999999986
+				},
+				"label": {
+					"x": 423.09804916381836,
+					"y": 31.598966129124157,
+					"width": 97.9144515991211,
+					"height": 16.9212417602539
+				},
+				"text": {
+					"rows": [
+						"日本語のラベル"
+					],
+					"box": {
+						"x": -49,
+						"y": 9.5367431640625e-7,
+						"width": 98,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "D",
+				"center": {
+					"x": 663.9999999999999,
+					"y": 40.200000762939446
+				},
+				"box": {
+					"x": 587.9999999999999,
+					"y": 19.20000076293945,
+					"width": 152,
+					"height": 41.999999999999986
+				},
+				"outer": {
+					"x": 587.9999999999999,
+					"y": 19.20000076293945,
+					"width": 152,
+					"height": 41.999999999999986
+				},
+				"label": {
+					"x": 616.210708618164,
+					"y": 31.098966129124165,
+					"width": 96.17635345458984,
+					"height": 18.33134651184082
+				},
+				"text": {
+					"rows": [
+						"emoji 🎉 party"
+					],
+					"box": {
+						"x": -47.8671875,
+						"y": 9.5367431640625e-7,
+						"width": 95.8662109375,
+						"height": 18
+					}
+				}
+			},
+			{
+				"id": "E",
+				"center": {
+					"x": 855.9999999999999,
+					"y": 40.200000762939446
+				},
+				"box": {
+					"x": 779.9999999999999,
+					"y": 11.999999999999996,
+					"width": 152,
+					"height": 56.40000152587889
+				},
+				"outer": {
+					"x": 779.9999999999999,
+					"y": 11.999999999999996,
+					"width": 152,
+					"height": 56.40000152587889
+				},
+				"label": {
+					"x": 799.2653656005858,
+					"y": 23.898965366184708,
+					"width": 113.649169921875,
+					"height": 32.3212432861328
+				},
+				"text": {
+					"rows": [
+						"“Quotes” — dash",
+						"– and …"
+					],
+					"box": {
+						"x": -56.8515625,
+						"y": 9.5367431640625e-7,
+						"width": 113.703125,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "F",
+				"center": {
+					"x": 1047.9999999999998,
+					"y": 40.200000762939446
+				},
+				"box": {
+					"x": 971.9999999999998,
+					"y": 19.70000076293945,
+					"width": 152,
+					"height": 40.999999999999986
+				},
+				"outer": {
+					"x": 971.9999999999998,
+					"y": 19.70000076293945,
+					"width": 152,
+					"height": 40.999999999999986
+				},
+				"label": {
+					"x": 995.5177078247068,
+					"y": 30.18886256217956,
+					"width": 104.96458435058594,
+					"height": 18.331346511840813
+				},
+				"text": {
+					"rows": [
+						"ÅÄÖ åäö ß Œ æ"
+					],
+					"box": {
+						"x": -52.6015625,
+						"y": 9.5367431640625e-7,
+						"width": 105.34375,
+						"height": 17
+					}
+				}
+			}
+		],
+		"clusters": [],
+		"edges": [
+			{
+				"id": "L_A_B_0",
+				"points": [
+					{
+						"x": 164,
+						"y": 40.20000076293945
+					},
+					{
+						"x": 204,
+						"y": 40.20000076293945
+					}
+				],
+				"path": "M164,40.20000076293945L200,40.20000076293945",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_B_C_0",
+				"points": [
+					{
+						"x": 356,
+						"y": 40.20000076293945
+					},
+					{
+						"x": 396,
+						"y": 40.20000076293945
+					}
+				],
+				"path": "M356,40.20000076293945L392,40.20000076293945",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_C_D_0",
+				"points": [
+					{
+						"x": 548,
+						"y": 40.20000076293945
+					},
+					{
+						"x": 588,
+						"y": 40.20000076293945
+					}
+				],
+				"path": "M548,40.20000076293945L584,40.20000076293945",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_D_E_0",
+				"points": [
+					{
+						"x": 740,
+						"y": 40.20000076293945
+					},
+					{
+						"x": 780,
+						"y": 40.20000076293945
+					}
+				],
+				"path": "M740,40.20000076293945L776,40.20000076293945",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_E_F_0",
+				"points": [
+					{
+						"x": 932,
+						"y": 40.20000076293945
+					},
+					{
+						"x": 972,
+						"y": 40.20000076293945
+					}
+				],
+				"path": "M932,40.20000076293945L968,40.20000076293945",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			}
+		]
+	},
+	"svg_sha256": "0a0c519f5d46fbfb7e894bb47135c8b126173e89ee5e1f0add43f7bc4c9caaff"
+}

@@ -21,7 +21,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 
 // Bump when the shape or meaning of a record changes.
-const EXTRACTOR_VERSION = 5;
+const EXTRACTOR_VERSION = 6;
 export const FONT_FAMILY = 'Oracle Inter';
 export const FONT_FILE = path.join(here, 'fonts', 'Inter-Regular.ttf');
 const CASE_TIMEOUT_MS = 20000;
@@ -214,6 +214,35 @@ async function extractInPage(source) {
 			};
 		}),
 	};
+	// Label text as Mermaid measured it: the rendered rows and the text's own
+	// box at unit scale. The boxes above are read through the page's scaling,
+	// which changes how the browser lays out text by a fraction of a pixel;
+	// Mermaid measured each label before the drawing had a viewBox, so drop it
+	// to read the same numbers Mermaid sized its shapes from.
+	svg.removeAttribute('viewBox');
+	svg.removeAttribute('width');
+	svg.style.maxWidth = '';
+	const text = el => {
+		if (!el) return null;
+		const b = el.getBBox();
+		const rows = [...el.querySelectorAll('tspan.text-outer-tspan')].map(row => row.textContent);
+		return { rows, box: { x: b.x, y: b.y, width: b.width, height: b.height } };
+	};
+	for (const node of result.layout.nodes) {
+		if (node.missing) continue;
+		const el = svg.querySelector(`[id="${CSS.escape(`oracle-${db.getVertices().get(node.id).domId}`)}"]`);
+		node.text = text(el.querySelector('g.label text'));
+	}
+	for (const cluster of result.layout.clusters) {
+		if (cluster.missing) continue;
+		const el = svg.querySelector(`g.cluster[id="${CSS.escape(`oracle-${cluster.id}`)}"]`);
+		cluster.text = text(el.querySelector('.cluster-label text'));
+	}
+	for (const edge of result.layout.edges) {
+		if (edge.missing) continue;
+		const labelEl = svg.querySelector(`g.edgeLabel g.label[data-id="${CSS.escape(edge.id)}"]`);
+		edge.text = labelEl && labelEl.querySelector('text') && labelEl.textContent.trim() !== '' ? text(labelEl.querySelector('text')) : null;
+	}
 	result.svg_sha256 = null; // filled on the Node side
 	result.svg = svgText;
 	return result;

@@ -1,8 +1,8 @@
 {
-	"schema": 5,
-	"key": "afa2fe9c383eb950c3a88164ee001b4ad9b9f0c42f0cb9112b992d09ac032b99",
+	"schema": 6,
+	"key": "82652ee90dbac91578e97a73d0eb08e9cdd548a4deb7e54059f389f36bc6d270",
 	"provenance": {
-		"extractor": 5,
+		"extractor": 6,
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
@@ -88,6 +88,17 @@
 					"y": 27.000000953674316,
 					"width": 10,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"A"
+					],
+					"box": {
+						"x": -4.8359375,
+						"y": 9.5367431640625e-7,
+						"width": 10,
+						"height": 17
+					}
 				}
 			}
 		],

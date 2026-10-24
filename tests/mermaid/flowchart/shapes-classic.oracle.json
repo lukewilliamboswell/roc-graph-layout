@@ -1,8 +1,8 @@
 {
-	"schema": 5,
-	"key": "c71fd651e1e4779de635739f39fd78c1678f460d1b4a66428cd9313b5c85c997",
+	"schema": 6,
+	"key": "019b021314316d0726ba84a619982ed29993354fb122e3c4bb0662862495616e",
 	"provenance": {
-		"extractor": 5,
+		"extractor": 6,
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
@@ -564,6 +564,17 @@
 					"y": 27.36490577459335,
 					"width": 46.870635986328125,
 					"height": 17.04386901855469
+				},
+				"text": {
+					"rows": [
+						"Square"
+					],
+					"box": {
+						"x": -23.453125,
+						"y": 9.5367431640625e-7,
+						"width": 46.90625,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -589,6 +600,17 @@
 					"y": 27.36490577459335,
 					"width": 42.30785369873047,
 					"height": 17.04386901855469
+				},
+				"text": {
+					"rows": [
+						"Round"
+					],
+					"box": {
+						"x": -21.1640625,
+						"y": 9.5367431640625e-7,
+						"width": 42.328125,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -614,6 +636,17 @@
 					"y": 27.36490577459335,
 					"width": 53.97224807739258,
 					"height": 17.04386901855469
+				},
+				"text": {
+					"rows": [
+						"Stadium"
+					],
+					"box": {
+						"x": -27,
+						"y": 9.5367431640625e-7,
+						"width": 54,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -639,6 +672,17 @@
 					"y": 27.36490577459335,
 					"width": 71.90381622314453,
 					"height": 17.04386901855469
+				},
+				"text": {
+					"rows": [
+						"Subroutine"
+					],
+					"box": {
+						"x": -35.9765625,
+						"y": 9.5367431640625e-7,
+						"width": 71.953125,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -664,6 +708,17 @@
 					"y": 175.36490482091904,
 					"width": 62.56520080566406,
 					"height": 17.043869018554688
+				},
+				"text": {
+					"rows": [
+						"Database"
+					],
+					"box": {
+						"x": -31.3046875,
+						"y": 9.5367431640625e-7,
+						"width": 62.609375,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -689,6 +744,17 @@
 					"y": 165.36490577459335,
 					"width": 38.18891906738281,
 					"height": 17.043869018554688
+				},
+				"text": {
+					"rows": [
+						"Circle"
+					],
+					"box": {
+						"x": -19.109375,
+						"y": 9.5367431640625e-7,
+						"width": 38.21875,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -714,6 +780,17 @@
 					"y": 165.36490482091904,
 					"width": 27.83831787109375,
 					"height": 17.043869018554688
+				},
+				"text": {
+					"rows": [
+						"Odd"
+					],
+					"box": {
+						"x": -13.9296875,
+						"y": 9.5367431640625e-7,
+						"width": 27.859375,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -739,6 +816,17 @@
 					"y": 165.36490577459335,
 					"width": 58.81909942626953,
 					"height": 17.043869018554688
+				},
+				"text": {
+					"rows": [
+						"Diamond"
+					],
+					"box": {
+						"x": -29.4296875,
+						"y": 9.5367431640625e-7,
+						"width": 58.859375,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -764,6 +852,17 @@
 					"y": 304.8649057745934,
 					"width": 58.978885650634766,
 					"height": 17.043869018554688
+				},
+				"text": {
+					"rows": [
+						"Hexagon"
+					],
+					"box": {
+						"x": -29.5078125,
+						"y": 9.5367431640625e-7,
+						"width": 59.015625,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -789,6 +888,17 @@
 					"y": 304.8649057745934,
 					"width": 66.48883819580078,
 					"height": 17.043869018554688
+				},
+				"text": {
+					"rows": [
+						"Lean right"
+					],
+					"box": {
+						"x": -33.2734375,
+						"y": 9.5367431640625e-7,
+						"width": 66.958984375,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -814,6 +924,17 @@
 					"y": 304.8649057745934,
 					"width": 57.09695816040039,
 					"height": 17.043869018554688
+				},
+				"text": {
+					"rows": [
+						"Lean left"
+					],
+					"box": {
+						"x": -28.5703125,
+						"y": 9.5367431640625e-7,
+						"width": 57.552734375,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -839,6 +960,17 @@
 					"y": 304.8649057745934,
 					"width": 65.74317169189453,
 					"height": 17.043869018554688
+				},
+				"text": {
+					"rows": [
+						"Trapezoid"
+					],
+					"box": {
+						"x": -32.8984375,
+						"y": 9.5367431640625e-7,
+						"width": 65.796875,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -864,6 +996,17 @@
 					"y": 433.10324805974966,
 					"width": 114.40696716308594,
 					"height": 17.043869018554688
+				},
+				"text": {
+					"rows": [
+						"Inverse trapezoid"
+					],
+					"box": {
+						"x": -57.234375,
+						"y": 9.5367431640625e-7,
+						"width": 114.46875,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -889,6 +1032,17 @@
 					"y": 433.10324805974966,
 					"width": 86.7639389038086,
 					"height": 17.043869018554688
+				},
+				"text": {
+					"rows": [
+						"Double circle"
+					],
+					"box": {
+						"x": -43.4140625,
+						"y": 9.5367431640625e-7,
+						"width": 86.828125,
+						"height": 17
+					}
 				}
 			}
 		],
@@ -909,7 +1063,8 @@
 				"path": "M239,35.5L291,35.5",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_b_c_0",
@@ -926,7 +1081,8 @@
 				"path": "M445,35.5L502.88553619384766,35.5",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_c_d_0",
@@ -943,7 +1099,8 @@
 				"path": "M677.1144638061523,35.5L719,35.5",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_e_f_0",
@@ -960,7 +1117,8 @@
 				"path": "M239,173.5L329.08545303344727,173.5",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_f_g_0",
@@ -985,7 +1143,8 @@
 				"path": "M406.9145454861115,173.5L406.91454696655273,173.5L505.875,173.5L512.1250623464584,173.5",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_g_h_0",
@@ -1002,7 +1161,8 @@
 				"path": "M678.125,173.5L719,173.5",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_i_j_0",
@@ -1023,7 +1183,8 @@
 				"path": "M239,313L279,313L283.00004291534424,313",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_j_k_0",
@@ -1048,7 +1209,8 @@
 				"path": "M452.99995708465576,313L461,313L501,313L505.00004291534424,313",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_k_l_0",
@@ -1073,7 +1235,8 @@
 				"path": "M674.9999570846558,313L683,313L723,313L727.0000429153442,313",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_m_n_0",
@@ -1094,7 +1257,8 @@
 				"path": "M227.24989414215088,441.23834228515625L239,441.23834228515625L275,441.23834228515625",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			}
 		]
 	},

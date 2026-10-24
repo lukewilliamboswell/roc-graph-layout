@@ -1,8 +1,8 @@
 {
-	"schema": 5,
-	"key": "6be89d52a5104cac506cd88510a2ef0c9484b8a8bf991b75c3f71210c15c05d1",
+	"schema": 6,
+	"key": "e38bd68b7b27aaedc20ebadbc8fdc062217e0aa6b5cc5eafeeca02b649f6d0e4",
 	"provenance": {
-		"extractor": 5,
+		"extractor": 6,
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
@@ -275,6 +275,17 @@
 					"y": 68.00000095367432,
 					"width": 13.015625,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"a1"
+					],
+					"box": {
+						"x": -6.5078125,
+						"y": 9.5367431640625e-7,
+						"width": 13.015625,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -300,6 +311,17 @@
 					"y": 133.00000095367432,
 					"width": 16.40625,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"a2"
+					],
+					"box": {
+						"x": -8.203125,
+						"y": 9.5367431640625e-7,
+						"width": 16.40625,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -325,6 +347,17 @@
 					"y": 282.0000009536743,
 					"width": 13.796875,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"b1"
+					],
+					"box": {
+						"x": -6.8984375,
+						"y": 9.5367431640625e-7,
+						"width": 13.796875,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -350,6 +383,17 @@
 					"y": 347.0000009536743,
 					"width": 17.125,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"b2"
+					],
+					"box": {
+						"x": -8.5625,
+						"y": 9.5367431640625e-7,
+						"width": 17.125,
+						"height": 17
+					}
 				}
 			}
 		],
@@ -367,6 +411,17 @@
 					"y": 12.000000953674316,
 					"width": 24.828125,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"one"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 24.828125,
+						"height": 17
+					}
 				}
 			},
 			{
@@ -382,6 +437,17 @@
 					"y": 226.00000095367432,
 					"width": 24.390625,
 					"height": 17
+				},
+				"text": {
+					"rows": [
+						"two"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 24.390625,
+						"height": 17
+					}
 				}
 			}
 		],
@@ -401,7 +467,8 @@
 				"path": "M111.99999999999999,97L111.99999999999999,117",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_b1_b2_0",
@@ -418,7 +485,8 @@
 				"path": "M111.99999999999999,311L111.99999999999999,331",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			},
 			{
 				"id": "L_one_two_0",
@@ -435,7 +503,8 @@
 				"path": "M112,186L112,222",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			}
 		]
 	},

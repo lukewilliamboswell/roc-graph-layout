@@ -1,8 +1,8 @@
 {
-	"schema": 5,
-	"key": "7162d2469a65aa6b296d3085aba991fee43ba570ca19c9da511caafffa037643",
+	"schema": 6,
+	"key": "72b4f3751b11103298874a7a924dfb26a92da790b8830959ae0297bdf26abd21",
 	"provenance": {
-		"extractor": 5,
+		"extractor": 6,
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
@@ -132,6 +132,18 @@
 					"y": 23.99818683019839,
 					"width": 90.33982849121094,
 					"height": 32.40220260620117
+				},
+				"text": {
+					"rows": [
+						"Quoted (with)",
+						"[brackets]"
+					],
+					"box": {
+						"x": -45.2109375,
+						"y": 9.5367431640625e-7,
+						"width": 90.421875,
+						"height": 32.400001525878906
+					}
 				}
 			},
 			{
@@ -157,6 +169,17 @@
 					"y": 31.698187593137842,
 					"width": 45.16210174560547,
 					"height": 17.002202987670902
+				},
+				"text": {
+					"rows": [
+						"A, B; C"
+					],
+					"box": {
+						"x": -22.6015625,
+						"y": 9.5367431640625e-7,
+						"width": 45.203125,
+						"height": 17
+					}
 				}
 			}
 		],
@@ -177,7 +200,8 @@
 				"path": "M164,40.20000076293945L200,40.20000076293945",
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
-				"label": null
+				"label": null,
+				"text": null
 			}
 		]
 	},
