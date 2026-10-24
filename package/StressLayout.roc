@@ -92,7 +92,7 @@ StressInternals :: {}.{
 				} else {
 					gap_problems
 				}
-			}
+		}
 
 		tolerance_problems = if F64.is_finite(settings.tolerance) and settings.tolerance > 0 {
 			mode_problems
@@ -310,7 +310,7 @@ StressInternals :: {}.{
 										}
 									},
 								)
-							}
+						}
 
 						if sums.weight > 0 and F64.is_finite(sums.x / sums.weight) and F64.is_finite(sums.y / sums.weight) {
 							{ x: sums.x / sums.weight, y: sums.y / sums.weight }
@@ -370,7 +370,7 @@ StressInternals :: {}.{
 							},
 						),
 				)
-			}
+		}
 	}
 
 	## How many pair terms the stress sums, with pivot terms counted at
@@ -418,7 +418,7 @@ StressInternals :: {}.{
 							},
 						),
 				)
-			}
+		}
 		total.max(1)
 	}
 
@@ -920,9 +920,9 @@ expect {
 		Ok(result) =>
 			result.layout.positions == []
 				and result.layout.routes == []
-					and result.layout.bounds == { x: 0, y: 0, width: 0, height: 0 }
-						and result.components == []
-		}
+				and result.layout.bounds == { x: 0, y: 0, width: 0, height: 0 }
+				and result.components == []
+	}
 }
 
 ## A single node sits centered at half its size.
@@ -957,8 +957,8 @@ expect {
 			d02 = Geom.hypot(p2.x - p0.x, p2.y - p0.y)
 			(d01 - unit).abs() < unit * 0.15
 				and (d12 - unit).abs() < unit * 0.15
-					and (d02 - 2 * unit).abs() < 2 * unit * 0.15
-						and result.convergence.converged
+				and (d02 - 2 * unit).abs() < 2 * unit * 0.15
+				and result.convergence.converged
 		}
 	}
 }
@@ -1094,15 +1094,18 @@ expect {
 		tolerance: 0.0,
 		pins: [{ node: 9, x: 1, y: 2 }, { node: 0, x: F64.infinity, y: 0 }],
 	}
-	StressPrepared.build(spec, settings) == Err([
-		InvalidNodeWidth(0),
-		MissingEdgeEnd(0, 5),
-		InvalidNodeGap,
-		InvalidPivotCount,
-		InvalidTolerance,
-		MissingPin(0),
-		InvalidPin(1),
-	])
+	match StressPrepared.build(spec, settings) {
+		Ok(_) => False
+		Err(problems) => problems == [
+			InvalidNodeWidth(0),
+			MissingEdgeEnd(0, 5),
+			InvalidNodeGap,
+			InvalidPivotCount,
+			InvalidTolerance,
+			MissingPin(0),
+			InvalidPin(1),
+		]
+	}
 }
 
 ## Disconnected components are labeled and packed without overlap: the two
@@ -1139,8 +1142,8 @@ expect {
 			separated =
 				a.max_x <= b.min_x
 					or b.max_x <= a.min_x
-						or a.max_y <= b.min_y
-							or b.max_y <= a.min_y
+					or a.max_y <= b.min_y
+					or b.max_y <= a.min_y
 			separated and result.components == [0, 0, 0, 1, 1, 1]
 		}
 	}
@@ -1156,7 +1159,7 @@ expect {
 		Err(_) => False
 		Ok(prepared) =>
 			StressPrepared.layout(spec, StressPrepared.defaults, StressPrepared.default_run) == Ok(prepared.run(StressPrepared.default_run))
-		}
+	}
 }
 
 ## The convergence record is populated: a zero iteration cap reports zero
@@ -1174,8 +1177,8 @@ expect {
 			full = free.place(StressPrepared.default_run)
 			none.convergence == { iterations: 0, converged: False }
 				and full.convergence.converged
-					and full.convergence.iterations >= 1
-						and full.convergence.iterations <= 200
+				and full.convergence.iterations >= 1
+				and full.convergence.iterations <= 200
 		}
 
 		_ => False
@@ -1195,8 +1198,8 @@ expect {
 		Ok(result) =>
 			result.layout.positions.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y))
 				and F64.is_finite(result.layout.bounds.width)
-					and F64.is_finite(result.layout.bounds.height)
-		}
+				and F64.is_finite(result.layout.bounds.height)
+	}
 }
 
 ## `run` removes residual box overlaps before routing: even a

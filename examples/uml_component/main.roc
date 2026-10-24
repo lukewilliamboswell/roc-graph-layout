@@ -1,6 +1,6 @@
 #!/usr/bin/env roc
 app [main!] {
-	pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.21.0/4rAQg8kUYZ3Vksr4qMQHpaFYNiHSn9GgS7gVxghd1XYV.tar.zst",
+	pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
 	layout: "../../package/main.roc",
 	svg: "../svg/main.roc",
 }
@@ -82,7 +82,7 @@ group_svg = |geometry, index| {
 	"<rect x=\"${x.to_str()}\" y=\"${y.to_str()}\" width=\"${r.width.to_str()}\" height=\"${r.height.to_str()}\" rx=\"8\" fill=\"#f8fafc\" stroke=\"#64748b\" stroke-width=\"1.5\" />\n${separator}\n<text x=\"${(x + 12).to_str()}\" y=\"${(y + 18).to_str()}\" font-family=\"sans-serif\" font-size=\"11\" font-weight=\"600\" fill=\"#475569\">${title}</text>"
 }
 
-main! = |args| match Compound.layout(input, { ..Compound.default_run, seed: args.len().to_u32_wrap() }) {
+main! = |args| match Compound.layout(input, { ..Compound.default_run, seed: 1 + args.len().to_u32_wrap() * 0 }) {
 	Err(problems) => Err(LayoutProblems(problems))
 	Ok(result) => {
 		groups = Str.join_with(result.groups.map_with_index(group_svg), "\n")

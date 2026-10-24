@@ -1,6 +1,6 @@
 #!/usr/bin/env roc
 app [main!] {
-	pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.21.0/4rAQg8kUYZ3Vksr4qMQHpaFYNiHSn9GgS7gVxghd1XYV.tar.zst",
+	pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
 	layout: "../../package/main.roc",
 	svg: "../svg/main.roc",
 }
@@ -51,7 +51,7 @@ route_svg = |route, marker| {
 	}
 }
 
-main! = |args| match Layered.layout(input, { ..Layered.default_settings, direction: Up, node_gap: 96 + args.len().to_f64(), layer_gap: 90 }, Layered.default_run) {
+main! = |args| match Layered.layout(input, { ..Layered.default_settings, direction: Up, node_gap: 97 + args.len().to_f64() * 0, layer_gap: 90 }, Layered.default_run) {
 	Err(problems) => Err(LayoutProblems(problems))
 	Ok(placed) => {
 		route_input = { ..Route.default_input, graph: { nodes, edges }, positions: placed.layout.positions, boundaries: [{ node: 4, outline: Ellipse }], edge_labels: label_specs, shared_ends: [{ edges: [0, 1, 2], endpoint: To, attachment: On(Bottom) }] }

@@ -951,7 +951,7 @@ CompoundInternals :: {}.{
 	}
 
 	group_count = |group_value| match group_value {
-		Group(spec) => 1 + spec.children.fold(
+		Group(spec) => 1.U64 + spec.children.fold(
 			0,
 			|total, child| match child {
 				Node(_) => total

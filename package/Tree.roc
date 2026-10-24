@@ -861,7 +861,10 @@ expect {
 	}
 	settings = { ..Tree.default_settings, sibling_gap: -4 }
 
-	Tree.prepare(spec, settings) == Err([InvalidWidth(0), InvalidHeight(1), InvalidSiblingGap])
+	match Tree.prepare(spec, settings) {
+		Ok(_) => False
+		Err(problems) => problems == [InvalidWidth(0), InvalidHeight(1), InvalidSiblingGap]
+	}
 }
 
 ## The one-shot API is exactly build followed by run.
@@ -957,7 +960,7 @@ expect {
 		(Ok(tidy), Ok(radial)) =>
 			radial.depths == tidy.depths
 				and radial.layout.routes.len() == tidy.layout.routes.len()
-					and radial.layout.positions.len() == tidy.layout.positions.len()
+				and radial.layout.positions.len() == tidy.layout.positions.len()
 
 		_ => False
 	}
@@ -1002,7 +1005,10 @@ expect {
 	}
 	settings = { ..Tree.default_radial_settings, ring_gap: -5, start_angle: F64.infinity }
 
-	Tree.prepare_radial(spec, settings) == Err([InvalidWidth(0), InvalidRingGap, InvalidStartAngle])
+	match Tree.prepare_radial(spec, settings) {
+		Ok(_) => False
+		Err(problems) => problems == [InvalidWidth(0), InvalidRingGap, InvalidStartAngle]
+	}
 }
 
 ## The one-shot radial API is exactly build followed by run.

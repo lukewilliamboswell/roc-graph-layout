@@ -1663,7 +1663,7 @@ RouteInternals :: {}.{
 	route_stats = |route, others, settings| {
 		points = RouteInternals.route_points(route)
 		own = points.fold_with_index(
-			{ bends: 0.U64, length: 0.0 },
+			{ bends: 0.U64, length: 0.0.F64 },
 			|state, a, i| match points.get(i + 1) {
 				Ok(b) => {
 					bend = if i == 0 {
@@ -2091,6 +2091,7 @@ Route :: {}.{
 	SharedRoute : { edges : List(U64), endpoint : Endpoint, junction : Geom.Point, trunk : Geom.Route, group_crossings : List(GroupCrossing) }
 	Result : { layout : { positions : List(Geom.Point), routes : List(Geom.Route), bounds : Geom.Rect }, groups : List(Geom.Rect), label_anchors : List(Geom.Point), attachments : List(EdgeAttachments), group_crossings : List(List(GroupCrossing)), shared_routes : List(SharedRoute) }
 	Problem := [InvalidNodeWidth(U64), InvalidNodeHeight(U64), PositionCountMismatch, InvalidPosition(U64), InvalidEdgeFrom(U64), InvalidEdgeTo(U64), InvalidAttachmentEdge(U64), InvalidAttachmentOffset(U64), DuplicateAttachment(U64), InvalidGroupRect(U64), InvalidGroupParent(U64), InvalidMembershipNode(U64), InvalidMembershipGroup(U64), DuplicateMembership(U64), InvalidBoundaryNode(U64), DuplicateBoundary(U64), InvalidGroupAttachmentEdge(U64), InvalidGroupAttachmentGroup(U64), InvalidGroupAttachmentOffset(U64), DuplicateGroupAttachment(U64), GroupAttachmentNotBoundary(U64), InvalidLabelEdge(U64), InvalidLabelWidth(U64), InvalidLabelHeight(U64), InvalidWaypointEdge(U64), InvalidWaypoint(U64), DuplicateWaypoints(U64), BlockedWaypoint(U64), InvalidGuideEdge(U64), InvalidGuide(U64), DuplicateGuides(U64), SharedEndNeedsEdges(U64), InvalidSharedEndEdge(U64), DuplicateSharedEndEdge(U64), InvalidSharedEndAttachmentOffset(U64), SharedEndMismatch(U64), SharedEndMemberAttachment(U64), SharedEndOverlap(U64), InvalidObstacleGap, InvalidBendPenalty, InvalidSharedPathPenalty, InvalidEdgeGap].{
+		is_eq : _
 
 		## Turn one typed problem into a short explanation for a person reading a
 		## log or error message. Numbers identify positions in the corresponding
@@ -2275,9 +2276,9 @@ expect {
 	second = RouteInternals.route_points(nudged.get(1) ?? Polyline([]))
 	(first.get(3) ?? { x: 0, y: 0 }).x + Route.default_settings.edge_gap == (second.get(3) ?? { x: 0, y: 0 }).x
 		and first.first() == Ok({ x: 0, y: 0 })
-			and first.last() == Ok({ x: 50, y: 100 })
-				and second.first() == Ok({ x: 0, y: 10 })
-					and second.last() == Ok({ x: 50, y: 90 })
+		and first.last() == Ok({ x: 50, y: 100 })
+		and second.first() == Ok({ x: 0, y: 10 })
+		and second.last() == Ok({ x: 50, y: 90 })
 }
 
 ## Every containment boundary receives an implicit Automatic portal. The

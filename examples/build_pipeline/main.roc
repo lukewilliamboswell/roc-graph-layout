@@ -1,6 +1,6 @@
 #!/usr/bin/env roc
 app [main!] {
-	pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.21.0/4rAQg8kUYZ3Vksr4qMQHpaFYNiHSn9GgS7gVxghd1XYV.tar.zst",
+	pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
 	layout: "../../package/main.roc",
 	svg: "../svg/main.roc",
 }
@@ -100,7 +100,7 @@ main! : List(_) => Try({}, _)
 main! = |args| {
 	graph = { nodes, edges }
 	input = { ..Layered.default_input, graph }
-	settings = { ..Layered.default_settings, node_gap: 24 + args.len().to_f64(), layer_gap: 70 }
+	settings = { ..Layered.default_settings, node_gap: 25 + args.len().to_f64() * 0, layer_gap: 70 }
 	match Layered.prepare(input, settings) {
 		Err(problems) => Err(LayoutProblems(problems))
 		Ok(prepared) => {

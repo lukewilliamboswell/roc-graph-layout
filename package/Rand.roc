@@ -121,5 +121,10 @@ expect {
 expect {
 	forward = Rand.step_bounded_u32(Rand.seed(21), 2, 9)
 	backward = Rand.step_bounded_u32(Rand.seed(21), 9, 2)
-	forward == backward
+	# `Random.State` has no equality, so compare the streams that follow.
+	forward_next = Rand.step_u32(forward.state)
+	backward_next = Rand.step_u32(backward.state)
+	forward.value == backward.value
+		and forward_next.value == backward_next.value
+		and Rand.step_u32(forward_next.state).value == Rand.step_u32(backward_next.state).value
 }

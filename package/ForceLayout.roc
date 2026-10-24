@@ -933,7 +933,7 @@ ForceInternals :: {}.{
 							acc,
 							|inner, seg| extend(extend(extend(extend(inner, seg.from), seg.ctl_a), seg.ctl_b), seg.to),
 						)
-					},
+				},
 		)
 
 		{ x: box.min_x, y: box.min_y, width: Geom.saturate(box.max_x - box.min_x), height: Geom.saturate(box.max_y - box.min_y) }
@@ -1106,7 +1106,7 @@ ForcePrepared := {
 		hints_ok =
 			args.hints.len() == n
 				and n > 0
-					and args.hints.all(|h| F64.is_finite(h.x) and F64.is_finite(h.y))
+				and args.hints.all(|h| F64.is_finite(h.x) and F64.is_finite(h.y))
 
 		simulated = ForceInternals.simulate_all({
 			nodes: prepared.nodes,
@@ -1248,9 +1248,9 @@ expect {
 			p = result.layout.positions.get(0) ?? { x: 0, y: 0 }
 			(p.x - 5).abs() < 1e-9
 				and (p.y - 3).abs() < 1e-9
-					and result.convergence.iterations >= 1
-						and result.convergence.converged
-							and result.components == [0]
+				and result.convergence.iterations >= 1
+				and result.convergence.converged
+				and result.components == [0]
 		}
 	}
 }
@@ -1295,7 +1295,7 @@ expect {
 					distance > ideal / 2 and distance < ideal * 2
 				},
 			)
-		}
+	}
 }
 
 ## Two disconnected triangles form two components, packed without any
@@ -1326,7 +1326,7 @@ expect {
 								pair_ok
 									and (i == j
 										or (a.x - b.x).abs() * 2 >= 10 + 10
-											or (a.y - b.y).abs() * 2 >= 10 + 10),
+										or (a.y - b.y).abs() * 2 >= 10 + 10),
 						),
 			)
 			result.components == [0, 0, 0, 1, 1, 1] and separated
@@ -1350,8 +1350,8 @@ expect {
 			free = result.layout.positions.get(1) ?? { x: 0, y: 0 }
 			pinned == { x: 100, y: 200 }
 				and F64.is_finite(free.x)
-					and F64.is_finite(free.y)
-						and Geom.hypot(free.x - pinned.x, free.y - pinned.y) > 0
+				and F64.is_finite(free.y)
+				and Geom.hypot(free.x - pinned.x, free.y - pinned.y) > 0
 		}
 	}
 }
@@ -1411,7 +1411,7 @@ expect {
 			)
 			moved < 0.25 * k
 				and second.convergence.converged
-					and second.convergence.iterations <= 50
+				and second.convergence.iterations <= 50
 		}
 	}
 }
@@ -1433,17 +1433,20 @@ expect {
 		tolerance: 0.0,
 		pins: [{ node: 9, x: 0, y: 0 }, { node: 0, x: F64.infinity, y: 0 }],
 	}
-	ForcePrepared.build(spec, settings) == Err([
-		InvalidNodeWidth(0),
-		MissingEdgeEnd(0, 3),
-		InvalidNodeGap,
-		InvalidRepulsion,
-		InvalidGravity,
-		InvalidOpeningAngle,
-		InvalidTolerance,
-		MissingPin(0),
-		InvalidPin(1),
-	])
+	match ForcePrepared.build(spec, settings) {
+		Ok(_) => False
+		Err(problems) => problems == [
+			InvalidNodeWidth(0),
+			MissingEdgeEnd(0, 3),
+			InvalidNodeGap,
+			InvalidRepulsion,
+			InvalidGravity,
+			InvalidOpeningAngle,
+			InvalidTolerance,
+			MissingPin(0),
+			InvalidPin(1),
+		]
+	}
 }
 
 ## The one-shot layout is exactly build followed by run.
@@ -1457,7 +1460,7 @@ expect {
 		Ok(prepared) =>
 			ForcePrepared.layout(spec, ForcePrepared.defaults, ForcePrepared.default_run)
 				== Ok(prepared.run(ForcePrepared.default_run))
-		}
+	}
 }
 
 ## A twelve-node cycle exercises the multilevel path (coarsening, seeded
@@ -1506,7 +1509,7 @@ expect {
 
 				_ => False
 			}
-		}
+	}
 }
 
 ## `place` returns packed centers without routing, holds pins exactly, and
@@ -1524,7 +1527,7 @@ expect {
 			ran = prepared.run(ForcePrepared.default_run)
 			(placed.positions.get(0) ?? { x: 0, y: 0 }) == { x: 50, y: 60 }
 				and placed.positions == ran.layout.positions
-					and placed.convergence == ran.convergence
+				and placed.convergence == ran.convergence
 		}
 	}
 }
@@ -1625,6 +1628,6 @@ expect {
 		Ok(result) =>
 			result.layout.positions.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y))
 				and F64.is_finite(result.layout.bounds.width)
-					and F64.is_finite(result.layout.bounds.height)
-		}
+				and F64.is_finite(result.layout.bounds.height)
+	}
 }

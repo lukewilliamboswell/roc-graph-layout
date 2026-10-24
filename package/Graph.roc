@@ -91,7 +91,7 @@ CircularInternals :: {}.{
 				} else {
 					{ pick: Some(candidate), cursor }
 				}
-			}
+		}
 
 	## Ring order by greedy affinity: start from the best-connected node,
 	## then repeatedly seat the unplaced node with the most edges to the one
@@ -155,7 +155,7 @@ CircularInternals :: {}.{
 											} else {
 												best
 											}
-										}
+									}
 								},
 						)
 					}
@@ -628,7 +628,7 @@ CircularInternals :: {}.{
 							acc,
 							|seg_acc, seg| extend(extend(extend(extend(seg_acc, seg.from), seg.ctl_a), seg.ctl_b), seg.to),
 						)
-					},
+				},
 		)
 
 		dx = 0 - box.min_x
@@ -648,7 +648,7 @@ CircularInternals :: {}.{
 								|seg| { from: shift(seg.from), ctl_a: shift(seg.ctl_a), ctl_b: shift(seg.ctl_b), to: shift(seg.to) },
 							),
 						)
-					},
+				},
 			),
 		}
 	}
@@ -1001,7 +1001,7 @@ expect {
 					gap == 1 or gap == 5
 				},
 			)
-		}
+	}
 }
 
 ## Equal nodes sit equidistant from the ring's center.
@@ -1056,7 +1056,7 @@ expect {
 
 				_ => False
 			}
-		}
+	}
 }
 
 ## Parallel edges fan apart: two edges over the same pair take different
@@ -1089,7 +1089,7 @@ expect {
 				(Ok(Curves(a)), Ok(Curves(b))) => a != b
 				_ => False
 			}
-		}
+	}
 }
 
 ## Oppositely directed parallel edges also fan to distinct sides: reversing
@@ -1111,7 +1111,7 @@ expect {
 
 				_ => False
 			}
-		}
+	}
 }
 
 ## Adjacent nodes clear each other by at least their required distance even
@@ -1147,8 +1147,8 @@ expect {
 		Ok(result) =>
 			result.layout.positions.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y))
 				and F64.is_finite(result.layout.bounds.width)
-					and F64.is_finite(result.layout.bounds.height)
-		}
+				and F64.is_finite(result.layout.bounds.height)
+	}
 }
 
 ## A chord's endpoints attach to the node boundaries, not the centers: each
@@ -1187,12 +1187,15 @@ expect {
 	}
 	settings = { ..Graph.default_circular_settings, node_gap: -4, start_angle: F64.infinity }
 
-	Graph.prepare_circular(spec, settings) == Err([
-		InvalidNodeWidth(0),
-		MissingEdgeEnd(0, 2),
-		InvalidNodeGap,
-		InvalidStartAngle,
-	])
+	match Graph.prepare_circular(spec, settings) {
+		Ok(_) => False
+		Err(problems) => problems == [
+			InvalidNodeWidth(0),
+			MissingEdgeEnd(0, 2),
+			InvalidNodeGap,
+			InvalidStartAngle,
+		]
+	}
 }
 
 ## The one-shot circular API is exactly build followed by run.
