@@ -69,7 +69,7 @@ FlowLayoutLevel :: {}.{
 	## The layout package settings for both layered passes. Routing there is
 	## unused, so it does no improvement sweeps.
 	layered_settings : F64 -> Layered.Settings
-	layered_settings = |gap| { ..Layered.default_settings, node_gap: gap, layer_gap: gap, direction: Down, routing: { ..Route.default_settings, max_sweeps: 0 } }
+	layered_settings = |gap| { ..Layered.default_settings, node_gap: gap, layer_gap: gap, direction: Down, routing: Orthogonal({ ..Route.default_settings, max_sweeps: 0 }) }
 
 	## Edges to draw against the flow: the edges a depth-first walk finds
 	## closing a cycle. Walks start at members with no incoming edge, in

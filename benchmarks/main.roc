@@ -70,8 +70,20 @@ run_case! = |family, operation, source, fixture, n, seed| {
 				}
 			}
 		} else {
+			# `straight` skips orthogonal routing, `sweepless` routes without
+			# improvement sweeps, and `average` orders by average neighbor position
+			# without routing.
+			settings = if operation == "straight" {
+				{ ..Layered.default_settings, routing: Straight }
+			} else if operation == "sweepless" {
+				{ ..Layered.default_settings, routing: Orthogonal({ ..Route.default_settings, max_sweeps: 0 }) }
+			} else if operation == "average" {
+				{ ..Layered.default_settings, routing: Straight, ordering: Average }
+			} else {
+				Layered.default_settings
+			}
 			_ = Measure.start!({})
-			result = Layered.layout(input, Layered.default_settings, Layered.default_run)
+			result = Layered.layout(input, settings, Layered.default_run)
 			observation = match result {
 				Ok(value) => value.layout.positions.len() + value.layout.routes.len() + value.layers.len()
 				Err(problems) => List.len(problems)
