@@ -99,8 +99,8 @@ Drawing :: {}.{
 	## curves starting at its rightmost point. A circle has equal radii.
 	ellipse : Point, F64, F64 -> List(Segment)
 	ellipse = |c, rx, ry| {
-		kx = rx * Drawing.kappa
-		ky = ry * Drawing.kappa
+		kx = rx * DrawingInternals.kappa
+		ky = ry * DrawingInternals.kappa
 		[
 			MoveTo({ x: c.x + rx, y: c.y }),
 			CubicTo({ control_1: { x: c.x + rx, y: c.y + ky }, control_2: { x: c.x + kx, y: c.y + ry }, end: { x: c.x, y: c.y + ry } }),
@@ -120,7 +120,7 @@ Drawing :: {}.{
 		if rad <= 0 {
 			Drawing.rectangle(r)
 		} else {
-			k = rad * (1 - Drawing.kappa)
+			k = rad * (1 - DrawingInternals.kappa)
 			left = r.x
 			right = r.x + r.width
 			top = r.y
@@ -145,15 +145,10 @@ Drawing :: {}.{
 	quarter : Point, Point, Point -> Segment
 	quarter = |from, corner, to|
 		CubicTo({
-			control_1: { x: from.x + (corner.x - from.x) * Drawing.kappa, y: from.y + (corner.y - from.y) * Drawing.kappa },
-			control_2: { x: to.x + (corner.x - to.x) * Drawing.kappa, y: to.y + (corner.y - to.y) * Drawing.kappa },
+			control_1: { x: from.x + (corner.x - from.x) * DrawingInternals.kappa, y: from.y + (corner.y - from.y) * DrawingInternals.kappa },
+			control_2: { x: to.x + (corner.x - to.x) * DrawingInternals.kappa, y: to.y + (corner.y - to.y) * DrawingInternals.kappa },
 			end: to,
 		})
-
-	## The control-point distance, as a fraction of the radius, of the cubic
-	## curve closest to a quarter circle.
-	kappa : F64
-	kappa = 0.5522847498307936
 
 	## Moves every coordinate of a path by an offset.
 	translate : List(Segment), Point -> List(Segment)
@@ -202,6 +197,14 @@ Drawing :: {}.{
 					},
 			)
 	}
+}
+
+# Internal constants; only `Drawing` is visible to importers.
+DrawingInternals :: {}.{
+	# The control-point distance, as a fraction of the radius, of the cubic
+	# curve closest to a quarter circle.
+	kappa : F64
+	kappa = 0.5522847498307936
 }
 
 expect Drawing.rgb(0x28253D) == { red: 0x28, green: 0x25, blue: 0x3D }

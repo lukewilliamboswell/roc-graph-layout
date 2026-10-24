@@ -99,7 +99,7 @@ Flowchart := [].{
 			Unsupported(feature) => Err([Unsupported(feature)])
 			Flowchart(bytes) =>
 				match FlowLexer.tokenize(bytes) {
-					NoRule(at) => Err([Syntax({ near: Flowchart.near(bytes, at) })])
+					NoRule(at) => Err([Syntax({ near: FlowchartInternals.near(bytes, at) })])
 					Unsupported(found) => Err([Unsupported(found.feature)])
 					Tokens(tokens) =>
 						match FlowParser.parse(bytes, tokens) {
@@ -108,23 +108,28 @@ Flowchart := [].{
 									Ok(token) => token.start
 									Err(_) => bytes.len()
 								}
-								Err([Syntax({ near: Flowchart.near(bytes, at) })])
+								Err([Syntax({ near: FlowchartInternals.near(bytes, at) })])
 							}
 							Err(Unsupported(feature)) => Err([Unsupported(feature)])
 							Ok(parsed) =>
 								match FlowDb.apply(parsed.events) {
-									Err(problem) => Err([Flowchart.from_db(problem)])
+									Err(problem) => Err([FlowchartInternals.from_db(problem)])
 									Ok(state) =>
 										match FlowDb.diagram(state, parsed.direction) {
 											Ok(diagram) => Ok(diagram)
-											Err(problem) => Err([Flowchart.from_db(problem)])
+											Err(problem) => Err([FlowchartInternals.from_db(problem)])
 										}
 								}
 						}
 				}
 		}
 
-	from_db : FlowDb.Problem -> Problem
+}
+
+# Helpers for `parse`; internal, since only `Flowchart` is visible to importers.
+FlowchartInternals :: {}.{
+
+	from_db : FlowDb.Problem -> Flowchart.Problem
 	from_db = |problem|
 		match problem {
 			TooManyEdges => TooManyEdges

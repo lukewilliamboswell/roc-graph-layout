@@ -14,13 +14,17 @@ Svg :: {}.{
 		view = picture.view
 		width = view.width.max(0)
 		height = view.height.max(0)
-		family = Svg.escape(font_family)
-		var $out = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"${Svg.number(view.x)} ${Svg.number(view.y)} ${Svg.number(width)} ${Svg.number(height)}\" width=\"${Svg.number(width)}\" height=\"${Svg.number(height)}\">\n"
+		family = SvgParts.escape(font_family)
+		var $out = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"${SvgParts.number(view.x)} ${SvgParts.number(view.y)} ${SvgParts.number(width)} ${SvgParts.number(height)}\" width=\"${SvgParts.number(width)}\" height=\"${SvgParts.number(height)}\">\n"
 		for item in picture.items {
-			$out = $out.concat(Svg.item(item, family))
+			$out = $out.concat(SvgParts.item(item, family))
 		}
 		$out.concat("</svg>\n")
 	}
+}
+
+# The parts of a document; internal, since only `Svg` is visible to importers.
+SvgParts :: {}.{
 
 	item : Drawing.Item, Str -> Str
 	item = |it, family|
@@ -28,13 +32,13 @@ Svg :: {}.{
 			Shape(shape) => {
 				fill = match shape.paint.fill {
 					NoFill => "none"
-					Fill(color) => Svg.color(color)
+					Fill(color) => SvgParts.color(color)
 				}
 				stroke = match shape.paint.stroke {
 					NoStroke => ""
-					Stroke(s) => " stroke=\"${Svg.color(s.color)}\" stroke-width=\"${Svg.number(s.width)}\""
+					Stroke(s) => " stroke=\"${SvgParts.color(s.color)}\" stroke-width=\"${SvgParts.number(s.width)}\""
 				}
-				d = Svg.path_data(shape.path)
+				d = SvgParts.path_data(shape.path)
 				if d == "" or (fill == "none" and stroke == "") {
 					""
 				} else {
@@ -47,14 +51,14 @@ Svg :: {}.{
 					Center => " text-anchor=\"middle\""
 					End => " text-anchor=\"end\""
 				}
-				"<text x=\"${Svg.number(label.origin.x)}\" y=\"${Svg.number(label.origin.y)}\" font-family=\"${family}\" font-size=\"${Svg.number(label.size)}\" fill=\"${Svg.color(label.color)}\"${anchor}>${Svg.escape(label.text)}</text>\n"
+				"<text x=\"${SvgParts.number(label.origin.x)}\" y=\"${SvgParts.number(label.origin.y)}\" font-family=\"${family}\" font-size=\"${SvgParts.number(label.size)}\" fill=\"${SvgParts.color(label.color)}\"${anchor}>${SvgParts.escape(label.text)}</text>\n"
 			}
 		}
 
 	## Path data in absolute commands.
 	path_data : List(Drawing.Segment) -> Str
 	path_data = |path| {
-		pt = |p| "${Svg.number(p.x)} ${Svg.number(p.y)}"
+		pt = |p| "${SvgParts.number(p.x)} ${SvgParts.number(p.y)}"
 		var $out = ""
 		for segment in path {
 			$out = $out.concat(
@@ -71,7 +75,7 @@ Svg :: {}.{
 
 	## `#rrggbb`.
 	color : Drawing.Color -> Str
-	color = |c| "#${Svg.hex(c.red)}${Svg.hex(c.green)}${Svg.hex(c.blue)}"
+	color = |c| "#${SvgParts.hex(c.red)}${SvgParts.hex(c.green)}${SvgParts.hex(c.blue)}"
 
 	hex : U8 -> Str
 	hex = |byte| {
@@ -138,20 +142,20 @@ Svg :: {}.{
 	}
 }
 
-expect Svg.number(0) == "0"
-expect Svg.number(-0.0001) == "0"
-expect Svg.number(12) == "12"
-expect Svg.number(-3.5) == "-3.5"
-expect Svg.number(0.125) == "0.125"
-expect Svg.number(1.0005) == "1.001"
-expect Svg.number(7.0710678) == "7.071"
-expect Svg.number(0.05) == "0.05"
-expect Svg.number(1.0e300) == "0"
-expect Svg.number(F64.nan) == "0"
-expect Svg.color({ red: 40, green: 37, blue: 61 }) == "#28253d"
-expect Svg.escape("a<b & \"c\" 'd'>") == "a&lt;b &amp; &quot;c&quot; &apos;d&apos;&gt;"
-expect Svg.escape("x\u(0)y\u(1F)z\u(FFFF)") == "xyz"
-expect Svg.escape("é ✓") == "é ✓"
+expect SvgParts.number(0) == "0"
+expect SvgParts.number(-0.0001) == "0"
+expect SvgParts.number(12) == "12"
+expect SvgParts.number(-3.5) == "-3.5"
+expect SvgParts.number(0.125) == "0.125"
+expect SvgParts.number(1.0005) == "1.001"
+expect SvgParts.number(7.0710678) == "7.071"
+expect SvgParts.number(0.05) == "0.05"
+expect SvgParts.number(1.0e300) == "0"
+expect SvgParts.number(F64.nan) == "0"
+expect SvgParts.color({ red: 40, green: 37, blue: 61 }) == "#28253d"
+expect SvgParts.escape("a<b & \"c\" 'd'>") == "a&lt;b &amp; &quot;c&quot; &apos;d&apos;&gt;"
+expect SvgParts.escape("x\u(0)y\u(1F)z\u(FFFF)") == "xyz"
+expect SvgParts.escape("é ✓") == "é ✓"
 
 expect
 	Svg.document(
