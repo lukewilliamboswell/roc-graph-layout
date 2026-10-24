@@ -76,6 +76,10 @@ values for the stages before it, so errors do not compound.
 roc build package-mermaid/measure_sizes.roc --output=measure_sizes
 node tools/mermaid-oracle/measure_compare.mjs ./measure_sizes tests/mermaid/flowchart tests/mermaid/measure
 
+# ...and the same agreement as Roc expectations, so `roc test` enforces it
+node tools/mermaid-oracle/golden_sizes.mjs package-mermaid/OracleSizes.roc tests/mermaid/flowchart tests/mermaid/measure
+roc test package-mermaid/OracleSizes.roc
+
 # Drawing: our SVG from Mermaid's geometry vs Mermaid's SVG, pixel by pixel
 roc build package-mermaid/draw_svg.roc --output=draw_svg
 node tools/mermaid-oracle/visual.mjs ./draw_svg tests/mermaid/flowchart <out-dir> [case ...]
