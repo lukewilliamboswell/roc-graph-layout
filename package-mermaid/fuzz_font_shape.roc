@@ -109,7 +109,14 @@ scaling! : Str, Str, TextMeasure.Style => {}
 scaling! = |small, large, style| {
 	small_cost = Fuzz.measure_allocs!(|{}| TextMeasure.block(small, style))
 	large_cost = Fuzz.measure_allocs!(|{}| TextMeasure.block(large, style))
-	Fuzz.expect_no_leaks!(|{}| TextMeasure.block(large, style))
+	# Results are dropped inside each closure: the dev backend keeps a value
+	# bound to `_` alive until its block ends, which would read as a leak.
+	Fuzz.expect_no_leaks!(
+		|{}| {
+			_ = TextMeasure.block(large, style)
+			{}
+		},
+	)
 	if large_cost.allocations > 10 * small_cost.allocations + 256 {
 		crash "measuring 8 times the text took ${large_cost.allocations.to_str()} allocations, against ${small_cost.allocations.to_str()}"
 	}

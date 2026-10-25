@@ -193,7 +193,14 @@ test! = |bytes| {
 	large = shape(bytes, 8)
 	small_cost = Fuzz.measure_allocs!(|{}| work(small)).allocations
 	large_cost = Fuzz.measure_allocs!(|{}| work(large)).allocations
-	Fuzz.expect_no_leaks!(|{}| work(large))
+	# Results are dropped inside each closure: the dev backend keeps a value
+	# bound to `_` alive until its block ends, which would read as a leak.
+	Fuzz.expect_no_leaks!(
+		|{}| {
+			_ = work(large)
+			{}
+		},
+	)
 	if large_cost > small_cost * 10 + 512 {
 		crash "8 copies took ${large_cost.to_str()} allocations, against ${small_cost.to_str()} for one"
 	}

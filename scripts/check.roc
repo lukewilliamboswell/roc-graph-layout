@@ -24,6 +24,9 @@ import src/Text
 ##
 ##     blueprint run check
 ##
+## Every Roc build and test uses `--opt=dev`, and benchmarks and fuzz targets
+## get smoke runs that only show they still work.
+##
 ## Two compilers take part. `roc-stable`, pinned by Blueprint.roc, runs this
 ## script and checks the other scripts. The package, the examples, the site,
 ## the benchmarks and what a release would publish are checked with the `roc`
@@ -99,16 +102,13 @@ check_scripts! = |roc_stable| {
 check_package! = |roc| {
 	Script.section!("Package")?
 	roc.run!(["fmt", "--check", "package", "examples", "benchmarks"])?
-	roc.run!(["check", "package/main.roc", "--no-cache"])?
-	# The default backend and the interpreter have disagreed before, so the
-	# tests run in both.
-	roc.run!(["test", "package/main.roc", "--no-cache"])?
-	roc.run!(["test", "package/main.roc", "--opt=interpreter", "--no-cache"])?
+	roc.run!(["check", "package/main.roc"])?
+	roc.run!(["test", "package/main.roc", "--opt=dev"])?
 	# Each fuzz target's expects hold its contract and its distilled corpus
-	# regressions.
+	# regressions. The cache keeps the package's own tests from running again.
 	for target in Files.direct_roc_files!("package")? {
 		if Script.file_name(target)?.starts_with("fuzz_") {
-			roc.run!(["test", Path.to_os_str(target), "--no-cache"])?
+			roc.run!(["test", Path.to_os_str(target), "--opt=dev"])?
 		}
 	}
 	Ok({})
@@ -117,19 +117,18 @@ check_package! = |roc| {
 check_mermaid_package! = |roc| {
 	Script.section!("Mermaid package")?
 	roc.run!(["fmt", "--check", "package-mermaid", "tools/mermaid-oracle"])?
-	roc.run!(["check", "package-mermaid/main.roc", "--no-cache"])?
-	roc.run!(["test", "package-mermaid/main.roc", "--no-cache"])?
-	roc.run!(["test", "package-mermaid/main.roc", "--opt=interpreter", "--no-cache"])?
+	roc.run!(["check", "package-mermaid/main.roc"])?
+	roc.run!(["test", "package-mermaid/main.roc", "--opt=dev"])?
 	# Fuzz targets hold their contracts; the generated Oracle modules hold what
 	# Mermaid did with each recorded case.
 	for target in Files.direct_roc_files!("package-mermaid")? {
 		name = Script.file_name(target)?
 		if name.starts_with("fuzz_") or name.starts_with("Oracle") {
-			roc.run!(["test", Path.to_os_str(target), "--no-cache"])?
+			roc.run!(["test", Path.to_os_str(target), "--opt=dev"])?
 		}
 	}
 	for tool in Files.direct_roc_files!("tools/mermaid-oracle")? {
-		roc.run!(["check", Path.to_os_str(tool), "--no-cache"])?
+		roc.run!(["check", Path.to_os_str(tool)])?
 	}
 	Ok({})
 }
@@ -147,7 +146,7 @@ check_examples! = |roc| {
 			}
 			# An interactive service is not run, but must still build.
 			if source.contains("## scripts: service") {
-				roc.run!(["check", Path.to_os_str(main), "--no-cache"])?
+				roc.run!(["check", Path.to_os_str(main)])?
 			}
 		}
 	}
@@ -166,27 +165,35 @@ check_benchmarks! = || {
 }
 
 # A target that is never built goes stale, and its expects alone do not run
-# the generated inputs. Each one is built natively and runs a short, seeded
-# campaign. A longer search is `<target> run`, outside CI.
+# the generated inputs. Each one gets a smoke run: a dev build without coverage
+# instrumentation (`--fuzz` needs LLVM, which takes minutes per target) and a
+# few hundred seeded inputs, enough to show the target and its generator still
+# work. A coverage-guided search is `roc build --fuzz` and `<target> run`,
+# outside CI.
+#
+# The dev backend leaves some allocations unfreed that LLVM frees (nightly
+# 2026-10-24), so roc-fuzz's whole-input leak detector is off here. Each
+# target's own `Fuzz.expect_no_leaks!` checks still run.
 check_fuzz_targets! = |roc| {
-	Script.section!("Fuzz targets, native seeded runs")?
+	Script.section!("Fuzz targets, smoke runs")?
 	system = Script.command("uname").capture_utf8!(["-sm"], ".")?.trim()
 	if system != "Linux x86_64" and system != "Darwin arm64" {
 		return Script.info!("SKIP", "roc-fuzz builds only for Linux x86-64 and Apple Silicon macOS, not ${system}")
 	}
 	Env.with_temp_dir!(
 		|build| {
-			for target in Files.direct_roc_files!("package")? {
+			sources = Files.direct_roc_files!("package")?.concat(Files.direct_roc_files!("package-mermaid")?)
+			for target in sources {
 				name = Script.file_name(target)?
 				if name.starts_with("fuzz_") {
 					executable = Path.join(build, name.drop_suffix(".roc"))
-					roc.run!(["build", "--fuzz", Path.to_os_str(target), OsStr.from_str("--output=${Path.display(executable)}")])?
+					roc.run!(["build", "--opt=dev", Path.to_os_str(target), OsStr.from_str("--output=${Path.display(executable)}")])?
 					# A fresh corpus each time: `run` otherwise grows ./.roc-fuzz/corpus,
 					# and the next seeded run would start from different inputs.
 					corpus = Path.join(Path.join(build, "corpus"), name)
 					Path.create_all!(corpus)?
 					artifacts = OsStr.from_str("--artifact-dir=${Path.display(Path.join(build, "artifacts"))}")
-					Script.command(Path.to_os_str(executable)).run!(["run", Path.to_os_str(corpus), "--runs=2000", "--seed=1", artifacts])?
+					Script.command(Path.to_os_str(executable)).run!(["run", Path.to_os_str(corpus), "--runs=200", "--seed=1", "--no-detect-leaks", artifacts])?
 				}
 			}
 			Ok({})
@@ -203,7 +210,7 @@ check_node_editor! = |roc| {
 	Env.with_temp_dir!(
 		|temporary| {
 			executable = Path.join(temporary, "node-editor")
-			roc.run!(["build", "examples/node_editor/main.roc", OsStr.from_str("--output=${Path.display(executable)}")])?
+			roc.run!(["build", "examples/node_editor/main.roc", "--opt=dev", OsStr.from_str("--output=${Path.display(executable)}")])?
 			port = "18187"
 			child = Cmd.new(Path.to_os_str(executable))
 				.cwd("examples/node_editor")

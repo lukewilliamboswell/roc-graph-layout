@@ -36,7 +36,14 @@ test! = |bytes| {
 	large = FontTest.scaled(bytes, 16)
 	small_cost = Fuzz.measure_allocs!(|{}| Font.from_bytes(small))
 	large_cost = Fuzz.measure_allocs!(|{}| Font.from_bytes(large))
-	Fuzz.expect_no_leaks!(|{}| Font.from_bytes(large))
+	# Results are dropped inside each closure: the dev backend keeps a value
+	# bound to `_` alive until its block ends, which would read as a leak.
+	Fuzz.expect_no_leaks!(
+		|{}| {
+			_ = Font.from_bytes(large)
+			{}
+		},
+	)
 	if large_cost.allocations > 10 * small_cost.allocations + 256 {
 		crash "reading a font 8 times larger took ${large_cost.allocations.to_str()} allocations, against ${small_cost.allocations.to_str()}"
 	}

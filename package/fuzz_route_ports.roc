@@ -139,8 +139,20 @@ test! = |bytes| {
 	large_pairs = pairs(bytes, 8)
 	small_cost = Fuzz.measure_allocs!(|{}| ranked(small)).allocations + Fuzz.measure_allocs!(|{}| EdgeRoutes.parallel_ranks(small_pairs)).allocations
 	large_cost = Fuzz.measure_allocs!(|{}| ranked(large)).allocations + Fuzz.measure_allocs!(|{}| EdgeRoutes.parallel_ranks(large_pairs)).allocations
-	Fuzz.expect_no_leaks!(|{}| ranked(large))
-	Fuzz.expect_no_leaks!(|{}| EdgeRoutes.parallel_ranks(large_pairs))
+	# Results are dropped inside each closure: the dev backend keeps a value
+	# bound to `_` alive until its block ends, which would read as a leak.
+	Fuzz.expect_no_leaks!(
+		|{}| {
+			_ = ranked(large)
+			{}
+		},
+	)
+	Fuzz.expect_no_leaks!(
+		|{}| {
+			_ = EdgeRoutes.parallel_ranks(large_pairs)
+			{}
+		},
+	)
 	if large_cost > small_cost * 10 + 256 {
 		crash "8 copies took ${large_cost.to_str()} allocations, against ${small_cost.to_str()} for one"
 	}

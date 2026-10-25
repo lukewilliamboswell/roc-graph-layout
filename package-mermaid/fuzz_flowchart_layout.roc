@@ -29,7 +29,14 @@ test! = |bytes| {
 			large_sizes = sizes_for(large, bytes)
 			small_cost = Fuzz.measure_allocs!(|{}| FlowLayout.layout(small, small_sizes))
 			large_cost = Fuzz.measure_allocs!(|{}| FlowLayout.layout(large, large_sizes))
-			Fuzz.expect_no_leaks!(|{}| FlowLayout.layout(large, large_sizes))
+			# Results are dropped inside each closure: the dev backend keeps a value
+			# bound to `_` alive until its block ends, which would read as a leak.
+			Fuzz.expect_no_leaks!(
+				|{}| {
+					_ = FlowLayout.layout(large, large_sizes)
+					{}
+				},
+			)
 			if large_cost.allocations > 24 * small_cost.allocations + 4096 {
 				crash "laying out two copies took ${large_cost.allocations.to_str()} allocations, against ${small_cost.allocations.to_str()} for one"
 			}

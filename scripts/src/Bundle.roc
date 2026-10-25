@@ -56,7 +56,7 @@ Bundle := [].{
 				served = Loopback.url(server, layout)?
 				Script.info!("SERVE", "${served} in place of ${layout_url}")?
 				fetching = roc.with_empty_package_cache(Path.join(temporary, "cache"))
-				checked = Loopback.run!(server, fetching.cmd(["check", "main.roc", "--no-cache", "--replace-dep", OsStr.from_str(layout_url), OsStr.from_str(served)]).cwd(staged))?
+				checked = Loopback.run!(server, fetching.cmd(["check", "main.roc", "--replace-dep", OsStr.from_str(layout_url), OsStr.from_str(served)]).cwd(staged))?
 				Loopback.stop!(server)?
 				if checked.status != Exited(0) {
 					return Script.fail!("package-mermaid does not check against the layout bundle\n${Str.from_utf8_lossy(checked.stdout_bytes)}${Str.from_utf8_lossy(checked.stderr_bytes)}")

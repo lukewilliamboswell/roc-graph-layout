@@ -79,7 +79,14 @@ test! = |bytes| {
 	together = segments(bytes, 8, True)
 	apart_cost = Fuzz.measure_allocs!(|{}| RouteLanes.lanes(apart, gap)).allocations
 	together_cost = Fuzz.measure_allocs!(|{}| RouteLanes.lanes(together, gap)).allocations
-	Fuzz.expect_no_leaks!(|{}| RouteLanes.lanes(together, gap))
+	# Results are dropped inside each closure: the dev backend keeps a value
+	# bound to `_` alive until its block ends, which would read as a leak.
+	Fuzz.expect_no_leaks!(
+		|{}| {
+			_ = RouteLanes.lanes(together, gap)
+			{}
+		},
+	)
 	if apart_cost > small_cost * 10 + 256 or together_cost > small_cost * 10 + 256 {
 		crash "8 copies took ${apart_cost.to_str()} (apart) and ${together_cost.to_str()} (together) allocations, against ${small_cost.to_str()} for one"
 	}

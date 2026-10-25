@@ -133,13 +133,50 @@ test! = |bytes| {
 	# report one outstanding allocation here with the 2026-10-23 nightly,
 	# while the benchmark host's leak check finds none for complete layouts;
 	# its parts are checked instead.)
-	Fuzz.expect_no_leaks!(|{}| LayeredRank.orient(large_graph.count, large_graph.edges).edges.len())
-	Fuzz.expect_no_leaks!(|{}| LayeredRank.rank(large.count, large.oriented, large.weights, large.spans).len())
-	Fuzz.expect_no_leaks!(|{}| chains(large))
-	Fuzz.expect_no_leaks!(|{}| sweep(large, Down, Median).len() + sweep(large, Up, Average).len())
-	Fuzz.expect_no_leaks!(|{}| polish(large).len())
-	Fuzz.expect_no_leaks!(|{}| LayeredOrder.total_crossings(large.layers, large.unit_edges))
-	Fuzz.expect_no_leaks!(|{}| compact(large).len())
+	# Results are dropped inside each closure: the dev backend keeps a value
+	# bound to `_` alive until its block ends, which would read as a leak.
+	Fuzz.expect_no_leaks!(
+		|{}| {
+			_ = LayeredRank.orient(large_graph.count, large_graph.edges).edges.len()
+			{}
+		},
+	)
+	Fuzz.expect_no_leaks!(
+		|{}| {
+			_ = LayeredRank.rank(large.count, large.oriented, large.weights, large.spans).len()
+			{}
+		},
+	)
+	Fuzz.expect_no_leaks!(
+		|{}| {
+			_ = chains(large)
+			{}
+		},
+	)
+	Fuzz.expect_no_leaks!(
+		|{}| {
+			_ = sweep(large, Down, Median).len() + sweep(large, Up, Average).len()
+			{}
+		},
+	)
+	Fuzz.expect_no_leaks!(
+		|{}| {
+			_ = polish(large).len()
+			{}
+		},
+	)
+	Fuzz.expect_no_leaks!(
+		|{}| {
+			_ = LayeredOrder.total_crossings(large.layers, large.unit_edges)
+			{}
+		},
+	)
+	Fuzz.expect_no_leaks!(
+		|{}| {
+			_ = compact(large).len()
+			{}
+		},
+	)
 	Fuzz.keep
 }
 

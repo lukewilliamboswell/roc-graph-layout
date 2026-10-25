@@ -51,7 +51,14 @@ test! = |bytes|
 			style = { font: FlowSize.mermaid.font, size: 14.0, line_height: 1.1, wrap: Width(120.0), align: Middle }
 			small_cost = Fuzz.measure_allocs!(|{}| TextMeasure.block(label, style))
 			large_cost = Fuzz.measure_allocs!(|{}| TextMeasure.block(long, style))
-			Fuzz.expect_no_leaks!(|{}| TextMeasure.block(long, style))
+			# Results are dropped inside each closure: the dev backend keeps a value
+			# bound to `_` alive until its block ends, which would read as a leak.
+			Fuzz.expect_no_leaks!(
+				|{}| {
+					_ = TextMeasure.block(long, style)
+					{}
+				},
+			)
 			if large_cost.allocations > 10 * small_cost.allocations + 256 {
 				crash "measuring 8 times the text took ${large_cost.allocations.to_str()} allocations, against ${small_cost.allocations.to_str()} for one copy"
 			}

@@ -241,7 +241,14 @@ test! = |bytes| {
 	large = case(bytes, 8)
 	small_cost = Fuzz.measure_allocs!(|{}| search(small)).allocations
 	large_cost = Fuzz.measure_allocs!(|{}| search(large)).allocations
-	Fuzz.expect_no_leaks!(|{}| search(large))
+	# Results are dropped inside each closure: the dev backend keeps a value
+	# bound to `_` alive until its block ends, which would read as a leak.
+	Fuzz.expect_no_leaks!(
+		|{}| {
+			_ = search(large)
+			{}
+		},
+	)
 	small_size = small.boxes.len() + small.prior.len() + 1
 	large_size = large.boxes.len() + large.prior.len() + 1
 	if large_cost > small_cost * large_size * 5 // (4 * small_size) + 512 {

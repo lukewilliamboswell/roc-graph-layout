@@ -1,7 +1,8 @@
 name: CI
 
 # Every pull request runs the checks a contributor runs locally with
-# `blueprint run check`, against the latest Roc nightly.
+# `blueprint run check`, against the latest Roc nightly: dev builds, with smoke
+# runs of the benchmarks and fuzz targets.
 on:
   pull_request:
   push:

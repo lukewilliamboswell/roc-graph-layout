@@ -182,8 +182,8 @@ build! = |roc, options, path, executable| {
 	source = OsStr.from_str(path)
 	roc_args = (options.roc_args)(Path.read_utf8!(Path.join(options.root, path))?)
 	steps = [
-		["check", source, "--no-cache"],
-		["build", source, "--no-cache", "--opt=dev", OsStr.from_str("--output=${Path.display(executable)}")],
+		["check", source],
+		["build", source, "--opt=dev", OsStr.from_str("--output=${Path.display(executable)}")],
 	]
 	var $problem = ""
 	for args in steps {

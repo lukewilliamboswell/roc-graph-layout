@@ -452,7 +452,14 @@ scaling! = |bytes| {
 	large = copied(bytes, 8)
 	small_cost = Fuzz.measure_allocs!(|{}| Route.layout(small, Route.default_settings)).allocations
 	large_cost = Fuzz.measure_allocs!(|{}| Route.layout(large, Route.default_settings)).allocations
-	Fuzz.expect_no_leaks!(|{}| Route.layout(large, Route.default_settings))
+	# Results are dropped inside each closure: the dev backend keeps a value
+	# bound to `_` alive until its block ends, which would read as a leak.
+	Fuzz.expect_no_leaks!(
+		|{}| {
+			_ = Route.layout(large, Route.default_settings)
+			{}
+		},
+	)
 	if large_cost > small_cost * 20 + 1024 {
 		crash "routing 8 copies took ${large_cost.to_str()} allocations, against ${small_cost.to_str()} for one"
 	}
