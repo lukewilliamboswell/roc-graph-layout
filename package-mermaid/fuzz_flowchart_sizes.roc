@@ -49,8 +49,13 @@ test! = |bytes|
 			label = label_text(text, 2)
 			long = label_text(text, 16)
 			style = { font: FlowSize.mermaid.font, size: 14.0, line_height: 1.1, wrap: Width(120.0), align: Middle }
-			small_cost = Fuzz.measure_allocs!(|{}| TextMeasure.block(label, style))
-			large_cost = Fuzz.measure_allocs!(|{}| TextMeasure.block(long, style))
+			# Scaling is measured with every word wrapped onto lines of its own, so
+			# both sizes pay the same per-line cost: at 120 px the small label can
+			# fit on one line while the large one wraps, which is linear growth but
+			# with a steeper constant than the bound allows.
+			narrow = { ..style, wrap: Width(1.0) }
+			small_cost = Fuzz.measure_allocs!(|{}| TextMeasure.block(label, narrow))
+			large_cost = Fuzz.measure_allocs!(|{}| TextMeasure.block(long, narrow))
 			# Results are dropped inside each closure: the dev backend keeps a value
 			# bound to `_` alive until its block ends, which would read as a leak.
 			Fuzz.expect_no_leaks!(

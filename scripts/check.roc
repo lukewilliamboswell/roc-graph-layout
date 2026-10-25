@@ -170,10 +170,6 @@ check_benchmarks! = || {
 # few hundred seeded inputs, enough to show the target and its generator still
 # work. A coverage-guided search is `roc build --fuzz` and `<target> run`,
 # outside CI.
-#
-# The dev backend leaves some allocations unfreed that LLVM frees (nightly
-# 2026-10-24), so roc-fuzz's whole-input leak detector is off here. Each
-# target's own `Fuzz.expect_no_leaks!` checks still run.
 check_fuzz_targets! = |roc| {
 	Script.section!("Fuzz targets, smoke runs")?
 	system = Script.command("uname").capture_utf8!(["-sm"], ".")?.trim()
@@ -193,7 +189,7 @@ check_fuzz_targets! = |roc| {
 					corpus = Path.join(Path.join(build, "corpus"), name)
 					Path.create_all!(corpus)?
 					artifacts = OsStr.from_str("--artifact-dir=${Path.display(Path.join(build, "artifacts"))}")
-					Script.command(Path.to_os_str(executable)).run!(["run", Path.to_os_str(corpus), "--runs=200", "--seed=1", "--no-detect-leaks", artifacts])?
+					Script.command(Path.to_os_str(executable)).run!(["run", Path.to_os_str(corpus), "--runs=200", "--seed=1", artifacts])?
 				}
 			}
 			Ok({})
