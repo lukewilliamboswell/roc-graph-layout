@@ -1,5 +1,6 @@
+import "FontInter.ttf" as inter_file : List(U8)
+import font.Font
 import Bytes
-import Font
 import FlowGeometry
 
 ## Lays out label text as Mermaid does when it draws labels as SVG text, and
@@ -28,6 +29,17 @@ import FlowGeometry
 ## missing-glyph box. A line with such an emoji reaches 0.25 em below the
 ## baseline, as the emoji font does.
 TextMeasure :: {}.{
+
+	## Inter Regular (version 4, SIL Open Font License 1.1), the font the
+	## Mermaid comparisons are measured with, as a metrics-only file: its
+	## outlines are reduced to their bounding boxes.
+	inter : Font
+	inter = match Font.from_bytes(inter_file, Font.ReadOptions.{}) {
+		Ok(font) => font
+		# Evaluated when the package is compiled, so a file that does not read
+		# fails the build; a test below also checks it.
+		Err(_) => crash "FontInter.ttf does not read as a font"
+	}
 
 	## `align` is how lines line up with each other: `Middle` centres each line
 	## on the block, `Start` starts every line at the same place. It only
@@ -91,23 +103,27 @@ TextMeasure :: {}.{
 	finite : F64 -> F64
 	finite = |value| if (F64.is_finite(value) and value > 0.0) value else 0.0
 
-	# Per-style constants: fixed-point scale (1/65536 px per font unit step),
-	# and the rounded ascent and descent of the font and of the emoji
-	# fallback font.
-	Metrics : { font : Font, size : F64, scale : F64, em : F64, ascent : F64, descent : F64, emoji_ascent : F64, emoji_descent : F64 }
+	# Per-style constants: the shaping plan, fixed-point scale (1/65536 px per
+	# font unit step), and the rounded ascent and descent of the font and of
+	# the emoji fallback font.
+	Metrics : { font : Font, plan : Font.ShapePlan, size : F64, scale : F64, em : F64, ascent : F64, descent : F64, emoji_ascent : F64, emoji_descent : F64 }
 
 	metrics_of : Style -> Metrics
 	metrics_of = |style| {
-		units = Font.units_per_em(style.font)
+		units = Font.units_per_em(style.font).to_f64()
+		vertical = Font.metrics(style.font)
 		size = if (F64.is_finite(style.size) and style.size > 0.0) style.size else 0.0
 		pixels = size / units
 		{
 			font: style.font,
+			# Characters, not graphemes: a glyph's cluster is its first
+			# character, as a browser splits words between characters.
+			plan: Font.plan(style.font, Font.ShapeOptions.{ clusters: Characters }),
 			size,
 			scale: size * 65536.0 / units,
 			em: size,
-			ascent: TextMeasure.round(Font.ascent(style.font) * pixels),
-			descent: TextMeasure.round(Font.descent(style.font) * pixels),
+			ascent: TextMeasure.round(vertical.ascent.to_f64() * pixels),
+			descent: TextMeasure.round(vertical.descent.to_f64() * pixels),
 			emoji_ascent: TextMeasure.round(0.95 * size),
 			emoji_descent: TextMeasure.round(0.25 * size),
 		}
@@ -248,8 +264,8 @@ TextMeasure :: {}.{
 	split_word = |metrics, word, limit| {
 		shaped = TextMeasure.shape(metrics, word)
 		clusters = TextMeasure.clusters(word)
-		# `ends` are byte offsets where clusters end; the glyph count of a prefix
-		# is its code point count.
+		# `ends` are byte offsets where clusters end; a glyph lies inside a
+		# prefix when the byte offset of its first character does.
 		# Each candidate prefix of whole characters is shaped on its own, as the
 		# browser measures it: ligatures and contextual forms can differ at its
 		# end. Past a budget of shaped characters, a prefix is measured from the
@@ -267,7 +283,7 @@ TextMeasure :: {}.{
 			end = $characters + cluster.code_points
 			var $candidate = $sum
 			var $k = $glyphs
-			while $k < shaped.clusters.len() and (shaped.clusters.get($k) ?? end) < end {
+			while $k < shaped.clusters.len() and (shaped.clusters.get($k) ?? cluster.end) < cluster.end {
 				$candidate = $candidate + (shaped.advances.get($k) ?? 0.0)
 				if $k > 0 {
 					$candidate = $candidate + (shaped.pairs.get($k - 1) ?? 0.0)
@@ -344,50 +360,58 @@ TextMeasure :: {}.{
 
 	## Glyphs of one run after substitution: their advances and the kerning
 	## between neighbours in 1/65536 px steps, their outline extents, and the
-	## index of the first character each draws.
+	## byte offset of the first character each draws.
 	Shaped : { advances : List(F64), pairs : List(F64), ink : List([Ink({ left : F64, right : F64 }), NoInk]), clusters : List(U64) }
 
 	shape : Metrics, List(U8) -> Shaped
 	shape = |metrics, bytes| {
 		font = metrics.font
-		missing = Font.glyph_total(font)
-		var $code_points = []
-		var $items = []
+		var $scalars = []
 		var $i = 0
 		while $i < bytes.len() {
-			cp = Bytes.code_point(bytes, $i)
+			$scalars = $scalars.append({ scalar: Bytes.code_point(bytes, $i), offset: $i })
 			$i = $i + Bytes.char_len(Bytes.at(bytes, $i))
-			glyph = Font.glyph(font, cp) ?? missing
-			$items = $items.append({ glyph, cluster: $code_points.len() })
-			$code_points = $code_points.append(cp)
 		}
-		glyphs = Font.substitute(font, $items)
-		var $advances = List.with_capacity(glyphs.len())
-		var $ink = List.with_capacity(glyphs.len())
-		for item in glyphs {
-			if item.glyph >= missing {
-				fallback = TextMeasure.fallback(metrics, $code_points.get(item.cluster) ?? 0)
+		run = Font.shape_scalars(font, metrics.plan, $scalars)
+		count = run.glyphs.len()
+		var $advances = List.with_capacity(count)
+		var $pairs = List.with_capacity(count)
+		var $ink = List.with_capacity(count)
+		var $k = 0
+		while $k < count {
+			glyph = run.glyphs.get($k) ?? 0
+			# The run's advance is the glyph's own plus its kerning; they are
+			# rounded to the fixed-point grid separately, as the browser does.
+			own = Font.advance(font, glyph)
+			kerned = (run.advances.get($k) ?? { x: own, y: 0 }).x
+			$pairs = $pairs.append(TextMeasure.floor((kerned - own).to_f64() * metrics.scale))
+			# A character the font does not map is drawn from a fallback font.
+			if Font.missing(run.flags.get($k) ?? 0) {
+				fallback = TextMeasure.fallback(metrics, Bytes.code_point(bytes, run.clusters.get($k) ?? 0))
 				$advances = $advances.append(fallback.advance)
 				$ink = $ink.append(fallback.ink)
 			} else {
-				$advances = $advances.append(TextMeasure.floor(Font.advance(font, item.glyph) * metrics.scale))
-				$ink = $ink.append(TextMeasure.glyph_ink(metrics, Font.ink(font, item.glyph)))
+				$advances = $advances.append(TextMeasure.floor(own.to_f64() * metrics.scale))
+				$ink = $ink.append(TextMeasure.glyph_ink(metrics, Font.extents(font, glyph)))
 			}
+			$k = $k + 1
 		}
-		pairs = Font.kerning(font, glyphs.map(|item| item.glyph)).map(|units| TextMeasure.floor(units * metrics.scale))
-		{ advances: $advances, pairs, ink: $ink, clusters: glyphs.map(|item| item.cluster) }
+		{ advances: $advances, pairs: $pairs, ink: $ink, clusters: run.clusters }
 	}
 
 	# A glyph's outline extent in pixels from its origin, rounded out to whole
-	# pixels as the browser's glyph bounds are.
-	glyph_ink : Metrics, [Ink({ left : F64, right : F64 }), NoInk] -> [Ink({ left : F64, right : F64 }), NoInk]
-	glyph_ink = |metrics, ink|
-		match ink {
-			Ink(box) => {
-				pixels = metrics.size / Font.units_per_em(metrics.font)
-				Ink({ left: TextMeasure.floor(box.left * pixels), right: TextMeasure.ceil(box.right * pixels) })
+	# pixels as the browser's glyph bounds are. A glyph whose outline cannot be
+	# measured (CFF outlines, which Inter does not have) counts as drawing
+	# nothing past its advance.
+	glyph_ink : Metrics, [Extents({ x_min : I32, y_min : I32, x_max : I32, y_max : I32 }), Empty, Unknown] -> [Ink({ left : F64, right : F64 }), NoInk]
+	glyph_ink = |metrics, extents|
+		match extents {
+			Extents(box) => {
+				pixels = metrics.size / Font.units_per_em(metrics.font).to_f64()
+				Ink({ left: TextMeasure.floor(box.x_min.to_f64() * pixels), right: TextMeasure.ceil(box.x_max.to_f64() * pixels) })
 			}
-			NoInk => NoInk
+			Empty => NoInk
+			Unknown => NoInk
 		}
 
 	fallback : Metrics, U32 -> { advance : F64, ink : [Ink({ left : F64, right : F64 }), NoInk] }
@@ -400,7 +424,7 @@ TextMeasure :: {}.{
 		} else if TextMeasure.is_wide(cp) {
 			{ advance: TextMeasure.floor(metrics.em * 65536.0), ink: NoInk }
 		} else {
-			{ advance: TextMeasure.floor(Font.advance(metrics.font, 0) * metrics.scale), ink: TextMeasure.glyph_ink(metrics, Font.ink(metrics.font, 0)) }
+			{ advance: TextMeasure.floor(Font.advance(metrics.font, 0).to_f64() * metrics.scale), ink: TextMeasure.glyph_ink(metrics, Font.extents(metrics.font, 0)) }
 		}
 
 	is_invisible : U32 -> Bool
@@ -505,8 +529,10 @@ TextMeasure :: {}.{
 close : FlowGeometry.TextBlock, FlowGeometry.TextBlock -> Bool
 close = |a, b| a.lines == b.lines and (a.width - b.width).abs() < 1.0e-9 and (a.height - b.height).abs() < 1.0e-9
 
+expect Font.dropped(TextMeasure.inter).is_empty()
+
 inter : TextMeasure.Style
-inter = { font: Font.inter, size: 14.0, line_height: 1.1, wrap: Width(120.0), align: Middle }
+inter = { font: TextMeasure.inter, size: 14.0, line_height: 1.1, wrap: Width(120.0), align: Middle }
 
 expect TextMeasure.block("Square", inter) == { lines: ["Square"], width: 46.90625, height: 17.0 }
 expect TextMeasure.block("x", inter) == { lines: ["x"], width: 8.0, height: 17.0 }

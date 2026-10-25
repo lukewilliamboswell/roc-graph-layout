@@ -78,7 +78,7 @@ node tools/mermaid-oracle/measure_compare.mjs ./measure_sizes tests/mermaid/flow
 
 # ...and the same agreement as Roc expectations, so `roc test` enforces it
 node tools/mermaid-oracle/golden_sizes.mjs package-mermaid/OracleSizes.roc tests/mermaid/flowchart tests/mermaid/measure
-roc test package-mermaid/OracleSizes.roc
+roc test package-mermaid/OracleSizes.roc --main=package-mermaid/main.roc
 
 # Layout: our geometry from Mermaid's measured sizes vs Mermaid's (ELK) layout
 roc build package-mermaid/layout_dump.roc --output=layout_dump
@@ -134,7 +134,7 @@ which.
 - `measure_probe.mjs` sets up a browser page exactly like the oracle's, for
   probing how Chrome measures text.
 - `font_subset.mjs` builds `package-mermaid/FontInter.ttf`, the metrics-only
-  copy of Inter behind `Font.inter`.
+  copy of Inter behind `TextMeasure.inter`, read with roc-font 0.1.0-rc1.
 
 - `lexer_table.mjs` prints the flowchart lexer as the pinned Mermaid
   release compiled it. Jison rewrites some lookaheads, so the compiled table,

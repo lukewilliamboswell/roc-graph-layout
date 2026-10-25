@@ -1,6 +1,6 @@
-// Writes a metrics-only copy of a TrueType font: everything `Font.roc` reads
+// Writes a metrics-only copy of a TrueType font: everything roc-font measures with
 // (head, hhea, maxp, OS/2, hmtx, a Unicode cmap, GSUB, GPOS) with each glyph's
-// outline reduced to its bounding-box header. The result is what the package
+// outline reduced to its bounding box. The result is what the package
 // embeds as its default font, at a fraction of the original size; it is not
 // meant for drawing.
 //
@@ -88,7 +88,10 @@ function cmapTable() {
 	return Buffer.concat([head, sub]);
 }
 
-// Glyph headers only: numberOfContours 0 and the bounding box.
+// Each glyph that draws something becomes one contour of two on-curve points
+// at its bounding box's corners, under its original header. A header with no
+// contours would be smaller, but browsers (through OTS) and roc-font read such
+// a glyph as drawing nothing, losing the box.
 function glyfAndLoca() {
 	const loca = tables.loca.off, glyf = tables.glyf.off;
 	const offset = g => (longLoca ? u32(loca + 4 * g) : 2 * u16(loca + 2 * g));
@@ -97,11 +100,21 @@ function glyfAndLoca() {
 	let at = 0;
 	for (let g = 0; g < numGlyphs; g++) {
 		if (offset(g + 1) - offset(g) >= 10) {
-			const h = Buffer.alloc(10);
-			h.writeInt16BE(0, 0);
-			b.copy(h, 2, glyf + offset(g) + 2, glyf + offset(g) + 10);
+			const box = glyf + offset(g);
+			const [xMin, yMin, xMax, yMax] = [i16(box + 2), i16(box + 4), i16(box + 6), i16(box + 8)];
+			const h = Buffer.alloc(24);
+			h.writeInt16BE(1, 0); // numberOfContours
+			b.copy(h, 2, box + 2, box + 10);
+			h.writeUInt16BE(1, 10); // endPtsOfContours[0]: two points
+			h.writeUInt16BE(0, 12); // no instructions
+			h.writeUInt8(1, 14); // on curve, x and y as 16-bit deltas
+			h.writeUInt8(1, 15);
+			h.writeInt16BE(xMin, 16);
+			h.writeInt16BE(xMax - xMin, 18);
+			h.writeInt16BE(yMin, 20);
+			h.writeInt16BE(yMax - yMin, 22);
 			parts.push(h);
-			at += 10;
+			at += h.length;
 		}
 		offsets.push(at);
 	}
