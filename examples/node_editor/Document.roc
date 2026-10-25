@@ -432,7 +432,7 @@ arrange = |document, algorithm, direction| {
 			Err(_) => rejected(document, "Stress arrangement could not be applied.")
 		}
 	} else {
-		match Layered.layout({ ..Layered.default_input, graph: spec, attachments: attachments(document), edge_labels: route_edge_labels(document) }, { ..Layered.default_settings, direction, routing: editor_route_settings }, Layered.default_run) {
+		match Layered.layout({ ..Layered.default_input, graph: spec, attachments: attachments(document), edge_labels: route_edge_labels(document) }, { ..Layered.default_settings, direction, routing: Orthogonal(editor_route_settings) }, Layered.default_run) {
 			Ok(result) => accepted_positions(document, result.layout.positions, Layered, direction, result.layers, result.layout.routes.map_with_index(|route, edge| { edge, points: interior(route) }), "Layered arrangement applied.")
 			Err(_) => rejected(document, "Layered arrangement could not be applied.")
 		}

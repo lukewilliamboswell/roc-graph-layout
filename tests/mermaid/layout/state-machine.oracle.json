@@ -1,0 +1,1652 @@
+{
+	"schema": 6,
+	"key": "d5c93ce8b3f63c13beb7e4909136979d21267985de794baa88f708671841d176",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart TD\n    idle([Idle]) -->|connect| connecting[Connecting]\n    connecting -->|ok| authenticating[Authenticating]\n    connecting -->|timeout| backoff[Back off]\n    backoff -->|retry| connecting\n    backoff -->|give up| failed([Failed])\n    authenticating -->|accepted| ready[Ready]\n    authenticating -->|rejected| failed\n    ready -->|request| busy[Busy]\n    busy -->|done| ready\n    busy -->|error| recovering[Recovering]\n    recovering -->|recovered| ready\n    recovering -->|fatal| failed\n    ready -->|idle timeout| closing[Closing]\n    closing --> idle\n    failed -->|reset| idle\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "TB",
+		"nodes": [
+			{
+				"id": "idle",
+				"text": "Idle",
+				"label": "Idle",
+				"shape": "stadium",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "connecting",
+				"text": "Connecting",
+				"label": "Connecting",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "authenticating",
+				"text": "Authenticating",
+				"label": "Authenticating",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "backoff",
+				"text": "Back off",
+				"label": "Back off",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "failed",
+				"text": "Failed",
+				"label": "Failed",
+				"shape": "stadium",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "ready",
+				"text": "Ready",
+				"label": "Ready",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "busy",
+				"text": "Busy",
+				"label": "Busy",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "recovering",
+				"text": "Recovering",
+				"label": "Recovering",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "closing",
+				"text": "Closing",
+				"label": "Closing",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "idle",
+				"to": "connecting",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "connect",
+				"label": "connect",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "connecting",
+				"to": "authenticating",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "ok",
+				"label": "ok",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "connecting",
+				"to": "backoff",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "timeout",
+				"label": "timeout",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "backoff",
+				"to": "connecting",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "retry",
+				"label": "retry",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "backoff",
+				"to": "failed",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "give up",
+				"label": "give up",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "authenticating",
+				"to": "ready",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "accepted",
+				"label": "accepted",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "authenticating",
+				"to": "failed",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "rejected",
+				"label": "rejected",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "ready",
+				"to": "busy",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "request",
+				"label": "request",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "busy",
+				"to": "ready",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "done",
+				"label": "done",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "busy",
+				"to": "recovering",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "error",
+				"label": "error",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "recovering",
+				"to": "ready",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "recovered",
+				"label": "recovered",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "recovering",
+				"to": "failed",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "fatal",
+				"label": "fatal",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "ready",
+				"to": "closing",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "idle timeout",
+				"label": "idle timeout",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "closing",
+				"to": "idle",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "failed",
+				"to": "idle",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "reset",
+				"label": "reset",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "idle",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "stadium",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "connecting",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "authenticating",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "backoff",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "failed",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "stadium",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "ready",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "busy",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "recovering",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "closing",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_idle_connecting_0",
+				"from": "idle",
+				"to": "connecting",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_connecting_authenticating_0",
+				"from": "connecting",
+				"to": "authenticating",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_connecting_backoff_0",
+				"from": "connecting",
+				"to": "backoff",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_backoff_connecting_0",
+				"from": "backoff",
+				"to": "connecting",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_backoff_failed_0",
+				"from": "backoff",
+				"to": "failed",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_authenticating_ready_0",
+				"from": "authenticating",
+				"to": "ready",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_authenticating_failed_0",
+				"from": "authenticating",
+				"to": "failed",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_ready_busy_0",
+				"from": "ready",
+				"to": "busy",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_busy_ready_0",
+				"from": "busy",
+				"to": "ready",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_busy_recovering_0",
+				"from": "busy",
+				"to": "recovering",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_recovering_ready_0",
+				"from": "recovering",
+				"to": "ready",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_recovering_failed_0",
+				"from": "recovering",
+				"to": "failed",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_ready_closing_0",
+				"from": "ready",
+				"to": "closing",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_closing_idle_0",
+				"from": "closing",
+				"to": "idle",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_failed_idle_0",
+				"from": "failed",
+				"to": "idle",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 757.330078125,
+			"height": 949
+		},
+		"nodes": [
+			{
+				"id": "idle",
+				"center": {
+					"x": 606.2934570312499,
+					"y": 32.5
+				},
+				"box": {
+					"x": 521.1789932250975,
+					"y": 12.000000000000004,
+					"width": 170.2289276123047,
+					"height": 41
+				},
+				"outer": {
+					"x": 521.1789932250975,
+					"y": 12.000000000000004,
+					"width": 170.2289276123047,
+					"height": 41
+				},
+				"label": {
+					"x": 594.3635730743407,
+					"y": 23.999770160706245,
+					"width": 23.85976791381836,
+					"height": 17.00028038024902
+				},
+				"text": {
+					"rows": [
+						"Idle"
+					],
+					"box": {
+						"x": -11.9453125,
+						"y": 9.5367431640625e-7,
+						"width": 23.890625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "connecting",
+				"center": {
+					"x": 597.3908081054686,
+					"y": 174.5
+				},
+				"box": {
+					"x": 521.3908081054686,
+					"y": 154,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 521.3908081054686,
+					"y": 154,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 559.3511199951171,
+					"y": 165.99977016070625,
+					"width": 76.07937622070312,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"Connecting"
+					],
+					"box": {
+						"x": -38.078125,
+						"y": 9.5367431640625e-7,
+						"width": 76.15625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "authenticating",
+				"center": {
+					"x": 389.77395629882807,
+					"y": 316.5
+				},
+				"box": {
+					"x": 313.77395629882807,
+					"y": 296,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 313.77395629882807,
+					"y": 296,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 341.8122291564941,
+					"y": 307.99977016070625,
+					"width": 95.92345428466797,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"Authenticating"
+					],
+					"box": {
+						"x": -48.015625,
+						"y": 9.5367431640625e-7,
+						"width": 96.03125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "backoff",
+				"center": {
+					"x": 638.5781249999999,
+					"y": 316.5
+				},
+				"box": {
+					"x": 562.5781249999999,
+					"y": 296,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 562.5781249999999,
+					"y": 296,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 611.1792373657225,
+					"y": 307.99977016070625,
+					"width": 54.79777526855469,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"Back off"
+					],
+					"box": {
+						"x": -27.4296875,
+						"y": 9.5367431640625e-7,
+						"width": 54.859375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "failed",
+				"center": {
+					"x": 597.1036376953125,
+					"y": 924.4999999999999
+				},
+				"box": {
+					"x": 511.98917388916016,
+					"y": 903.9999999999999,
+					"width": 170.2289276123047,
+					"height": 41
+				},
+				"outer": {
+					"x": 511.98917388916016,
+					"y": 903.9999999999999,
+					"width": 170.2289276123047,
+					"height": 41
+				},
+				"label": {
+					"x": 577.4705028533936,
+					"y": 915.9997701607061,
+					"width": 39.26626968383789,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"Failed"
+					],
+					"box": {
+						"x": -19.65625,
+						"y": 9.5367431640625e-7,
+						"width": 39.3125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "ready",
+				"center": {
+					"x": 278.6661071777343,
+					"y": 458.49999999999994
+				},
+				"box": {
+					"x": 202.66610717773432,
+					"y": 437.99999999999994,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 202.66610717773432,
+					"y": 437.99999999999994,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 257.94701576232904,
+					"y": 449.9997701607062,
+					"width": 41.568660736083984,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"Ready"
+					],
+					"box": {
+						"x": -20.7421875,
+						"y": 9.5367431640625e-7,
+						"width": 41.60546875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "busy",
+				"center": {
+					"x": 279.99999999999994,
+					"y": 620.5
+				},
+				"box": {
+					"x": 203.99999999999994,
+					"y": 600,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 203.99999999999994,
+					"y": 600,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 263.6637935638427,
+					"y": 611.9997701607062,
+					"width": 32.800968170166016,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"Busy"
+					],
+					"box": {
+						"x": -16.3515625,
+						"y": 9.5367431640625e-7,
+						"width": 32.828125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "recovering",
+				"center": {
+					"x": 355.75,
+					"y": 762.5
+				},
+				"box": {
+					"x": 279.75,
+					"y": 742,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 279.75,
+					"y": 742,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 318.5384521484375,
+					"y": 753.9997701607062,
+					"width": 74.423095703125,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"Recovering"
+					],
+					"box": {
+						"x": -37.25,
+						"y": 9.5367431640625e-7,
+						"width": 74.5,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "closing",
+				"center": {
+					"x": 88,
+					"y": 620.5
+				},
+				"box": {
+					"x": 12.000000000000014,
+					"y": 600,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 12.000000000000014,
+					"y": 600,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 63.19490432739258,
+					"y": 611.9997701607062,
+					"width": 49.610191345214844,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"Closing"
+					],
+					"box": {
+						"x": -24.828125,
+						"y": 9.5367431640625e-7,
+						"width": 49.65625,
+						"height": 17
+					}
+				}
+			}
+		],
+		"clusters": [],
+		"edges": [
+			{
+				"id": "L_idle_connecting_0",
+				"points": [
+					{
+						"x": 606.29345703125,
+						"y": 53
+					},
+					{
+						"x": 606.29345703125,
+						"y": 73
+					},
+					{
+						"x": 597.3908176422119,
+						"y": 73
+					},
+					{
+						"x": 597.3908176422119,
+						"y": 154
+					}
+				],
+				"path": "M606.29345703125,53L606.29345703125,68.54868030548096Q606.29345703125,73 601.842137336731,73L601.842137336731,73Q597.3908176422119,73 597.3908176422119,77.45131969451904L597.3908176422119,150",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 569.9216175079345,
+					"y": 94.99976920703192,
+					"width": 54.04179763793945,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"connect"
+					],
+					"box": {
+						"x": -26.84375,
+						"y": 9.5367431640625e-7,
+						"width": 54.095703125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_connecting_authenticating_0",
+				"points": [
+					{
+						"x": 564.3908176422119,
+						"y": 195
+					},
+					{
+						"x": 564.3908176422119,
+						"y": 215
+					},
+					{
+						"x": 389.7739643096924,
+						"y": 215
+					},
+					{
+						"x": 389.7739643096924,
+						"y": 296
+					}
+				],
+				"path": "M564.3908176422119,195L564.3908176422119,207.92893218813452Q564.3908176422119,215 557.3197498303464,215L396.8450321215579,215Q389.7739643096924,215 389.7739643096924,222.07106781186548L389.7739643096924,292",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 381.2816362380981,
+					"y": 236.99976920703193,
+					"width": 16.38543128967285,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"ok"
+					],
+					"box": {
+						"x": -8.0390625,
+						"y": 9.5367431640625e-7,
+						"width": 16.39453125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_connecting_backoff_0",
+				"points": [
+					{
+						"x": 597.3908176422119,
+						"y": 195
+					},
+					{
+						"x": 597.3908176422119,
+						"y": 276
+					},
+					{
+						"x": 616.578125,
+						"y": 276
+					},
+					{
+						"x": 616.578125,
+						"y": 296
+					}
+				],
+				"path": "M597.3908176422119,195L597.3908176422119,268.9289321881345Q597.3908176422119,276 604.4618854540774,276L609.5070571881345,276Q616.578125,276 616.578125,283.0710678118655L616.578125,292",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 572.3791694790125,
+					"y": 236.99976920703193,
+					"width": 50.019866943359375,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"timeout"
+					],
+					"box": {
+						"x": -24.828125,
+						"y": 9.5367431640625e-7,
+						"width": 50.0693359375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_backoff_connecting_0",
+				"points": [
+					{
+						"x": 660.578125,
+						"y": 296
+					},
+					{
+						"x": 660.578125,
+						"y": 215
+					},
+					{
+						"x": 630.3908176422119,
+						"y": 215
+					},
+					{
+						"x": 630.3908176422119,
+						"y": 195
+					}
+				],
+				"path": "M660.578125,296L660.578125,222.07106781186548Q660.578125,215 653.5070571881345,215L637.4618854540774,215Q630.3908176422119,215 630.3908176422119,207.92893218813452L630.3908176422119,199",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 644.9587287828325,
+					"y": 236.99976920703193,
+					"width": 31.244089126586914,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"retry"
+					],
+					"box": {
+						"x": -15.5703125,
+						"y": 9.5367431640625e-7,
+						"width": 31.26953125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_backoff_failed_0",
+				"points": [
+					{
+						"x": 638.578125,
+						"y": 337
+					},
+					{
+						"x": 638.578125,
+						"y": 387.5
+					},
+					{
+						"x": 638.578125,
+						"y": 458.5
+					},
+					{
+						"x": 638.578125,
+						"y": 549.5
+					},
+					{
+						"x": 638.578125,
+						"y": 691.5
+					},
+					{
+						"x": 638.578125,
+						"y": 762.5
+					},
+					{
+						"x": 638.578125,
+						"y": 833.5
+					},
+					{
+						"x": 638.578125,
+						"y": 864
+					},
+					{
+						"x": 612.1265445709228,
+						"y": 864
+					},
+					{
+						"x": 612.1265445709228,
+						"y": 904
+					}
+				],
+				"path": "M638.578125,337L638.578125,387.5L638.578125,458.5L638.578125,549.5L638.578125,691.5L638.578125,762.5L638.578125,833.5L638.578125,856.9289321881345Q638.578125,864 631.5070571881345,864L619.1976123827883,864Q612.1265445709228,864 612.1265445709228,871.0710678118655L612.1265445709228,900",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 614.1089763641357,
+					"y": 611.9997692070319,
+					"width": 48.469547271728516,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"give up"
+					],
+					"box": {
+						"x": -24.265625,
+						"y": 9.5367431640625e-7,
+						"width": 48.53125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_authenticating_ready_0",
+				"points": [
+					{
+						"x": 367.7739643096924,
+						"y": 337
+					},
+					{
+						"x": 367.7739643096924,
+						"y": 357
+					},
+					{
+						"x": 278.66611061096194,
+						"y": 357
+					},
+					{
+						"x": 278.66611061096194,
+						"y": 438
+					}
+				],
+				"path": "M367.7739643096924,337L367.7739643096924,349.9289321881345Q367.7739643096924,357 360.70289649782694,357L285.7371784228274,357Q278.66611061096194,357 278.66611061096194,364.0710678118655L278.66611061096194,434",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 247.704662322998,
+					"y": 378.99976920703193,
+					"width": 61.704139709472656,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"accepted"
+					],
+					"box": {
+						"x": -30.890625,
+						"y": 9.5367431640625e-7,
+						"width": 61.78125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_authenticating_failed_0",
+				"points": [
+					{
+						"x": 411.7739643096924,
+						"y": 337
+					},
+					{
+						"x": 411.7739643096924,
+						"y": 357
+					},
+					{
+						"x": 515.859375,
+						"y": 357
+					},
+					{
+						"x": 515.859375,
+						"y": 387.5
+					},
+					{
+						"x": 515.859375,
+						"y": 458.5
+					},
+					{
+						"x": 515.859375,
+						"y": 549.5
+					},
+					{
+						"x": 515.859375,
+						"y": 691.5
+					},
+					{
+						"x": 515.859375,
+						"y": 762.5
+					},
+					{
+						"x": 515.859375,
+						"y": 833.5
+					},
+					{
+						"x": 515.859375,
+						"y": 864
+					},
+					{
+						"x": 582.0807590484619,
+						"y": 864
+					},
+					{
+						"x": 582.0807590484619,
+						"y": 904
+					}
+				],
+				"path": "M411.7739643096924,337L411.7739643096924,349.9289321881345Q411.7739643096924,357 418.8450321215579,357L508.7883071881345,357Q515.859375,357 515.859375,364.0710678118655L515.859375,387.5L515.859375,458.5L515.859375,549.5L515.859375,691.5L515.859375,762.5L515.859375,833.5L515.859375,856.9289321881345Q515.859375,864 522.9304428118655,864L575.0096912365964,864Q582.0807590484619,864 582.0807590484619,871.0710678118655L582.0807590484619,900",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 488.8901824951172,
+					"y": 611.9997692070319,
+					"width": 53.875885009765625,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"rejected"
+					],
+					"box": {
+						"x": -26.96875,
+						"y": 9.5367431640625e-7,
+						"width": 53.9375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_ready_busy_0",
+				"points": [
+					{
+						"x": 265.4661106109619,
+						"y": 479
+					},
+					{
+						"x": 265.4661106109619,
+						"y": 519
+					},
+					{
+						"x": 258,
+						"y": 519
+					},
+					{
+						"x": 258,
+						"y": 600
+					}
+				],
+				"path": "M265.4661106109619,479L265.4661106109619,515.266944694519Q265.4661106109619,519 261.73305530548095,519L261.73305530548095,519Q258,519 258,522.733055305481L258,596",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 229.7195587158203,
+					"y": 540.9997692070318,
+					"width": 50.552406311035156,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"request"
+					],
+					"box": {
+						"x": -25.09375,
+						"y": 9.5367431640625e-7,
+						"width": 50.6025390625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_busy_ready_0",
+				"points": [
+					{
+						"x": 302,
+						"y": 600
+					},
+					{
+						"x": 302,
+						"y": 519
+					},
+					{
+						"x": 291.86611061096187,
+						"y": 519
+					},
+					{
+						"x": 291.86611061096187,
+						"y": 479
+					}
+				],
+				"path": "M302,600L302,524.0669446945191Q302,519 296.93305530548093,519L296.93305530548093,519Q291.86611061096187,519 291.86611061096187,513.9330553054809L291.86611061096187,483",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 288.3144226074219,
+					"y": 540.9997692070318,
+					"width": 33.37554931640625,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"done"
+					],
+					"box": {
+						"x": -16.703125,
+						"y": 9.5367431640625e-7,
+						"width": 33.40625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_busy_recovering_0",
+				"points": [
+					{
+						"x": 280,
+						"y": 641
+					},
+					{
+						"x": 280,
+						"y": 722
+					},
+					{
+						"x": 333.75,
+						"y": 722
+					},
+					{
+						"x": 333.75,
+						"y": 742
+					}
+				],
+				"path": "M280,641L280,714.9289321881345Q280,722 287.0710678118655,722L326.6789321881345,722Q333.75,722 333.75,729.0710678118655L333.75,738",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 263.51535987854004,
+					"y": 682.9997692070319,
+					"width": 32.32865524291992,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"error"
+					],
+					"box": {
+						"x": -16.1796875,
+						"y": 9.5367431640625e-7,
+						"width": 32.359375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_recovering_ready_0",
+				"points": [
+					{
+						"x": 377.75,
+						"y": 742
+					},
+					{
+						"x": 377.75,
+						"y": 722
+					},
+					{
+						"x": 431.5,
+						"y": 722
+					},
+					{
+						"x": 431.5,
+						"y": 691.5
+					},
+					{
+						"x": 431.5,
+						"y": 549.5
+					},
+					{
+						"x": 431.5,
+						"y": 499
+					},
+					{
+						"x": 318.2661106109619,
+						"y": 499
+					},
+					{
+						"x": 318.2661106109619,
+						"y": 479
+					}
+				],
+				"path": "M377.75,742L377.75,729.0710678118655Q377.75,722 384.8210678118655,722L424.4289321881345,722Q431.5,722 431.5,714.9289321881345L431.5,691.5L431.5,549.5L431.5,506.0710678118655Q431.5,499 424.4289321881345,499L325.3371784228274,499Q318.2661106109619,499 318.2661106109619,491.9289321881345L318.2661106109619,483",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 398.0385131835937,
+					"y": 611.9997692070319,
+					"width": 66.7823486328125,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"recovered"
+					],
+					"box": {
+						"x": -33.4296875,
+						"y": 9.5367431640625e-7,
+						"width": 66.859375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_recovering_failed_0",
+				"points": [
+					{
+						"x": 355.75,
+						"y": 783
+					},
+					{
+						"x": 355.75,
+						"y": 884
+					},
+					{
+						"x": 552.0349735260011,
+						"y": 884
+					},
+					{
+						"x": 552.0349735260011,
+						"y": 904
+					}
+				],
+				"path": "M355.75,783L355.75,876.9289321881345Q355.75,884 362.8210678118655,884L544.9639057141355,884Q552.0349735260011,884 552.0349735260011,891.0710678118655L552.0349735260011,900",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 341.2653884887695,
+					"y": 824.9997692070319,
+					"width": 28.703598022460938,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"fatal"
+					],
+					"box": {
+						"x": -14.3671875,
+						"y": 9.5367431640625e-7,
+						"width": 28.734375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_ready_closing_0",
+				"points": [
+					{
+						"x": 239.0661106109619,
+						"y": 479
+					},
+					{
+						"x": 239.0661106109619,
+						"y": 499
+					},
+					{
+						"x": 110,
+						"y": 499
+					},
+					{
+						"x": 110,
+						"y": 600
+					}
+				],
+				"path": "M239.0661106109619,479L239.0661106109619,491.9289321881345Q239.0661106109619,499 231.99504279909644,499L117.07106781186548,499Q110,499 110,506.0710678118655L110,596",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 71.27719880640507,
+					"y": 540.9997692070318,
+					"width": 77.45342254638669,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"idle timeout"
+					],
+					"box": {
+						"x": -38.5546875,
+						"y": 9.5367431640625e-7,
+						"width": 77.5224609375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_closing_idle_0",
+				"points": [
+					{
+						"x": 66,
+						"y": 600
+					},
+					{
+						"x": 66,
+						"y": 549.5
+					},
+					{
+						"x": 66,
+						"y": 458.5
+					},
+					{
+						"x": 66,
+						"y": 387.5
+					},
+					{
+						"x": 66,
+						"y": 316.5
+					},
+					{
+						"x": 66,
+						"y": 245.5
+					},
+					{
+						"x": 66,
+						"y": 174.5
+					},
+					{
+						"x": 66,
+						"y": 103.5
+					},
+					{
+						"x": 66,
+						"y": 73
+					},
+					{
+						"x": 568.7362251281738,
+						"y": 73
+					},
+					{
+						"x": 568.7362251281738,
+						"y": 53
+					}
+				],
+				"path": "M66,600L66,549.5L66,458.5L66,387.5L66,316.5L66,245.5L66,174.5L66,103.5L66,80.07106781186548Q66,73 73.07106781186548,73L561.6651573163083,73Q568.7362251281738,73 568.7362251281738,65.92893218813452L568.7362251281738,57",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_failed_idle_0",
+				"points": [
+					{
+						"x": 642.1723300933838,
+						"y": 904
+					},
+					{
+						"x": 642.1723300933838,
+						"y": 884
+					},
+					{
+						"x": 734.578125,
+						"y": 884
+					},
+					{
+						"x": 734.578125,
+						"y": 833.5
+					},
+					{
+						"x": 734.578125,
+						"y": 762.5
+					},
+					{
+						"x": 734.578125,
+						"y": 691.5
+					},
+					{
+						"x": 734.578125,
+						"y": 620.5
+					},
+					{
+						"x": 734.578125,
+						"y": 549.5
+					},
+					{
+						"x": 734.578125,
+						"y": 387.5
+					},
+					{
+						"x": 734.578125,
+						"y": 316.5
+					},
+					{
+						"x": 734.578125,
+						"y": 245.5
+					},
+					{
+						"x": 734.578125,
+						"y": 174.5
+					},
+					{
+						"x": 734.578125,
+						"y": 103.5
+					},
+					{
+						"x": 734.578125,
+						"y": 73
+					},
+					{
+						"x": 643.8506889343262,
+						"y": 73
+					},
+					{
+						"x": 643.8506889343262,
+						"y": 53
+					}
+				],
+				"path": "M642.1723300933838,904L642.1723300933838,891.0710678118655Q642.1723300933838,884 649.2433979052494,884L727.5070571881345,884Q734.578125,884 734.578125,876.9289321881345L734.578125,833.5L734.578125,762.5L734.578125,691.5L734.578125,620.5L734.578125,549.5L734.578125,387.5L734.578125,316.5L734.578125,245.5L734.578125,174.5L734.578125,103.5L734.578125,80.07106781186548Q734.578125,73 727.5070571881345,73L650.9217567461917,73Q643.8506889343262,73 643.8506889343262,65.92893218813452L643.8506889343262,57",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 717.6012878417968,
+					"y": 449.9997692070319,
+					"width": 33.720340728759766,
+					"height": 17.000280380249023
+				},
+				"text": {
+					"rows": [
+						"reset"
+					],
+					"box": {
+						"x": -16.671875,
+						"y": 9.5367431640625e-7,
+						"width": 33.751953125,
+						"height": 17
+					}
+				}
+			}
+		]
+	},
+	"svg_sha256": "fb3efa8eaf004997a4c04929d4d084ec19129e4bd28b9be67ca5ecf10c40b723"
+}

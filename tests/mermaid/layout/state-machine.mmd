@@ -1,0 +1,16 @@
+flowchart TD
+    idle([Idle]) -->|connect| connecting[Connecting]
+    connecting -->|ok| authenticating[Authenticating]
+    connecting -->|timeout| backoff[Back off]
+    backoff -->|retry| connecting
+    backoff -->|give up| failed([Failed])
+    authenticating -->|accepted| ready[Ready]
+    authenticating -->|rejected| failed
+    ready -->|request| busy[Busy]
+    busy -->|done| ready
+    busy -->|error| recovering[Recovering]
+    recovering -->|recovered| ready
+    recovering -->|fatal| failed
+    ready -->|idle timeout| closing[Closing]
+    closing --> idle
+    failed -->|reset| idle

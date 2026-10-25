@@ -1,0 +1,35 @@
+flowchart LR
+    user((User)) --> cdn[CDN]
+    cdn --> lb[Load balancer]
+    subgraph edge [Edge tier]
+        cdn
+        lb
+    end
+    subgraph core [Core services]
+        subgraph api [API]
+            gw[Gateway] --> auth[Auth service]
+            gw --> orders[Orders service]
+            gw --> catalog[Catalog service]
+        end
+        subgraph workers [Workers]
+            q[[Job queue]] --> mail[Mailer]
+            q --> billing[Billing worker]
+            q --> index[Search indexer]
+        end
+        orders --> q
+        catalog --> q
+    end
+    lb --> gw
+    subgraph data [Data]
+        pg[(Postgres)]
+        redis[(Redis)]
+        es[(Search)]
+        s3[(Object store)]
+    end
+    auth --> redis
+    orders --> pg
+    catalog --> pg
+    catalog --> redis
+    index --> es
+    billing --> pg
+    mail --> s3

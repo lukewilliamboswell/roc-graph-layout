@@ -1,0 +1,29 @@
+{
+	"schema": 6,
+	"key": "7191e7e94ea8ac5830b3028d18ede7376e6cc56b8e3cdb812daac853961add93",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchat TD\n    A --> B\n",
+	"accepted": false,
+	"error": "No diagram type detected matching given configuration for text: flowchat TD\n    A --> B\n"
+}

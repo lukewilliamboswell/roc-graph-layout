@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 const example = resolve(import.meta.dirname, '..');
 const compiler = process.env.ROC || 'roc';
 
-const built = spawnSync(compiler, ['build', 'main.roc', '--output=node-editor'], {
+const built = spawnSync(compiler, ['build', 'main.roc', '--opt=dev', '--output=node-editor'], {
   cwd: example,
   stdio: 'inherit',
 });

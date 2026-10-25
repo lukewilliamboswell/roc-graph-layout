@@ -10,9 +10,10 @@ import Text
 ## The examples archive attached to each release.
 ##
 ## It holds complete copies of the examples, and of the helper packages they
-## share, in which the package dependency is that release's bundle URL, so they
-## keep working exactly as published. Its `spec.json` lists their cases in the
-## form the shared nightly runner of roc-automation reads. The examples in the
+## share, in which each package dependency is the URL of that release's bundle
+## of the package, so they keep working exactly as published. Its `spec.json`
+## lists their cases in the form the shared nightly runner of roc-automation
+## reads, and the bundles they depend on, layout first. The examples in the
 ## repository always depend on the working tree instead.
 Archive := [].{
 
@@ -52,16 +53,14 @@ Archive := [].{
 		Ok($kept)
 	}
 
-	## Write the archive for the release `version`, whose bundle is named
-	## `bundle_file`, into `output_dir`. Returns the path of the archive.
-	pack! = |version, bundle_file, output_dir| {
+	## Write the archive for the release `version`, whose bundles are at
+	## `urls`, into `output_dir`. Returns the path of the archive.
+	pack! = |version, urls, output_dir| {
 		if Release.valid_version(version) and !Release.publishable_version(version) {
 			return Script.fail!("version ${version} is reserved by Roc: the lowest publishable version is 0.0.1")
 		}
-		url = match Release.bundle_url(version, bundle_file) {
-			Ok(value) => value
-			Err(InvalidVersion(_)) => return Script.fail!("not a release version: ${version}")
-			Err(InvalidBundleFile(_)) => return Script.fail!("not a bundle file name: ${bundle_file}")
+		if Release.version_of_bundle_url(urls.layout) != Ok(version) or Release.version_of_bundle_url(urls.mermaid) != Ok(version) {
+			return Script.fail!("the examples of ${version} must depend on bundles of ${version}, not ${urls.layout} and ${urls.mermaid}")
 		}
 		apps = match Spec.parse(Path.read_utf8!(Archive.cases)?) {
 			Ok(parsed) => parsed
@@ -85,24 +84,24 @@ Archive := [].{
 					Path.create_all!(staged)?
 					for file in Files.direct_roc_files!(directory)? {
 						file_name = Script.file_name(file)?
-						Path.write_utf8!(Path.join(staged, file_name), archived(Path.read_utf8!(file)?, url)?)?
+						Path.write_utf8!(Path.join(staged, file_name), Archive.published(Path.read_utf8!(file)?, urls)?)?
 						$entries = $entries.append("${root}/examples/${name}/${file_name}")
 					}
 				}
-				Path.write_utf8!(Path.join(stage, "README.md"), Release.examples_readme(version, url))?
-				Path.write_utf8!(Path.join(stage, "spec.json"), Spec.render_suite(apps, version, url))?
+				Path.write_utf8!(Path.join(stage, "README.md"), Release.examples_readme(version, urls))?
+				Path.write_utf8!(Path.join(stage, "spec.json"), Spec.render_suite(apps, version, [urls.layout, urls.mermaid]))?
 				# -X leaves out owner and timestamp extras; -@ reads the entries to add.
 				_ = Script.command("zip").capture!(["-q", "-X", Path.to_os_str(archive), "-@"], temporary, Str.to_utf8(Str.join_with($entries, "\n")))?
 				Ok({})
 			},
 		)?
-		Script.info!("ARCHIVE", "${Path.display(archive)} with ${Release.shorthand}: \"${url}\"")?
+		Script.info!("ARCHIVE", "${Path.display(archive)} with ${Release.shorthand}: \"${urls.layout}\" and ${Release.mermaid_shorthand}: \"${urls.mermaid}\"")?
 		Ok(archive)
 	}
 
 	## Unpack `archive` into `destination` after checking that it holds
 	## nothing but examples of one roc-graph-layout release. Returns the
-	## directory that holds `examples/`, the bundle URL the examples depend
+	## directory that holds `examples/`, the bundle URLs the examples depend
 	## on, the release version, and a file of the archived cases in the form
 	## of `tests/examples.json`.
 	unpack! = |archive, destination| {
@@ -118,13 +117,14 @@ Archive := [].{
 			Ok(parsed) => parsed
 			Err(InvalidSpec) => return Script.fail!("${file_name} holds no valid spec.json, so there is nothing to compare its examples with")
 		}
-		url = match suite.dependencies {
-			[only] => only
-			_ => return Script.fail!("the archived spec.json must name exactly one ${Release.name} bundle")
+		# The layout bundle comes first, then the Mermaid bundle.
+		urls = match suite.dependencies {
+			[layout, mermaid] => { layout, mermaid }
+			_ => return Script.fail!("the archived spec.json must name the layout and Mermaid bundles of one ${Release.name} release")
 		}
-		version = match Release.version_of_bundle_url(url) {
-			Ok(value) => value
-			Err(_) => return Script.fail!("archived examples must depend on a published ${Release.name} release bundle, not ${url}")
+		version = match (Release.version_of_bundle_url(urls.layout), Release.version_of_bundle_url(urls.mermaid)) {
+			(Ok(layout), Ok(mermaid)) if layout == mermaid and urls.layout != urls.mermaid => layout
+			_ => return Script.fail!("archived examples must depend on bundles of one published ${Release.name} release, not ${urls.layout} and ${urls.mermaid}")
 		}
 		if file_name != Release.examples_archive(version) or suite.release != version or suite.schema_version != 1 {
 			return Script.fail!("${file_name} holds examples of release ${suite.release}, bundled for ${version}")
@@ -133,24 +133,42 @@ Archive := [].{
 			if Headers.has_roc_pin(example.source) {
 				return Script.fail!("archived examples must not pin a Roc compiler")
 			}
-			if Headers.is_app(example.source) and Headers.dependency(example.source, Release.shorthand) != Ok(url) {
-				return Script.fail!("${Path.display(example.path)} must depend on ${url}")
+			if Headers.is_app(example.source) and !Archive.depends_on(example.source, urls) {
+				return Script.fail!("${Path.display(example.path)} must depend on ${urls.layout} or ${urls.mermaid}, and on no other source of either package")
 			}
 		}
 		cases_file = Path.join(destination, "cases.json")
 		Path.write_utf8!(cases_file, Spec.render(suite.apps))?
-		Ok({ root, url, version, cases: cases_file })
+		Ok({ root, urls, version, cases: cases_file })
+	}
+
+	## An example as archived: each dependency of an application on the layout
+	## or the Mermaid package becomes that package's release URL in `urls`,
+	## and nothing else changes. Helper packages have no such dependency.
+	published : Str, Release.Urls -> Try(Str, _)
+	published = |source, urls|
+		if Headers.is_app(source) {
+			var $result = source
+			for (shorthand, url) in [(Release.shorthand, urls.layout), (Release.mermaid_shorthand, urls.mermaid)] {
+				if Headers.dependency(source, shorthand).is_ok() {
+					$result = Headers.with_dependency($result, shorthand, url)?
+				}
+			}
+			Ok($result)
+		} else {
+			Ok(source)
+		}
+
+	## Whether the application `source` depends on the packages at `urls`: on
+	## at least one of them, and on each it declares, by its shorthand, at
+	## exactly its URL.
+	depends_on : Str, Release.Urls -> Bool
+	depends_on = |source, urls| {
+		declared = [(Release.shorthand, urls.layout), (Release.mermaid_shorthand, urls.mermaid)]
+			.keep_if(|(shorthand, _)| Headers.dependency(source, shorthand).is_ok())
+		!declared.is_empty() and declared.all(|(shorthand, url)| Headers.dependency(source, shorthand) == Ok(url))
 	}
 }
-
-# An example as archived: an application's package dependency becomes the
-# release URL, and nothing else changes. Helper packages have no such dependency.
-archived = |source, url|
-	if Headers.is_app(source) {
-		Headers.with_dependency(source, Release.shorthand, url)
-	} else {
-		Ok(source)
-	}
 
 unzip! = |archive, root, destination| {
 	unzip = Script.command("unzip")

@@ -2,6 +2,7 @@ import layout.Constrained
 import layout.Compound
 import layout.Graph
 import layout.Layered
+import layout.Route
 import layout.Tree
 import rvn.Rvn
 
@@ -57,7 +58,7 @@ LayoutDemo := [].{
 		}
 	}
 
-	route_settings = { ..Layered.default_settings.routing, obstacle_gap: 8, bend_penalty: 16, shared_path_penalty: 4, edge_gap: 6 }
+	route_settings = { ..Route.default_settings, obstacle_gap: 8, bend_penalty: 16, shared_path_penalty: 4, edge_gap: 6 }
 
 	make_drawing : Doc, Geometry, List(Rect) -> Drawing
 	make_drawing = |doc, layout_, groups| { labels: doc.labels, nodes: doc.graph.nodes, routes: layout_.routes, positions: layout_.positions, bounds: layout_.bounds, groups, result: geometry_str(layout_) }
@@ -68,7 +69,7 @@ LayoutDemo := [].{
 	run_layered : Doc, Config -> Try(Drawing, List(Str))
 	run_layered = |doc, config| {
 		input_ = { ..Layered.default_input, graph: doc.graph }
-		settings = { ..Layered.default_settings, node_gap: config.node_gap, layer_gap: config.layer_gap, routing: route_settings, direction: config.direction, max_sweeps: config.sweeps }
+		settings = { ..Layered.default_settings, node_gap: config.node_gap, layer_gap: config.layer_gap, routing: Orthogonal(route_settings), direction: config.direction, max_sweeps: config.sweeps }
 		match Layered.layout(input_, settings, Layered.default_run) {
 			Err(errors) => Err(errors.map(Layered.problem_to_str))
 			Ok(result) => Ok(make_drawing(doc, result.layout, []))

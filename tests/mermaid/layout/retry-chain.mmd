@@ -1,0 +1,9 @@
+flowchart TD
+    s1[Step 1] --> s2[Step 2] --> s3[Step 3] --> s4[Step 4] --> s5[Step 5]
+    s5 --> s6[Step 6] --> s7[Step 7] --> s8[Step 8] --> s9[Step 9] --> s10[Step 10]
+    s3 -->|retry| s1
+    s6 -->|retry| s4
+    s9 -->|retry| s7
+    s10 -->|restart| s1
+    s5 -.->|skip| s8
+    s2 -.-> s9

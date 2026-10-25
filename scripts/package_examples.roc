@@ -15,13 +15,13 @@ import src/Script
 ##
 ## Writes `roc-graph-layout-examples-<version>.zip` to `dist`, or to the
 ## directory named by `OUTPUT_DIR`. The archived copies depend on the release
-## URL of the only bundle in that directory, or of the one `BUNDLE_PATH`
-## names. The examples in the repository are not changed.
+## URLs of the layout and Mermaid bundles in that directory, or of the ones
+## `BUNDLE_PATH` and `MERMAID_BUNDLE_PATH` name. The examples in the
+## repository are not changed.
 main! = |_args| {
 	version = Script.env!("RELEASE_VERSION")?
 	output_dir = Path.utf8(Script.env_or!("OUTPUT_DIR", "dist")?)
-	bundle = Bundle.selected!(output_dir)?
-	Script.require_file!(bundle)?
-	_ = Archive.pack!(version, Script.file_name(bundle)?, output_dir)?
+	urls = Bundle.urls!(Bundle.selected!(output_dir)?, version)?
+	_ = Archive.pack!(version, urls, output_dir)?
 	Ok({})
 }

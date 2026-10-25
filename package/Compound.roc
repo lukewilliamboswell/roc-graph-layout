@@ -30,8 +30,12 @@ Compound := [
 	## referenced nodes. Layered rules name global nodes or root-preorder groups
 	## and arrange the distinct direct children containing those targets.
 	## `same_layers` places siblings on one flow layer; `sibling_order` gives
-	## their visible order within that layer. Non-ranking edges use global graph
-	## edge indices and remain routed without influencing layer assignment.
+	## their visible order within that layer. Non-ranking edges, edge weights,
+	## and minimum spans use global graph edge indices, like every other edge
+	## reference in `Input`; they shape this group's layers where their edge
+	## joins two of its children, and non-ranking edges remain routed without
+	## influencing layer assignment. Centered edge labels on such edges get
+	## room in the group's layers, as in `Layered.layout`.
 	Algorithm : [
 		Rows({ gap : F64 }),
 		Columns({ gap : F64 }),
@@ -535,9 +539,9 @@ CompoundInternals :: {}.{
 		)
 		local_edges = indexed_local_edges.map(|edge| { from: edge.from, to: edge.to })
 		layer_rules = match group.algorithm {
-			LayeredSweep(payload) => { same_layers: payload.same_layers, sibling_order: payload.sibling_order, non_ranking_edges: payload.non_ranking_edges }
-			LayeredExact(payload) => { same_layers: payload.same_layers, sibling_order: payload.sibling_order, non_ranking_edges: payload.non_ranking_edges }
-			_ => { same_layers: [], sibling_order: [], non_ranking_edges: [] }
+			LayeredSweep(payload) => { same_layers: payload.same_layers, sibling_order: payload.sibling_order, non_ranking_edges: payload.non_ranking_edges, edge_weights: payload.edge_weights, min_spans: payload.min_spans }
+			LayeredExact(payload) => { same_layers: payload.same_layers, sibling_order: payload.sibling_order, non_ranking_edges: payload.non_ranking_edges, edge_weights: payload.edge_weights, min_spans: payload.min_spans }
+			_ => { same_layers: [], sibling_order: [], non_ranking_edges: [], edge_weights: [], min_spans: [] }
 		}
 		target_rule_problems = layer_rules.same_layers.map_with_index(
 			|rule, i| CompoundInternals.target_pair_problems(group.children, group_index, children_checked.next, i, rule.first, rule.second),
@@ -560,7 +564,7 @@ CompoundInternals :: {}.{
 			_ => []
 		}
 		local_constraints = constraints.keep_oks(|constraint| CompoundInternals.local_constraint(constraint, partitions))
-		projected = CompoundInternals.project_layer_rules(group.children, group_index, indexed_local_edges, layer_rules)
+		projected = CompoundInternals.project_layer_rules(group.children, group_index, indexed_local_edges, edges.len(), layer_rules, [])
 		algorithm_check = CompoundInternals.algorithm_positions(group.algorithm, List.repeat({ width: 0, height: 0 }, partitions.len()), local_edges, [], [], local_constraints, projected, 0)
 		algorithm_problem = if algorithm_check.valid {
 			[]
@@ -602,7 +606,7 @@ CompoundInternals :: {}.{
 			Straight => input.root
 			Orthogonal(settings) => CompoundInternals.reserve_routing(input.root, input.graph.edges, settings)
 		}
-		placed = CompoundInternals.place_group(prepared_root, input.graph.nodes, input.graph.edges, args.hints, args.seed, 0)
+		placed = CompoundInternals.place_group(prepared_root, input.graph.nodes, input.graph.edges, input.edge_labels, args.hints, args.seed, 0)
 		root_spec = match prepared_root {
 			Group(spec) => spec
 		}
@@ -721,6 +725,7 @@ CompoundInternals :: {}.{
 	place_group : Compound,
 	List({ width : F64, height : F64 }),
 	List({ from : U64, to : U64 }),
+	List(Route.EdgeLabel),
 	List({ x : F64, y : F64 }),
 	U32,
 	U64 -> {
@@ -729,7 +734,7 @@ CompoundInternals :: {}.{
 		rect : { x : F64, y : F64, width : F64, height : F64 },
 		next : U64,
 	}
-	place_group = |group_value, sizes, edges, hints, seed, group_index| {
+	place_group = |group_value, sizes, edges, labels, hints, seed, group_index| {
 		group = match group_value {
 			Group(spec) => spec
 		}
@@ -743,7 +748,7 @@ CompoundInternals :: {}.{
 						{ items: state.items.append(item), next: state.next }
 					}
 					Nested(nested) => {
-						child_placed = CompoundInternals.place_group(nested, sizes, edges, hints, seed, state.next)
+						child_placed = CompoundInternals.place_group(nested, sizes, edges, labels, hints, seed, state.next)
 						item = { nodes: child_placed.nodes, groups: child_placed.groups, members: child_placed.nodes.map(|p| p.node), width: child_placed.rect.width, height: child_placed.rect.height }
 						{ items: state.items.append(item), next: child_placed.next }
 					}
@@ -781,9 +786,9 @@ CompoundInternals :: {}.{
 		partitions = items.map(|item| item.members)
 		local_constraints = constraints.keep_oks(|constraint| CompoundInternals.local_constraint(constraint, partitions))
 		layer_rules = match group.algorithm {
-			LayeredSweep(payload) => { same_layers: payload.same_layers, sibling_order: payload.sibling_order, non_ranking_edges: payload.non_ranking_edges }
-			LayeredExact(payload) => { same_layers: payload.same_layers, sibling_order: payload.sibling_order, non_ranking_edges: payload.non_ranking_edges }
-			_ => { same_layers: [], sibling_order: [], non_ranking_edges: [] }
+			LayeredSweep(payload) => { same_layers: payload.same_layers, sibling_order: payload.sibling_order, non_ranking_edges: payload.non_ranking_edges, edge_weights: payload.edge_weights, min_spans: payload.min_spans }
+			LayeredExact(payload) => { same_layers: payload.same_layers, sibling_order: payload.sibling_order, non_ranking_edges: payload.non_ranking_edges, edge_weights: payload.edge_weights, min_spans: payload.min_spans }
+			_ => { same_layers: [], sibling_order: [], non_ranking_edges: [], edge_weights: [], min_spans: [] }
 		}
 		indexed_local_edges = edges.fold_with_index(
 			[],
@@ -792,7 +797,7 @@ CompoundInternals :: {}.{
 				_ => found
 			},
 		)
-		projected = CompoundInternals.project_layer_rules(group.children, group_index, indexed_local_edges, layer_rules)
+		projected = CompoundInternals.project_layer_rules(group.children, group_index, indexed_local_edges, edges.len(), layer_rules, labels)
 		usable_hints = if hints.len() == sizes.len() and local_hints.all(|p| F64.is_finite(p.x) and F64.is_finite(p.y)) {
 			local_hints
 		} else {
@@ -859,12 +864,12 @@ CompoundInternals :: {}.{
 			Rows(payload) => { positions: CompoundInternals.linear_positions(nodes, payload.gap, False), valid: True }
 			Columns(payload) => { positions: CompoundInternals.linear_positions(nodes, payload.gap, True), valid: True }
 			LayeredSweep(payload) =>
-				match Layered.layout({ ..Layered.default_input, graph: { nodes, edges }, edge_weights: payload.edge_weights, min_spans: payload.min_spans, layer_constraints: layered.layer_constraints, order_constraints: layered.order_constraints, non_ranking_edges: layered.non_ranking_edges }, payload.settings, { ..Layered.default_run, hints: layered_hints }) {
+				match Layered.layout({ ..Layered.default_input, graph: { nodes, edges }, edge_weights: layered.edge_weights, min_spans: layered.min_spans, edge_labels: layered.edge_labels, layer_constraints: layered.layer_constraints, order_constraints: layered.order_constraints, non_ranking_edges: layered.non_ranking_edges }, { ..payload.settings, routing: Straight }, { ..Layered.default_run, hints: layered_hints }) {
 					Ok(result) => { positions: result.layout.positions, valid: True }
 					Err(_) => { positions: fallback(False), valid: False }
 				}
 			LayeredExact(payload) =>
-				match Layered.layout_exact({ ..Layered.default_input, graph: { nodes, edges }, edge_weights: payload.edge_weights, min_spans: payload.min_spans, layer_constraints: layered.layer_constraints, order_constraints: layered.order_constraints, non_ranking_edges: layered.non_ranking_edges }, payload.settings) {
+				match Layered.layout_exact({ ..Layered.default_input, graph: { nodes, edges }, edge_weights: layered.edge_weights, min_spans: layered.min_spans, edge_labels: layered.edge_labels, layer_constraints: layered.layer_constraints, order_constraints: layered.order_constraints, non_ranking_edges: layered.non_ranking_edges }, { ..payload.settings, routing: Straight }) {
 					Ok(result) => { positions: result.layout.positions, valid: True }
 					Err(_) => { positions: fallback(False), valid: False }
 				}
@@ -1011,8 +1016,49 @@ CompoundInternals :: {}.{
 		}
 	}
 
-	project_layer_rules = |children, group_index, indexed_edges, rules| {
+	## Layer rules in the group's own terms: targets become child indices and
+	## global edge indices become indices into the group's edges. A weight or
+	## span on an edge outside the graph keeps an out-of-range index, so the
+	## layered check reports it; one on an edge laid out by another group is
+	## left to that group.
+	project_layer_rules : List([Node(U64), Nested(Compound)]), U64, List({ edge : U64, from : U64, to : U64 }), U64, { same_layers : List({ first : Compound.Target, second : Compound.Target }), sibling_order : List({ before : Compound.Target, after : Compound.Target }), non_ranking_edges : List(U64), edge_weights : List({ edge : U64, weight : F64 }), min_spans : List({ edge : U64, span : U64 }) }, List(Route.EdgeLabel) -> { layer_constraints : List(Layered.LayerConstraint), order_constraints : List({ before : U64, after : U64 }), non_ranking_edges : List(U64), edge_weights : List({ edge : U64, weight : F64 }), min_spans : List({ edge : U64, span : U64 }), edge_labels : List(Route.EdgeLabel) }
+	project_layer_rules = |children, group_index, indexed_edges, edge_count, rules, labels| {
 		owner = |target| CompoundInternals.target_owner(children, group_index, target)
+		none = indexed_edges.len() + edge_count
+		local_of = indexed_edges.fold_with_index(List.repeat(none, edge_count), |table, local, i| table.set(local.edge, i) ?? table)
+		local_edge : U64 -> [Some(U64), None]
+		local_edge = |edge| if edge >= edge_count {
+			Some(indexed_edges.len() + edge)
+		} else {
+			index = local_of.get(edge) ?? none
+			if index == none {
+				None
+			} else {
+				Some(index)
+			}
+		}
+		edge_weights = rules.edge_weights.keep_oks(
+			|item| match local_edge(item.edge) {
+				Some(edge) => Ok({ edge, weight: item.weight })
+				None => Err({})
+			},
+		)
+		min_spans = rules.min_spans.keep_oks(
+			|item| match local_edge(item.edge) {
+				Some(edge) => Ok({ edge, span: item.span })
+				None => Err({})
+			},
+		)
+		edge_labels = labels.keep_oks(
+			|label| if label.edge >= edge_count {
+				Err({})
+			} else {
+				match local_edge(label.edge) {
+					Some(edge) => Ok({ ..label, edge })
+					None => Err({})
+				}
+			},
+		)
 		layer_constraints = rules.same_layers.keep_oks(
 			|rule| match (owner(rule.first), owner(rule.second)) {
 				(Some(first), Some(second)) if first != second => Ok(SameLayer({ first, second }))
@@ -1035,7 +1081,7 @@ CompoundInternals :: {}.{
 				},
 			),
 		)
-		{ layer_constraints, order_constraints, non_ranking_edges }
+		{ layer_constraints, order_constraints, non_ranking_edges, edge_weights, min_spans, edge_labels }
 	}
 
 	constraint_nodes : Constrained.Constraint -> List(U64)
@@ -1602,4 +1648,44 @@ expect {
 		}
 		Err(_) => False
 	}
+}
+
+## A centered edge label inside a layered group gets room in the group's
+## layers, as it would in `Layered.layout`: its edge spans two layers.
+expect {
+	base = match Compound.default_group {
+		Group(spec) => spec
+	}
+	root = Group({ ..base, children: [Node(0), Node(1)], algorithm: LayeredSweep(Compound.default_layered) })
+	graph = { nodes: List.repeat({ width: 10, height: 10 }, 2), edges: [{ from: 0, to: 1 }] }
+	plain = { ..Compound.default_input, graph, root, routing: Straight }
+	labelled = { ..plain, edge_labels: [{ edge: 0, width: 30, height: 12, placement: Center }] }
+	gap = |input| match Compound.layout(input, Compound.default_run) {
+		Ok(result) => (result.layout.positions.get(1) ?? { x: 0, y: 0 }).y - (result.layout.positions.get(0) ?? { x: 0, y: 0 }).y
+		Err(_) => 0
+	}
+	gap(labelled) > gap(plain) and gap(plain) > 0
+}
+
+## Group edge weights and minimum spans use global edge indices: a span on
+## global edge 1, which joins this group's children, separates them by three
+## layers, while one on a missing edge is reported.
+expect {
+	base = match Compound.default_group {
+		Group(spec) => spec
+	}
+	inner = Group({ ..base, children: [Node(1), Node(2)], algorithm: LayeredSweep({ ..Compound.default_layered, min_spans: [{ edge: 1, span: 3 }] }) })
+	root = Group({ ..base, children: [Node(0), Nested(inner)] })
+	graph = { nodes: List.repeat({ width: 10, height: 10 }, 3), edges: [{ from: 0, to: 1 }, { from: 1, to: 2 }] }
+	input = { ..Compound.default_input, graph, root, routing: Straight }
+	spaced = match Compound.layout(input, Compound.default_run) {
+		Ok(result) => (result.layout.positions.get(2) ?? { x: 0, y: 0 }).y - (result.layout.positions.get(1) ?? { x: 0, y: 0 }).y > 3 * 10 + 2 * Layered.default_settings.layer_gap
+		Err(_) => False
+	}
+	broken = Group({ ..base, children: [Node(0), Nested(Group({ ..base, children: [Node(1), Node(2)], algorithm: LayeredSweep({ ..Compound.default_layered, min_spans: [{ edge: 7, span: 2 }] }) }))] })
+	reported = match Compound.layout({ ..input, root: broken }, Compound.default_run) {
+		Err(problems) => problems.contains(InvalidGroupAlgorithm(1))
+		Ok(_) => False
+	}
+	spaced and reported
 }

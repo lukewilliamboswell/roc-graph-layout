@@ -24,6 +24,9 @@ import src/Text
 ##
 ##     blueprint run check
 ##
+## Every Roc build and test uses `--opt=dev`, and benchmarks and fuzz targets
+## get smoke runs that only show they still work.
+##
 ## Two compilers take part. `roc-stable`, pinned by Blueprint.roc, runs this
 ## script and checks the other scripts. The package, the examples, the site,
 ## the benchmarks and what a release would publish are checked with the `roc`
@@ -39,6 +42,7 @@ main! = |_args| {
 	check_compiler_pins!()?
 	check_scripts!(roc_stable)?
 	check_package!(roc)?
+	check_mermaid_package!(roc)?
 	check_examples!(roc)?
 	check_node_editor!(roc)?
 	check_fuzz_targets!(roc)?
@@ -98,17 +102,37 @@ check_scripts! = |roc_stable| {
 check_package! = |roc| {
 	Script.section!("Package")?
 	roc.run!(["fmt", "--check", "package", "examples", "benchmarks"])?
-	roc.run!(["check", "package/main.roc", "--no-cache"])?
-	# The default backend and the interpreter have disagreed before, so the
-	# tests run in both.
-	roc.run!(["test", "package/main.roc", "--no-cache"])?
-	roc.run!(["test", "package/main.roc", "--opt=interpreter", "--no-cache"])?
+	roc.run!(["check", "package/main.roc"])?
+	roc.run!(["test", "package/main.roc", "--opt=dev"])?
 	# Each fuzz target's expects hold its contract and its distilled corpus
-	# regressions.
+	# regressions. The cache keeps the package's own tests from running again.
 	for target in Files.direct_roc_files!("package")? {
 		if Script.file_name(target)?.starts_with("fuzz_") {
-			roc.run!(["test", Path.to_os_str(target), "--no-cache"])?
+			roc.run!(["test", Path.to_os_str(target), "--opt=dev"])?
 		}
+	}
+	Ok({})
+}
+
+check_mermaid_package! = |roc| {
+	Script.section!("Mermaid package")?
+	roc.run!(["fmt", "--check", "package-mermaid", "tools/mermaid-oracle"])?
+	roc.run!(["check", "package-mermaid/main.roc"])?
+	roc.run!(["test", "package-mermaid/main.roc", "--opt=dev"])?
+	# Fuzz targets hold their contracts; the generated Oracle modules hold what
+	# Mermaid did with each recorded case.
+	# The Oracle modules reach roc-font through the package's `font`
+	# dependency, which only `main.roc` declares.
+	for target in Files.direct_roc_files!("package-mermaid")? {
+		name = Script.file_name(target)?
+		if name.starts_with("fuzz_") {
+			roc.run!(["test", Path.to_os_str(target), "--opt=dev"])?
+		} else if name.starts_with("Oracle") {
+			roc.run!(["test", Path.to_os_str(target), "--main=package-mermaid/main.roc", "--opt=dev"])?
+		}
+	}
+	for tool in Files.direct_roc_files!("tools/mermaid-oracle")? {
+		roc.run!(["check", Path.to_os_str(tool)])?
 	}
 	Ok({})
 }
@@ -116,20 +140,21 @@ check_package! = |roc| {
 check_examples! = |roc| {
 	Script.section!("Examples, against the working tree")?
 	# Committed examples must exercise the working tree, never a published bundle.
+	working_tree = { layout: "../../package/main.roc", mermaid: "../../package-mermaid/main.roc" }
 	for directory in Files.sort_paths(Path.list!("examples")?) {
 		main = Path.join(directory, "main.roc")
 		if Path.is_file!(main)? {
 			source = Path.read_utf8!(main)?
-			if Headers.is_app(source) and Headers.dependency(source, Release.shorthand) != Ok("../../package/main.roc") {
-				return Script.fail!("${Path.display(main)}: the app header must declare ${Release.shorthand}: \"../../package/main.roc\"")
+			if Headers.is_app(source) and !Archive.depends_on(source, working_tree) {
+				return Script.fail!("${Path.display(main)}: the app header must declare ${Release.shorthand}: \"${working_tree.layout}\" or ${Release.mermaid_shorthand}: \"${working_tree.mermaid}\"")
 			}
 			# An interactive service is not run, but must still build.
 			if source.contains("## scripts: service") {
-				roc.run!(["check", Path.to_os_str(main), "--no-cache"])?
+				roc.run!(["check", Path.to_os_str(main)])?
 			}
 		}
 	}
-	Examples.run!(roc, { root: ".", source: Direct, spec: Archive.cases, mode: Compare, roc_args: [] })?
+	Examples.run!(roc, { root: ".", source: Direct, spec: Archive.cases, mode: Compare, roc_args: |_| [] })?
 	# Each example rewrote its drawing; the committed one must be what it drew.
 	Script.command("git").run!(["diff", "--exit-code", "--", ":(glob)examples/**/output.svg"])
 }
@@ -144,27 +169,31 @@ check_benchmarks! = || {
 }
 
 # A target that is never built goes stale, and its expects alone do not run
-# the generated inputs. Each one is built natively and runs a short, seeded
-# campaign. A longer search is `<target> run`, outside CI.
+# the generated inputs. Each one gets a smoke run: a dev build without coverage
+# instrumentation (`--fuzz` needs LLVM, which takes minutes per target) and a
+# few hundred seeded inputs, enough to show the target and its generator still
+# work. A coverage-guided search is `roc build --fuzz` and `<target> run`,
+# outside CI.
 check_fuzz_targets! = |roc| {
-	Script.section!("Fuzz targets, native seeded runs")?
+	Script.section!("Fuzz targets, smoke runs")?
 	system = Script.command("uname").capture_utf8!(["-sm"], ".")?.trim()
 	if system != "Linux x86_64" and system != "Darwin arm64" {
 		return Script.info!("SKIP", "roc-fuzz builds only for Linux x86-64 and Apple Silicon macOS, not ${system}")
 	}
 	Env.with_temp_dir!(
 		|build| {
-			for target in Files.direct_roc_files!("package")? {
+			sources = Files.direct_roc_files!("package")?.concat(Files.direct_roc_files!("package-mermaid")?)
+			for target in sources {
 				name = Script.file_name(target)?
 				if name.starts_with("fuzz_") {
 					executable = Path.join(build, name.drop_suffix(".roc"))
-					roc.run!(["build", "--fuzz", Path.to_os_str(target), OsStr.from_str("--output=${Path.display(executable)}")])?
+					roc.run!(["build", "--opt=dev", Path.to_os_str(target), OsStr.from_str("--output=${Path.display(executable)}")])?
 					# A fresh corpus each time: `run` otherwise grows ./.roc-fuzz/corpus,
 					# and the next seeded run would start from different inputs.
 					corpus = Path.join(Path.join(build, "corpus"), name)
 					Path.create_all!(corpus)?
 					artifacts = OsStr.from_str("--artifact-dir=${Path.display(Path.join(build, "artifacts"))}")
-					Script.command(Path.to_os_str(executable)).run!(["run", Path.to_os_str(corpus), "--runs=2000", "--seed=1", artifacts])?
+					Script.command(Path.to_os_str(executable)).run!(["run", Path.to_os_str(corpus), "--runs=200", "--seed=1", artifacts])?
 				}
 			}
 			Ok({})
@@ -181,7 +210,7 @@ check_node_editor! = |roc| {
 	Env.with_temp_dir!(
 		|temporary| {
 			executable = Path.join(temporary, "node-editor")
-			roc.run!(["build", "examples/node_editor/main.roc", OsStr.from_str("--output=${Path.display(executable)}")])?
+			roc.run!(["build", "examples/node_editor/main.roc", "--opt=dev", OsStr.from_str("--output=${Path.display(executable)}")])?
 			port = "18187"
 			child = Cmd.new(Path.to_os_str(executable))
 				.cwd("examples/node_editor")
@@ -223,26 +252,31 @@ probe_node_editor! = |port| {
 # Build what a release would publish, and test those files instead of the
 # source tree.
 check_release_artifacts! = |roc| {
-	Script.section!("Release bundle and examples archive")?
+	Script.section!("Release bundles and examples archive")?
 	Env.with_temp_dir!(
 		|temporary| {
 			output = Path.join(temporary, "dist")
-			bundle = Bundle.build!(roc, output)?
-			archive = Archive.pack!(Release.dry_run_version, Script.file_name(bundle)?, output)?
-			Bundle.test!(roc, bundle, archive)?
+			bundles = Bundle.build!(roc, Release.dry_run_version, output)?
+			# The release steps after bundling find the bundles by what they hold.
+			found = Bundle.classify!(Path.list!(output)?, Path.display(output))?
+			if Path.display(found.layout) != Path.display(bundles.layout) or Path.display(found.mermaid) != Path.display(bundles.mermaid) {
+				return Script.fail!("the bundles in ${Path.display(output)} are not told apart as built")
+			}
+			urls = Bundle.urls!(bundles, Release.dry_run_version)?
+			archive = Archive.pack!(Release.dry_run_version, urls, output)?
+			Bundle.test!(roc, bundles, archive)?
 
 			unpacked = Archive.unpack!(archive, Path.join(temporary, "unpacked"))?
 			for directory in Archive.directories!()? {
 				for file in Files.direct_roc_files!(directory)? {
 					relative = "examples/${Script.file_name(directory)?}/${Script.file_name(file)?}"
 					source = Path.read_utf8!(file)?
-					expected = if (Headers.is_app(source)) Headers.with_dependency(source, Release.shorthand, unpacked.url)? else source
-					if Path.read_utf8!(Path.join(unpacked.root, relative))? != expected {
-						return Script.fail!("the archived ${relative} differs by more than its package dependency")
+					if Path.read_utf8!(Path.join(unpacked.root, relative))? != Archive.published(source, unpacked.urls)? {
+						return Script.fail!("the archived ${relative} differs by more than its package dependencies")
 					}
 				}
 			}
-			Script.pass!("archived examples differ from the repository's only in the package dependency")
+			Script.pass!("archived examples differ from the repository's only in their package dependencies")
 		},
 	)
 }

@@ -1,0 +1,12 @@
+flowchart TD
+    db[(Store)] --> a[/Lean right/]
+    db --> b[\Lean left\]
+    db --> c[/Trapezoid\]
+    a --> d((Hub))
+    b --> d
+    c --> d
+    d --> e>Flag]
+    d --> f{{Prepare}}
+    e --> g[(Archive)]
+    f --> g
+    g -.-> db

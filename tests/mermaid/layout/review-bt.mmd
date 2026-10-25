@@ -1,0 +1,11 @@
+flowchart BT
+    draft[Draft] --> review{Review}
+    review -->|changes requested| revise[Revise]
+    revise --> review
+    review -->|approved| merge[Merge]
+    merge --> release[Release notes]
+    merge --> deploy[Deploy]
+    deploy --> verify{Verify}
+    verify -->|pass| close[Close ticket]
+    verify -->|fail| revert[Revert]
+    revert --> revise

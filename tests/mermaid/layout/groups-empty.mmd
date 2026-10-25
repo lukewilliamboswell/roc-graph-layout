@@ -1,0 +1,13 @@
+flowchart TD
+    a[Start] --> b[Middle]
+    subgraph empty1 [Nothing here]
+    end
+    subgraph outer [Outer]
+        subgraph inner [Inner]
+            c[Leaf]
+        end
+        subgraph hollow [Hollow]
+        end
+    end
+    b --> c
+    b --> empty1

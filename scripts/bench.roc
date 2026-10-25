@@ -15,19 +15,23 @@ import src/BenchJson
 import src/BenchReport
 import src/Script
 
-## Native optimized benchmarks of the package.
+## Native benchmarks of the package.
 ##
 ##     blueprint run bench -- smoke [--output DIR]
 ##     blueprint run bench -- scale [--output DIR]
 ##     blueprint run bench -- compare BASELINE CANDIDATE
 ##
-## `smoke` and `scale` build `benchmarks/main.roc` once with `--opt=speed`
-## against the vendored Zig platform, run every case of
+## `smoke` and `scale` build `benchmarks/main.roc` once against the vendored
+## Zig platform, run every case of
 ## `benchmarks/cases/<tier>.jsonl` in a fresh process per sample, and write
 ## `samples.jsonl`, `summary.csv` and `summary.md` to DIR, by default
 ## `benchmarks/results/<tier>`. After a sample times out or fails, the later
 ## cases of its series are skipped. The smoke tier also fails unless every
 ## sample succeeded and each case's telemetry is identical across samples.
+##
+## `scale` builds with `--opt=speed`, so its times mean something. `smoke`
+## only shows the harness and every case still work, so it builds with
+## `--opt=dev`, which compiles in seconds; its times are not comparable.
 ##
 ## `compare` prints the change in time and in bytes requested for each case
 ## that two sample files, or directories holding `samples.jsonl`, both
@@ -63,8 +67,9 @@ execute! = |tier, output| {
 		Ok(parsed) => parsed
 		Err(InvalidCases(problem)) => return Script.fail!(problem)
 	}
-	binary = build!()?
-	meta = metadata!()?
+	opt = if (tier == "smoke") "dev" else "speed"
+	binary = build!(opt)?
+	meta = metadata!(opt)?
 	var $rows = []
 	var $stopped = []
 	for case in cases {
@@ -109,8 +114,8 @@ execute! = |tier, output| {
 	Ok({})
 }
 
-# Build the platform host, then the optimized benchmark executable.
-build! = || {
+# Build the platform host, then the benchmark executable with `opt`.
+build! = |opt| {
 	zig = Script.command("zig").cmd(["build", "-Doptimize=ReleaseFast"]).cwd(Path.join(benchmarks, "platform")).run!()?
 	if zig.status != Exited(0) {
 		return Script.fail!("${zig.stdout_utf8_lossy()}${zig.stderr_utf8_lossy()}")
@@ -120,20 +125,20 @@ build! = || {
 	binary = Path.join(Path.absolute!(cache)?, "layout-bench")
 	roc = Script.roc!()?
 	built = roc
-		.cmd(["build", "main.roc", OsStr.from_str("--output=${Path.display(binary)}"), "--opt=speed", "--no-cache"])
+		.cmd(["build", "main.roc", OsStr.from_str("--output=${Path.display(binary)}"), OsStr.from_str("--opt=${opt}")])
 		.cwd(benchmarks)
 		.timeout(Duration.seconds(build_timeout_seconds))
 		.run!()
 	match built {
 		Ok(output) if output.status == Exited(0) => Ok(binary)
 		Ok(output) => Script.fail!("${output.stdout_utf8_lossy()}${output.stderr_utf8_lossy()}")
-		Err(CmdErr(TimedOut(_))) => Script.fail!("optimized benchmark build timed out after ${build_timeout_seconds.to_str()} seconds")
+		Err(CmdErr(TimedOut(_))) => Script.fail!("benchmark build timed out after ${build_timeout_seconds.to_str()} seconds")
 		Err(err) => Err(err)
 	}
 }
 
 # What every row records about the machine, compilers and revision.
-metadata! = || {
+metadata! = |opt| {
 	roc = Script.roc!()?
 	roc_version = stdout!(roc.cmd(["version"]))?
 	zig_version = stdout!(Script.command("zig").cmd(["version"]))?
@@ -155,7 +160,7 @@ metadata! = || {
 		("arch", Text(arch)),
 		("revision", Text(revision)),
 		("dirty", Bool(changes != "")),
-		("opt", Text("speed")),
+		("opt", Text(opt)),
 	])
 }
 

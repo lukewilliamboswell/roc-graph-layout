@@ -45,35 +45,36 @@ EdgeRoutes :: {}.{
 			{ lo, hi }
 		}
 		capacity = edges.len() * 2 + 1
-		counted = edges.fold(
-			{ occupied: List.repeat(False, capacity), lows: List.repeat(0, capacity), highs: List.repeat(0, capacity), counts: List.repeat(0, capacity) },
-			|table, edge| {
-				key = key_of(edge)
-				start = key.lo.times_wrap(11400714819323198485).plus_wrap(key.hi.times_wrap(14029467366897019727)) % capacity
-				slot = EdgeRoutes.pair_slot(table.occupied, table.lows, table.highs, key.lo, key.hi, start, 0)
-				{
-					occupied: table.occupied.set(slot, True) ?? [],
-					lows: table.lows.set(slot, key.lo) ?? [],
-					highs: table.highs.set(slot, key.hi) ?? [],
-					counts: table.counts.set(slot, (table.counts.get(slot) ?? 0) + 1) ?? [],
-				}
-			},
-		)
-		ranked = edges.fold_with_index(
-			{ seen: List.repeat(0, capacity), ranks: List.repeat({ rank: 0, count: 1 }, edges.len()) },
-			|state, edge, index| {
-				key = key_of(edge)
-				start = key.lo.times_wrap(11400714819323198485).plus_wrap(key.hi.times_wrap(14029467366897019727)) % capacity
-				slot = EdgeRoutes.pair_slot(counted.occupied, counted.lows, counted.highs, key.lo, key.hi, start, 0)
-				rank = state.seen.get(slot) ?? 0
-				count = counted.counts.get(slot) ?? 1
-				{
-					seen: state.seen.set(slot, rank + 1) ?? [],
-					ranks: state.ranks.set(index, { rank, count }) ?? [],
-				}
-			},
-		)
-		ranked.ranks
+		# Flat open-addressing tables updated in place: one slot per distinct
+		# unordered node pair.
+		var $occupied = List.repeat(False, capacity)
+		var $lows = List.repeat(0, capacity)
+		var $highs = List.repeat(0, capacity)
+		var $counts = List.repeat(0, capacity)
+		for edge in edges {
+			key = key_of(edge)
+			start = key.lo.times_wrap(11400714819323198485).plus_wrap(key.hi.times_wrap(14029467366897019727)) % capacity
+			slot = EdgeRoutes.pair_slot($occupied, $lows, $highs, key.lo, key.hi, start, 0)
+			$occupied = $occupied.set(slot, True) ?? []
+			$lows = $lows.set(slot, key.lo) ?? []
+			$highs = $highs.set(slot, key.hi) ?? []
+			$counts = $counts.set(slot, ($counts.get(slot) ?? 0) + 1) ?? []
+		}
+		occupied = $occupied
+		lows = $lows
+		highs = $highs
+		counts = $counts
+		var $seen = List.repeat(0, capacity)
+		var $ranks = List.with_capacity(edges.len())
+		for edge in edges {
+			key = key_of(edge)
+			start = key.lo.times_wrap(11400714819323198485).plus_wrap(key.hi.times_wrap(14029467366897019727)) % capacity
+			slot = EdgeRoutes.pair_slot(occupied, lows, highs, key.lo, key.hi, start, 0)
+			rank = $seen.get(slot) ?? 0
+			$seen = $seen.set(slot, rank + 1) ?? []
+			$ranks = $ranks.append({ rank, count: counts.get(slot) ?? 1 })
+		}
+		$ranks
 	}
 
 	## A smooth closed teardrop beside the node, pointing along the given

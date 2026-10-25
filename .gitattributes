@@ -1,0 +1,3 @@
+# Mermaid cases are fed to the oracle and the Roc reader byte for byte;
+# some deliberately contain carriage returns.
+tests/mermaid/**/*.mmd -text whitespace=cr-at-eol

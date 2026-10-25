@@ -68,6 +68,20 @@ result = Layered.layout(input, settings, Layered.default_run)?
 # result.layout.bounds encloses the drawing
 ```
 
+## Mermaid flowcharts
+
+Each release also publishes a Mermaid package, built on the layout package of
+the same release. `Mermaid.svg` turns Mermaid flowchart text into a standalone
+SVG document whose labels are measured as Mermaid measures them in the Inter
+typeface; `Mermaid.draw` gives the same picture as outlines and text for other
+renderers. The release notes give its URL, which applications declare as
+`mermaid`. See [the Mermaid example](examples/mermaid_svg/main.roc).
+
+```roc
+svg = Mermaid.svg("flowchart LR\n  A[Start] --> B{Choice}\n")
+# Ok(svg) is an SVG document; Err(problems) says why the text was not drawn
+```
+
 ## Example gallery
 
 Click a layout to open the example app that generated it.

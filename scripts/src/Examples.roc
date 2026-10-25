@@ -5,7 +5,6 @@ import cli.Monotonic
 import cli.OsStr
 import cli.Path
 import cli.Stdout
-import cli.Tcp
 import Files
 import Headers
 import Loopback
@@ -21,22 +20,23 @@ import Spec
 ## that holds `examples/`, with `--opt=dev`.
 Examples := [].{
 
-	## How the examples reach their package. `Direct` leaves Roc to resolve the
-	## dependency declared in each header. `Served(server)` also answers its
-	## requests from a `Loopback` server while each command runs.
-	Source : [Direct, Served({ listener : Tcp.Listener, bytes : List(U8), url : Str })]
+	## How the examples reach their packages. `Direct` leaves Roc to resolve
+	## the dependencies declared in each header. `Served(server)` also answers
+	## their requests from a `Loopback` server while each command runs.
+	Source : [Direct, Served(Loopback.Server)]
 
 	## What to do with the examples beneath `root`.
 	##
 	## `spec` is the file of cases to compare with. `Update` rewrites it from
-	## what the examples print, in place of comparing. `roc_args` are added
-	## to every `roc check` and `roc build`.
+	## what the examples print, in place of comparing. `roc_args` gives, from
+	## the source of an example's application, the arguments added to its
+	## `roc check` and `roc build`.
 	Options : {
 		root : Path,
 		source : Source,
 		spec : Path,
 		mode : [Compare, Update],
-		roc_args : List(OsStr),
+		roc_args : Str -> List(OsStr),
 	}
 
 	## The runnable examples beneath `root`: each `examples/<dir>/main.roc`
@@ -180,15 +180,16 @@ load! = |options, paths| {
 build! : Script.Command, Examples.Options, Str, Path => Try(Str, _)
 build! = |roc, options, path, executable| {
 	source = OsStr.from_str(path)
+	roc_args = (options.roc_args)(Path.read_utf8!(Path.join(options.root, path))?)
 	steps = [
-		["check", source, "--no-cache"],
-		["build", source, "--no-cache", "--opt=dev", OsStr.from_str("--output=${Path.display(executable)}")],
+		["check", source],
+		["build", source, "--opt=dev", OsStr.from_str("--output=${Path.display(executable)}")],
 	]
 	var $problem = ""
 	for args in steps {
 		if $problem == "" {
-			command = roc.cmd(args.concat(options.roc_args)).cwd(options.root)
-			label = Str.join_with([roc.program].concat(args).concat(options.roc_args).map(OsStr.display), " ")
+			command = roc.cmd(args.concat(roc_args)).cwd(options.root)
+			label = Str.join_with([roc.program].concat(args).concat(roc_args).map(OsStr.display), " ")
 			output = match options.source {
 				Direct => captured!(label, command)?
 				Served(server) => Loopback.run!(server, command)?

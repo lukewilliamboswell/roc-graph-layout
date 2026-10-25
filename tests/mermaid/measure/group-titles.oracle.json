@@ -1,0 +1,554 @@
+{
+	"schema": 6,
+	"key": "adaf5e297d84250c632c4670dd5f14c74fb3c689edbacfe3d8b607a532cdd243",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart TB\n    subgraph s1 [A subgraph title that is quite long and would wrap if wrapping applied]\n        a --> b\n    end\n    subgraph s2 [\"two<br>line title\"]\n        c\n    end\n    subgraph s3 [ ]\n        d\n    end\n    subgraph s4\n        e\n    end\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "TB",
+		"nodes": [
+			{
+				"id": "a",
+				"text": "a",
+				"label": "a",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "b",
+				"text": "b",
+				"label": "b",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "c",
+				"text": "c",
+				"label": "c",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "d",
+				"text": "d",
+				"label": "d",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "e",
+				"text": "e",
+				"label": "e",
+				"shape": null,
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "a",
+				"to": "b",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [
+			{
+				"id": "s1",
+				"title": "A subgraph title that is quite long and would wrap if wrapping applied",
+				"label": "A subgraph title that is quite long and would wrap if wrapping applied",
+				"nodes": [
+					"b",
+					"a"
+				],
+				"dir": null,
+				"classes": []
+			},
+			{
+				"id": "s2",
+				"title": "two<br>line title",
+				"label": "two\nline title",
+				"nodes": [
+					"c"
+				],
+				"dir": null,
+				"classes": []
+			},
+			{
+				"id": "s3",
+				"title": "",
+				"label": "",
+				"nodes": [
+					"d"
+				],
+				"dir": null,
+				"classes": []
+			},
+			{
+				"id": "s4",
+				"title": "s4",
+				"label": "s4",
+				"nodes": [
+					"e"
+				],
+				"dir": null,
+				"classes": []
+			}
+		],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "s4",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 3,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "s3",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 2,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "s2",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 1,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "s1",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 0,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "a",
+				"is_group": false,
+				"parent": "s1",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "b",
+				"is_group": false,
+				"parent": "s1",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "c",
+				"is_group": false,
+				"parent": "s2",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "d",
+				"is_group": false,
+				"parent": "s3",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "e",
+				"is_group": false,
+				"parent": "s4",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_a_b_0",
+				"from": "a",
+				"to": "b",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 1198.28125,
+			"height": 312.34063720703125
+		},
+		"nodes": [
+			{
+				"id": "a",
+				"center": {
+					"x": 961.1406249999999,
+					"y": 76.5
+				},
+				"box": {
+					"x": 885.1406249999999,
+					"y": 56,
+					"width": 152.0000000000001,
+					"height": 41
+				},
+				"outer": {
+					"x": 885.1406249999999,
+					"y": 56,
+					"width": 152.0000000000001,
+					"height": 41
+				},
+				"label": {
+					"x": 957.2085733413695,
+					"y": 68.51868140697479,
+					"width": 7.864103317260742,
+					"height": 16.477169036865234
+				},
+				"text": {
+					"rows": [
+						"a"
+					],
+					"box": {
+						"x": -3.9375,
+						"y": 9.5367431640625e-7,
+						"width": 7.875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "b",
+				"center": {
+					"x": 961.1406249999999,
+					"y": 141.49999999999997
+				},
+				"box": {
+					"x": 885.1406249999999,
+					"y": 120.99999999999997,
+					"width": 152.0000000000001,
+					"height": 41
+				},
+				"outer": {
+					"x": 885.1406249999999,
+					"y": 120.99999999999997,
+					"width": 152.0000000000001,
+					"height": 41
+				},
+				"label": {
+					"x": 956.8574972152709,
+					"y": 133.51868140697476,
+					"width": 8.987546920776367,
+					"height": 16.477169036865234
+				},
+				"text": {
+					"rows": [
+						"b"
+					],
+					"box": {
+						"x": -4.2890625,
+						"y": 9.5367431640625e-7,
+						"width": 8.578125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "c",
+				"center": {
+					"x": 591.9999999999999,
+					"y": 263.84063720703125
+				},
+				"box": {
+					"x": 515.9999999999999,
+					"y": 243.34063720703125,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 515.9999999999999,
+					"y": 243.34063720703125,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 587.9977331161498,
+					"y": 255.85931861400604,
+					"width": 8.004533767700195,
+					"height": 16.477169036865234
+				},
+				"text": {
+					"rows": [
+						"c"
+					],
+					"box": {
+						"x": -4,
+						"y": 9.5367431640625e-7,
+						"width": 8,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "d",
+				"center": {
+					"x": 352,
+					"y": 246.140625
+				},
+				"box": {
+					"x": 276,
+					"y": 225.640625,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 276,
+					"y": 225.640625,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 347.716872215271,
+					"y": 238.15930640697482,
+					"width": 8.566255569458008,
+					"height": 16.477169036865234
+				},
+				"text": {
+					"rows": [
+						"d"
+					],
+					"box": {
+						"x": -4.2890625,
+						"y": 9.5367431640625e-7,
+						"width": 8.578125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "e",
+				"center": {
+					"x": 112.00000000000001,
+					"y": 256.140625
+				},
+				"box": {
+					"x": 36.000000000000014,
+					"y": 235.640625,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 36.000000000000014,
+					"y": 235.640625,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 107.91581535339357,
+					"y": 248.1593064069748,
+					"width": 8.16836929321289,
+					"height": 16.477169036865234
+				},
+				"text": {
+					"rows": [
+						"e"
+					],
+					"box": {
+						"x": -4.0859375,
+						"y": 9.5367431640625e-7,
+						"width": 8.171875,
+						"height": 17
+					}
+				}
+			}
+		],
+		"clusters": [
+			{
+				"id": "s1",
+				"box": {
+					"x": 728,
+					"y": 12,
+					"width": 466.28125,
+					"height": 174
+				},
+				"label": {
+					"x": 731.9999999999999,
+					"y": 12.518681406974792,
+					"width": 457.4052734375001,
+					"height": 16.477169036865234
+				},
+				"text": {
+					"rows": [
+						"A subgraph title that is quite long and would wrap if wrapping applied"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 458.28125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "s2",
+				"box": {
+					"x": 492,
+					"y": 183.9406280517578,
+					"width": 200,
+					"height": 124.4000015258789
+				},
+				"label": {
+					"x": 566.3671875,
+					"y": 184.45930945873258,
+					"width": 51.163482666015625,
+					"height": 31.87717056274414
+				},
+				"text": {
+					"rows": [
+						"two",
+						"line title"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 51.265625,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "s3",
+				"box": {
+					"x": 252,
+					"y": 201.640625,
+					"width": 200,
+					"height": 89
+				},
+				"label": {
+					"x": 352,
+					"y": 201.640625,
+					"width": 0,
+					"height": 0
+				},
+				"text": {
+					"rows": [
+						""
+					],
+					"box": {
+						"x": 0,
+						"y": 0,
+						"width": 0,
+						"height": 0
+					}
+				}
+			},
+			{
+				"id": "s4",
+				"box": {
+					"x": 12,
+					"y": 191.640625,
+					"width": 200,
+					"height": 109
+				},
+				"label": {
+					"x": 103.78124999999999,
+					"y": 192.15930640697476,
+					"width": 16.406953811645508,
+					"height": 16.477169036865234
+				},
+				"text": {
+					"rows": [
+						"s4"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 16.4375,
+						"height": 17
+					}
+				}
+			}
+		],
+		"edges": [
+			{
+				"id": "L_a_b_0",
+				"points": [
+					{
+						"x": 961.140625,
+						"y": 97
+					},
+					{
+						"x": 961.140625,
+						"y": 121
+					}
+				],
+				"path": "M961.140625,97L961.140625,117",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			}
+		]
+	},
+	"svg_sha256": "515e5748bcb4d53dfbd7c7146d00742706a2e94522cf80cc7a30ae342ef5fa1e"
+}

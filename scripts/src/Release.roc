@@ -11,9 +11,18 @@ Release := [].{
 	name : Str
 	name = "roc-graph-layout"
 
-	## The shorthand applications give the package in their header.
+	## The shorthand applications give the layout package in their header.
 	shorthand : Str
 	shorthand = "layout"
+
+	## The shorthand applications give the Mermaid package in their header.
+	## The Mermaid package itself depends on the layout package as `layout`.
+	mermaid_shorthand : Str
+	mermaid_shorthand = "mermaid"
+
+	## The bundle URLs of one release: its layout package, and its Mermaid
+	## package, which depends on that layout package.
+	Urls : { layout : Str, mermaid : Str }
 
 	## The address the documentation site is served from.
 	site : Str
@@ -36,6 +45,16 @@ Release := [].{
 	## Whether `version` is a final release, which the site leads with: exactly `x.y.z`.
 	is_final : Str -> Bool
 	is_final = |version| core_version(version)
+
+	## The final release a version leads to: `version` without its
+	## `-prerelease` suffix. A release candidate promises what its final
+	## release will, and `roc bump` reads only `x.y.z`.
+	final_of : Str -> Str
+	final_of = |version|
+		match Str.split_first(version, "-") {
+			Ok({ before, .. }) => before
+			Err(_) => version
+		}
 
 	## Whether `version` can be in a package URL. Roc reads 0.0.0 there as "no
 	## version" and rejects the URL, so the lowest usable version is 0.0.1.
@@ -129,16 +148,20 @@ Release := [].{
 			.map(|(_, version)| version)
 
 	## The README at the top of the examples archive.
-	examples_readme : Str, Str -> Str
-	examples_readme = |version, url|
+	examples_readme : Str, Urls -> Str
+	examples_readme = |version, urls|
 		Str.join_with(
 			[
 				"# ${Release.name} ${version} examples",
 				"",
 				"These are the ${Release.name} examples as they were when ${version} was released.",
-				"Each application depends on that release's package:",
+				"Each application depends on that release's packages, the layout package",
 				"",
-				"    ${url}",
+				"    ${Release.shorthand}: \"${urls.layout}\"",
+				"",
+				"or the Mermaid package, which depends on the layout package itself:",
+				"",
+				"    ${Release.mermaid_shorthand}: \"${urls.mermaid}\"",
 				"",
 				"Install the Roc compiler named in the release notes, then run an example",
 				"from this directory; it writes its drawing beside its source:",
@@ -184,6 +207,7 @@ root = "roc-graph-layout-examples-0.2.0"
 expect Release.valid_version("0.2.0") and Release.valid_version("1.0.0-rc.1") and Release.valid_version(Release.dry_run_version)
 expect !Release.valid_version("0.2") and !Release.valid_version("v0.2.0") and !Release.valid_version("0.2.0-") and !Release.valid_version("0.2.0/x")
 expect Release.is_final("0.2.0") and !Release.is_final("1.0.0-rc.1")
+expect Release.final_of("0.3.0-rc1") == "0.3.0" and Release.final_of("1.0.0-rc.1") == "1.0.0" and Release.final_of("0.2.0") == "0.2.0"
 expect Release.publishable_version("0.0.1-dry-run") and !Release.publishable_version("0.0.0") and !Release.publishable_version("0.0.0-rc1")
 expect Release.valid_bundle_file("Abc123.tar.zst") and !Release.valid_bundle_file("../Abc123.tar.zst") and !Release.valid_bundle_file(".tar.zst")
 expect Release.bundle_url("0.2.0", "Abc123.tar.zst") == Ok(url)
@@ -204,4 +228,5 @@ expect Release.find_docs_archive("0.1.0", ["Abc123.tar.zst"]) == Missing
 expect Release.valid_docs_entry("0.2.0", "0.2.0/index.html") and Release.valid_docs_entry("0.2.0", "0.2.0/")
 expect !Release.valid_docs_entry("0.2.0", "../escape") and !Release.valid_docs_entry("0.2.0", "0.2.0/../../escape") and !Release.valid_docs_entry("0.2.0", "0.1.0/index.html")
 expect Release.newest_first(["0.9.0", "0.13.1", "0.10.0", "0.13.0"]) == ["0.13.1", "0.13.0", "0.10.0", "0.9.0"]
-expect Release.examples_readme("0.2.0", url).contains("    ${url}\n")
+expect Release.examples_readme("0.2.0", { layout: url, mermaid: "M" }).contains("    layout: \"${url}\"\n")
+expect Release.examples_readme("0.2.0", { layout: url, mermaid: "M" }).contains("    mermaid: \"M\"\n")

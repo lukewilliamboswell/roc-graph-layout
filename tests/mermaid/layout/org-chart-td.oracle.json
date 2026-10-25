@@ -1,0 +1,2786 @@
+{
+	"schema": 6,
+	"key": "8496fde9fff37317bccecc6ff6f5141a9faf43e13956145a9f7b9a256b7883e6",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart TD\n    ceo[Chief Executive] --> cto[CTO]\n    ceo --> cfo[CFO]\n    ceo --> coo[COO]\n    ceo --> cmo[CMO]\n    cto --> eng1[Platform Lead]\n    cto --> eng2[Product Engineering]\n    cto --> eng3[Data Lead]\n    eng1 --> p1[SRE]\n    eng1 --> p2[Infrastructure]\n    eng1 --> p3[Security]\n    eng2 --> w1[Web Team]\n    eng2 --> w2[Mobile Team]\n    eng2 --> w3[API Team]\n    eng3 --> d1[Analytics]\n    eng3 --> d2[ML Research]\n    cfo --> f1[Accounting]\n    cfo --> f2[Treasury]\n    cfo --> f3[Procurement]\n    coo --> o1[Operations]\n    coo --> o2[Customer Support]\n    o2 --> s1[Tier 1]\n    o2 --> s2[Tier 2]\n    cmo --> m1[Brand]\n    cmo --> m2[Growth]\n    m2 --> g1[SEO]\n    m2 --> g2[Paid Acquisition]\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "TB",
+		"nodes": [
+			{
+				"id": "ceo",
+				"text": "Chief Executive",
+				"label": "Chief Executive",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "cto",
+				"text": "CTO",
+				"label": "CTO",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "cfo",
+				"text": "CFO",
+				"label": "CFO",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "coo",
+				"text": "COO",
+				"label": "COO",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "cmo",
+				"text": "CMO",
+				"label": "CMO",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "eng1",
+				"text": "Platform Lead",
+				"label": "Platform Lead",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "eng2",
+				"text": "Product Engineering",
+				"label": "Product Engineering",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "eng3",
+				"text": "Data Lead",
+				"label": "Data Lead",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "p1",
+				"text": "SRE",
+				"label": "SRE",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "p2",
+				"text": "Infrastructure",
+				"label": "Infrastructure",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "p3",
+				"text": "Security",
+				"label": "Security",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "w1",
+				"text": "Web Team",
+				"label": "Web Team",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "w2",
+				"text": "Mobile Team",
+				"label": "Mobile Team",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "w3",
+				"text": "API Team",
+				"label": "API Team",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "d1",
+				"text": "Analytics",
+				"label": "Analytics",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "d2",
+				"text": "ML Research",
+				"label": "ML Research",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "f1",
+				"text": "Accounting",
+				"label": "Accounting",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "f2",
+				"text": "Treasury",
+				"label": "Treasury",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "f3",
+				"text": "Procurement",
+				"label": "Procurement",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "o1",
+				"text": "Operations",
+				"label": "Operations",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "o2",
+				"text": "Customer Support",
+				"label": "Customer Support",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "s1",
+				"text": "Tier 1",
+				"label": "Tier 1",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "s2",
+				"text": "Tier 2",
+				"label": "Tier 2",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "m1",
+				"text": "Brand",
+				"label": "Brand",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "m2",
+				"text": "Growth",
+				"label": "Growth",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "g1",
+				"text": "SEO",
+				"label": "SEO",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "g2",
+				"text": "Paid Acquisition",
+				"label": "Paid Acquisition",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "ceo",
+				"to": "cto",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "ceo",
+				"to": "cfo",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "ceo",
+				"to": "coo",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "ceo",
+				"to": "cmo",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "cto",
+				"to": "eng1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "cto",
+				"to": "eng2",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "cto",
+				"to": "eng3",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "eng1",
+				"to": "p1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "eng1",
+				"to": "p2",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "eng1",
+				"to": "p3",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "eng2",
+				"to": "w1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "eng2",
+				"to": "w2",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "eng2",
+				"to": "w3",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "eng3",
+				"to": "d1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "eng3",
+				"to": "d2",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "cfo",
+				"to": "f1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "cfo",
+				"to": "f2",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "cfo",
+				"to": "f3",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "coo",
+				"to": "o1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "coo",
+				"to": "o2",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "o2",
+				"to": "s1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "o2",
+				"to": "s2",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "cmo",
+				"to": "m1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "cmo",
+				"to": "m2",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "m2",
+				"to": "g1",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "m2",
+				"to": "g2",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "ceo",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "cto",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "cfo",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "coo",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "cmo",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "eng1",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "eng2",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "eng3",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "p1",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "p2",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "p3",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "w1",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "w2",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "w3",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "d1",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "d2",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "f1",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "f2",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "f3",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "o1",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "o2",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "s1",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "s2",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "m1",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "m2",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "g1",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "g2",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_ceo_cto_0",
+				"from": "ceo",
+				"to": "cto",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_ceo_cfo_0",
+				"from": "ceo",
+				"to": "cfo",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_ceo_coo_0",
+				"from": "ceo",
+				"to": "coo",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_ceo_cmo_0",
+				"from": "ceo",
+				"to": "cmo",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_cto_eng1_0",
+				"from": "cto",
+				"to": "eng1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_cto_eng2_0",
+				"from": "cto",
+				"to": "eng2",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_cto_eng3_0",
+				"from": "cto",
+				"to": "eng3",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_eng1_p1_0",
+				"from": "eng1",
+				"to": "p1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_eng1_p2_0",
+				"from": "eng1",
+				"to": "p2",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_eng1_p3_0",
+				"from": "eng1",
+				"to": "p3",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_eng2_w1_0",
+				"from": "eng2",
+				"to": "w1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_eng2_w2_0",
+				"from": "eng2",
+				"to": "w2",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_eng2_w3_0",
+				"from": "eng2",
+				"to": "w3",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_eng3_d1_0",
+				"from": "eng3",
+				"to": "d1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_eng3_d2_0",
+				"from": "eng3",
+				"to": "d2",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_cfo_f1_0",
+				"from": "cfo",
+				"to": "f1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_cfo_f2_0",
+				"from": "cfo",
+				"to": "f2",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_cfo_f3_0",
+				"from": "cfo",
+				"to": "f3",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_coo_o1_0",
+				"from": "coo",
+				"to": "o1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_coo_o2_0",
+				"from": "coo",
+				"to": "o2",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_o2_s1_0",
+				"from": "o2",
+				"to": "s1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_o2_s2_0",
+				"from": "o2",
+				"to": "s2",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_cmo_m1_0",
+				"from": "cmo",
+				"to": "m1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_cmo_m2_0",
+				"from": "cmo",
+				"to": "m2",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_m2_g1_0",
+				"from": "m2",
+				"to": "g1",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_m2_g2_0",
+				"from": "m2",
+				"to": "g2",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 2856,
+			"height": 335.3999938964844
+		},
+		"nodes": [
+			{
+				"id": "ceo",
+				"center": {
+					"x": 1996.9999999999998,
+					"y": 32.5
+				},
+				"box": {
+					"x": 1920.9999999999998,
+					"y": 12,
+					"width": 152.00000000000023,
+					"height": 41
+				},
+				"outer": {
+					"x": 1920.9999999999998,
+					"y": 12,
+					"width": 152.00000000000023,
+					"height": 41
+				},
+				"label": {
+					"x": 1945.6188621520994,
+					"y": 23.718163579702377,
+					"width": 105.31508636474632,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Chief Executive"
+					],
+					"box": {
+						"x": -51.5546875,
+						"y": 9.5367431640625e-7,
+						"width": 103.109375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "cto",
+				"center": {
+					"x": 856,
+					"y": 133.49999999999997
+				},
+				"box": {
+					"x": 780,
+					"y": 112.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 780,
+					"y": 112.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 841.2718563079834,
+					"y": 124.71816357970238,
+					"width": 29.485380172729492,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"CTO"
+					],
+					"box": {
+						"x": -14.78125,
+						"y": 9.5367431640625e-7,
+						"width": 29.5625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "cfo",
+				"center": {
+					"x": 1720,
+					"y": 133.49999999999997
+				},
+				"box": {
+					"x": 1644,
+					"y": 112.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 1644,
+					"y": 112.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1705.439221382141,
+					"y": 124.71816357970238,
+					"width": 29.132726669311523,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"CFO"
+					],
+					"box": {
+						"x": -14.6015625,
+						"y": 9.5367431640625e-7,
+						"width": 29.203125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "coo",
+				"center": {
+					"x": 2200,
+					"y": 133.49999999999997
+				},
+				"box": {
+					"x": 2124,
+					"y": 112.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 2124,
+					"y": 112.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 2184.239769935608,
+					"y": 124.71816357970238,
+					"width": 31.563934326171875,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"COO"
+					],
+					"box": {
+						"x": -15.8203125,
+						"y": 9.5367431640625e-7,
+						"width": 31.640625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "cmo",
+				"center": {
+					"x": 2584,
+					"y": 133.49999999999997
+				},
+				"box": {
+					"x": 2508,
+					"y": 112.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 2508,
+					"y": 112.99999999999997,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 2567.263473510742,
+					"y": 124.71816357970238,
+					"width": 33.49800491333008,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"CMO"
+					],
+					"box": {
+						"x": -16.7890625,
+						"y": 9.5367431640625e-7,
+						"width": 33.578125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "eng1",
+				"center": {
+					"x": 280,
+					"y": 226.05000305175778
+				},
+				"box": {
+					"x": 204,
+					"y": 205.55000305175778,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 204,
+					"y": 205.55000305175778,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 234.1698112487793,
+					"y": 217.26816663146016,
+					"width": 93.7944564819336,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Platform Lead"
+					],
+					"box": {
+						"x": -45.9765625,
+						"y": 9.5367431640625e-7,
+						"width": 91.953125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "eng2",
+				"center": {
+					"x": 856,
+					"y": 222.19999694824216
+				},
+				"box": {
+					"x": 780,
+					"y": 193.9999961853027,
+					"width": 152,
+					"height": 56.400001525878906
+				},
+				"outer": {
+					"x": 780,
+					"y": 193.9999961853027,
+					"width": 152,
+					"height": 56.400001525878906
+				},
+				"label": {
+					"x": 816.6691627502441,
+					"y": 205.71815976500508,
+					"width": 80.77428436279297,
+					"height": 33.252296447753906
+				},
+				"text": {
+					"rows": [
+						"Product",
+						"Engineering"
+					],
+					"box": {
+						"x": -39.4609375,
+						"y": 9.5367431640625e-7,
+						"width": 78.921875,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "eng3",
+				"center": {
+					"x": 1336,
+					"y": 224.76666259765625
+				},
+				"box": {
+					"x": 1260,
+					"y": 204.26666259765625,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 1260,
+					"y": 204.26666259765625,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1302.5548400878906,
+					"y": 215.98482617735863,
+					"width": 69.0243911743164,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Data Lead"
+					],
+					"box": {
+						"x": -33.5390625,
+						"y": 9.5367431640625e-7,
+						"width": 67.078125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "p1",
+				"center": {
+					"x": 88,
+					"y": 310.8999938964844
+				},
+				"box": {
+					"x": 12,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 12,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 74.8339319229126,
+					"y": 302.1181574761867,
+					"width": 28.635587692260742,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"SRE"
+					],
+					"box": {
+						"x": -13.2109375,
+						"y": 9.5367431640625e-7,
+						"width": 26.421875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "p2",
+				"center": {
+					"x": 280,
+					"y": 310.8999938964844
+				},
+				"box": {
+					"x": 204,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 204,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 235.20189666748047,
+					"y": 302.1181574761867,
+					"width": 92.15947723388672,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Infrastructure"
+					],
+					"box": {
+						"x": -44.9609375,
+						"y": 9.5367431640625e-7,
+						"width": 89.921875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "p3",
+				"center": {
+					"x": 472,
+					"y": 310.8999938964844
+				},
+				"box": {
+					"x": 396,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 396,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 444.60788345336914,
+					"y": 302.1181574761867,
+					"width": 57.607269287109375,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Security"
+					],
+					"box": {
+						"x": -27.4765625,
+						"y": 9.5367431640625e-7,
+						"width": 55.072265625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "w1",
+				"center": {
+					"x": 664,
+					"y": 310.8999938964844
+				},
+				"box": {
+					"x": 588,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 588,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 629.0485534667969,
+					"y": 302.1181574761867,
+					"width": 71.94881439208984,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Web Team"
+					],
+					"box": {
+						"x": -35.0703125,
+						"y": 9.5367431640625e-7,
+						"width": 70.140625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "w2",
+				"center": {
+					"x": 856,
+					"y": 310.8999938964844
+				},
+				"box": {
+					"x": 780,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 780,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 813.7123756408691,
+					"y": 302.1181574761867,
+					"width": 86.62117004394531,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Mobile Team"
+					],
+					"box": {
+						"x": -42.4375,
+						"y": 9.5367431640625e-7,
+						"width": 84.875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "w3",
+				"center": {
+					"x": 1048,
+					"y": 310.8999938964844
+				},
+				"box": {
+					"x": 972,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 972,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1016.7584819793701,
+					"y": 302.1181574761867,
+					"width": 64.5289535522461,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"API Team"
+					],
+					"box": {
+						"x": -31.34375,
+						"y": 9.5367431640625e-7,
+						"width": 62.6875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "d1",
+				"center": {
+					"x": 1240,
+					"y": 310.8999938964844
+				},
+				"box": {
+					"x": 1164,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 1164,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1209.762674331665,
+					"y": 302.1181574761867,
+					"width": 60.47465133666992,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Analytics"
+					],
+					"box": {
+						"x": -30.34375,
+						"y": 9.5367431640625e-7,
+						"width": 60.6875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "d2",
+				"center": {
+					"x": 1432,
+					"y": 310.8999938964844
+				},
+				"box": {
+					"x": 1356,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 1356,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1388.9592323303223,
+					"y": 302.1181574761867,
+					"width": 88.51351165771484,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"ML Research"
+					],
+					"box": {
+						"x": -43.171875,
+						"y": 9.5367431640625e-7,
+						"width": 86.34375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "f1",
+				"center": {
+					"x": 1528,
+					"y": 214.5
+				},
+				"box": {
+					"x": 1452,
+					"y": 194,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 1452,
+					"y": 194,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1490.426498413086,
+					"y": 205.71816357970235,
+					"width": 77.3006362915039,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Accounting"
+					],
+					"box": {
+						"x": -37.71875,
+						"y": 9.5367431640625e-7,
+						"width": 75.4375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "f2",
+				"center": {
+					"x": 1720,
+					"y": 214.5
+				},
+				"box": {
+					"x": 1644,
+					"y": 194,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 1644,
+					"y": 194,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1690.8505477905273,
+					"y": 205.71816357970235,
+					"width": 61.117469787597656,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Treasury"
+					],
+					"box": {
+						"x": -29.234375,
+						"y": 9.5367431640625e-7,
+						"width": 58.599609375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "f3",
+				"center": {
+					"x": 1911.9999999999998,
+					"y": 214.5
+				},
+				"box": {
+					"x": 1835.9999999999998,
+					"y": 194,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 1835.9999999999998,
+					"y": 194,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1869.5729026794431,
+					"y": 205.71816357970235,
+					"width": 87.3828125,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Procurement"
+					],
+					"box": {
+						"x": -42.5703125,
+						"y": 9.5367431640625e-7,
+						"width": 85.5478515625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "o1",
+				"center": {
+					"x": 2104,
+					"y": 214.5
+				},
+				"box": {
+					"x": 2028,
+					"y": 194,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 2028,
+					"y": 194,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 2067.8212089538574,
+					"y": 205.71816357970235,
+					"width": 72.35758209228516,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Operations"
+					],
+					"box": {
+						"x": -36.3046875,
+						"y": 9.5367431640625e-7,
+						"width": 72.609375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "o2",
+				"center": {
+					"x": 2296,
+					"y": 222.19999694824216
+				},
+				"box": {
+					"x": 2220,
+					"y": 193.9999961853027,
+					"width": 152,
+					"height": 56.400001525878906
+				},
+				"outer": {
+					"x": 2220,
+					"y": 193.9999961853027,
+					"width": 152,
+					"height": 56.400001525878906
+				},
+				"label": {
+					"x": 2263.8937606811523,
+					"y": 205.71815976500508,
+					"width": 66.07511901855469,
+					"height": 33.252296447753906
+				},
+				"text": {
+					"rows": [
+						"Customer",
+						"Support"
+					],
+					"box": {
+						"x": -32.21875,
+						"y": 9.5367431640625e-7,
+						"width": 64.4375,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "s1",
+				"center": {
+					"x": 2200,
+					"y": 310.8999938964844
+				},
+				"box": {
+					"x": 2124,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 2124,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 2182.3150691986084,
+					"y": 302.1181574761867,
+					"width": 36.83779525756836,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Tier 1"
+					],
+					"box": {
+						"x": -17.7578125,
+						"y": 9.5367431640625e-7,
+						"width": 35.515625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "s2",
+				"center": {
+					"x": 2392,
+					"y": 310.8999938964844
+				},
+				"box": {
+					"x": 2316,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 2316,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 2372.8924655914307,
+					"y": 302.1181574761867,
+					"width": 40.40825271606445,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Tier 2"
+					],
+					"box": {
+						"x": -19.1796875,
+						"y": 9.5367431640625e-7,
+						"width": 38.359375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "m1",
+				"center": {
+					"x": 2488,
+					"y": 214.5
+				},
+				"box": {
+					"x": 2412,
+					"y": 194,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 2412,
+					"y": 194,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 2468.5019454956055,
+					"y": 205.71816357970235,
+					"width": 41.15938186645508,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Brand"
+					],
+					"box": {
+						"x": -19.5703125,
+						"y": 9.5367431640625e-7,
+						"width": 39.140625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "m2",
+				"center": {
+					"x": 2680,
+					"y": 224.76666259765625
+				},
+				"box": {
+					"x": 2604,
+					"y": 204.26666259765625,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 2604,
+					"y": 204.26666259765625,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 2656.094659805298,
+					"y": 215.98482617735863,
+					"width": 50.22195053100586,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Growth"
+					],
+					"box": {
+						"x": -23.9765625,
+						"y": 9.5367431640625e-7,
+						"width": 47.953125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "g1",
+				"center": {
+					"x": 2584,
+					"y": 310.8999938964844
+				},
+				"box": {
+					"x": 2508,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 2508,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 2569.9971055984497,
+					"y": 302.1181574761867,
+					"width": 28.043107986450195,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"SEO"
+					],
+					"box": {
+						"x": -14.0546875,
+						"y": 9.5367431640625e-7,
+						"width": 28.109375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "g2",
+				"center": {
+					"x": 2776,
+					"y": 310.8999938964844
+				},
+				"box": {
+					"x": 2700,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 2700,
+					"y": 290.3999938964844,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 2723.1683616638184,
+					"y": 302.1181574761867,
+					"width": 105.66327667236328,
+					"height": 17.852294921875
+				},
+				"text": {
+					"rows": [
+						"Paid Acquisition"
+					],
+					"box": {
+						"x": -53.015625,
+						"y": 9.5367431640625e-7,
+						"width": 106.03125,
+						"height": 17
+					}
+				}
+			}
+		],
+		"clusters": [],
+		"edges": [
+			{
+				"id": "L_ceo_cto_0",
+				"points": [
+					{
+						"x": 1957.4,
+						"y": 53
+					},
+					{
+						"x": 1957.4,
+						"y": 73
+					},
+					{
+						"x": 856,
+						"y": 73
+					},
+					{
+						"x": 856,
+						"y": 113
+					}
+				],
+				"path": "M1957.4,53L1957.4,65.92893218813452Q1957.4,73 1950.3289321881346,73L863.0710678118655,73Q856,73 856,80.07106781186548L856,109",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_ceo_cfo_0",
+				"points": [
+					{
+						"x": 1983.8,
+						"y": 53
+					},
+					{
+						"x": 1983.8,
+						"y": 93
+					},
+					{
+						"x": 1720,
+						"y": 93
+					},
+					{
+						"x": 1720,
+						"y": 113
+					}
+				],
+				"path": "M1983.8,53L1983.8,85.92893218813452Q1983.8,93 1976.7289321881344,93L1727.0710678118655,93Q1720,93 1720,100.07106781186548L1720,109",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_ceo_coo_0",
+				"points": [
+					{
+						"x": 2010.2,
+						"y": 53
+					},
+					{
+						"x": 2010.2,
+						"y": 93
+					},
+					{
+						"x": 2200,
+						"y": 93
+					},
+					{
+						"x": 2200,
+						"y": 113
+					}
+				],
+				"path": "M2010.2,53L2010.2,85.92893218813452Q2010.2,93 2017.2710678118656,93L2192.9289321881347,93Q2200,93 2200,100.07106781186548L2200,109",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_ceo_cmo_0",
+				"points": [
+					{
+						"x": 2036.6,
+						"y": 53
+					},
+					{
+						"x": 2036.6,
+						"y": 73
+					},
+					{
+						"x": 2584,
+						"y": 73
+					},
+					{
+						"x": 2584,
+						"y": 113
+					}
+				],
+				"path": "M2036.6,53L2036.6,65.92893218813452Q2036.6,73 2043.6710678118654,73L2576.9289321881347,73Q2584,73 2584,80.07106781186548L2584,109",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_cto_eng1_0",
+				"points": [
+					{
+						"x": 823,
+						"y": 154
+					},
+					{
+						"x": 823,
+						"y": 174
+					},
+					{
+						"x": 280,
+						"y": 174
+					},
+					{
+						"x": 280,
+						"y": 205.55000114440918
+					}
+				],
+				"path": "M823,154L823,166.92893218813452Q823,174 815.9289321881345,174L287.0710678118655,174Q280,174 280,181.07106781186548L280,201.55000114440918",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_cto_eng2_0",
+				"points": [
+					{
+						"x": 856,
+						"y": 154
+					},
+					{
+						"x": 856,
+						"y": 194
+					}
+				],
+				"path": "M856,154L856,190",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_cto_eng3_0",
+				"points": [
+					{
+						"x": 889,
+						"y": 154
+					},
+					{
+						"x": 889,
+						"y": 174
+					},
+					{
+						"x": 1336,
+						"y": 174
+					},
+					{
+						"x": 1336,
+						"y": 204.26666768391928
+					}
+				],
+				"path": "M889,154L889,166.92893218813452Q889,174 896.0710678118655,174L1328.9289321881345,174Q1336,174 1336,181.07106781186548L1336,200.26666768391928",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_eng1_p1_0",
+				"points": [
+					{
+						"x": 247,
+						"y": 246.55000114440918
+					},
+					{
+						"x": 247,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 88,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 88,
+						"y": 290.4000015258789
+					}
+				],
+				"path": "M247,246.55000114440918L247,263.32893371401343Q247,270.4000015258789 239.92893218813452,270.4000015258789L95.07106781186548,270.4000015258789Q88,270.4000015258789 88,277.4710693377444L88,286.4000015258789",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_eng1_p2_0",
+				"points": [
+					{
+						"x": 280,
+						"y": 246.55000114440918
+					},
+					{
+						"x": 280,
+						"y": 290.4000015258789
+					}
+				],
+				"path": "M280,246.55000114440918L280,286.4000015258789",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_eng1_p3_0",
+				"points": [
+					{
+						"x": 313,
+						"y": 246.55000114440918
+					},
+					{
+						"x": 313,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 472,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 472,
+						"y": 290.4000015258789
+					}
+				],
+				"path": "M313,246.55000114440918L313,263.32893371401343Q313,270.4000015258789 320.0710678118655,270.4000015258789L464.9289321881345,270.4000015258789Q472,270.4000015258789 472,277.4710693377444L472,286.4000015258789",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_eng2_w1_0",
+				"points": [
+					{
+						"x": 823,
+						"y": 250.4000015258789
+					},
+					{
+						"x": 823,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 664,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 664,
+						"y": 290.4000015258789
+					}
+				],
+				"path": "M823,250.4000015258789L823,263.32893371401343Q823,270.4000015258789 815.9289321881345,270.4000015258789L671.0710678118655,270.4000015258789Q664,270.4000015258789 664,277.4710693377444L664,286.4000015258789",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_eng2_w2_0",
+				"points": [
+					{
+						"x": 856,
+						"y": 250.4000015258789
+					},
+					{
+						"x": 856,
+						"y": 290.4000015258789
+					}
+				],
+				"path": "M856,250.4000015258789L856,286.4000015258789",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_eng2_w3_0",
+				"points": [
+					{
+						"x": 889,
+						"y": 250.4000015258789
+					},
+					{
+						"x": 889,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 1048,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 1048,
+						"y": 290.4000015258789
+					}
+				],
+				"path": "M889,250.4000015258789L889,263.32893371401343Q889,270.4000015258789 896.0710678118655,270.4000015258789L1040.9289321881345,270.4000015258789Q1048,270.4000015258789 1048,277.4710693377444L1048,286.4000015258789",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_eng3_d1_0",
+				"points": [
+					{
+						"x": 1314,
+						"y": 245.26666768391928
+					},
+					{
+						"x": 1314,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 1240,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 1240,
+						"y": 290.4000015258789
+					}
+				],
+				"path": "M1314,245.26666768391928L1314,263.32893371401343Q1314,270.4000015258789 1306.9289321881345,270.4000015258789L1247.0710678118655,270.4000015258789Q1240,270.4000015258789 1240,277.4710693377444L1240,286.4000015258789",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_eng3_d2_0",
+				"points": [
+					{
+						"x": 1358,
+						"y": 245.26666768391928
+					},
+					{
+						"x": 1358,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 1432,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 1432,
+						"y": 290.4000015258789
+					}
+				],
+				"path": "M1358,245.26666768391928L1358,263.32893371401343Q1358,270.4000015258789 1365.0710678118655,270.4000015258789L1424.9289321881345,270.4000015258789Q1432,270.4000015258789 1432,277.4710693377444L1432,286.4000015258789",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_cfo_f1_0",
+				"points": [
+					{
+						"x": 1687,
+						"y": 154
+					},
+					{
+						"x": 1687,
+						"y": 174
+					},
+					{
+						"x": 1528,
+						"y": 174
+					},
+					{
+						"x": 1528,
+						"y": 194
+					}
+				],
+				"path": "M1687,154L1687,166.92893218813452Q1687,174 1679.9289321881345,174L1535.0710678118655,174Q1528,174 1528,181.07106781186548L1528,190",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_cfo_f2_0",
+				"points": [
+					{
+						"x": 1720,
+						"y": 154
+					},
+					{
+						"x": 1720,
+						"y": 194
+					}
+				],
+				"path": "M1720,154L1720,190",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_cfo_f3_0",
+				"points": [
+					{
+						"x": 1753,
+						"y": 154
+					},
+					{
+						"x": 1753,
+						"y": 174
+					},
+					{
+						"x": 1912,
+						"y": 174
+					},
+					{
+						"x": 1912,
+						"y": 194
+					}
+				],
+				"path": "M1753,154L1753,166.92893218813452Q1753,174 1760.0710678118655,174L1904.9289321881345,174Q1912,174 1912,181.07106781186548L1912,190",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_coo_o1_0",
+				"points": [
+					{
+						"x": 2178,
+						"y": 154
+					},
+					{
+						"x": 2178,
+						"y": 174
+					},
+					{
+						"x": 2104,
+						"y": 174
+					},
+					{
+						"x": 2104,
+						"y": 194
+					}
+				],
+				"path": "M2178,154L2178,166.92893218813452Q2178,174 2170.9289321881347,174L2111.0710678118653,174Q2104,174 2104,181.07106781186548L2104,190",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_coo_o2_0",
+				"points": [
+					{
+						"x": 2222,
+						"y": 154
+					},
+					{
+						"x": 2222,
+						"y": 174
+					},
+					{
+						"x": 2296,
+						"y": 174
+					},
+					{
+						"x": 2296,
+						"y": 194
+					}
+				],
+				"path": "M2222,154L2222,166.92893218813452Q2222,174 2229.0710678118653,174L2288.9289321881347,174Q2296,174 2296,181.07106781186548L2296,190",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_o2_s1_0",
+				"points": [
+					{
+						"x": 2274,
+						"y": 250.4000015258789
+					},
+					{
+						"x": 2274,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 2200,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 2200,
+						"y": 290.4000015258789
+					}
+				],
+				"path": "M2274,250.4000015258789L2274,263.32893371401343Q2274,270.4000015258789 2266.9289321881347,270.4000015258789L2207.0710678118653,270.4000015258789Q2200,270.4000015258789 2200,277.4710693377444L2200,286.4000015258789",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_o2_s2_0",
+				"points": [
+					{
+						"x": 2318,
+						"y": 250.4000015258789
+					},
+					{
+						"x": 2318,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 2392,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 2392,
+						"y": 290.4000015258789
+					}
+				],
+				"path": "M2318,250.4000015258789L2318,263.32893371401343Q2318,270.4000015258789 2325.0710678118653,270.4000015258789L2384.9289321881347,270.4000015258789Q2392,270.4000015258789 2392,277.4710693377444L2392,286.4000015258789",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_cmo_m1_0",
+				"points": [
+					{
+						"x": 2562,
+						"y": 154
+					},
+					{
+						"x": 2562,
+						"y": 174
+					},
+					{
+						"x": 2488,
+						"y": 174
+					},
+					{
+						"x": 2488,
+						"y": 194
+					}
+				],
+				"path": "M2562,154L2562,166.92893218813452Q2562,174 2554.9289321881347,174L2495.0710678118653,174Q2488,174 2488,181.07106781186548L2488,190",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_cmo_m2_0",
+				"points": [
+					{
+						"x": 2606,
+						"y": 154
+					},
+					{
+						"x": 2606,
+						"y": 174
+					},
+					{
+						"x": 2680,
+						"y": 174
+					},
+					{
+						"x": 2680,
+						"y": 204.26666768391928
+					}
+				],
+				"path": "M2606,154L2606,166.92893218813452Q2606,174 2613.0710678118653,174L2672.9289321881347,174Q2680,174 2680,181.07106781186548L2680,200.26666768391928",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_m2_g1_0",
+				"points": [
+					{
+						"x": 2658,
+						"y": 245.26666768391928
+					},
+					{
+						"x": 2658,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 2584,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 2584,
+						"y": 290.4000015258789
+					}
+				],
+				"path": "M2658,245.26666768391928L2658,263.32893371401343Q2658,270.4000015258789 2650.9289321881347,270.4000015258789L2591.0710678118653,270.4000015258789Q2584,270.4000015258789 2584,277.4710693377444L2584,286.4000015258789",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_m2_g2_0",
+				"points": [
+					{
+						"x": 2702,
+						"y": 245.26666768391928
+					},
+					{
+						"x": 2702,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 2776,
+						"y": 270.4000015258789
+					},
+					{
+						"x": 2776,
+						"y": 290.4000015258789
+					}
+				],
+				"path": "M2702,245.26666768391928L2702,263.32893371401343Q2702,270.4000015258789 2709.0710678118653,270.4000015258789L2768.9289321881347,270.4000015258789Q2776,270.4000015258789 2776,277.4710693377444L2776,286.4000015258789",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			}
+		]
+	},
+	"svg_sha256": "a73768cd77135ef9d441880cebcc950af39c3bb0644da522de529c11249ac96f"
+}

@@ -1,0 +1,2200 @@
+{
+	"schema": 6,
+	"key": "b4a96aeedfe19ea086c48dd993a05e90e28106c1488616490b00cf284fe1b042",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart LR\n    commit[Commit] --> lint[Lint]\n    commit --> unit[Unit tests]\n    commit --> build[Build image]\n    lint --> gate{Checks pass?}\n    unit --> gate\n    build --> scan[Security scan]\n    scan --> gate\n    gate -->|no| notify[Notify author]\n    gate -->|yes| staging[Deploy to staging]\n    staging --> smoke[Smoke tests]\n    staging --> perf[Load tests]\n    smoke --> approve{Approved?}\n    perf --> approve\n    approve -->|no| rollback[Roll back staging]\n    approve -->|yes| canary[Canary release]\n    canary --> metrics[(Metrics store)]\n    metrics --> healthy{Healthy?}\n    healthy -->|yes| prod[Full rollout]\n    healthy -->|no| rollback\n    rollback --> notify\n    prod --> done([Done])\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "LR",
+		"nodes": [
+			{
+				"id": "commit",
+				"text": "Commit",
+				"label": "Commit",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "lint",
+				"text": "Lint",
+				"label": "Lint",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "unit",
+				"text": "Unit tests",
+				"label": "Unit tests",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "build",
+				"text": "Build image",
+				"label": "Build image",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "gate",
+				"text": "Checks pass?",
+				"label": "Checks pass?",
+				"shape": "diamond",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "scan",
+				"text": "Security scan",
+				"label": "Security scan",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "notify",
+				"text": "Notify author",
+				"label": "Notify author",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "staging",
+				"text": "Deploy to staging",
+				"label": "Deploy to staging",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "smoke",
+				"text": "Smoke tests",
+				"label": "Smoke tests",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "perf",
+				"text": "Load tests",
+				"label": "Load tests",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "approve",
+				"text": "Approved?",
+				"label": "Approved?",
+				"shape": "diamond",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "rollback",
+				"text": "Roll back staging",
+				"label": "Roll back staging",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "canary",
+				"text": "Canary release",
+				"label": "Canary release",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "metrics",
+				"text": "Metrics store",
+				"label": "Metrics store",
+				"shape": "cylinder",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "healthy",
+				"text": "Healthy?",
+				"label": "Healthy?",
+				"shape": "diamond",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "prod",
+				"text": "Full rollout",
+				"label": "Full rollout",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "done",
+				"text": "Done",
+				"label": "Done",
+				"shape": "stadium",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "commit",
+				"to": "lint",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "commit",
+				"to": "unit",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "commit",
+				"to": "build",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "lint",
+				"to": "gate",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "unit",
+				"to": "gate",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "build",
+				"to": "scan",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "scan",
+				"to": "gate",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "gate",
+				"to": "notify",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "no",
+				"label": "no",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "gate",
+				"to": "staging",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "yes",
+				"label": "yes",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "staging",
+				"to": "smoke",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "staging",
+				"to": "perf",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "smoke",
+				"to": "approve",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "perf",
+				"to": "approve",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "approve",
+				"to": "rollback",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "no",
+				"label": "no",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "approve",
+				"to": "canary",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "yes",
+				"label": "yes",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "canary",
+				"to": "metrics",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "metrics",
+				"to": "healthy",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "healthy",
+				"to": "prod",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "yes",
+				"label": "yes",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "healthy",
+				"to": "rollback",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "no",
+				"label": "no",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "rollback",
+				"to": "notify",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "prod",
+				"to": "done",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "commit",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "lint",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "unit",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "build",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "gate",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "diamond",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "scan",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "notify",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "staging",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "smoke",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "perf",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "approve",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "diamond",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "rollback",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "canary",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "metrics",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "cylinder",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "healthy",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "diamond",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "prod",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "done",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "stadium",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_commit_lint_0",
+				"from": "commit",
+				"to": "lint",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_commit_unit_0",
+				"from": "commit",
+				"to": "unit",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_commit_build_0",
+				"from": "commit",
+				"to": "build",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_lint_gate_0",
+				"from": "lint",
+				"to": "gate",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_unit_gate_0",
+				"from": "unit",
+				"to": "gate",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_build_scan_0",
+				"from": "build",
+				"to": "scan",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_scan_gate_0",
+				"from": "scan",
+				"to": "gate",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_gate_notify_0",
+				"from": "gate",
+				"to": "notify",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_gate_staging_0",
+				"from": "gate",
+				"to": "staging",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_staging_smoke_0",
+				"from": "staging",
+				"to": "smoke",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_staging_perf_0",
+				"from": "staging",
+				"to": "perf",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_smoke_approve_0",
+				"from": "smoke",
+				"to": "approve",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_perf_approve_0",
+				"from": "perf",
+				"to": "approve",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_approve_rollback_0",
+				"from": "approve",
+				"to": "rollback",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_approve_canary_0",
+				"from": "approve",
+				"to": "canary",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_canary_metrics_0",
+				"from": "canary",
+				"to": "metrics",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_metrics_healthy_0",
+				"from": "metrics",
+				"to": "healthy",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_healthy_prod_0",
+				"from": "healthy",
+				"to": "prod",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_healthy_rollback_0",
+				"from": "healthy",
+				"to": "rollback",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_rollback_notify_0",
+				"from": "rollback",
+				"to": "notify",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_prod_done_0",
+				"from": "prod",
+				"to": "done",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 2556.69775390625,
+			"height": 277
+		},
+		"nodes": [
+			{
+				"id": "commit",
+				"center": {
+					"x": 88,
+					"y": 75.75
+				},
+				"box": {
+					"x": 12,
+					"y": 55.25,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 12,
+					"y": 55.25,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 62.457275390625,
+					"y": 68.46615433692932,
+					"width": 52.87225341796875,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Commit"
+					],
+					"box": {
+						"x": -25.5625,
+						"y": 9.5367431640625e-7,
+						"width": 51.5390625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "lint",
+				"center": {
+					"x": 492,
+					"y": 38.37499999999999
+				},
+				"box": {
+					"x": 416,
+					"y": 17.874999999999993,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 416,
+					"y": 17.874999999999993,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 479.91526985168457,
+					"y": 31.09115433692933,
+					"width": 25.945341110229492,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Lint"
+					],
+					"box": {
+						"x": -12.0859375,
+						"y": 9.5367431640625e-7,
+						"width": 24.578125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "unit",
+				"center": {
+					"x": 300,
+					"y": 79.875
+				},
+				"box": {
+					"x": 224,
+					"y": 59.375,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 224,
+					"y": 59.375,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 268.78943634033203,
+					"y": 72.59115433692932,
+					"width": 64.59407043457031,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Unit tests"
+					],
+					"box": {
+						"x": -31.21875,
+						"y": 9.5367431640625e-7,
+						"width": 62.4375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "build",
+				"center": {
+					"x": 300,
+					"y": 160.87500000000003
+				},
+				"box": {
+					"x": 224,
+					"y": 140.37500000000003,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 224,
+					"y": 140.37500000000003,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 261.5236167907715,
+					"y": 153.59115433692932,
+					"width": 78.34008026123047,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Build image"
+					],
+					"box": {
+						"x": -38.5,
+						"y": 9.5367431640625e-7,
+						"width": 77,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "gate",
+				"center": {
+					"x": 691.5,
+					"y": 95.5
+				},
+				"box": {
+					"x": 608.5,
+					"y": 12.000000000000028,
+					"width": 167,
+					"height": 167
+				},
+				"outer": {
+					"x": 608.5,
+					"y": 12,
+					"width": 167,
+					"height": 167
+				},
+				"label": {
+					"x": 645.4581756591797,
+					"y": 88.21615433692932,
+					"width": 94.51782989501953,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Checks pass?"
+					],
+					"box": {
+						"x": -46.1015625,
+						"y": 9.5367431640625e-7,
+						"width": 92.203125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "scan",
+				"center": {
+					"x": 492,
+					"y": 160.87500000000003
+				},
+				"box": {
+					"x": 416,
+					"y": 140.37500000000003,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 416,
+					"y": 140.37500000000003,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 446.7821350097656,
+					"y": 153.59115433692932,
+					"width": 91.7574462890625,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Security scan"
+					],
+					"box": {
+						"x": -45.28125,
+						"y": 9.5367431640625e-7,
+						"width": 90.5625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "notify",
+				"center": {
+					"x": 2458.46875,
+					"y": 69
+				},
+				"box": {
+					"x": 2382.46875,
+					"y": 48.5,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 2382.46875,
+					"y": 48.5,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 2415.1984252929688,
+					"y": 61.71615433692932,
+					"width": 87.61936950683594,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Notify author"
+					],
+					"box": {
+						"x": -43.2890625,
+						"y": 9.5367431640625e-7,
+						"width": 86.578125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "staging",
+				"center": {
+					"x": 958.1562500000001,
+					"y": 137.25
+				},
+				"box": {
+					"x": 882.1562500000001,
+					"y": 116.75,
+					"width": 151.9999999999999,
+					"height": 41
+				},
+				"outer": {
+					"x": 882.1562500000001,
+					"y": 116.75,
+					"width": 151.9999999999999,
+					"height": 41
+				},
+				"label": {
+					"x": 900.3542861938478,
+					"y": 129.96615433692932,
+					"width": 116.5877456665039,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Deploy to staging"
+					],
+					"box": {
+						"x": -57.8359375,
+						"y": 9.5367431640625e-7,
+						"width": 115.671875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "smoke",
+				"center": {
+					"x": 1150.15625,
+					"y": 96.75
+				},
+				"box": {
+					"x": 1074.15625,
+					"y": 76.25,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 1074.15625,
+					"y": 76.25,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1109.7073593139648,
+					"y": 89.46615433692932,
+					"width": 83.07072448730469,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Smoke tests"
+					],
+					"box": {
+						"x": -40.46875,
+						"y": 9.5367431640625e-7,
+						"width": 80.9375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "perf",
+				"center": {
+					"x": 1150.15625,
+					"y": 177.75000000000003
+				},
+				"box": {
+					"x": 1074.15625,
+					"y": 157.25000000000003,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 1074.15625,
+					"y": 157.25000000000003,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1115.8495979309082,
+					"y": 170.46615433692932,
+					"width": 70.78624725341797,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Load tests"
+					],
+					"box": {
+						"x": -34.328125,
+						"y": 9.5367431640625e-7,
+						"width": 68.65625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "approve",
+				"center": {
+					"x": 1349.65625,
+					"y": 137.25
+				},
+				"box": {
+					"x": 1266.65625,
+					"y": 53.75,
+					"width": 167,
+					"height": 167
+				},
+				"outer": {
+					"x": 1266.65625,
+					"y": 53.75,
+					"width": 167,
+					"height": 167
+				},
+				"label": {
+					"x": 1313.976333618164,
+					"y": 129.96615433692932,
+					"width": 73.79791259765625,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Approved?"
+					],
+					"box": {
+						"x": -35.7265625,
+						"y": 9.5367431640625e-7,
+						"width": 71.453125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "rollback",
+				"center": {
+					"x": 2266.46875,
+					"y": 110.75000000000001
+				},
+				"box": {
+					"x": 2190.46875,
+					"y": 90.25000000000001,
+					"width": 152,
+					"height": 40.999999999999986
+				},
+				"outer": {
+					"x": 2190.46875,
+					"y": 90.25000000000001,
+					"width": 152,
+					"height": 40.999999999999986
+				},
+				"label": {
+					"x": 2210.089988708496,
+					"y": 103.46615433692932,
+					"width": 113.74134063720703,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Roll back staging"
+					],
+					"box": {
+						"x": -56.4296875,
+						"y": 9.5367431640625e-7,
+						"width": 112.859375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "canary",
+				"center": {
+					"x": 1616.3125,
+					"y": 189.50000000000003
+				},
+				"box": {
+					"x": 1540.3125,
+					"y": 169.00000000000003,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 1540.3125,
+					"y": 169.00000000000003,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 1566.4505043029785,
+					"y": 182.21615433692932,
+					"width": 101.15021514892578,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Canary release"
+					],
+					"box": {
+						"x": -49.9140625,
+						"y": 9.5367431640625e-7,
+						"width": 99.828125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "metrics",
+				"center": {
+					"x": 1804.3125,
+					"y": 189.50000000000003
+				},
+				"box": {
+					"x": 1732.3125,
+					"y": 148.92565155029297,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"outer": {
+					"x": 1732.3125,
+					"y": 148.925651550293,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"label": {
+					"x": 1760.8673973083496,
+					"y": 192.216153383255,
+					"width": 88.29116821289062,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Metrics store"
+					],
+					"box": {
+						"x": -43.4765625,
+						"y": 9.5367431640625e-7,
+						"width": 86.953125,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "healthy",
+				"center": {
+					"x": 1999.8125,
+					"y": 189.50000000000003
+				},
+				"box": {
+					"x": 1916.8125000000002,
+					"y": 105.99999999999994,
+					"width": 166.99999999999977,
+					"height": 167
+				},
+				"outer": {
+					"x": 1916.8125,
+					"y": 106.00000000000003,
+					"width": 167,
+					"height": 166.99999999999997
+				},
+				"label": {
+					"x": 1970.9240016937256,
+					"y": 182.21615433692932,
+					"width": 60.20571517944336,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Healthy?"
+					],
+					"box": {
+						"x": -28.921875,
+						"y": 9.5367431640625e-7,
+						"width": 57.84375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "prod",
+				"center": {
+					"x": 2266.46875,
+					"y": 214
+				},
+				"box": {
+					"x": 2190.46875,
+					"y": 193.5,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 2190.46875,
+					"y": 193.5,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 2232.3368759155273,
+					"y": 206.71615433692932,
+					"width": 70.03548431396484,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Full rollout"
+					],
+					"box": {
+						"x": -34.1328125,
+						"y": 9.5367431640625e-7,
+						"width": 68.68359375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "done",
+				"center": {
+					"x": 2467.583251953125,
+					"y": 214
+				},
+				"box": {
+					"x": 2382.4687881469727,
+					"y": 193.5,
+					"width": 170.2289276123047,
+					"height": 41
+				},
+				"outer": {
+					"x": 2382.4687881469727,
+					"y": 193.5,
+					"width": 170.2289276123047,
+					"height": 41
+				},
+				"label": {
+					"x": 2450.130304336548,
+					"y": 206.71615433692932,
+					"width": 36.32363510131836,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"Done"
+					],
+					"box": {
+						"x": -17.46875,
+						"y": 9.5367431640625e-7,
+						"width": 34.9375,
+						"height": 17
+					}
+				}
+			}
+		],
+		"clusters": [],
+		"edges": [
+			{
+				"id": "L_commit_lint_0",
+				"points": [
+					{
+						"x": 164,
+						"y": 70.5
+					},
+					{
+						"x": 184,
+						"y": 70.5
+					},
+					{
+						"x": 184,
+						"y": 38.375
+					},
+					{
+						"x": 300,
+						"y": 38.375
+					},
+					{
+						"x": 416,
+						"y": 38.375
+					}
+				],
+				"path": "M164,70.5L176.92893218813452,70.5Q184,70.5 184,63.428932188134524L184,45.446067811865476Q184,38.375 191.07106781186548,38.375L300,38.375L412,38.375",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_commit_unit_0",
+				"points": [
+					{
+						"x": 164,
+						"y": 75.75
+					},
+					{
+						"x": 204,
+						"y": 75.75
+					},
+					{
+						"x": 204,
+						"y": 79.875
+					},
+					{
+						"x": 224,
+						"y": 79.875
+					}
+				],
+				"path": "M164,75.75L201.9375,75.75Q204,75.75 204,77.8125L204,77.8125Q204,79.875 206.0625,79.875L220,79.875",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_commit_build_0",
+				"points": [
+					{
+						"x": 164,
+						"y": 81
+					},
+					{
+						"x": 184,
+						"y": 81
+					},
+					{
+						"x": 184,
+						"y": 160.875
+					},
+					{
+						"x": 224,
+						"y": 160.875
+					}
+				],
+				"path": "M164,81L176.92893218813452,81Q184,81 184,88.07106781186548L184,153.80393218813452Q184,160.875 191.07106781186548,160.875L220,160.875",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_lint_gate_0",
+				"points": [
+					{
+						"x": 568,
+						"y": 38.375
+					},
+					{
+						"x": 588,
+						"y": 38.375
+					},
+					{
+						"x": 588,
+						"y": 58.75
+					},
+					{
+						"x": 608,
+						"y": 58.75
+					},
+					{
+						"x": 644.750078201294,
+						"y": 58.75
+					}
+				],
+				"path": "M568,38.375L580.9289321881345,38.375Q588,38.375 588,45.446067811865476L588,51.678932188134524Q588,58.75 595.0710678118655,58.75L608,58.75L640.750078201294,58.75",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_unit_gate_0",
+				"points": [
+					{
+						"x": 376,
+						"y": 79.875
+					},
+					{
+						"x": 492,
+						"y": 79.875
+					},
+					{
+						"x": 588,
+						"y": 79.875
+					},
+					{
+						"x": 588,
+						"y": 95.5
+					},
+					{
+						"x": 608,
+						"y": 95.5
+					}
+				],
+				"path": "M376,79.875L492,79.875L580.9289321881345,79.875Q588,79.875 588,86.94606781186548L588,88.42893218813452Q588,95.5 595.0710678118655,95.5L604,95.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_build_scan_0",
+				"points": [
+					{
+						"x": 376,
+						"y": 160.875
+					},
+					{
+						"x": 416,
+						"y": 160.875
+					}
+				],
+				"path": "M376,160.875L412,160.875",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_scan_gate_0",
+				"points": [
+					{
+						"x": 568,
+						"y": 160.875
+					},
+					{
+						"x": 588,
+						"y": 160.875
+					},
+					{
+						"x": 588,
+						"y": 132.25
+					},
+					{
+						"x": 608,
+						"y": 132.25
+					},
+					{
+						"x": 644.750078201294,
+						"y": 132.25
+					}
+				],
+				"path": "M568,160.875L580.9289321881345,160.875Q588,160.875 588,153.80393218813452L588,139.32106781186548Q588,132.25 595.0710678118655,132.25L608,132.25L640.750078201294,132.25",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_gate_notify_0",
+				"points": [
+					{
+						"x": 750.4999213218689,
+						"y": 71
+					},
+					{
+						"x": 775,
+						"y": 71
+					},
+					{
+						"x": 795,
+						"y": 71
+					},
+					{
+						"x": 795,
+						"y": 29
+					},
+					{
+						"x": 828.578125,
+						"y": 29
+					},
+					{
+						"x": 958.15625,
+						"y": 29
+					},
+					{
+						"x": 1150.15625,
+						"y": 29
+					},
+					{
+						"x": 1349.65625,
+						"y": 29
+					},
+					{
+						"x": 1616.3125,
+						"y": 29
+					},
+					{
+						"x": 1804.3125,
+						"y": 29
+					},
+					{
+						"x": 1999.8125,
+						"y": 29
+					},
+					{
+						"x": 2136.890625,
+						"y": 29
+					},
+					{
+						"x": 2266.46875,
+						"y": 29
+					},
+					{
+						"x": 2362.46875,
+						"y": 29
+					},
+					{
+						"x": 2362.46875,
+						"y": 65.5
+					},
+					{
+						"x": 2382.46875,
+						"y": 65.5
+					}
+				],
+				"path": "M750.4999213218689,71L775,71L787.9289321881345,71Q795,71 795,63.928932188134524L795,36.071067811865476Q795,29 802.0710678118655,29L828.578125,29L958.15625,29L1150.15625,29L1349.65625,29L1616.3125,29L1804.3125,29L1999.8125,29L2136.890625,29L2266.46875,29L2355.3976821881347,29Q2362.46875,29 2362.46875,36.071067811865476L2362.46875,58.428932188134524Q2362.46875,65.5 2369.5398178118653,65.5L2378.46875,65.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 1478.3949127197266,
+					"y": 21.216153383255005,
+					"width": 17.84893035888672,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"no"
+					],
+					"box": {
+						"x": -8.3359375,
+						"y": 9.5367431640625e-7,
+						"width": 16.671875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_gate_staging_0",
+				"points": [
+					{
+						"x": 750.4999213218689,
+						"y": 120
+					},
+					{
+						"x": 775,
+						"y": 120
+					},
+					{
+						"x": 795,
+						"y": 120
+					},
+					{
+						"x": 795,
+						"y": 137.25
+					},
+					{
+						"x": 882.15625,
+						"y": 137.25
+					}
+				],
+				"path": "M750.4999213218689,120L775,120L787.9289321881345,120Q795,120 795,127.07106781186548L795,130.17893218813452Q795,137.25 802.0710678118655,137.25L878.15625,137.25",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 817.0177326202393,
+					"y": 129.466153383255,
+					"width": 25.324542999267578,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"yes"
+					],
+					"box": {
+						"x": -11.578125,
+						"y": 9.5367431640625e-7,
+						"width": 23.15625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_staging_smoke_0",
+				"points": [
+					{
+						"x": 1034.15625,
+						"y": 133.75
+					},
+					{
+						"x": 1054.15625,
+						"y": 133.75
+					},
+					{
+						"x": 1054.15625,
+						"y": 96.75
+					},
+					{
+						"x": 1074.15625,
+						"y": 96.75
+					}
+				],
+				"path": "M1034.15625,133.75L1047.0851821881345,133.75Q1054.15625,133.75 1054.15625,126.67893218813452L1054.15625,103.82106781186548Q1054.15625,96.75 1061.2273178118655,96.75L1070.15625,96.75",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_staging_perf_0",
+				"points": [
+					{
+						"x": 1034.15625,
+						"y": 140.75
+					},
+					{
+						"x": 1054.15625,
+						"y": 140.75
+					},
+					{
+						"x": 1054.15625,
+						"y": 177.75
+					},
+					{
+						"x": 1074.15625,
+						"y": 177.75
+					}
+				],
+				"path": "M1034.15625,140.75L1047.0851821881345,140.75Q1054.15625,140.75 1054.15625,147.82106781186548L1054.15625,170.67893218813452Q1054.15625,177.75 1061.2273178118655,177.75L1070.15625,177.75",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_smoke_approve_0",
+				"points": [
+					{
+						"x": 1226.15625,
+						"y": 96.75
+					},
+					{
+						"x": 1246.15625,
+						"y": 96.75
+					},
+					{
+						"x": 1246.15625,
+						"y": 112.75
+					},
+					{
+						"x": 1266.15625,
+						"y": 112.75
+					},
+					{
+						"x": 1290.656328678131,
+						"y": 112.75
+					}
+				],
+				"path": "M1226.15625,96.75L1239.0851821881345,96.75Q1246.15625,96.75 1246.15625,103.82106781186548L1246.15625,105.67893218813452Q1246.15625,112.75 1253.2273178118655,112.75L1266.15625,112.75L1286.656328678131,112.75",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_perf_approve_0",
+				"points": [
+					{
+						"x": 1226.15625,
+						"y": 177.75
+					},
+					{
+						"x": 1246.15625,
+						"y": 177.75
+					},
+					{
+						"x": 1246.15625,
+						"y": 161.75
+					},
+					{
+						"x": 1266.15625,
+						"y": 161.75
+					},
+					{
+						"x": 1290.656328678131,
+						"y": 161.75
+					}
+				],
+				"path": "M1226.15625,177.75L1239.0851821881345,177.75Q1246.15625,177.75 1246.15625,170.67893218813452L1246.15625,168.82106781186548Q1246.15625,161.75 1253.2273178118655,161.75L1266.15625,161.75L1286.656328678131,161.75",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_approve_rollback_0",
+				"points": [
+					{
+						"x": 1408.656171321869,
+						"y": 112.75
+					},
+					{
+						"x": 1433.15625,
+						"y": 112.75
+					},
+					{
+						"x": 1453.15625,
+						"y": 112.75
+					},
+					{
+						"x": 1453.15625,
+						"y": 85
+					},
+					{
+						"x": 1486.734375,
+						"y": 85
+					},
+					{
+						"x": 1616.3125,
+						"y": 85
+					},
+					{
+						"x": 1999.8125,
+						"y": 85
+					},
+					{
+						"x": 2136.890625,
+						"y": 85
+					},
+					{
+						"x": 2170.46875,
+						"y": 85
+					},
+					{
+						"x": 2170.46875,
+						"y": 107.25
+					},
+					{
+						"x": 2190.46875,
+						"y": 107.25
+					}
+				],
+				"path": "M1408.656171321869,112.75L1433.15625,112.75L1446.0851821881345,112.75Q1453.15625,112.75 1453.15625,105.67893218813452L1453.15625,92.07106781186548Q1453.15625,85 1460.2273178118655,85L1486.734375,85L1616.3125,85L1999.8125,85L2136.890625,85L2163.3976821881347,85Q2170.46875,85 2170.46875,92.07106781186548L2170.46875,100.17893218813452Q2170.46875,107.25 2177.5398178118653,107.25L2186.46875,107.25",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 1795.9730377197266,
+					"y": 77.216153383255,
+					"width": 17.84893035888672,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"no"
+					],
+					"box": {
+						"x": -8.3359375,
+						"y": 9.5367431640625e-7,
+						"width": 16.671875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_approve_canary_0",
+				"points": [
+					{
+						"x": 1408.656171321869,
+						"y": 161.75
+					},
+					{
+						"x": 1433.15625,
+						"y": 161.75
+					},
+					{
+						"x": 1453.15625,
+						"y": 161.75
+					},
+					{
+						"x": 1453.15625,
+						"y": 189.5
+					},
+					{
+						"x": 1540.3125,
+						"y": 189.5
+					}
+				],
+				"path": "M1408.656171321869,161.75L1433.15625,161.75L1446.0851821881345,161.75Q1453.15625,161.75 1453.15625,168.82106781186548L1453.15625,182.42893218813452Q1453.15625,189.5 1460.2273178118655,189.5L1536.3125,189.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 1475.1739826202393,
+					"y": 181.716153383255,
+					"width": 25.324542999267578,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"yes"
+					],
+					"box": {
+						"x": -11.578125,
+						"y": 9.5367431640625e-7,
+						"width": 23.15625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_canary_metrics_0",
+				"points": [
+					{
+						"x": 1692.3125,
+						"y": 189.5
+					},
+					{
+						"x": 1732.3125,
+						"y": 189.5
+					}
+				],
+				"path": "M1692.3125,189.5L1728.3125,189.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_metrics_healthy_0",
+				"points": [
+					{
+						"x": 1876.3125,
+						"y": 189.5
+					},
+					{
+						"x": 1916.3125,
+						"y": 189.5
+					}
+				],
+				"path": "M1876.3125,189.5L1912.3125,189.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_healthy_prod_0",
+				"points": [
+					{
+						"x": 2058.812421321869,
+						"y": 214
+					},
+					{
+						"x": 2083.3125,
+						"y": 214
+					},
+					{
+						"x": 2190.46875,
+						"y": 214
+					}
+				],
+				"path": "M2058.812421321869,214L2083.3125,214L2186.46875,214",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 2125.3302326202393,
+					"y": 206.216153383255,
+					"width": 25.324542999267578,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"yes"
+					],
+					"box": {
+						"x": -11.578125,
+						"y": 9.5367431640625e-7,
+						"width": 23.15625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_healthy_rollback_0",
+				"points": [
+					{
+						"x": 2058.812421321869,
+						"y": 165
+					},
+					{
+						"x": 2083.3125,
+						"y": 165
+					},
+					{
+						"x": 2103.3125,
+						"y": 165
+					},
+					{
+						"x": 2103.3125,
+						"y": 150.75
+					},
+					{
+						"x": 2170.46875,
+						"y": 150.75
+					},
+					{
+						"x": 2170.46875,
+						"y": 114.25
+					},
+					{
+						"x": 2190.46875,
+						"y": 114.25
+					}
+				],
+				"path": "M2058.812421321869,165L2083.3125,165L2096.2414321881347,165Q2103.3125,165 2103.3125,157.92893218813452L2103.3125,157.82106781186548Q2103.3125,150.75 2110.3835678118653,150.75L2163.3976821881347,150.75Q2170.46875,150.75 2170.46875,143.67893218813452L2170.46875,121.32106781186548Q2170.46875,114.25 2177.5398178118653,114.25L2186.46875,114.25",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 2128.5511627197266,
+					"y": 142.966153383255,
+					"width": 17.84893035888672,
+					"height": 15.979808807373047
+				},
+				"text": {
+					"rows": [
+						"no"
+					],
+					"box": {
+						"x": -8.3359375,
+						"y": 9.5367431640625e-7,
+						"width": 16.671875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_rollback_notify_0",
+				"points": [
+					{
+						"x": 2342.46875,
+						"y": 110.75
+					},
+					{
+						"x": 2362.46875,
+						"y": 110.75
+					},
+					{
+						"x": 2362.46875,
+						"y": 72.5
+					},
+					{
+						"x": 2382.46875,
+						"y": 72.5
+					}
+				],
+				"path": "M2342.46875,110.75L2355.3976821881347,110.75Q2362.46875,110.75 2362.46875,103.67893218813452L2362.46875,79.57106781186548Q2362.46875,72.5 2369.5398178118653,72.5L2378.46875,72.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_prod_done_0",
+				"points": [
+					{
+						"x": 2342.46875,
+						"y": 214
+					},
+					{
+						"x": 2382.46875,
+						"y": 214
+					}
+				],
+				"path": "M2342.46875,214L2378.46875,214",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			}
+		]
+	},
+	"svg_sha256": "ff1568ba0e274335956a789799b4c28974686c88986a59f97a9cd0fd8575fe04"
+}

@@ -1,0 +1,1258 @@
+{
+	"schema": 6,
+	"key": "3a6d6e9c6b75106a2b5a8d6c17904f4a2fe76e50ae1897566b7ddd7be92fc9ba",
+	"provenance": {
+		"extractor": 6,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart LR\n    router{Router} -->|/users| users[Users]\n    router -->|/orders| orders[Orders]\n    router -->|/products| products[Products]\n    router -->|/search| search[Search]\n    router -->|/admin| admin[Admin]\n    router -->|other| notfound[404]\n    users --> db[(Database)]\n    orders --> db\n    products --> db\n    search --> idx[(Index)]\n    admin --> db\n    admin --> idx\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "LR",
+		"nodes": [
+			{
+				"id": "router",
+				"text": "Router",
+				"label": "Router",
+				"shape": "diamond",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "users",
+				"text": "Users",
+				"label": "Users",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "orders",
+				"text": "Orders",
+				"label": "Orders",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "products",
+				"text": "Products",
+				"label": "Products",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "search",
+				"text": "Search",
+				"label": "Search",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "admin",
+				"text": "Admin",
+				"label": "Admin",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "notfound",
+				"text": "404",
+				"label": "404",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "db",
+				"text": "Database",
+				"label": "Database",
+				"shape": "cylinder",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "idx",
+				"text": "Index",
+				"label": "Index",
+				"shape": "cylinder",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "router",
+				"to": "users",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "/users",
+				"label": "/users",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "router",
+				"to": "orders",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "/orders",
+				"label": "/orders",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "router",
+				"to": "products",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "/products",
+				"label": "/products",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "router",
+				"to": "search",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "/search",
+				"label": "/search",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "router",
+				"to": "admin",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "/admin",
+				"label": "/admin",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "router",
+				"to": "notfound",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "other",
+				"label": "other",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "users",
+				"to": "db",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "orders",
+				"to": "db",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "products",
+				"to": "db",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "search",
+				"to": "idx",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "admin",
+				"to": "db",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "admin",
+				"to": "idx",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "router",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "diamond",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "users",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "orders",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "products",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "search",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "admin",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "notfound",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "db",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "cylinder",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "idx",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "cylinder",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_router_users_0",
+				"from": "router",
+				"to": "users",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_router_orders_0",
+				"from": "router",
+				"to": "orders",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_router_products_0",
+				"from": "router",
+				"to": "products",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_router_search_0",
+				"from": "router",
+				"to": "search",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_router_admin_0",
+				"from": "router",
+				"to": "admin",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_router_notfound_0",
+				"from": "router",
+				"to": "notfound",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_users_db_0",
+				"from": "users",
+				"to": "db",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_orders_db_0",
+				"from": "orders",
+				"to": "db",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_products_db_0",
+				"from": "products",
+				"to": "db",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_search_idx_0",
+				"from": "search",
+				"to": "idx",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_admin_db_0",
+				"from": "admin",
+				"to": "db",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_admin_idx_0",
+				"from": "admin",
+				"to": "idx",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4.5,
+			"y": 4,
+			"width": 726.234375,
+			"height": 462.3085632324219
+		},
+		"nodes": [
+			{
+				"id": "router",
+				"center": {
+					"x": 95.50000000000001,
+					"y": 221.06077575683597
+				},
+				"box": {
+					"x": 12.500000000000002,
+					"y": 137.56077575683594,
+					"width": 167,
+					"height": 167
+				},
+				"outer": {
+					"x": 12.500000000000014,
+					"y": 137.56077575683597,
+					"width": 167,
+					"height": 166.99999999999997
+				},
+				"label": {
+					"x": 73.8432025909424,
+					"y": 212.56042288843312,
+					"width": 43.313594818115234,
+					"height": 17.000429153442383
+				},
+				"text": {
+					"rows": [
+						"Router"
+					],
+					"box": {
+						"x": -21.6796875,
+						"y": 9.5367431640625e-7,
+						"width": 43.359375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "users",
+				"center": {
+					"x": 442.73437500000006,
+					"y": 32.5
+				},
+				"box": {
+					"x": 366.73437500000006,
+					"y": 12,
+					"width": 151.99999999999994,
+					"height": 41
+				},
+				"outer": {
+					"x": 366.73437500000006,
+					"y": 12,
+					"width": 151.99999999999994,
+					"height": 41
+				},
+				"label": {
+					"x": 423.43701171875006,
+					"y": 23.999647131597158,
+					"width": 38.5947265625,
+					"height": 17.000429153442383
+				},
+				"text": {
+					"rows": [
+						"Users"
+					],
+					"box": {
+						"x": -19.3203125,
+						"y": 9.5367431640625e-7,
+						"width": 38.640625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "orders",
+				"center": {
+					"x": 442.73437500000006,
+					"y": 194.5
+				},
+				"box": {
+					"x": 366.73437500000006,
+					"y": 174,
+					"width": 151.99999999999994,
+					"height": 41
+				},
+				"outer": {
+					"x": 366.73437500000006,
+					"y": 174,
+					"width": 151.99999999999994,
+					"height": 41
+				},
+				"label": {
+					"x": 420.18692970275885,
+					"y": 185.99964713159716,
+					"width": 45.09489059448242,
+					"height": 17.000429153442383
+				},
+				"text": {
+					"rows": [
+						"Orders"
+					],
+					"box": {
+						"x": -22.5703125,
+						"y": 9.5367431640625e-7,
+						"width": 45.140625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "products",
+				"center": {
+					"x": 442.73437500000006,
+					"y": 275.5
+				},
+				"box": {
+					"x": 366.73437500000006,
+					"y": 255,
+					"width": 151.99999999999994,
+					"height": 41
+				},
+				"outer": {
+					"x": 366.73437500000006,
+					"y": 255,
+					"width": 151.99999999999994,
+					"height": 41
+				},
+				"label": {
+					"x": 413.2336292266846,
+					"y": 266.99964713159716,
+					"width": 59.00149154663086,
+					"height": 17.000429153442383
+				},
+				"text": {
+					"rows": [
+						"Products"
+					],
+					"box": {
+						"x": -29.53125,
+						"y": 9.5367431640625e-7,
+						"width": 59.0625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "search",
+				"center": {
+					"x": 442.73437500000006,
+					"y": 437.80856323242193
+				},
+				"box": {
+					"x": 366.73437500000006,
+					"y": 417.30856323242193,
+					"width": 151.99999999999994,
+					"height": 41
+				},
+				"outer": {
+					"x": 366.73437500000006,
+					"y": 417.30856323242193,
+					"width": 151.99999999999994,
+					"height": 41
+				},
+				"label": {
+					"x": 419.5306644439698,
+					"y": 429.3082103640191,
+					"width": 46.40742111206055,
+					"height": 17.000429153442383
+				},
+				"text": {
+					"rows": [
+						"Search"
+					],
+					"box": {
+						"x": -23.234375,
+						"y": 9.5367431640625e-7,
+						"width": 46.46875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "admin",
+				"center": {
+					"x": 442.73437500000006,
+					"y": 356.50000000000006
+				},
+				"box": {
+					"x": 366.73437500000006,
+					"y": 336.00000000000006,
+					"width": 151.99999999999994,
+					"height": 41
+				},
+				"outer": {
+					"x": 366.73437500000006,
+					"y": 336.00000000000006,
+					"width": 151.99999999999994,
+					"height": 41
+				},
+				"label": {
+					"x": 421.6713428497315,
+					"y": 347.9996471315972,
+					"width": 42.12606430053711,
+					"height": 17.000429153442383
+				},
+				"text": {
+					"rows": [
+						"Admin"
+					],
+					"box": {
+						"x": -21.0859375,
+						"y": 9.5367431640625e-7,
+						"width": 42.171875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "notfound",
+				"center": {
+					"x": 442.73437500000006,
+					"y": 113.50000000000001
+				},
+				"box": {
+					"x": 366.73437500000006,
+					"y": 93.00000000000001,
+					"width": 151.99999999999994,
+					"height": 40.999999999999986
+				},
+				"outer": {
+					"x": 366.73437500000006,
+					"y": 93.00000000000001,
+					"width": 151.99999999999994,
+					"height": 40.999999999999986
+				},
+				"label": {
+					"x": 429.2887229919434,
+					"y": 104.99964713159717,
+					"width": 26.89130401611328,
+					"height": 17.000429153442383
+				},
+				"text": {
+					"rows": [
+						"404"
+					],
+					"box": {
+						"x": -13.4609375,
+						"y": 9.5367431640625e-7,
+						"width": 26.921875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "db",
+				"center": {
+					"x": 650.734375,
+					"y": 239.38513183593753
+				},
+				"box": {
+					"x": 578.734375,
+					"y": 198.8107833862305,
+					"width": 144,
+					"height": 81.14869689941403
+				},
+				"outer": {
+					"x": 578.734375,
+					"y": 198.8107833862305,
+					"width": 144,
+					"height": 81.14869689941403
+				},
+				"label": {
+					"x": 619.467960357666,
+					"y": 240.88477801386037,
+					"width": 62.53282928466797,
+					"height": 17.000429153442354
+				},
+				"text": {
+					"rows": [
+						"Database"
+					],
+					"box": {
+						"x": -31.3046875,
+						"y": 9.5367431640625e-7,
+						"width": 62.609375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "idx",
+				"center": {
+					"x": 650.734375,
+					"y": 403.13513183593756
+				},
+				"box": {
+					"x": 578.734375,
+					"y": 362.56078338623047,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"outer": {
+					"x": 578.734375,
+					"y": 362.5607833862305,
+					"width": 144,
+					"height": 81.14869689941406
+				},
+				"label": {
+					"x": 632.5239582061768,
+					"y": 404.6347780138604,
+					"width": 36.42021560668945,
+					"height": 17.000429153442383
+				},
+				"text": {
+					"rows": [
+						"Index"
+					],
+					"box": {
+						"x": -18.046875,
+						"y": 9.5367431640625e-7,
+						"width": 36.451171875,
+						"height": 17
+					}
+				}
+			}
+		],
+		"clusters": [],
+		"edges": [
+			{
+				"id": "L_router_users_0",
+				"points": [
+					{
+						"x": 126.4999451637268,
+						"y": 168.56078186035157
+					},
+					{
+						"x": 179,
+						"y": 168.56078186035157
+					},
+					{
+						"x": 199,
+						"y": 168.56078186035157
+					},
+					{
+						"x": 199,
+						"y": 32.5
+					},
+					{
+						"x": 366.734375,
+						"y": 32.5
+					}
+				],
+				"path": "M126.4999451637268,168.56078186035157L179,168.56078186035157L191.92893218813452,168.56078186035157Q199,168.56078186035157 199,161.4897140484861L199,39.571067811865476Q199,32.5 206.07106781186548,32.5L362.734375,32.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 272.116662979126,
+					"y": 23.49964617792284,
+					"width": 41.50104904174805,
+					"height": 17.000429153442383
+				},
+				"text": {
+					"rows": [
+						"/users"
+					],
+					"box": {
+						"x": -20.7734375,
+						"y": 9.5367431640625e-7,
+						"width": 41.546875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_router_orders_0",
+				"points": [
+					{
+						"x": 168.49998903274536,
+						"y": 210.56078186035157
+					},
+					{
+						"x": 179,
+						"y": 210.56078186035157
+					},
+					{
+						"x": 239,
+						"y": 210.56078186035157
+					},
+					{
+						"x": 239,
+						"y": 194.5
+					},
+					{
+						"x": 366.734375,
+						"y": 194.5
+					}
+				],
+				"path": "M168.49998903274536,210.56078186035157L179,210.56078186035157L231.92893218813452,210.56078186035157Q239,210.56078186035157 239,203.4897140484861L239,201.57106781186548Q239,194.5 246.07106781186548,194.5L362.734375,194.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 268.9525203704834,
+					"y": 185.49964617792287,
+					"width": 47.8293342590332,
+					"height": 17.000429153442383
+				},
+				"text": {
+					"rows": [
+						"/orders"
+					],
+					"box": {
+						"x": -23.9375,
+						"y": 9.5367431640625e-7,
+						"width": 47.875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_router_products_0",
+				"points": [
+					{
+						"x": 168.49998903274536,
+						"y": 231.56078186035157
+					},
+					{
+						"x": 179,
+						"y": 231.56078186035157
+					},
+					{
+						"x": 239,
+						"y": 231.56078186035157
+					},
+					{
+						"x": 239,
+						"y": 275.5
+					},
+					{
+						"x": 366.734375,
+						"y": 275.5
+					}
+				],
+				"path": "M168.49998903274536,231.56078186035157L179,231.56078186035157L231.92893218813452,231.56078186035157Q239,231.56078186035157 239,238.63184967221704L239,268.4289321881345Q239,275.5 246.07106781186548,275.5L362.734375,275.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 261.03044509887695,
+					"y": 266.49964617792284,
+					"width": 63.673484802246094,
+					"height": 17.000429153442383
+				},
+				"text": {
+					"rows": [
+						"/products"
+					],
+					"box": {
+						"x": -31.8671875,
+						"y": 9.5367431640625e-7,
+						"width": 63.734375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_router_search_0",
+				"points": [
+					{
+						"x": 126.4999451637268,
+						"y": 273.5607818603516
+					},
+					{
+						"x": 179,
+						"y": 273.5607818603516
+					},
+					{
+						"x": 199,
+						"y": 273.5607818603516
+					},
+					{
+						"x": 199,
+						"y": 437.80855051676434
+					},
+					{
+						"x": 366.734375,
+						"y": 437.80855051676434
+					}
+				],
+				"path": "M126.4999451637268,273.5607818603516L179,273.5607818603516L191.92893218813452,273.5607818603516Q199,273.5607818603516 199,280.6318496722171L199,430.73748270489887Q199,437.80855051676434 206.07106781186548,437.80855051676434L362.734375,437.80855051676434",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 267.9368705749512,
+					"y": 428.8082094103448,
+					"width": 49.860633850097656,
+					"height": 17.000429153442383
+				},
+				"text": {
+					"rows": [
+						"/search"
+					],
+					"box": {
+						"x": -24.9609375,
+						"y": 9.5367431640625e-7,
+						"width": 49.921875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_router_admin_0",
+				"points": [
+					{
+						"x": 147.49996709823608,
+						"y": 252.56078186035157
+					},
+					{
+						"x": 179,
+						"y": 252.56078186035157
+					},
+					{
+						"x": 219,
+						"y": 252.56078186035157
+					},
+					{
+						"x": 219,
+						"y": 356.5
+					},
+					{
+						"x": 366.734375,
+						"y": 356.5
+					}
+				],
+				"path": "M147.49996709823608,252.56078186035157L179,252.56078186035157L211.92893218813452,252.56078186035157Q219,252.56078186035157 219,259.6318496722171L219,349.4289321881345Q219,356.5 226.07106781186548,356.5L362.734375,356.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 270.1869258880615,
+					"y": 347.4996461779229,
+					"width": 45.36052322387695,
+					"height": 17.000429153442383
+				},
+				"text": {
+					"rows": [
+						"/admin"
+					],
+					"box": {
+						"x": -22.703125,
+						"y": 9.5367431640625e-7,
+						"width": 45.40625,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_router_notfound_0",
+				"points": [
+					{
+						"x": 147.49996709823608,
+						"y": 189.56078186035157
+					},
+					{
+						"x": 179,
+						"y": 189.56078186035157
+					},
+					{
+						"x": 219,
+						"y": 189.56078186035157
+					},
+					{
+						"x": 219,
+						"y": 113.5
+					},
+					{
+						"x": 366.734375,
+						"y": 113.5
+					}
+				],
+				"path": "M147.49996709823608,189.56078186035157L179,189.56078186035157L211.92893218813452,189.56078186035157Q219,189.56078186035157 219,182.4897140484861L219,120.57106781186548Q219,113.5 226.07106781186548,113.5L362.734375,113.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 275.53862380981445,
+					"y": 104.49964617792286,
+					"width": 34.657127380371094,
+					"height": 17.000429153442383
+				},
+				"text": {
+					"rows": [
+						"other"
+					],
+					"box": {
+						"x": -17.34375,
+						"y": 9.5367431640625e-7,
+						"width": 34.6875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_users_db_0",
+				"points": [
+					{
+						"x": 518.734375,
+						"y": 32.5
+					},
+					{
+						"x": 558.734375,
+						"y": 32.5
+					},
+					{
+						"x": 558.734375,
+						"y": 221.04052124023437
+					},
+					{
+						"x": 578.734375,
+						"y": 221.04052124023437
+					}
+				],
+				"path": "M518.734375,32.5L551.6633071881345,32.5Q558.734375,32.5 558.734375,39.571067811865476L558.734375,213.9694534283689Q558.734375,221.04052124023437 565.8054428118655,221.04052124023437L574.734375,221.04052124023437",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_orders_db_0",
+				"points": [
+					{
+						"x": 518.734375,
+						"y": 194.5
+					},
+					{
+						"x": 538.734375,
+						"y": 194.5
+					},
+					{
+						"x": 538.734375,
+						"y": 233.2702606201172
+					},
+					{
+						"x": 578.734375,
+						"y": 233.2702606201172
+					}
+				],
+				"path": "M518.734375,194.5L531.6633071881345,194.5Q538.734375,194.5 538.734375,201.57106781186548L538.734375,226.19919280825172Q538.734375,233.2702606201172 545.8054428118655,233.2702606201172L574.734375,233.2702606201172",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_products_db_0",
+				"points": [
+					{
+						"x": 518.734375,
+						"y": 275.5
+					},
+					{
+						"x": 538.734375,
+						"y": 275.5
+					},
+					{
+						"x": 538.734375,
+						"y": 245.5
+					},
+					{
+						"x": 578.734375,
+						"y": 245.5
+					}
+				],
+				"path": "M518.734375,275.5L531.6633071881345,275.5Q538.734375,275.5 538.734375,268.4289321881345L538.734375,252.57106781186548Q538.734375,245.5 545.8054428118655,245.5L574.734375,245.5",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_search_idx_0",
+				"points": [
+					{
+						"x": 518.734375,
+						"y": 437.80855051676434
+					},
+					{
+						"x": 538.734375,
+						"y": 437.80855051676434
+					},
+					{
+						"x": 538.734375,
+						"y": 413.3265797932943
+					},
+					{
+						"x": 578.734375,
+						"y": 413.3265797932943
+					}
+				],
+				"path": "M518.734375,437.80855051676434L531.6633071881345,437.80855051676434Q538.734375,437.80855051676434 538.734375,430.73748270489887L538.734375,420.39764760515976Q538.734375,413.3265797932943 545.8054428118655,413.3265797932943L574.734375,413.3265797932943",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_admin_db_0",
+				"points": [
+					{
+						"x": 518.734375,
+						"y": 353
+					},
+					{
+						"x": 558.734375,
+						"y": 353
+					},
+					{
+						"x": 558.734375,
+						"y": 257.7297393798828
+					},
+					{
+						"x": 578.734375,
+						"y": 257.7297393798828
+					}
+				],
+				"path": "M518.734375,353L551.6633071881345,353Q558.734375,353 558.734375,345.9289321881345L558.734375,264.8008071917483Q558.734375,257.7297393798828 565.8054428118655,257.7297393798828L574.734375,257.7297393798828",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_admin_idx_0",
+				"points": [
+					{
+						"x": 518.734375,
+						"y": 360
+					},
+					{
+						"x": 538.734375,
+						"y": 360
+					},
+					{
+						"x": 538.734375,
+						"y": 392.94368082682297
+					},
+					{
+						"x": 578.734375,
+						"y": 392.94368082682297
+					}
+				],
+				"path": "M518.734375,360L531.6633071881345,360Q538.734375,360 538.734375,367.0710678118655L538.734375,385.8726130149575Q538.734375,392.94368082682297 545.8054428118655,392.94368082682297L574.734375,392.94368082682297",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			}
+		]
+	},
+	"svg_sha256": "b705c593a8aec8ad7a6eed1dd77aa0e2d8f7c3cc8e3108f8a8e87b2645b7101f"
+}
