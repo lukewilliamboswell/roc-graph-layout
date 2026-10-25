@@ -369,7 +369,7 @@ TextMeasure :: {}.{
 		var $scalars = []
 		var $i = 0
 		while $i < bytes.len() {
-			$scalars = $scalars.append({ scalar: Bytes.code_point(bytes, $i), offset: $i.to_u32_wrap() })
+			$scalars = $scalars.append({ scalar: Bytes.code_point(bytes, $i), offset: $i })
 			$i = $i + Bytes.char_len(Bytes.at(bytes, $i))
 		}
 		run = Font.shape_scalars(font, metrics.plan, $scalars)
@@ -377,35 +377,33 @@ TextMeasure :: {}.{
 		var $advances = List.with_capacity(count)
 		var $pairs = List.with_capacity(count)
 		var $ink = List.with_capacity(count)
-		var $clusters = List.with_capacity(count)
 		var $k = 0
 		while $k < count {
 			glyph = run.glyphs.get($k) ?? 0
-			cluster = (run.clusters.get($k) ?? 0).to_u64()
-			cp = Bytes.code_point(bytes, cluster)
 			# The run's advance is the glyph's own plus its kerning; they are
 			# rounded to the fixed-point grid separately, as the browser does.
 			own = Font.advance(font, glyph)
 			kerned = (run.advances.get($k) ?? { x: own, y: 0 }).x
 			$pairs = $pairs.append(TextMeasure.floor((kerned - own).to_f64() * metrics.scale))
-			# A character the font has no glyph for is drawn with glyph 0.
-			if glyph == 0 and Font.glyph(font, cp).is_err() {
-				fallback = TextMeasure.fallback(metrics, cp)
+			# A character the font does not map is drawn from a fallback font.
+			if Font.missing(run.flags.get($k) ?? 0) {
+				fallback = TextMeasure.fallback(metrics, Bytes.code_point(bytes, run.clusters.get($k) ?? 0))
 				$advances = $advances.append(fallback.advance)
 				$ink = $ink.append(fallback.ink)
 			} else {
 				$advances = $advances.append(TextMeasure.floor(own.to_f64() * metrics.scale))
 				$ink = $ink.append(TextMeasure.glyph_ink(metrics, Font.extents(font, glyph)))
 			}
-			$clusters = $clusters.append(cluster)
 			$k = $k + 1
 		}
-		{ advances: $advances, pairs: $pairs, ink: $ink, clusters: $clusters }
+		{ advances: $advances, pairs: $pairs, ink: $ink, clusters: run.clusters }
 	}
 
 	# A glyph's outline extent in pixels from its origin, rounded out to whole
-	# pixels as the browser's glyph bounds are.
-	glyph_ink : Metrics, [Extents({ x_min : I32, y_min : I32, x_max : I32, y_max : I32 }), Empty] -> [Ink({ left : F64, right : F64 }), NoInk]
+	# pixels as the browser's glyph bounds are. A glyph whose outline cannot be
+	# measured (CFF outlines, which Inter does not have) counts as drawing
+	# nothing past its advance.
+	glyph_ink : Metrics, [Extents({ x_min : I32, y_min : I32, x_max : I32, y_max : I32 }), Empty, Unknown] -> [Ink({ left : F64, right : F64 }), NoInk]
 	glyph_ink = |metrics, extents|
 		match extents {
 			Extents(box) => {
@@ -413,6 +411,7 @@ TextMeasure :: {}.{
 				Ink({ left: TextMeasure.floor(box.x_min.to_f64() * pixels), right: TextMeasure.ceil(box.x_max.to_f64() * pixels) })
 			}
 			Empty => NoInk
+			Unknown => NoInk
 		}
 
 	fallback : Metrics, U32 -> { advance : F64, ink : [Ink({ left : F64, right : F64 }), NoInk] }

@@ -1,6 +1,6 @@
 app [main!] {
 	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
-	font: "../vendor/roc-font/main.roc",
+	font: "https://github.com/lukewilliamboswell/roc-font/releases/download/0.1.0-rc1/Htk86c6Rt21oHN9zroWfqBEwtTuQ1EVgkMPMrgernGWA.tar.zst",
 }
 
 import cli.OsStr

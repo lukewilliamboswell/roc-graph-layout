@@ -134,8 +134,7 @@ which.
 - `measure_probe.mjs` sets up a browser page exactly like the oracle's, for
   probing how Chrome measures text.
 - `font_subset.mjs` builds `package-mermaid/FontInter.ttf`, the metrics-only
-  copy of Inter behind `TextMeasure.inter`, read with roc-font
-  (vendored in `vendor/roc-font/`).
+  copy of Inter behind `TextMeasure.inter`, read with roc-font 0.1.0-rc1.
 
 - `lexer_table.mjs` prints the flowchart lexer as the pinned Mermaid
   release compiled it. Jison rewrites some lookaheads, so the compiled table,
