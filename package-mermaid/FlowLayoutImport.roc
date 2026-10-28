@@ -128,6 +128,22 @@ FlowLayoutImport :: {}.{
 		$out
 	}
 
+	registered_children : Flowchart.Diagram, Flowchart.Container, List(Item) -> List(Item)
+	registered_children = |diagram, container, registration| {
+		if registration.is_empty() {
+			return FlowLayoutImport.children(diagram, container)
+		}
+		registration.keep_if(
+			|item| {
+				parent = match item {
+					NodeItem(i) => (diagram.nodes.get(i) ?? crash "validated node registration").container
+					GroupItem(i) => (diagram.groups.get(i) ?? crash "validated group registration").container
+				}
+				parent == container
+			},
+		)
+	}
+
 	no_group : Flowchart.Group
 	no_group = { id: "", title: "", container: Root, direction: Inherit, classes: [] }
 
@@ -151,7 +167,13 @@ FlowLayoutImport :: {}.{
 	}
 
 	build : Flowchart.Diagram, FlowGeometry.Sizes -> Setup
-	build = |diagram, sizes| {
+	build = |diagram, sizes| FlowLayoutImport.build_registered(diagram, sizes, [])
+
+	## Internal adapters may retain a different source registration order.
+	## A nonempty registration contains every node/group exactly once, with
+	## validated indices. Empty retains the flowchart DB's established order.
+	build_registered : Flowchart.Diagram, FlowGeometry.Sizes, List(Item) -> Setup
+	build_registered = |diagram, sizes, registration| {
 		direction = FlowLayoutImport.direction_of(diagram)
 		group_count = diagram.groups.len()
 		root_graph = { ..FlowLayoutGraph.blank_graph, spacing: FlowLayoutImport.root_spacing, padding: { top: 12, right: 12, bottom: 12, left: 12 }, model_order_nodes: True, direction }
@@ -161,7 +183,7 @@ FlowLayoutImport :: {}.{
 		var $group_node = List.repeat(FlowLayoutImport.nil, group_count)
 		var $group_graph = List.repeat(FlowLayoutImport.nil, group_count)
 		# Nodes, breadth first, as the engine imports them.
-		var $queue = FlowLayoutImport.children(diagram, Root)
+		var $queue = FlowLayoutImport.registered_children(diagram, Root, registration)
 		var $head = 0
 		var $order = 0
 		while $head < $queue.len() {
@@ -196,7 +218,7 @@ FlowLayoutImport :: {}.{
 					# subgraph's own padding.
 					title_w = FlowLayoutImport.finite(title.width)
 					title_h = (FlowLayoutImport.finite(title.height) - 2).max(0)
-					members = FlowLayoutImport.children(diagram, Group(g))
+					members = FlowLayoutImport.registered_children(diagram, Group(g), registration)
 					(m, n) = FlowLayoutGraph.add_node($model, { ..FlowLayoutGraph.blank_node, graph: parent_graph, origin: Group(g), model_order })
 					$model = m
 					$group_node = $group_node.set(g, n) ?? []
@@ -976,4 +998,18 @@ expect {
 	setup = test_setup("flowchart TD\n    a --> e\n    subgraph e [E]\n    end\n")
 	node = FlowLayoutGraph.node(setup.model, setup.group_node.get(0) ?? 0)
 	setup.group_graph == [FlowLayoutGraph.nil] and node.width == 0 and node.height == 0
+}
+
+expect {
+	diagram = {
+		direction: Down,
+		nodes: [{ ..FlowLayoutImport.no_node, id: "A" }, { ..FlowLayoutImport.no_node, id: "B" }],
+		groups: [{ ..FlowLayoutImport.no_group, id: "outer" }, { ..FlowLayoutImport.no_group, id: "inner", container: Group(0) }],
+		edges: [],
+		classes: [],
+	}
+	registration = [NodeItem(1), GroupItem(1), NodeItem(0), GroupItem(0)]
+	FlowLayoutImport.registered_children(diagram, Root, registration) == [NodeItem(1), NodeItem(0), GroupItem(0)]
+		and FlowLayoutImport.registered_children(diagram, Group(0), registration) == [GroupItem(1)]
+		and FlowLayoutImport.registered_children(diagram, Root, []) == [GroupItem(0), NodeItem(0), NodeItem(1)]
 }
