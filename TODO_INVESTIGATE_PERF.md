@@ -1,5 +1,42 @@
 # Performance hypotheses to investigate
 
+## Mermaid theme and messy-label baseline (2026-10-28)
+
+Native optimized measurements on macOS arm64 with
+`nightly-2026-10-26-3c0fffe`, using the vendored allocation-counting platform.
+`package-mermaid/measure_diagrams.roc` constructs a chain with extra forward
+dependencies and long node/edge labels before starting measurement. Each row
+below is one fresh process, so timings are indicative rather than a statistical
+comparison. Requested bytes are cumulative allocator traffic, not RSS.
+
+| Path | Nodes | Time | Allocation calls | Requested bytes | Peak extra bytes |
+|---|---:|---:|---:|---:|---:|
+| zero work | 12 | 0.001 ms | 0 | 0 | 0 |
+| parse only | 12 | 2.12 ms | 245 | 104,266 | 26,651 |
+| recorded Mermaid sizing/drawing | 12 | 61.38 ms | 51,030 | 4,409,847 | 137,445 |
+| recorded Mermaid sizing/drawing | 24 | 313.56 ms | 154,459 | 13,343,005 | 301,333 |
+| recorded Mermaid sizing/drawing | 48 | 1,316.80 ms | 519,581 | 45,320,230 | 631,037 |
+| themed sizing/drawing | 12 | 44.66 ms | 51,178 | 4,365,735 | 137,735 |
+| themed sizing/drawing | 24 | 321.50 ms | 159,770 | 13,618,745 | 301,923 |
+| themed sizing/drawing | 48 | 1,884.92 ms | 538,160 | 46,285,978 | 632,227 |
+
+The themed path changes wrapping and line spacing, so it intentionally changes
+geometry and is not a performance optimization. The recorded comparison path
+retains its original defaults. A repeated 12-node recorded-path control in the
+second executable measured 61.56 ms with identical allocator traffic.
+
+The controls narrow the superlinear growth to work after parsing; they do not
+identify a particular layout, text-measurement or drawing phase as its cause.
+No speedup claim is made. Keep these three practical sizes when investigating
+the new path; existing scale ladders in `benchmarks/cases/scale.jsonl` remain
+unchanged. Further phase-level controls are needed before changing a hot loop.
+
+Reproduce with `roc build --opt=speed package-mermaid/measure_diagrams.roc
+--output=/tmp/measure-diagrams`, then run `/tmp/measure-diagrams draw 12`,
+`themed 12`, `parse 12`, or `zero 12`; repeat the drawing paths at 24 and 48.
+These measurements precede the final per-shape padding and rounded-attachment
+corrections and do not measure the public SVG serialization/view-bounds pass.
+
 These are investigation leads, not established root causes. Each hypothesis is
 backed by allocation telemetry from the performance harness and points to code
 whose behavior could explain the observation. Confirm or reject a hypothesis
