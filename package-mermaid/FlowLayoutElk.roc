@@ -137,12 +137,15 @@ FlowLayoutElk :: {}.{
 	## Place every graph's nodes, route its edges and size it, innermost
 	## first.
 	placed : FlowLayoutGraph.Model, List(FlowLayoutRandom.Random) -> FlowLayoutGraph.Model
-	placed = |m0, randoms| {
+	placed = |m0, randoms| FlowLayoutElk.placed_with_margins(m0, randoms, |model, _| model)
+
+	placed_with_margins : FlowLayoutGraph.Model, List(FlowLayoutRandom.Random), (FlowLayoutGraph.Model, U64 -> FlowLayoutGraph.Model) -> FlowLayoutGraph.Model
+	placed_with_margins = |m0, randoms, apply| {
 		var $m = m0
 		for g in FlowLayoutElk.bottom_up(m0) {
 			direction = FlowLayoutGraph.graph($m, g).direction
 			is_vertical = FlowLayoutElk.vertical(direction)
-			$m = FlowLayoutPlace.prepare($m, g, is_vertical)
+			$m = FlowLayoutPlace.prepare_with_margins($m, g, is_vertical, apply)
 			$m = FlowLayoutPlace.brandes_koepf($m, g)
 			fin = FlowLayoutRoute.finish($m, g, is_vertical, direction == Up, randoms.get(g) ?? FlowLayoutRandom.from_seed(1))
 			$m = fin.model
@@ -439,4 +442,18 @@ expect {
 	sizes = { nodes: List.repeat(box, diagram.nodes.len()), edge_labels: diagram.edges.map(|_| None), group_titles: List.repeat({ lines: [], width: 10, height: 17 }, diagram.groups.len()) }
 	order = FlowLayoutElk.bottom_up(FlowLayoutElk.ordered(diagram, sizes).model)
 	order.len() == 4 and order.last() == Ok(0) and order.all(|g| order.count_if(|x| x == g) == 1)
+}
+
+## An absent family margin phase is bit-for-bit the default production path,
+## including groups, cycles, parallel edges, loops and disconnected nodes.
+expect {
+	match Flowchart.parse("flowchart LR\na --> b\nb --> a\na --> b\na --> a\nsubgraph g [Group]\nc --> d\nend\nisolated") {
+		Err(_) => False
+		Ok(diagram) => {
+			box = { width: 100, height: 40, label: { lines: [], width: 0, height: 0 } }
+			sizes = { nodes: List.repeat(box, diagram.nodes.len()), edge_labels: diagram.edges.map(|_| None), group_titles: diagram.groups.map(|_| { lines: [], width: 30, height: 17 }) }
+			ordered = FlowLayoutElk.ordered_traced(diagram, sizes, False)
+			FlowLayoutElk.placed(ordered.model, ordered.randoms) == FlowLayoutElk.placed_with_margins(ordered.model, ordered.randoms, |model, _| model)
+		}
+	}
 }

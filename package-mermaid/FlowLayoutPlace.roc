@@ -29,9 +29,12 @@ FlowLayoutPlace :: {}.{
 	## Place ports, set margins, place labels: everything before Brandes and
 	## Köpf.
 	prepare : Model, U64, Bool -> Model
-	prepare = |m0, g, vertical| {
+	prepare = |m0, g, vertical| FlowLayoutPlace.prepare_with_margins(m0, g, vertical, |model, _| model)
+
+	prepare_with_margins : Model, U64, Bool, (Model, U64 -> Model) -> Model
+	prepare_with_margins = |m0, g, vertical, apply| {
 		m1 = FlowLayoutPlace.place_ports(FlowLayoutLoops.restore(m0, g), g)
-		m2 = FlowLayoutLoops.route(FlowLayoutPlace.margins(m1, g), g)
+		m2 = FlowLayoutLoops.route(apply(FlowLayoutPlace.margins(m1, g), g), g)
 		m3 = FlowLayoutPlace.switch_label_dummies(m2, g)
 		m4 = FlowLayoutPlace.inline_labels(m3, g)
 		_ = vertical
