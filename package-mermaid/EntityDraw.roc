@@ -10,6 +10,8 @@ import FlowGeometry
 import FlowDraw
 import FlowDrawEdge
 import FlowLayout
+import FlowLayoutElk
+import FlowLayoutAdjust
 import EntityLayout
 import OracleJson
 
@@ -202,33 +204,47 @@ EntityDraw :: {}.{
 			),
 			group_titles: [],
 		}
-		raw_geometry = FlowLayout.layout(diagram, sizes)
 		vertical = direction == Down or direction == Up
-		terminals = $labels.fold(
-			[],
-			|out, spec| match spec.placement {
-				Center => out
+		var $terminal_sizes = List.repeat({ from: None, to: None }, edges.len())
+		for spec in $labels {
+			match spec.placement {
+				Center => {}
 				Near(endpoint) => {
-					edge = edges.get(spec.edge) ?? { from: 0, to: 0, label: "", from_label: "", to_label: "", from_mark: None, to_mark: None, dashed: False }
-					route = raw_geometry.edges.get(spec.edge) ?? { points: [], label: None }
-					points = if (endpoint == From) route.points else route.points.rev()
-					point = points.first() ?? { x: 0, y: 0 }
-					next = points.get(1) ?? point
-					marker = if (endpoint == From) edge.from_mark else edge.to_mark
-					pad = if (marker == None) 0 else 12
-					extent = (if (vertical) spec.block.height else spec.block.width) + pad + 4
-					out.append({ node: if (endpoint == From) edge.from else edge.to, point, next, extent })
+					edge = edges.get(spec.edge) ?? crash "label edge is source aligned"
+					mark = if endpoint == From {
+						edge.from_mark
+					} else {
+						edge.to_mark
+					}
+					pad = if mark == None {
+						0
+					} else {
+						12
+					}
+					size = Some({ width: spec.block.width + pad, height: spec.block.height + pad })
+					current = $terminal_sizes.get(spec.edge) ?? crash "label edge is source aligned"
+					updated = if endpoint == From {
+						{ ..current, from: size }
+					} else {
+						{ ..current, to: size }
+					}
+					$terminal_sizes = $terminal_sizes.set(spec.edge, updated) ?? []
 				}
-			},
-		)
-		spaced = EntityLayout.reserve(raw_geometry, terminals, vertical)
+			}
+		}
+		terminal_sizes = $terminal_sizes
+		ordered = FlowLayoutElk.ordered_traced(diagram, sizes, False)
+		placed = FlowLayoutElk.placed_with_margins(ordered.model, ordered.randoms, |model, g| EntityLayout.margins(model, g, terminal_sizes, vertical))
+		raw = FlowLayoutElk.export(diagram, ordered.setup, placed)
+		adjusted = FlowLayoutAdjust.adjust(diagram, sizes, raw)
 		label_sizes = sizes.edge_labels.map(
 			|label| match label {
 				None => None
 				Some(block) => Some({ width: block.width + 4, height: block.height + 4 })
 			},
 		)
-		geometry = FlowLayout.normalise(spaced, label_sizes, [])
+		geometry = FlowLayout.normalise({ nodes: adjusted.nodes, edges: adjusted.edges, groups: adjusted.groups, bounds: { x: 0, y: 0, width: 0, height: 0 } }, label_sizes, [])
+
 		label_anchors = $labels.map(
 			|spec| {
 				route = geometry.edges.get(spec.edge) ?? { points: [], label: None }

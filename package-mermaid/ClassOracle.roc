@@ -66,3 +66,18 @@ ClassOracle :: {}.{
 }
 
 expect ClassOracle.inspect_sized("classDiagram\nclass A", Theme.Options.{}, [{ kind: "label", id: "missing", width: 10, height: 10 }]).contains("unconsumed label:missing")
+
+## Pinned independent head/tail-label fixture: the same production placement
+## must reserve lateral margins before balancing node columns.
+expect {
+	source = "classDiagram\n A \"1\" --> \"many\" B\n C \"1\" --> D\n E --> \"many\" F\n G \"1\" --> \"many\" H : labelled\n I --> J : labelled"
+	match ClassDiagram.parse(source) {
+		Err(_) => False
+		Ok(diagram) => {
+			arranged = EntityDraw.arrange(ClassRender.nodes(diagram.classes), ClassRender.edges(diagram.relationships), diagram.direction, Theme.Options.{})
+			arranged.result.layout.positions.get(2) == Ok({ x: 131.234375, y: 50.5 })
+				and arranged.result.layout.positions.get(6) == Ok({ x: 317.90625, y: 50.5 })
+				and arranged.result.layout.positions.get(9) == Ok({ x: 419.25, y: 362.5 })
+		}
+	}
+}

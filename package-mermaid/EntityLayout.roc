@@ -1,150 +1,106 @@
 import Drawing
-import FlowGeometry
+import FlowLayoutGraph
 
-## The ELK head/tail-label spacing phase, shared by real class rendering and
-## reference-sized layout probes. Labels at an endpoint consume space next to
-## that endpoint's layer; they do not become extra ranks. Intervals identify
-## layers even when their nodes have different heights. Sorting is a bounded
-## bottom-up merge, avoiding the compiler builtin's adversarial quicksort path.
+## The ELK head/tail-label margin phase, shared by real class rendering and
+## reference-sized layout probes. Labels extend their node's margins before
+## node balancing and edge routing, rather than becoming extra ranks.
 EntityLayout :: {}.{
-	Terminal : { node : U64, point : Drawing.Point, next : Drawing.Point, extent : F64 }
-	Interval : { low : F64, high : F64, index : U64 }
-	Layer : { low : F64, high : F64, before : F64, after : F64 }
+	LabelSize : { width : F64, height : F64 }
+	Ends : { from : [None, Some(LabelSize)], to : [None, Some(LabelSize)] }
+	Cell : { port : FlowLayoutGraph.Port, along : F64, cross : F64, thickness : F64 }
 
-	reserve : FlowGeometry.Geometry, List(Terminal), Bool -> FlowGeometry.Geometry
-	reserve = |geometry, terminals, vertical| {
-		if terminals.is_empty() {
-			return geometry
-		}
-		intervals = geometry.nodes.map_with_index(|box, index| if (vertical) { low: box.y, high: box.y + box.height, index } else { low: box.x, high: box.x + box.width, index })
-		sorted = EntityLayout.sort(intervals)
-		var $layers = []
-		var $membership = List.repeat(0, intervals.len())
-		for interval in sorted {
-			last = $layers.last() ?? { low: 0, high: -1, before: 0, after: 0 }
-			if !$layers.is_empty() and interval.low <= last.high + 0.001 {
-				index = $layers.len() - 1
-				$layers = $layers.set(index, { ..last, high: last.high.max(interval.high) }) ?? []
-				$membership = $membership.set(interval.index, index) ?? []
-			} else {
-				index = $layers.len()
-				$layers = $layers.append({ low: interval.low, high: interval.high, before: 0, after: 0 })
-				$membership = $membership.set(interval.index, index) ?? []
-			}
-		}
-		for terminal in terminals {
-			layer_index = $membership.get(terminal.node) ?? 0
-			match $layers.get(layer_index) {
-				Err(_) => {}
-				Ok(layer) => {
-					outward = if (vertical) terminal.next.y - terminal.point.y else terminal.next.x - terminal.point.x
-					updated = if outward > 0 {
-						{ ..layer, after: layer.after.max(terminal.extent) }
-					} else {
-						{ ..layer, before: layer.before.max(terminal.extent) }
+	## ELK EndLabelPreprocessor: gather each port's padded head/tail labels,
+	## select their smart side, then union their rectangles into node margins.
+	## Internal model coordinates always read left to right. Only dimensions,
+	## never oracle positions, participate in this production phase.
+	margins : FlowLayoutGraph.Model, U64, List(Ends), Bool -> FlowLayoutGraph.Model
+	margins = |model, g, labels, vertical| {
+		var $model = model
+		spacing = FlowLayoutGraph.graph(model, g).spacing
+		for layer in FlowLayoutGraph.graph(model, g).layers {
+			for index in layer {
+				node = FlowLayoutGraph.node($model, index)
+				if node.kind == Normal {
+					var $cells = []
+					for p in node.ports {
+						port = FlowLayoutGraph.port($model, p)
+						var $along = 0.0
+						var $cross = 0.0
+						var $thickness = 0.0
+						for e in port.outgoing.concat(port.incoming) {
+							edge = FlowLayoutGraph.edge($model, e)
+							ends = labels.get(edge.origin) ?? { from: None, to: None }
+							is_from = (edge.source == p) != edge.reversed
+							maybe_size = if is_from {
+								ends.from
+							} else {
+								ends.to
+							}
+							match maybe_size {
+								None => {}
+								Some(size) => {
+									$along = $along.max(
+										if vertical {
+											size.height
+										} else {
+											size.width
+										},
+									)
+									$cross = $cross + (
+										if vertical {
+											size.width
+										} else {
+											size.height
+										}
+									)
+									$thickness = $thickness.max(edge.thickness)
+								}
+							}
+						}
+						if $along > 0 or $cross > 0 {
+							$cells = $cells.append({ port, along: $along, cross: $cross, thickness: $thickness })
+						}
 					}
-					$layers = $layers.set(layer_index, updated) ?? []
+					var $margin = node.margin
+					for side in [North, East, South, West] {
+						cells = $cells.keep_if(|cell| cell.port.side == side)
+						for c in 0..<cells.len() {
+							cell = cells.get(c) ?? crash "proven cell index"
+							above = cells.len() == 2 and (
+								if side == North or side == East {
+									c == 0
+								} else {
+									c == 1
+								}
+							)
+							gap = cell.thickness + spacing.edge_label
+							anchor_x = cell.port.x + cell.port.anchor_x
+							anchor_y = cell.port.y + cell.port.anchor_y
+							cross_low = if above {
+								anchor_y - gap - cell.cross
+							} else {
+								anchor_y + gap
+							}
+							along_low = if above {
+								anchor_x - gap - cell.along
+							} else {
+								anchor_x + gap
+							}
+							box = match side {
+								East => { x: node.width + node.margin.right + spacing.edge_label, y: cross_low, width: cell.along, height: cell.cross }
+								West => { x: -node.margin.left - spacing.edge_label - cell.along, y: cross_low, width: cell.along, height: cell.cross }
+								North => { x: along_low, y: -node.margin.top - spacing.edge_label - cell.cross, width: cell.along, height: cell.cross }
+								South => { x: along_low, y: node.height + node.margin.bottom + spacing.edge_label, width: cell.along, height: cell.cross }
+								Undefined => { x: 0, y: 0, width: 0, height: 0 }
+							}
+							$margin = { top: $margin.top.max(-box.y), left: $margin.left.max(-box.x), right: $margin.right.max(box.x + box.width - node.width), bottom: $margin.bottom.max(box.y + box.height - node.height) }
+						}
+					}
+					$model = FlowLayoutGraph.set_node($model, index, { ..node, margin: $margin })
 				}
 			}
 		}
-		layers = $layers
-		var $cuts = List.repeat({ low: 0, high: 0, start: 0, end: 0 }, layers.len())
-		var $prefix = 0.0
-		for i in 0..<layers.len() {
-			layer = layers.get(i) ?? { low: 0, high: 0, before: 0, after: 0 }
-			start = $prefix + layer.before
-			end = start + layer.after
-			$cuts = $cuts.set(i, { low: layer.low, high: layer.high, start, end }) ?? []
-			$prefix = end
-		}
-		cuts = $cuts
-		project = |point| {
-			coordinate = if (vertical) point.y else point.x
-			var $low = 0
-			var $high = cuts.len()
-			while $low < $high {
-				middle = $low + ($high - $low) // 2
-				cut = cuts.get(middle) ?? { low: 0, high: 0, start: 0, end: 0 }
-				if cut.low <= coordinate + 0.001 {
-					$low = middle + 1
-				} else {
-					$high = middle
-				}
-			}
-			shift = if $low == 0 {
-				0
-			} else {
-				cut = cuts.get($low - 1) ?? { low: 0, high: 0, start: 0, end: 0 }
-				if (coordinate <= cut.high + 0.001) cut.start else cut.end
-			}
-			if (vertical) { x: point.x, y: point.y + shift } else { x: point.x + shift, y: point.y }
-		}
-		nodes = geometry.nodes.map_with_index(
-			|box, i| {
-				shift = (cuts.get($membership.get(i) ?? 0) ?? { low: 0, high: 0, start: 0, end: 0 }).start
-				if (vertical) { ..box, y: box.y + shift } else { ..box, x: box.x + shift }
-			},
-		)
-		edges = geometry.edges.map(
-			|edge| {
-				points: edge.points.map(project),
-				label: match edge.label {
-					Some(point) => Some(project(point))
-					None => None
-				},
-			},
-		)
-		{ ..geometry, nodes, edges }
+		$model
 	}
 
-	sort : List(Interval) -> List(Interval)
-	sort = |input| {
-		count = input.len()
-		if count < 2 {
-			return input
-		}
-		var $source = input
-		var $target = List.repeat({ low: 0, high: 0, index: 0 }, count)
-		var $width = 1
-		while $width < count {
-			var $start = 0
-			while $start < count {
-				middle = ($start + $width).min(count)
-				end = (middle + $width).min(count)
-				var $a = $start
-				var $b = middle
-				var $out = $start
-				while $out < end {
-					left = $source.get($a) ?? { low: 0, high: 0, index: 0 }
-					right = $source.get($b) ?? { low: 0, high: 0, index: 0 }
-					use_left = $a < middle and ($b >= end or left.low < right.low or (left.low == right.low and left.index < right.index))
-					value = if (use_left) left else right
-					$target = $target.set($out, value) ?? []
-					if use_left {
-						$a = $a + 1
-					} else {
-						$b = $b + 1
-					}
-					$out = $out + 1
-				}
-				$start = end
-			}
-			previous = $source
-			$source = $target
-			$target = previous
-			$width = $width * 2
-		}
-		$source
-	}
-}
-
-expect EntityLayout.sort([{ low: 3, high: 4, index: 0 }, { low: 1, high: 2, index: 1 }, { low: 1, high: 2, index: 2 }]).map(|i| i.index) == [1, 2, 0]
-
-## Oracle-derived terminal-label gap: source label14+spacing4 and target
-## label14+marker clearance12+spacing4 add48 next to the endpoint layers.
-expect {
-	geometry = { nodes: [{ x: 0, y: 0, width: 30, height: 77 }, { x: 0, y: 117, width: 30, height: 77 }], edges: [{ points: [{ x: 15, y: 77 }, { x: 15, y: 117 }], label: None }], groups: [], bounds: { x: 0, y: 0, width: 30, height: 194 } }
-	terminals = [{ node: 0, point: { x: 15, y: 77 }, next: { x: 15, y: 117 }, extent: 18 }, { node: 1, point: { x: 15, y: 117 }, next: { x: 15, y: 77 }, extent: 30 }]
-	result = EntityLayout.reserve(geometry, terminals, True)
-	(result.nodes.get(1) ?? { x: 0, y: 0, width: 0, height: 0 }).y == 165 and (result.edges.first() ?? { points: [], label: None }).points == [{ x: 15, y: 77 }, { x: 15, y: 165 }]
 }
