@@ -70,5 +70,13 @@ function referenceLabels(record, semantic, nodes) {
     }
     const unknown=[...observed.keys()].filter(id=>!wanted.includes(id));
     if(unknown.length)throw new Error(`unassigned class label roles: ${unknown}`);
-    return wanted.flatMap(id=>observed.has(id)?[observed.get(id)]:[]);
+    return wanted.flatMap(id=>{
+        if(!observed.has(id))return [];
+        const label=observed.get(id), match=/^(\d+)-(label|from-label|to-label)$/.exec(id);
+        if(!match)return [{...label,measurement:false}];
+        const edge=record.measured_input?.edges[Number(match[1])];
+        const size=match[2]==='label' ? (edge&&Number.isFinite(edge.width)&&Number.isFinite(edge.height)?{width:edge.width-4,height:edge.height-4}:null) : edge?.terminalLabelSizes?.[match[2]==='from-label'?'startRight':'endLeft'];
+        if(!size)throw new Error(`missing authoritative input dimensions for ${id}`);
+        return [{...label,input_box:{x:label.box.x,y:label.box.y,width:size.width,height:size.height}}];
+    });
 }

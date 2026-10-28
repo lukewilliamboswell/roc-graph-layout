@@ -10,7 +10,7 @@ import font.Font
 ## Internal native facts for comparison with an independently recorded browser.
 EntityOracle :: {}.{
 	reference_theme : Theme.Options
-	reference_theme = Theme.Options.{ node_fill: Drawing.white, node_stroke: Drawing.rgb(0x28253D), node_text: Drawing.rgb(0x28253D), line: Drawing.black, line_width: 2, label_background: Drawing.rgb(0xE5E5E5), label_text: Drawing.rgb(0x28253D), line_height: 1.1, max_label_width: 16384, padding: 15, corners: Square, wrapping: NoWrap }
+	reference_theme = Theme.Options.{}
 
 	inspect : Str, Theme.Options -> Str
 	inspect = |source, theme| EntityOracle.inspect_sized(source, theme, [])

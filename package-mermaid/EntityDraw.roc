@@ -39,7 +39,7 @@ EntityDraw :: {}.{
 
 	measure_text_at : Str, Theme.Options, F64 -> Block
 	measure_text_at = |text, theme, font_size| {
-		measured = TextMeasure.block(
+		measured = TextMeasure.block_advance(
 			text,
 			{
 				font: TextMeasure.inter,
@@ -79,11 +79,11 @@ EntityDraw :: {}.{
 		table = node.table.map(|row| row.map(|cell| EntityDraw.measure_text(cell, theme)))
 		if node.kind == EntityBox {
 			if table.is_empty() {
-				padding = theme.padding * 24 / 150 / 15
+				padding = theme.padding * 20 / 15
 				height = title.height + padding * 3
 				{ title, annotations, sections: [], table, column_widths: [], row_heights: [], title_height: height, shape_width: (title.width + padding * 2).max(100), width: (title.width + padding * 2).max(100), height }
 			} else {
-				padding = theme.padding * 24 / 155 / 15
+				padding = theme.padding * 25 / 15
 				text_padding = theme.padding * 18.75 / 15
 				count = (table.first() ?? []).len()
 				widths = List.repeat(0.0, count).map_with_index(|_, column| table.fold(0.0, |width, row| width.max((row.get(column) ?? { lines: [], width: 0, height: 0, baseline: 0, step: 0, font_size: 0 }).width)) + padding)
@@ -300,15 +300,16 @@ EntityDraw :: {}.{
 		for i in 0..<edges.len() {
 			match (edges.get(i), result.layout.routes.get(i)) {
 				(Ok(edge), Ok(route)) => {
-					points = EntityDraw.clip_points(EntityDraw.route_points(route), edge, measured, result.layout.positions, EntityDraw.radius(theme))
+					clipped = EntityDraw.clip_points(EntityDraw.route_points(route), edge, measured, result.layout.positions, EntityDraw.radius(theme))
+					points = EntityDraw.inset_route(clipped, EntityDraw.marker_offset(edge.from_mark), EntityDraw.marker_offset(edge.to_mark))
 					$items = $items.concat(EntityDraw.route(points, edge.dashed, theme))
 					if points.len() >= 2 {
 						a = points.first() ?? { x: 0, y: 0 }
 						b = points.get(1) ?? a
 						z = points.last() ?? a
 						y = points.get(points.len() - 2) ?? z
-						$items = $items.concat(EntityDraw.mark(a, b, edge.from_mark, theme))
-						$items = $items.concat(EntityDraw.mark(z, y, edge.to_mark, theme))
+						$items = $items.concat(EntityDraw.mark(a, b, From, edge.from_mark, theme))
+						$items = $items.concat(EntityDraw.mark(z, y, To, edge.to_mark, theme))
 					}
 				}
 				_ => {}
@@ -373,7 +374,7 @@ EntityDraw :: {}.{
 							var $left = x
 							for column in 0..<row.len() {
 								cell = row.get(column) ?? { lines: [], width: 0, height: 0, baseline: 0, step: 0, font_size: 0 }
-								$items = $items.concat(EntityDraw.text(cell, { x: $left + theme.padding * 24 / 155 / 30, y: $top + (row_height - cell.height) / 2 }, Start, theme, theme.node_text))
+								$items = $items.concat(EntityDraw.text(cell, { x: $left + theme.padding * 25 / 30, y: $top + (row_height - cell.height) / 2 }, Start, theme, theme.node_text))
 
 								$left = $left + (m.column_widths.get(column) ?? 0)
 							}
@@ -451,8 +452,41 @@ EntityDraw :: {}.{
 		$out
 	}
 
-	mark : Drawing.Point, Drawing.Point, Mark, Theme.Options -> List(Drawing.Item)
-	mark = |end, inside, kind, theme| {
+	marker_offset : Mark -> F64
+	marker_offset = |kind| match kind {
+		Triangle | Diamond(_) => 17.25
+		Arrow => 6
+		_ => 0
+	}
+
+	inset_route : List(Drawing.Point), F64, F64 -> List(Drawing.Point)
+	inset_route = |points, start, end| EntityDraw.trim_start(EntityDraw.trim_start(points, start).rev(), end).rev()
+
+	trim_start : List(Drawing.Point), F64 -> List(Drawing.Point)
+	trim_start = |points, distance| {
+		if distance <= 0 or points.len() < 2 {
+			return points
+		}
+		var $remaining = distance
+		var $index = 0
+		for i in 0..<(points.len() - 1) {
+			a = points.get(i) ?? { x: 0, y: 0 }
+			b = points.get(i + 1) ?? a
+			dx = b.x - a.x
+			dy = b.y - a.y
+			length = (dx * dx + dy * dy).sqrt()
+			if length > $remaining and length > 0 {
+				fraction = $remaining / length
+				return [{ x: a.x + dx * fraction, y: a.y + dy * fraction }].concat(points.drop_first(i + 1))
+			}
+			$remaining = $remaining - length
+			$index = i + 1
+		}
+		points.drop_first($index)
+	}
+
+	mark : Drawing.Point, Drawing.Point, [From, To], Mark, Theme.Options -> List(Drawing.Item)
+	mark = |end, inside, endpoint, kind, theme| {
 		dx = inside.x - end.x
 		dy = inside.y - end.y
 		length = (dx * dx + dy * dy).sqrt()
@@ -460,23 +494,89 @@ EntityDraw :: {}.{
 		uy = if (length > 0) dy / length else 0
 		at = |along, across| { x: end.x + ux * along - uy * across, y: end.y + uy * along + ux * across }
 		stroke_line = |a, b| EntityDraw.line(a, b, theme.line, theme.line_width)
+		# Neo markers use different source/target reference points. Geometry is
+		# expressed relative to the inset painted path, as in the pinned renderer.
 		match kind {
 			None => []
-			Arrow => [stroke_line(at(10, -5), end), stroke_line(end, at(10, 5))]
-			Triangle => [Shape({ path: Drawing.polygon([end, at(14, -7), at(14, 7)]), paint: EntityDraw.paint(theme.background, theme.line, theme.line_width) })]
-			Diamond(filled) => [Shape({ path: Drawing.polygon([end, at(9, -5), at(18, 0), at(9, 5)]), paint: EntityDraw.paint(if (filled) theme.line else theme.background, theme.line, theme.line_width) })]
+			Arrow => {
+				vertices = if endpoint == From {
+					[at(-1, 0), at(3, 6), at(-3, 0), at(3, -6)]
+				} else {
+					[at(-2, 0), at(7, 6), at(2, 0), at(7, -6)]
+				}
+				[Shape({ path: Drawing.polygon(vertices), paint: { fill: Fill(theme.line), stroke: NoStroke } })]
+			}
+			Triangle => {
+				vertices = if endpoint == From {
+					[at(-8, 0), at(0, 6), at(0, -6)]
+				} else {
+					[at(-1, -6), at(-1, 6), at(-9, 0)]
+				}
+				[Shape({ path: Drawing.polygon(vertices), paint: EntityDraw.paint(theme.background, theme.line, theme.line_width) })]
+			}
+			Diamond(filled) => {
+				vertices = if endpoint == From {
+					[at(3, 0), at(-6, 6), at(-14, 0), at(-6, -6)]
+				} else {
+					ref = if filled {
+						3.5
+					} else {
+						1.0
+					}
+					[at(ref - 18, 0), at(ref - 9, 6), at(ref - 1, 0), at(ref - 9, -6)]
+				}
+				[
+					Shape({
+						path: Drawing.polygon(vertices),
+						paint: {
+							fill: Fill(
+								if filled {
+									theme.line
+								} else {
+									theme.background
+								},
+							),
+							stroke: if filled {
+								NoStroke
+							} else {
+								Stroke({ color: theme.line, width: theme.line_width })
+							},
+						},
+					}),
+				]
+			}
 			Cardinality(card) => {
 				many = card == ZeroMany or card == OneMany
 				zero = card == ZeroMany or card == ZeroOne
-				branch = if (many) [stroke_line(at(0, -6), at(13, 0)), stroke_line(at(0, 6), at(13, 0))] else [stroke_line(at(5, -6), at(5, 6))]
-				if zero {
-					branch.append(Shape({ path: Drawing.ellipse(at(20, 0), 4, 4), paint: EntityDraw.paint(theme.background, theme.line, theme.line_width) }))
+				branch = if many {
+					# Two exact quadratic curves, represented as equivalent cubics.
+					[Shape({ path: [MoveTo(at(-18, 0)), CubicTo({ control_1: at(-6, -12), control_2: at(6, -12), end: at(18, 0) }), CubicTo({ control_1: at(6, 12), control_2: at(-6, 12), end: at(-18, 0) })], paint: { fill: NoFill, stroke: Stroke({ color: theme.line, width: theme.line_width }) } })]
 				} else {
-					branch.append(stroke_line(at(20, -6), at(20, 6)))
+					[stroke_line(at(9, -9), at(9, 9))]
+				}
+				if zero {
+					along = if many {
+						if endpoint == From {
+							27.5
+						} else {
+							28
+						}
+					} else {
+						21
+					}
+					branch.append(Shape({ path: Drawing.ellipse(at(along, 0), 6, 6), paint: EntityDraw.paint(theme.background, theme.line, theme.line_width) }))
+				} else {
+					along = if many {
+						24
+					} else {
+						15
+					}
+					branch.append(stroke_line(at(along, -9), at(along, 9)))
 				}
 			}
 		}
 	}
+
 }
 
 ## Regression: a valid tight line-height is baseline spacing, not the height
@@ -528,8 +628,10 @@ expect {
 	)
 	Drawing.is_finite(picture) and picture.items.all(
 		|item| match item {
-			Text(label) => label.origin.y - 62 >= picture.view.y
-				and label.origin.y + 15 <= picture.view.y + picture.view.height
+			Text(label) => {
+				ascent = TextMeasure.round(Font.metrics(TextMeasure.inter).ascent.to_f64() * label.size / Font.units_per_em(TextMeasure.inter).to_f64())
+				label.origin.y - ascent >= picture.view.y and label.origin.y - ascent + label.size <= picture.view.y + picture.view.height
+			}
 			_ => True
 		},
 	)
@@ -565,4 +667,26 @@ expect {
 	empty = EntityDraw.measure({ kind: ClassBox, has_comment_column: False, title: "Empty", annotations: [], table: [], sections: [[], []] }, theme)
 	methods = EntityDraw.measure({ kind: ClassBox, has_comment_column: False, title: "Methods", annotations: [], table: [], sections: [[], ["+run()"]] }, theme)
 	empty.height == 77 and methods.height == 112
+}
+
+## Regression: actual terminal label dimensions determine the endpoint-relative
+## placement; both source and target use their outward segment orientation.
+expect {
+	block = { lines: ["many"], width: 28.34375, height: 14, baseline: 10, step: 14, font_size: 11 }
+	points = [{ x: 232.177734375, y: 135.021484375 }, { x: 232.177734375, y: 284.021484375 }]
+	EntityDraw.terminal_label(points, To, block, Arrow) == { x: 257.349609375, y: 267.021484375 }
+}
+
+## Regression: marker margins trim only the painted route, including bends.
+expect EntityDraw.inset_route([{ x: 0, y: 0 }, { x: 0, y: 30 }, { x: 40, y: 30 }], 17.25, 6) == [{ x: 0, y: 17.25 }, { x: 0, y: 30 }, { x: 34, y: 30 }]
+
+## Regression: pinned native typographic widths and role padding contribute
+## to actual production input dimensions, rather than only oracle metadata.
+expect {
+	m = EntityDraw.measure({ kind: ClassBox, has_comment_column: False, title: "CardPayment", annotations: [], sections: [[], ["+capture() Receipt"]], table: [] }, Theme.Options.{})
+	m.width == 200.4296875
+}
+expect {
+	m = EntityDraw.measure({ kind: EntityBox, has_comment_column: False, title: "ORDER", annotations: [], sections: [], table: [["int", "id", "PK"], ["int", "customer_id", "FK"], ["string", "status", ""]] }, Theme.Options.{})
+	m.shape_width == 212.015625 and m.width == 224.515625
 }
