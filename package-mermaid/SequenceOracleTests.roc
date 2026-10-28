@@ -1,6 +1,7 @@
 import Sequence
 import SequenceOracle
 import SequenceLayout
+import SequenceStyle
 import Theme
 
 ## Independent expectations extracted from pinned Mermaid 12.2.0 records.
@@ -98,6 +99,16 @@ expect
 		Ok(diagram) => SequenceOracle.semantic(diagram) == "{\"participants\":[{\"id\":\"A\",\"label\":\"A\",\"actor\":false,\"wrap\":false},{\"id\":\"B\",\"label\":\"B\",\"actor\":false,\"wrap\":false}],\"events\":[{\"kind\":\"message\",\"from\":\"A\",\"to\":\"B\",\"text\":\"hello; world\",\"dotted\":false,\"head\":\"arrow\",\"both\":false,\"activate\":false,\"wrap\":false},{\"kind\":\"message\",\"from\":\"B\",\"to\":\"A\",\"text\":\"#42 and \\\"yes\\\"\",\"dotted\":true,\"head\":\"arrow\",\"both\":false,\"activate\":false,\"wrap\":false}],\"autonumber\":false,\"title\":\"\"}"
 	}
 
+## Oracle allocated boxes and full route controls: semicolon-entities.oracle.json
+expect
+	match Sequence.parse("sequenceDiagram;A->>B: hello#59; world;B-->>A: #35;42 and #quot;yes#quot;;\n") {
+		Err(_) => False
+		Ok(diagram) => {
+			g = SequenceLayout.layout(diagram, Theme.Options.{})
+			g.view == { x: -50, y: -10, width: 606, height: 323 } and (g.headers.get(0) ?? SequenceLayout.zero_rect) == { x: 0, y: 0, width: 150, height: 76 } and (g.headers.get(1) ?? SequenceLayout.zero_rect) == { x: 356, y: 0, width: 150, height: 76 } and (g.message_points.keep_if(|points| !points.is_empty()).get(0) ?? []) == [{ x: 76, y: 126 }, { x: 424, y: 126 }] and (g.message_points.keep_if(|points| !points.is_empty()).get(1) ?? []) == [{ x: 430, y: 176 }, { x: 82, y: 176 }]
+		}
+	}
+
 ## Oracle semantics: source-wrap.oracle.json
 expect
 	match Sequence.parse("sequenceDiagram\n    participant A as wrap: A participant whose descriptive name needs several lines\n    participant B as nowrap: A participant kept on one line\n    A->>B: wrap: A long operation label whose words must wrap into the available message width without changing the text\n    Note right of B: wrap: A note with enough descriptive text to wrap into a narrow note box\n    B-->>A: nowrap: An explicit one line response\n") {
@@ -130,3 +141,19 @@ expect {
 	source = "sequenceDiagram\nA->>B: Hi\n"
 	SequenceOracle.inspect_sized(source, Theme.Options.{}, [{ kind: "route", id: "message-0", width: 10, height: 10 }]).contains("size_problems") and SequenceOracle.inspect_sized(source, Theme.Options.{}, [{ kind: "label", id: "participant-footer-A", width: 10, height: 10 }]).contains("unconsumed label:participant-footer-A")
 }
+
+## Encoded entity placeholders use the pinned browser's actual fallback glyph.
+## These two input widths come from schema-8 sequence-message measurements.
+expect
+	match Sequence.parse("sequenceDiagram;A->>B: hello#59; world;B-->>A: #35;42 and #quot;yes#quot;;") {
+		Err(_) => False
+		Ok(diagram) => {
+			g = SequenceLayout.layout(diagram, Theme.Options.{})
+			g.view.width == 606 and (g.headers.get(1) ?? SequenceLayout.zero_rect).x == 356 and diagram.events.map(
+				|event| match event {
+					Message(m) => SequenceLayout.measure_source(m.text, m.source_text, m.wrap, 0, SequenceStyle.resolve(Theme.Options.{})).width
+					_ => 0
+				},
+			) == [145.375, 285.6875]
+		}
+	}
