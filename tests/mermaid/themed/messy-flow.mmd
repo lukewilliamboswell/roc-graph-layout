@@ -1,0 +1,23 @@
+flowchart LR
+    subgraph ingest [Incoming requests and validation from external systems]
+        Request([Receive a request with a long descriptive title])
+        Validate{All required fields and permissions valid?}
+        Request --> Validate
+    end
+    subgraph processing [Order processing and downstream integrations]
+        Reserve(Reserve inventory across multiple warehouses)
+        Charge(Authorize the customer's payment method)
+        Store[(Persist the order and its audit history)]
+        Reserve -->|Inventory reserved successfully| Charge
+        Charge --> Store
+    end
+    Validate -->|Validated request ready for processing| Reserve
+    Validate -->|Missing or invalid fields| Reject(Explain what needs to change)
+    Charge -->|Payment declined; retry with updated details| Request
+    Store --> Notify(Send a confirmation to the customer)
+    Store -->|Publish a durable event| Notify
+    Store --> Store
+    Observer[An independent monitoring service]
+    classDef default fill:#EEF2FF,stroke:#A5B4FC,color:#312E81
+    classDef error fill:#FFF1F2,stroke:#FDA4AF,color:#9F1239
+    class Reject error

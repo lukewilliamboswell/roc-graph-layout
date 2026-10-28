@@ -1,0 +1,10 @@
+flowchart TD
+    subgraph services [A long group title that needs to wrap without colliding with the nodes inside]
+        A[First service with a particularly long explanatory label]
+        B[Second service<br>With an explicit break]
+        C[Third service]
+        A -->|A long relationship label explaining why this transition happens| B
+        A --> C
+        B --> A
+    end
+    C --> D([Completed])
