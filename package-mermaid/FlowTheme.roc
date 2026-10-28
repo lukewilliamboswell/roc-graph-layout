@@ -4,6 +4,7 @@ import FlowDraw
 import FlowDrawShape
 import FlowGeometry
 import FlowLayout
+import FlowSize
 import FlowThemeShape
 import FlowThemeRoute
 import TextMeasure
@@ -27,7 +28,20 @@ FlowTheme :: {}.{
 
 	sizes : Flowchart.Diagram, Theme.Options -> FlowGeometry.Sizes
 	sizes = |diagram, theme| {
-		style = { font: TextMeasure.inter, size: theme.font_size, line_height: theme.line_height, wrap: Width(theme.max_label_width), align: Middle }
+		if theme.font_size == 14 and theme.line_height == 1.1 and theme.max_label_width == 120 and theme.padding == 15 and theme.wrapping != NoWrap {
+			return FlowSize.sizes(diagram, FlowSize.mermaid)
+		}
+		style = {
+			font: TextMeasure.inter,
+			size: theme.font_size,
+			line_height: theme.line_height,
+			wrap: if theme.wrapping == NoWrap {
+				NoWrap
+			} else {
+				Width(theme.max_label_width)
+			},
+			align: Middle,
+		}
 		metrics = TextMeasure.metrics_of(style)
 		measure = |text| FlowTheme.measured_block(text, style, metrics.ascent.max(metrics.emoji_ascent), metrics.descent.max(metrics.emoji_descent))
 		{
@@ -65,15 +79,22 @@ FlowTheme :: {}.{
 	clip_routes : Flowchart.Diagram, FlowGeometry.Geometry, F64 -> FlowGeometry.Geometry
 	clip_routes = FlowThemeRoute.clip
 
+	radius : Theme.Options -> F64
+	radius = |theme| if theme.corners == Square {
+		0
+	} else {
+		theme.corner_radius
+	}
+
 	draw_diagram : Flowchart.Diagram, Theme.Options -> Drawing.Picture
 	draw_diagram = |diagram, theme| {
 		measured = FlowTheme.sizes(diagram, theme)
-		geometry = FlowTheme.clip_routes(diagram, FlowLayout.layout(diagram, measured), theme.corner_radius)
+		geometry = FlowTheme.clip_routes(diagram, FlowLayout.layout(diagram, measured), FlowTheme.radius(theme))
 		paint = {
 			..FlowDraw.mermaid,
 			font_size: theme.font_size,
 			line_height: theme.line_height,
-			corner_radius: theme.corner_radius,
+			corner_radius: FlowTheme.radius(theme),
 			background: theme.background,
 			node_fill: theme.node_fill,
 			node_stroke: theme.node_stroke,
@@ -83,10 +104,14 @@ FlowTheme :: {}.{
 			line_width: theme.line_width,
 			thick_line_width: theme.line_width * 1.75,
 			label_background: theme.label_background,
-			label_background_opacity: 1,
+			label_background_opacity: theme.label_background_opacity,
 			label_text: theme.label_text,
-			group_colors: [{ fill: theme.group_fill, stroke: theme.group_stroke }],
-			group_stroke_width: theme.line_width,
+			group_colors: if theme.group_fill == Drawing.rgb(0xFDF4FF) and theme.group_stroke == Drawing.rgb(0xE879F9) {
+				FlowDraw.mermaid.group_colors
+			} else {
+				[{ fill: theme.group_fill, stroke: theme.group_stroke }]
+			},
+			group_stroke_width: theme.line_width / 2,
 			group_text: theme.node_text,
 			shadow: theme.shadow,
 		}

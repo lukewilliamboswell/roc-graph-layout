@@ -1,9 +1,9 @@
 {
-	"schema": 8,
-	"key": "c2ab50e84272909013fcff65dd74c765be747441490cc8b564912c96d86b5327",
+	"schema": 9,
+	"key": "7e9c737be2f1c43d421940a6850748d0abf2298307abb403fa389bb38a26acf2",
 	"provenance": {
-		"extractor": 8,
-		"extractor_sha256": "2f2d682b8aa0ca6418cb246e096bc47706b6a753ca49643cc70f4e64568c3abe",
+		"extractor": 9,
+		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",
@@ -104,6 +104,3456 @@
 		"getAccTitle": "",
 		"getAccDescription": ""
 	},
+	"measurement_trace": [
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A ",
+			"rows": [
+				"A "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 10.671875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A ",
+			"rows": [
+				"A "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 11.046875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "long ",
+			"rows": [
+				"long "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 30.25,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "long ",
+			"rows": [
+				"long "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 32.734375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "operation ",
+			"rows": [
+				"operation "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 66.71875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "operation ",
+			"rows": [
+				"operation "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 71.890625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long",
+			"rows": [
+				"A long"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 44.5,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long",
+			"rows": [
+				"A long"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 48.28125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label ",
+			"rows": [
+				"label "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 33.8125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label ",
+			"rows": [
+				"label "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 35.859375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation",
+			"rows": [
+				"A long operation"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 115.65625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation",
+			"rows": [
+				"A long operation"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 124.65625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "whose ",
+			"rows": [
+				"whose "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 46.25,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "whose ",
+			"rows": [
+				"whose "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 49.921875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label",
+			"rows": [
+				"label"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 33.8125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label",
+			"rows": [
+				"label"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 35.859375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words ",
+			"rows": [
+				"words "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 42.6875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words ",
+			"rows": [
+				"words "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 46.40625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label whose",
+			"rows": [
+				"label whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 84.5,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label whose",
+			"rows": [
+				"label whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 90.28125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must ",
+			"rows": [
+				"must "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 34.671875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must ",
+			"rows": [
+				"must "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 37.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words",
+			"rows": [
+				"words"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 42.6875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words",
+			"rows": [
+				"words"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 46.40625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap ",
+			"rows": [
+				"wrap "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 34.6875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap ",
+			"rows": [
+				"wrap "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 37.90625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words must",
+			"rows": [
+				"words must"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 81.796875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words must",
+			"rows": [
+				"words must"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 88.0625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into ",
+			"rows": [
+				"into "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 25.796875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into ",
+			"rows": [
+				"into "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 28,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words must wrap",
+			"rows": [
+				"words must wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 120.921875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words must wrap",
+			"rows": [
+				"words must wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 130.453125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "the ",
+			"rows": [
+				"the "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 22.25,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "the ",
+			"rows": [
+				"the "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 24.03125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into",
+			"rows": [
+				"into"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 25.796875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into",
+			"rows": [
+				"into"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 28,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "available ",
+			"rows": [
+				"available "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 63.15625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "available ",
+			"rows": [
+				"available "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 66.390625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into the",
+			"rows": [
+				"into the"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 52.484375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into the",
+			"rows": [
+				"into the"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 56.53125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message ",
+			"rows": [
+				"message "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 64.921875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message ",
+			"rows": [
+				"message "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 68.359375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into the available",
+			"rows": [
+				"into the available"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 120.09375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into the available",
+			"rows": [
+				"into the available"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 127.40625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width ",
+			"rows": [
+				"width "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 37.359375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width ",
+			"rows": [
+				"width "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 41.703125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message",
+			"rows": [
+				"message"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 64.921875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message",
+			"rows": [
+				"message"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 68.359375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without ",
+			"rows": [
+				"without "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 50.703125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without ",
+			"rows": [
+				"without "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 55.953125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message width",
+			"rows": [
+				"message width"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 106.71875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message width",
+			"rows": [
+				"message width"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 114.5625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "changing ",
+			"rows": [
+				"changing "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 64.953125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "changing ",
+			"rows": [
+				"changing "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 70,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without",
+			"rows": [
+				"without"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 50.703125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without",
+			"rows": [
+				"without"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 55.953125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without changing",
+			"rows": [
+				"without changing"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 120.09375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without changing",
+			"rows": [
+				"without changing"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 130.453125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "text ",
+			"rows": [
+				"text "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 25.796875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "text ",
+			"rows": [
+				"text "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 28.328125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "the",
+			"rows": [
+				"the"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 22.25,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "the",
+			"rows": [
+				"the"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 24.03125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation",
+			"rows": [
+				"A long operation"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 115.65625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label whose",
+			"rows": [
+				"label whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 84.5,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words must wrap",
+			"rows": [
+				"words must wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 120.921875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into the available",
+			"rows": [
+				"into the available"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 120.09375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message width",
+			"rows": [
+				"message width"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 106.71875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without changing",
+			"rows": [
+				"without changing"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 120.09375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "the text",
+			"rows": [
+				"the text"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 52.484375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation",
+			"rows": [
+				"A long operation"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 124.65625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label whose",
+			"rows": [
+				"label whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 90.28125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words must wrap",
+			"rows": [
+				"words must wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 130.453125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into the available",
+			"rows": [
+				"into the available"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 127.40625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message width",
+			"rows": [
+				"message width"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 114.5625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without changing",
+			"rows": [
+				"without changing"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 130.453125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "the text",
+			"rows": [
+				"the text"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 56.859375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "An explicit one line response",
+			"rows": [
+				"An explicit one line response"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 203.6875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "An explicit one line response",
+			"rows": [
+				"An explicit one line response"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 217.046875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "participant ",
+			"rows": [
+				"participant "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 73.828125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "participant ",
+			"rows": [
+				"participant "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 80.96875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A participant",
+			"rows": [
+				"A participant"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 88.0625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A participant",
+			"rows": [
+				"A participant"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 96.5,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive ",
+			"rows": [
+				"descriptive "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 76.484375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive ",
+			"rows": [
+				"descriptive "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 83.6875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "whose",
+			"rows": [
+				"whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 46.25,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "whose",
+			"rows": [
+				"whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 49.921875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "name ",
+			"rows": [
+				"name "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 40.03125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "name ",
+			"rows": [
+				"name "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 41.78125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive",
+			"rows": [
+				"descriptive"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 76.484375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive",
+			"rows": [
+				"descriptive"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 83.6875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs ",
+			"rows": [
+				"needs "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 43.59375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs ",
+			"rows": [
+				"needs "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 46.359375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive name",
+			"rows": [
+				"descriptive name"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 120.953125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive name",
+			"rows": [
+				"descriptive name"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 129.96875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "several ",
+			"rows": [
+				"several "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 51.578125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "several ",
+			"rows": [
+				"several "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 54.359375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs",
+			"rows": [
+				"needs"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 43.59375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs",
+			"rows": [
+				"needs"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 46.359375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "lines ",
+			"rows": [
+				"lines "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 32.90625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "lines ",
+			"rows": [
+				"lines "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 34.984375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs several",
+			"rows": [
+				"needs several"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 99.625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs several",
+			"rows": [
+				"needs several"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 105.203125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A participant",
+			"rows": [
+				"A participant"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 88.0625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "whose",
+			"rows": [
+				"whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 46.25,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive name",
+			"rows": [
+				"descriptive name"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 120.953125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs several",
+			"rows": [
+				"needs several"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 99.625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "lines",
+			"rows": [
+				"lines"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 32.90625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A participant",
+			"rows": [
+				"A participant"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 96.5,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "whose",
+			"rows": [
+				"whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 49.921875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive name",
+			"rows": [
+				"descriptive name"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 129.96875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs several",
+			"rows": [
+				"needs several"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 105.203125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "lines",
+			"rows": [
+				"lines"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 34.984375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A participant kept on one line",
+			"rows": [
+				"A participant kept on one line"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 205.484375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A participant kept on one line",
+			"rows": [
+				"A participant kept on one line"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 221.234375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label",
+			"rows": [
+				"A long operation label"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 153.90625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label",
+			"rows": [
+				"A long operation label"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 165.015625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label whose",
+			"rows": [
+				"A long operation label whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 204.609375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label whose",
+			"rows": [
+				"A long operation label whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 219.4375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label whose words",
+			"rows": [
+				"A long operation label whose words"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 251.734375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label whose words",
+			"rows": [
+				"A long operation label whose words"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 270.34375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must",
+			"rows": [
+				"must"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 34.671875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must",
+			"rows": [
+				"must"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 37.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap",
+			"rows": [
+				"must wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 73.796875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap",
+			"rows": [
+				"must wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 79.5625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into",
+			"rows": [
+				"must wrap into"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 104.046875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into",
+			"rows": [
+				"must wrap into"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 112.0625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the",
+			"rows": [
+				"must wrap into the"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 130.734375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the",
+			"rows": [
+				"must wrap into the"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 140.578125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the available",
+			"rows": [
+				"must wrap into the available"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 198.328125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the available",
+			"rows": [
+				"must wrap into the available"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 211.46875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the available message",
+			"rows": [
+				"must wrap into the available message"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 267.703125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the available message",
+			"rows": [
+				"must wrap into the available message"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 284.328125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width",
+			"rows": [
+				"width"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 37.359375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width",
+			"rows": [
+				"width"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 41.703125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without",
+			"rows": [
+				"width without"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 92.5,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without",
+			"rows": [
+				"width without"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 102.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without changing",
+			"rows": [
+				"width without changing"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 161.890625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without changing",
+			"rows": [
+				"width without changing"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 176.640625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without changing the",
+			"rows": [
+				"width without changing the"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 188.578125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without changing the",
+			"rows": [
+				"width without changing the"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 205.171875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label whose words",
+			"rows": [
+				"A long operation label whose words"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 251.734375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the available message",
+			"rows": [
+				"must wrap into the available message"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 267.703125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without changing the text",
+			"rows": [
+				"width without changing the text"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 218.8125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label whose words",
+			"rows": [
+				"A long operation label whose words"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 270.34375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the available message",
+			"rows": [
+				"must wrap into the available message"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 284.328125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without changing the text",
+			"rows": [
+				"width without changing the text"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 238,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "note ",
+			"rows": [
+				"note "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 31.140625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "note ",
+			"rows": [
+				"note "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 33.453125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "with ",
+			"rows": [
+				"with "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 28.453125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "with ",
+			"rows": [
+				"with "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 31.671875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note",
+			"rows": [
+				"A note"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 45.390625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note",
+			"rows": [
+				"A note"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 49,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "enough ",
+			"rows": [
+				"enough "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 53.390625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "enough ",
+			"rows": [
+				"enough "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 57.109375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note with",
+			"rows": [
+				"A note with"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 78.28125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note with",
+			"rows": [
+				"A note with"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 85.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note with enough",
+			"rows": [
+				"A note with enough"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 136.125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note with enough",
+			"rows": [
+				"A note with enough"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 146.765625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to ",
+			"rows": [
+				"to "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 13.34375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to ",
+			"rows": [
+				"to "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 14.671875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive text",
+			"rows": [
+				"descriptive text"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 106.71875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive text",
+			"rows": [
+				"descriptive text"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 116.515625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive text to",
+			"rows": [
+				"descriptive text to"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 124.5,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive text to",
+			"rows": [
+				"descriptive text to"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 135.6875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap",
+			"rows": [
+				"wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 34.6875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap",
+			"rows": [
+				"wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 37.90625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "a ",
+			"rows": [
+				"a "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 8.90625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "a ",
+			"rows": [
+				"a "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 8.984375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into",
+			"rows": [
+				"wrap into"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 64.921875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into",
+			"rows": [
+				"wrap into"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 70.40625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "narrow ",
+			"rows": [
+				"narrow "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 48.90625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "narrow ",
+			"rows": [
+				"narrow "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 52.875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into a",
+			"rows": [
+				"wrap into a"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 78.265625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into a",
+			"rows": [
+				"wrap into a"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 83.890625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into a narrow",
+			"rows": [
+				"wrap into a narrow"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 131.625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into a narrow",
+			"rows": [
+				"wrap into a narrow"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 141.25,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "box ",
+			"rows": [
+				"box "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 25.796875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "box ",
+			"rows": [
+				"box "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 27.765625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "note",
+			"rows": [
+				"note"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 31.140625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "note",
+			"rows": [
+				"note"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 33.453125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note with enough",
+			"rows": [
+				"A note with enough"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 136.125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive text to",
+			"rows": [
+				"descriptive text to"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 124.5,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into a narrow",
+			"rows": [
+				"wrap into a narrow"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 131.625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "note box",
+			"rows": [
+				"note box"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 61.390625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note with enough",
+			"rows": [
+				"A note with enough"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 146.765625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive text to",
+			"rows": [
+				"descriptive text to"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 135.6875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into a narrow",
+			"rows": [
+				"wrap into a narrow"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 141.25,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "note box",
+			"rows": [
+				"note box"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 65.71875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "enough",
+			"rows": [
+				"enough"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 53.390625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "enough",
+			"rows": [
+				"enough"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 57.109375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to",
+			"rows": [
+				"to"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 13.34375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to",
+			"rows": [
+				"to"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 14.671875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to wrap",
+			"rows": [
+				"to wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 52.46875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to wrap",
+			"rows": [
+				"to wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 57.078125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to wrap into",
+			"rows": [
+				"to wrap into"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 82.71875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to wrap into",
+			"rows": [
+				"to wrap into"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 89.578125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to wrap into a",
+			"rows": [
+				"to wrap into a"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 96.0625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to wrap into a",
+			"rows": [
+				"to wrap into a"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 103.0625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "narrow",
+			"rows": [
+				"narrow"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 48.90625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "narrow",
+			"rows": [
+				"narrow"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 52.875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "narrow note",
+			"rows": [
+				"narrow note"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 84.5,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "narrow note",
+			"rows": [
+				"narrow note"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 90.828125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "A note with",
+			"rows": [
+				"A note with"
+			],
+			"box": {
+				"x": 419.421875,
+				"y": 265.359375,
+				"width": 85.15625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "enough",
+			"rows": [
+				"enough"
+			],
+			"box": {
+				"x": 433.4453125,
+				"y": 285.359375,
+				"width": 57.109375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "descriptive text",
+			"rows": [
+				"descriptive text"
+			],
+			"box": {
+				"x": 403.7421875,
+				"y": 305.359375,
+				"width": 116.515625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "to wrap into a",
+			"rows": [
+				"to wrap into a"
+			],
+			"box": {
+				"x": 410.46875,
+				"y": 325.359375,
+				"width": 103.0625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "narrow note box",
+			"rows": [
+				"narrow note box"
+			],
+			"box": {
+				"x": 400.453125,
+				"y": 345.359375,
+				"width": 123.09375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "A note with",
+			"rows": [
+				"A note with"
+			],
+			"box": {
+				"x": 419.421875,
+				"y": 265.359375,
+				"width": 85.15625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "enough",
+			"rows": [
+				"enough"
+			],
+			"box": {
+				"x": 433.4453125,
+				"y": 285.359375,
+				"width": 57.109375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "descriptive text",
+			"rows": [
+				"descriptive text"
+			],
+			"box": {
+				"x": 403.7421875,
+				"y": 305.359375,
+				"width": 116.515625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "to wrap into a",
+			"rows": [
+				"to wrap into a"
+			],
+			"box": {
+				"x": 410.46875,
+				"y": 325.359375,
+				"width": 103.0625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "narrow note box",
+			"rows": [
+				"narrow note box"
+			],
+			"box": {
+				"x": 400.453125,
+				"y": 345.359375,
+				"width": 123.09375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "A long operation label whose words",
+			"rows": [],
+			"box": {
+				"x": 80.828125,
+				"y": 175.359375,
+				"width": 270.34375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "must wrap into the available message",
+			"rows": [],
+			"box": {
+				"x": 73.8359375,
+				"y": 195.359375,
+				"width": 284.328125,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "width without changing the text",
+			"rows": [],
+			"box": {
+				"x": 97,
+				"y": 215.359375,
+				"width": 238,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "An explicit one line response",
+			"rows": [],
+			"box": {
+				"x": 113.4765625,
+				"y": 395.359375,
+				"width": 217.046875,
+				"height": 20.015625
+			}
+		}
+	],
 	"rendering": {
 		"view_box": {
 			"x": -50,

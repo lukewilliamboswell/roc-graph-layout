@@ -1,9 +1,9 @@
 {
-	"schema": 8,
-	"key": "13b08ce0fa776bf8f7757494de563ec2438d447f86571e6d2e07f933dcb1523a",
+	"schema": 9,
+	"key": "fbf2630871b1a9530804b0e7c2b2aaba266362dd896c226c760f962076a0ed48",
 	"provenance": {
-		"extractor": 8,
-		"extractor_sha256": "2f2d682b8aa0ca6418cb246e096bc47706b6a753ca49643cc70f4e64568c3abe",
+		"extractor": 9,
+		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",
@@ -141,6 +141,192 @@
 		"getAccTitle": "",
 		"getAccDescription": ""
 	},
+	"measurement_trace": [
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Before numbering",
+			"rows": [
+				"Before numbering"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 127.1875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Before numbering",
+			"rows": [
+				"Before numbering"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 135.8125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "First numbered call",
+			"rows": [
+				"First numbered call"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 136.046875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "First numbered call",
+			"rows": [
+				"First numbered call"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 145,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Hidden number",
+			"rows": [
+				"Hidden number"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 109.40625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Hidden number",
+			"rows": [
+				"Hidden number"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 116.71875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Numbering resumes",
+			"rows": [
+				"Numbering resumes"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 144.0625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Numbering resumes",
+			"rows": [
+				"Numbering resumes"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 153.265625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Before numbering",
+			"rows": [],
+			"box": {
+				"x": 116.09375,
+				"y": 95.359375,
+				"width": 135.8125,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "First numbered call",
+			"rows": [],
+			"box": {
+				"x": 111.5,
+				"y": 145.359375,
+				"width": 145,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Hidden number",
+			"rows": [],
+			"box": {
+				"x": 131.640625,
+				"y": 195.359375,
+				"width": 116.71875,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Numbering resumes",
+			"rows": [],
+			"box": {
+				"x": 107.3671875,
+				"y": 245.359375,
+				"width": 153.265625,
+				"height": 20.015625
+			}
+		}
+	],
 	"rendering": {
 		"view_box": {
 			"x": -50,

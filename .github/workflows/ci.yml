@@ -78,3 +78,49 @@ jobs:
         env:
           PLAYWRIGHT_WITH_DEPS: "1"
         run: blueprint run editor-e2e
+
+  mermaid-oracle:
+    name: Mermaid independent oracle
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install the latest Roc nightly
+        uses: roc-lang/setup-roc@f5a74bf90aa694b43ab4a7cbfdb19273bc6aa697
+        with:
+          version: nightly-new-compiler
+
+      - name: Install pinned oracle and browser dependencies
+        run: |
+          node --version
+          sudo apt-get update
+          sudo apt-get install -y libnspr4 libnss3 libatk-bridge2.0-0 libgbm1 libxkbcommon0 libasound2t64 fonts-noto-color-emoji fonts-noto-cjk
+          npm ci --prefix tools/mermaid-oracle
+
+      - name: Test the comparison contract
+        run: node --test tools/mermaid-oracle/validate.test.mjs
+
+      - name: Generate independent references for the runner's font environment
+        run: |
+          node tools/mermaid-oracle/oracle.mjs record tests/mermaid/flowchart tests/mermaid/layout tests/mermaid/measure tests/mermaid/themed tests/mermaid/sequence tests/mermaid/entity tests/mermaid/class tests/mermaid/state
+          node tools/mermaid-oracle/oracle.mjs check tests/mermaid/flowchart tests/mermaid/layout tests/mermaid/measure tests/mermaid/themed tests/mermaid/sequence tests/mermaid/entity tests/mermaid/class tests/mermaid/state
+
+      - name: Build the native production-path probe
+        run: roc build package-mermaid/oracle_dump.roc --output="${{ runner.temp }}/mermaid-oracle-dump"
+
+      - name: Compare every supported diagram family
+        run: node tools/mermaid-oracle/validate.mjs "${{ runner.temp }}/mermaid-oracle-dump" "${{ runner.temp }}/mermaid-oracle-results"
+
+      - name: Preserve scores, SVGs and difference images even on failure
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mermaid-oracle-results
+          path: ${{ runner.temp }}/mermaid-oracle-results
+          if-no-files-found: warn

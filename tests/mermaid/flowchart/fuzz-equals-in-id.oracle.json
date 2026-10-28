@@ -1,9 +1,9 @@
 {
-	"schema": 8,
-	"key": "4dce10c78a10c39b88fc63c64d57a83a54afa0427cc705ba23bafd03a6af5bea",
+	"schema": 9,
+	"key": "5aa2881e5c159989f88b4099109ecf8de8cbea89331b43d259becab283836a5e",
 	"provenance": {
-		"extractor": 8,
-		"extractor_sha256": "7a128f0b9c6da9437db11b4e0b2ac76aae5e91bb8ecf22e989b6970eb16794a2",
+		"extractor": 9,
+		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",

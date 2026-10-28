@@ -21,7 +21,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 
 // Bump when the shape or meaning of a record changes.
-const EXTRACTOR_VERSION = 8;
+const EXTRACTOR_VERSION = 9;
 export const FONT_FAMILY = 'Oracle Inter';
 export const FONT_FILE = path.join(here, 'fonts', 'Inter-Regular.ttf');
 const CASE_TIMEOUT_MS = 20000;
@@ -85,17 +85,18 @@ async function extractInPage(source) {
 	}
 	result.accepted = true;
 	result.diagram_type = diagram.type;
+	const plain = (value, depth = 0) => {
+		if (depth > 32) throw new Error('oracle model exceeds supported extraction depth');
+		if (value instanceof Map) return [...value].map(([key, item]) => [key, plain(item, depth + 1)]);
+		if (value instanceof Set) return [...value].map(item => plain(item, depth + 1));
+		if (Array.isArray(value)) return value.map(item => plain(item, depth + 1));
+		if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).filter(([, item]) => typeof item !== 'function').map(([key, item]) => [key, plain(item, depth + 1)]));
+		return value;
+	};
 	if (diagram.type !== 'flowchart-v2' && diagram.type !== 'flowchart') {
 		// Keep the pinned parser's facts, not a model reconstructed from our
 		// implementation. Family normalizers consume these getter snapshots.
-		const plain = (value, depth = 0) => {
-			if (depth > 32) throw new Error('oracle model exceeds supported extraction depth');
-			if (value instanceof Map) return [...value].map(([key, item]) => [key, plain(item, depth + 1)]);
-			if (value instanceof Set) return [...value].map(item => plain(item, depth + 1));
-			if (Array.isArray(value)) return value.map(item => plain(item, depth + 1));
-			if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).filter(([, item]) => typeof item !== 'function').map(([key, item]) => [key, plain(item, depth + 1)]));
-			return value;
-		};
+
 		result.model = {};
 		for (const name of ['getActors', 'getActorKeys', 'getMessages', 'getNotes', 'getBoxes', 'getCreatedActors', 'getDestroyedActors', 'showSequenceNumbers', 'getClasses', 'getRelations', 'getNamespaces', 'getEntities', 'getRelationships', 'getStates', 'getRootDoc', 'getRootDocV2', 'getDirection', 'getDiagramTitle', 'getAccTitle', 'getAccDescription']) {
 			if (typeof diagram.db[name] === 'function') result.model[name] = plain(diagram.db[name]());
@@ -108,8 +109,36 @@ async function extractInPage(source) {
 		const host = document.getElementById('host');
 		host.replaceChildren();
 		let svgText;
+		let measuredInput;
+		const measurementTrace = [];
+		const originalGetBBox = SVGGraphicsElement.prototype.getBBox;
+		SVGGraphicsElement.prototype.getBBox = function (...args) {
+			const box = originalGetBBox.apply(this, args);
+			if (this.tagName.toLowerCase() === 'text' || (this.tagName.toLowerCase() === 'g' && this.classList.contains('label'))) {
+				measurementTrace.push({ tag: this.tagName.toLowerCase(), id: this.id, class: this.getAttribute('class') ?? '', parent_id: this.parentElement?.id ?? '', text: this.textContent, rows: [...this.querySelectorAll('tspan')].filter(span => !span.querySelector('tspan')).map(span => span.textContent), box: { x: box.x, y: box.y, width: box.width, height: box.height } });
+			}
+			return box;
+		};
+		const prototype = Object.getPrototypeOf(diagram.db);
+		const originalGetData = Object.hasOwn(prototype, 'getData') ? prototype.getData : null;
+		if (typeof originalGetData === 'function') {
+			prototype.getData = function (...args) {
+				const data = originalGetData.apply(this, args);
+				measuredInput = data;
+				return data;
+			};
+		}
 		try { svgText = (await m.render('oracle', source, host)).svg; }
 		catch (error) { result.render_error = String(error?.message ?? error).slice(0, 2000); return result; }
+		finally {
+			if (typeof originalGetData === 'function') prototype.getData = originalGetData;
+			SVGGraphicsElement.prototype.getBBox = originalGetBBox;
+		}
+		// Retain the exact production object while Mermaid measures and lays
+		// it out. Its input labelBBox/labelData survives even for invisible
+		// group captions; final group width/height remain outputs, not inputs.
+		if (measuredInput) result.measured_input = plain(measuredInput);
+		result.measurement_trace = measurementTrace;
 		host.innerHTML = svgText;
 		const svg = host.querySelector('svg');
 		const inverse = svg.getScreenCTM().inverse();
@@ -158,14 +187,18 @@ async function extractInPage(source) {
 				span.textContent = row;
 				text.appendChild(span);
 			}
-			svg.appendChild(text);
+			const probe = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+			probe.setAttribute('width', '4000');
+			probe.setAttribute('height', '4000');
+			probe.style.cssText = 'position:absolute;left:-100000px;top:0';
+			probe.appendChild(text);
+			document.body.appendChild(probe);
 			const b = text.getBBox();
 			const measured = { width: b.width, height: b.height };
-			text.remove();
+			probe.remove();
 			return measured;
 		};
 		result.measurements = [
-			...(result.layout_input?.nodes ?? []).filter(node => node.shape === 'noteGroup').map(node => ({ kind: 'group', id: node.id, text: node.label, ...measureUnwrapped(node.label, 14, 1.1) })),
 			...(result.model.getMessages ?? []).filter(message => typeof message.message === 'string').map(message => ({ kind: 'sequence-message', id: String(message.id), text: message.message, ...measureUnwrapped(message.message, 16, 1.25) })),
 		];
 		result.layout = { view_box };
@@ -249,12 +282,22 @@ async function extractInPage(source) {
 	const host = document.getElementById('host');
 	host.replaceChildren();
 	let svgText;
+	let measuredInput;
+	const prototype = Object.getPrototypeOf(diagram.db);
+	const holder = Object.hasOwn(prototype, 'getData') ? prototype : diagram.db;
+	const originalGetData = holder.getData;
+	holder.getData = function (...args) {
+		const data = originalGetData.apply(this, args);
+		measuredInput = data;
+		return data;
+	};
 	try {
 		svgText = (await m.render('oracle', source, host)).svg;
 	} catch (error) {
 		result.render_error = String(error && error.message ? error.message : error).slice(0, 2000);
 		return result;
-	}
+	} finally { holder.getData = originalGetData; }
+	if (measuredInput) result.measured_input = plain(measuredInput);
 	host.innerHTML = svgText;
 	const svg = host.querySelector('svg');
 	const toRoot = svg.getScreenCTM().inverse();

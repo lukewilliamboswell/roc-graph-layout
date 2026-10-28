@@ -2,7 +2,7 @@
 // probes. All model comparisons are exact JSON comparisons, never pictures
 // compared with themselves or baselines inferred from the implementation.
 export const FAMILY_DIRS = {
-	flowchart: ['tests/mermaid/flowchart', 'tests/mermaid/layout', 'tests/mermaid/themed'],
+	flowchart: ['tests/mermaid/flowchart', 'tests/mermaid/layout', 'tests/mermaid/measure', 'tests/mermaid/themed'],
 	sequence: ['tests/mermaid/sequence'],
 	entity: ['tests/mermaid/entity'],
 	class: ['tests/mermaid/class'],

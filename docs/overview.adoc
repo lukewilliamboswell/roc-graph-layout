@@ -69,13 +69,22 @@ options = Mermaid.Options.{
 svg = Mermaid.svg_with(source, options)
 ----
 
-The defaults use a white background, pale indigo nodes, muted connectors,
-14-pixel Inter text, 1.4-em line spacing, and no shadows. Colours, outlines,
-padding, corner radius and optional shadows are shared across diagram
-families. Wrapping and font settings affect measurement before placement,
-so the boxes receive room for their actual text. Flowchart group titles
-wrap too. Flowchart and state style declarations override the theme where
-supported. Arbitrary CSS and alternate font families are not interpreted.
+The defaults follow pinned Mermaid 12.2.0: white flowchart/state nodes,
+coloured actor/table palettes, dark outlines and subtle shadows. The shared
+14px font base preserves family proportions, including 16px sequence messages.
+Colours, outlines, padding, corner radius and shadows can be overridden.
+`wrapping: FamilyDefault` follows the diagram role; `Wrap` uses
+`max_label_width`, and `NoWrap` keeps explicit source line breaks only.
+`corners` likewise selects family defaults, rounded or square nodes. An empty
+`node_palette` uses the family palette; a one-entry list selects flat colours.
+Sequence line/note/control colours use `message_colors`; transition and
+relationship backings use `transition_label_background`. Flowchart label
+backings use `label_background` and `label_background_opacity`.
+
+Sizing happens before placement with the selected typography. Source styles
+are interpreted where supported; raw declarations remain in the parsed model,
+including reference renderer quirks documented by each family. Arbitrary CSS
+and alternate font families are not interpreted.
 
 Invalid numeric theme properties are reported together. Display SVG with
 Inter available so visible text matches the measured advances. The package

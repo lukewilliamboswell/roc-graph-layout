@@ -1,9 +1,9 @@
 {
-	"schema": 8,
-	"key": "f78e9d4108392dc248582e5bb2f1286641321f3776a2dca9acf0c0ee0353d54d",
+	"schema": 9,
+	"key": "bcd4cc430449abda2d506aa9d0e8d1ec293760c0017b0eda75fb8624dd9863bb",
 	"provenance": {
-		"extractor": 8,
-		"extractor_sha256": "2f2d682b8aa0ca6418cb246e096bc47706b6a753ca49643cc70f4e64568c3abe",
+		"extractor": 9,
+		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",
@@ -244,6 +244,1046 @@
 		"getAccTitle": "",
 		"getAccDescription": ""
 	},
+	"measurement_trace": [
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Place an order",
+			"rows": [
+				"Place an order"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 104.0625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Place an order",
+			"rows": [
+				"Place an order"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 109.484375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "All requests carry an idempotency key",
+			"rows": [
+				"All requests carry an idempotency key"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 270.34375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "All requests carry an idempotency key",
+			"rows": [
+				"All requests carry an idempotency key"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 289.703125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Authorize the card payment",
+			"rows": [
+				"Authorize the card payment"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 195.671875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Authorize the card payment",
+			"rows": [
+				"Authorize the card payment"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 209.859375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Authorization reference",
+			"rows": [
+				"Authorization reference"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 165.4375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Authorization reference",
+			"rows": [
+				"Authorization reference"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 178.203125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Persist the order and reserve stock",
+			"rows": [
+				"Persist the order and reserve stock"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 248.109375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Persist the order and reserve stock",
+			"rows": [
+				"Persist the order and reserve stock"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 264.921875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Please retry later",
+			"rows": [
+				"Please retry later"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 120.9375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Please retry later",
+			"rows": [
+				"Please retry later"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 128.21875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Order confirmation",
+			"rows": [
+				"Order confirmation"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 132.5,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Order confirmation",
+			"rows": [
+				"Order confirmation"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 143.0625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Customer",
+			"rows": [
+				"Customer"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 69.359375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Customer",
+			"rows": [
+				"Customer"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 73.640625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Checkout service",
+			"rows": [
+				"Checkout service"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 122.71875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Checkout service",
+			"rows": [
+				"Checkout service"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 132.21875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Payment provider",
+			"rows": [
+				"Payment provider"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 125.390625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Payment provider",
+			"rows": [
+				"Payment provider"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 133.34375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "All requests carry an idempotency key",
+			"rows": [
+				"All requests carry an idempotency key"
+			],
+			"box": {
+				"x": 283.1484375,
+				"y": 145.359375,
+				"width": 289.703125,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "All requests carry an idempotency key",
+			"rows": [
+				"All requests carry an idempotency key"
+			],
+			"box": {
+				"x": 283.1484375,
+				"y": 145.359375,
+				"width": 289.703125,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until ",
+			"rows": [
+				"[Until "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 36.453125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until ",
+			"rows": [
+				"[Until "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 40.1875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "accepted ",
+			"rows": [
+				"accepted "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 64.9375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "accepted ",
+			"rows": [
+				"accepted "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 70.59375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until",
+			"rows": [
+				"[Until"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 36.453125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until",
+			"rows": [
+				"[Until"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 40.1875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "or ",
+			"rows": [
+				"or "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 14.234375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "or ",
+			"rows": [
+				"or "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 15.625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted",
+			"rows": [
+				"[Until accepted"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 105.84375,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted",
+			"rows": [
+				"[Until accepted"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 115.28125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "retries ",
+			"rows": [
+				"retries "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 44.453125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "retries ",
+			"rows": [
+				"retries "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 48.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted or",
+			"rows": [
+				"[Until accepted or"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 124.515625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted or",
+			"rows": [
+				"[Until accepted or"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 135.390625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "exhausted] ",
+			"rows": [
+				"exhausted] "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 78.28125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "exhausted] ",
+			"rows": [
+				"exhausted] "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 84.09375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted or retries",
+			"rows": [
+				"[Until accepted or retries"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 173.40625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted or retries",
+			"rows": [
+				"[Until accepted or retries"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 188.046875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted or retries exhausted]",
+			"rows": [
+				"[Until accepted or retries exhausted]"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 256.140625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted or retries exhausted]",
+			"rows": [
+				"[Until accepted or retries exhausted]"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 276.640625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Approved] ",
+			"rows": [
+				"[Approved] "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 77.390625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Approved] ",
+			"rows": [
+				"[Approved] "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 85.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Approved]",
+			"rows": [
+				"[Approved]"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 77.390625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Approved]",
+			"rows": [
+				"[Approved]"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 85.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Temporary ",
+			"rows": [
+				"[Temporary "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 80.03125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Temporary ",
+			"rows": [
+				"[Temporary "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 87.921875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "failure] ",
+			"rows": [
+				"failure] "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 48.03125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "failure] ",
+			"rows": [
+				"failure] "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 52.609375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Temporary",
+			"rows": [
+				"[Temporary"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 80.03125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Temporary",
+			"rows": [
+				"[Temporary"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 87.921875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Temporary failure]",
+			"rows": [
+				"[Temporary failure]"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 132.5,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Temporary failure]",
+			"rows": [
+				"[Temporary failure]"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 145.03125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "labelText",
+			"parent_id": "",
+			"text": "alt",
+			"rows": [],
+			"box": {
+				"x": 166.8359375,
+				"y": 289.359375,
+				"width": 18.328125,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "loopText",
+			"parent_id": "",
+			"text": "[Approved]",
+			"rows": [
+				"[Approved]"
+			],
+			"box": {
+				"x": 349.171875,
+				"y": 283,
+				"width": 85.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "sectionTitle",
+			"parent_id": "",
+			"text": "[Temporary failure]",
+			"rows": [],
+			"box": {
+				"x": 294.234375,
+				"y": 463,
+				"width": 145.03125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "loopText",
+			"parent_id": "",
+			"text": "[Approved]",
+			"rows": [
+				"[Approved]"
+			],
+			"box": {
+				"x": 349.171875,
+				"y": 283,
+				"width": 85.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "labelText",
+			"parent_id": "",
+			"text": "loop",
+			"rows": [],
+			"box": {
+				"x": 149.5703125,
+				"y": 194.359375,
+				"width": 32.859375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "loopText",
+			"parent_id": "",
+			"text": "[Until accepted or retries exhausted]",
+			"rows": [
+				"[Until accepted or retries exhausted]"
+			],
+			"box": {
+				"x": 253.4296875,
+				"y": 188,
+				"width": 276.640625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Place an order",
+			"rows": [],
+			"box": {
+				"x": 124.2578125,
+				"y": 95.359375,
+				"width": 109.484375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Authorize the card payment",
+			"rows": [],
+			"box": {
+				"x": 320.0703125,
+				"y": 240.359375,
+				"width": 209.859375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Authorization reference",
+			"rows": [],
+			"box": {
+				"x": 341.8984375,
+				"y": 335.359375,
+				"width": 178.203125,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Persist the order and reserve stock",
+			"rows": [],
+			"box": {
+				"x": 160.5390625,
+				"y": 385.359375,
+				"width": 264.921875,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Please retry later",
+			"rows": [],
+			"box": {
+				"x": 368.890625,
+				"y": 510.359375,
+				"width": 128.21875,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Order confirmation",
+			"rows": [],
+			"box": {
+				"x": 111.46875,
+				"y": 580.359375,
+				"width": 143.0625,
+				"height": 20.015625
+			}
+		}
+	],
 	"rendering": {
 		"view_box": {
 			"x": -50,

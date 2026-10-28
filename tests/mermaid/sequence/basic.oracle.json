@@ -1,9 +1,9 @@
 {
-	"schema": 8,
-	"key": "b871c70bf0041ef641daf2bf7fdfce9156e4b33bef923d3c5b06caddbed4dadb",
+	"schema": 9,
+	"key": "d80b2730db5555affc73ac3b322ca07a19b1794bc3f9e318e5a3497c6e0866c3",
 	"provenance": {
-		"extractor": 8,
-		"extractor_sha256": "2f2d682b8aa0ca6418cb246e096bc47706b6a753ca49643cc70f4e64568c3abe",
+		"extractor": 9,
+		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",
@@ -95,6 +95,164 @@
 		"getAccTitle": "",
 		"getAccDescription": ""
 	},
+	"measurement_trace": [
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Hello",
+			"rows": [
+				"Hello"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 36.46875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Hello",
+			"rows": [
+				"Hello"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 38.5625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "World",
+			"rows": [
+				"World"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 41.5,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "World",
+			"rows": [
+				"World"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 44.5,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Alice",
+			"rows": [
+				"Alice"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 34.6875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Alice",
+			"rows": [
+				"Alice"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 37.265625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Bob",
+			"rows": [
+				"Bob"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 28.46875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Bob",
+			"rows": [
+				"Bob"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 29.859375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Hello",
+			"rows": [],
+			"box": {
+				"x": 152.71875,
+				"y": 95.359375,
+				"width": 38.5625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "World",
+			"rows": [],
+			"box": {
+				"x": 155.75,
+				"y": 145.359375,
+				"width": 44.5,
+				"height": 20.015625
+			}
+		}
+	],
 	"rendering": {
 		"view_box": {
 			"x": -50,

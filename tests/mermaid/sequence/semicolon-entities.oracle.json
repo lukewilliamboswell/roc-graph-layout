@@ -1,9 +1,9 @@
 {
-	"schema": 8,
-	"key": "3e04453f55bf3ebc54cd215e89d71075eaa36d41ebc9e12a3a8c814f0a21c29a",
+	"schema": 9,
+	"key": "d6847834d2c945537b0cd646f17ceb13b5fe212c7f4511f29628015fe82c6cd3",
 	"provenance": {
-		"extractor": 8,
-		"extractor_sha256": "2f2d682b8aa0ca6418cb246e096bc47706b6a753ca49643cc70f4e64568c3abe",
+		"extractor": 9,
+		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",
@@ -95,6 +95,100 @@
 		"getAccTitle": "",
 		"getAccDescription": ""
 	},
+	"measurement_trace": [
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "helloﬂ°°59¶ß world",
+			"rows": [
+				"helloﬂ°°59¶ß world"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 133.453125,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "helloﬂ°°59¶ß world",
+			"rows": [
+				"helloﬂ°°59¶ß world"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 145.375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "ﬂ°°35¶ß42 and ﬂ°quot¶ßyesﬂ°quot¶ß",
+			"rows": [
+				"ﬂ°°35¶ß42 and ﬂ°quot¶ßyesﬂ°quot¶ß"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 263.0625,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "ﬂ°°35¶ß42 and ﬂ°quot¶ßyesﬂ°quot¶ß",
+			"rows": [
+				"ﬂ°°35¶ß42 and ﬂ°quot¶ßyesﬂ°quot¶ß"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 285.6875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "helloﬂ°°59¶ß world",
+			"rows": [],
+			"box": {
+				"x": 177.3125,
+				"y": 95.359375,
+				"width": 145.375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "ﬂ°°35¶ß42 and ﬂ°quot¶ßyesﬂ°quot¶ß",
+			"rows": [],
+			"box": {
+				"x": 113.15625,
+				"y": 145.359375,
+				"width": 285.6875,
+				"height": 20.015625
+			}
+		}
+	],
 	"rendering": {
 		"view_box": {
 			"x": -50,
