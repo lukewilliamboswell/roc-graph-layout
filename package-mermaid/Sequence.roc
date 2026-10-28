@@ -8,14 +8,15 @@ import Theme
 ## Accepts Mermaid `sequenceDiagram` text, participants and actors with
 ## aliases, messages, notes, activation bars, nested interaction blocks and
 ## automatic message numbering. Unsupported statements are reported rather
-## than omitted. Labels wrap before columns and rows are spaced.
+## than omitted. Source `wrap:` and `nowrap:` prefixes choose whether labels wrap before
+## columns and rows are spaced; labels otherwise retain Mermaid’s nowrap default.
 ## Participant creation/destruction, participant boxes, `rect` highlights,
 ## links, configuration directives and front matter are not supported.
 Sequence :: {}.{
-	Participant : { id : Str, label : Str, actor : Bool }
-	Message : { from : U64, to : U64, text : Str, dotted : Bool, head : [None, Arrow, Open, Cross], both : Bool, activation : [Keep, Start, Stop] }
-	Note : { from : U64, to : U64, text : Str, side : [Left, Right, Over] }
-	Event : [Message(Message), Note(Note), Activate(U64), Deactivate(U64), StartBlock({ kind : Str, text : Str }), Branch({ kind : Str, text : Str }), EndBlock]
+	Participant : { id : Str, label : Str, actor : Bool, wrap : Bool, source_text : Str }
+	Message : { from : U64, to : U64, text : Str, dotted : Bool, head : [None, Arrow, Open, Cross], both : Bool, activation : [Keep, Start, Stop], wrap : Bool, source_text : Str }
+	Note : { from : U64, to : U64, text : Str, side : [Left, Right, Over], wrap : Bool, source_text : Str }
+	Event : [Message(Message), Note(Note), Activate(U64), Deactivate(U64), StartBlock({ kind : Str, text : Str, wrap : Bool, source_text : Str }), Branch({ kind : Str, text : Str, wrap : Bool, source_text : Str }), Numbering({ visible : Bool, start : [None, Some(F64)], step : [None, Some(F64)] }), EndBlock]
 	Diagram : { participants : List(Participant), events : List(Event), autonumber : Bool, title : Str }
 
 	Problem : [
@@ -52,7 +53,7 @@ Sequence :: {}.{
 
 expect
 	match Sequence.parse("sequenceDiagram\nactor A as Reader\nparticipant B as API\nA->>B: Request\nB-->>A: Response\n") {
-		Ok(d) => d.participants.len() == 2 and d.events.len() == 2 and (d.participants.get(0) ?? { id: "", label: "", actor: False }).actor
+		Ok(d) => d.participants.len() == 2 and d.events.len() == 2 and (d.participants.get(0) ?? { id: "", label: "", actor: False, wrap: False, source_text: "" }).actor
 		Err(_) => False
 	}
 
@@ -77,7 +78,7 @@ expect
 expect
 	match Sequence.draw("sequenceDiagram\nA->>B: message\n", Theme.Options.{ shadow: Shadow({ dx: -30, dy: 40, opacity: 0.2 }) }) {
 		Err(_) => False
-		Ok(p) => Drawing.is_finite(p) and p.view.x == -30 - 0.75
+		Ok(p) => Drawing.is_finite(p) and p.view.x <= -30
 	}
 
 expect

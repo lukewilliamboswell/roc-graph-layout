@@ -1,0 +1,6 @@
+sequenceDiagram
+    participant A as wrap: A participant whose descriptive name needs several lines
+    participant B as nowrap: A participant kept on one line
+    A->>B: wrap: A long operation label whose words must wrap into the available message width without changing the text
+    Note right of B: wrap: A note with enough descriptive text to wrap into a narrow note box
+    B-->>A: nowrap: An explicit one line response

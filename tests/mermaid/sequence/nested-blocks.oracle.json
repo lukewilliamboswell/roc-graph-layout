@@ -1,0 +1,3228 @@
+{
+	"schema": 7,
+	"key": "5f25a3d0d1dc201cf83b4562d014af6fee29a1fc2981e291cb12f2e85d79389a",
+	"provenance": {
+		"extractor": 7,
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "sequenceDiagram\n    autonumber\n    par First operation\n        A->>B: Request\n        opt Cached\n            B-->>A: Cached response\n        end\n    and Second operation\n        A->>C: Other request\n        critical Reserve resource\n            C->>C: Acquire lock\n        option Resource unavailable\n            C-->>A: Retry\n        end\n    end\n",
+	"accepted": true,
+	"diagram_type": "sequence",
+	"model": {
+		"getActors": [
+			[
+				"A",
+				{
+					"name": "A",
+					"description": "A",
+					"wrap": false,
+					"links": {},
+					"properties": {},
+					"actorCnt": null,
+					"rectData": null,
+					"type": "participant",
+					"nextActor": "B"
+				}
+			],
+			[
+				"B",
+				{
+					"name": "B",
+					"description": "B",
+					"wrap": false,
+					"prevActor": "A",
+					"links": {},
+					"properties": {},
+					"actorCnt": null,
+					"rectData": null,
+					"type": "participant",
+					"nextActor": "C"
+				}
+			],
+			[
+				"C",
+				{
+					"name": "C",
+					"description": "C",
+					"wrap": false,
+					"prevActor": "B",
+					"links": {},
+					"properties": {},
+					"actorCnt": null,
+					"rectData": null,
+					"type": "participant"
+				}
+			]
+		],
+		"getMessages": [
+			{
+				"id": "0",
+				"message": {
+					"visible": true
+				},
+				"wrap": false,
+				"type": 26
+			},
+			{
+				"id": "1",
+				"message": "First operation",
+				"wrap": false,
+				"type": 19,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "2",
+				"from": "A",
+				"to": "B",
+				"message": "Request",
+				"wrap": false,
+				"type": 0,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "3",
+				"message": "Cached",
+				"wrap": false,
+				"type": 15,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "4",
+				"from": "B",
+				"to": "A",
+				"message": "Cached response",
+				"wrap": false,
+				"type": 1,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "5",
+				"message": "",
+				"wrap": false,
+				"type": 16,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "6",
+				"message": "Second operation",
+				"wrap": false,
+				"type": 20,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "7",
+				"from": "A",
+				"to": "C",
+				"message": "Other request",
+				"wrap": false,
+				"type": 0,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "8",
+				"message": "Reserve resource",
+				"wrap": false,
+				"type": 27,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "9",
+				"from": "C",
+				"to": "C",
+				"message": "Acquire lock",
+				"wrap": false,
+				"type": 0,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "10",
+				"message": "Resource unavailable",
+				"wrap": false,
+				"type": 28,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "11",
+				"from": "C",
+				"to": "A",
+				"message": "Retry",
+				"wrap": false,
+				"type": 1,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "12",
+				"message": "",
+				"wrap": false,
+				"type": 29,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "13",
+				"message": "",
+				"wrap": false,
+				"type": 21,
+				"activate": false,
+				"centralConnection": 0
+			}
+		],
+		"getBoxes": [],
+		"getDiagramTitle": "",
+		"getAccTitle": "",
+		"getAccDescription": ""
+	},
+	"rendering": {
+		"view_box": {
+			"x": -50,
+			"y": -10,
+			"width": 674,
+			"height": 758
+		},
+		"elements": [
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "C",
+				"box": {
+					"x": 403,
+					"y": 631,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-bottom",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "403",
+					"y": "631",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "150",
+					"height": "76",
+					"name": "C",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-bottom",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(251, 146, 60); fill: rgb(255, 247, 237);"
+				},
+				"text": "",
+				"box": {
+					"x": 403,
+					"y": 631,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 247, 237)",
+					"stroke": "rgb(251, 146, 60)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "478",
+					"y": "669",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "C",
+				"box": {
+					"x": 472.15625,
+					"y": 659,
+					"width": 11.6875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "478",
+					"dy": "0"
+				},
+				"text": "C",
+				"box": {
+					"x": 472.15625,
+					"y": 659,
+					"width": 11.6875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "B",
+				"box": {
+					"x": 203,
+					"y": 631,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-bottom",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "203",
+					"y": "631",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "150",
+					"height": "76",
+					"name": "B",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-bottom",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(45, 212, 191); fill: rgb(240, 253, 250);"
+				},
+				"text": "",
+				"box": {
+					"x": 203,
+					"y": 631,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(240, 253, 250)",
+					"stroke": "rgb(45, 212, 191)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "278",
+					"y": "669",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "B",
+				"box": {
+					"x": 272.765625,
+					"y": 659,
+					"width": 10.46875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "278",
+					"dy": "0"
+				},
+				"text": "B",
+				"box": {
+					"x": 272.765625,
+					"y": 659,
+					"width": 10.46875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "A",
+				"box": {
+					"x": 0,
+					"y": 631,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-bottom",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "0",
+					"y": "631",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "150",
+					"height": "76",
+					"name": "A",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-bottom",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(232, 121, 249); fill: rgb(253, 244, 255);"
+				},
+				"text": "",
+				"box": {
+					"x": 0,
+					"y": 631,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(253, 244, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "75",
+					"y": "669",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "A",
+				"box": {
+					"x": 69.4765625,
+					"y": 659,
+					"width": 11.046875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "75",
+					"dy": "0"
+				},
+				"text": "A",
+				"box": {
+					"x": 69.4765625,
+					"y": 659,
+					"width": 11.046875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "C",
+				"box": {
+					"x": 403,
+					"y": 0,
+					"width": 150,
+					"height": 631
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor5",
+				"class": "actor-line 200",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "actor5",
+					"x1": "478",
+					"y1": "76",
+					"x2": "478",
+					"y2": "631",
+					"class": "actor-line 200",
+					"stroke-width": "0.5px",
+					"stroke": "#999",
+					"name": "C",
+					"data-et": "life-line",
+					"data-id": "C"
+				},
+				"text": "",
+				"box": {
+					"x": 478,
+					"y": 76,
+					"width": 0,
+					"height": 555
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "root-5",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "root-5",
+					"data-look": "neo",
+					"data-et": "participant",
+					"data-type": "participant",
+					"data-id": "C"
+				},
+				"text": "C",
+				"box": {
+					"x": 403,
+					"y": 0,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-top",
+				"parent_id": "root-5",
+				"parent_class": "",
+				"attributes": {
+					"x": "403",
+					"y": "0",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "150",
+					"height": "76",
+					"name": "C",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-top",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(251, 146, 60); fill: rgb(255, 247, 237);"
+				},
+				"text": "",
+				"box": {
+					"x": 403,
+					"y": 0,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 247, 237)",
+					"stroke": "rgb(251, 146, 60)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "root-5",
+				"parent_class": "",
+				"attributes": {
+					"x": "478",
+					"y": "38",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "C",
+				"box": {
+					"x": 472.15625,
+					"y": 28,
+					"width": 11.6875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "478",
+					"dy": "0"
+				},
+				"text": "C",
+				"box": {
+					"x": 472.15625,
+					"y": 28,
+					"width": 11.6875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "B",
+				"box": {
+					"x": 203,
+					"y": 0,
+					"width": 150,
+					"height": 631
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor4",
+				"class": "actor-line 200",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "actor4",
+					"x1": "278",
+					"y1": "76",
+					"x2": "278",
+					"y2": "631",
+					"class": "actor-line 200",
+					"stroke-width": "0.5px",
+					"stroke": "#999",
+					"name": "B",
+					"data-et": "life-line",
+					"data-id": "B"
+				},
+				"text": "",
+				"box": {
+					"x": 278,
+					"y": 76,
+					"width": 0,
+					"height": 555
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "root-4",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "root-4",
+					"data-look": "neo",
+					"data-et": "participant",
+					"data-type": "participant",
+					"data-id": "B"
+				},
+				"text": "B",
+				"box": {
+					"x": 203,
+					"y": 0,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-top",
+				"parent_id": "root-4",
+				"parent_class": "",
+				"attributes": {
+					"x": "203",
+					"y": "0",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "150",
+					"height": "76",
+					"name": "B",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-top",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(45, 212, 191); fill: rgb(240, 253, 250);"
+				},
+				"text": "",
+				"box": {
+					"x": 203,
+					"y": 0,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(240, 253, 250)",
+					"stroke": "rgb(45, 212, 191)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "root-4",
+				"parent_class": "",
+				"attributes": {
+					"x": "278",
+					"y": "38",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "B",
+				"box": {
+					"x": 272.765625,
+					"y": 28,
+					"width": 10.46875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "278",
+					"dy": "0"
+				},
+				"text": "B",
+				"box": {
+					"x": 272.765625,
+					"y": 28,
+					"width": 10.46875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "A",
+				"box": {
+					"x": 0,
+					"y": 0,
+					"width": 150,
+					"height": 631
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor3",
+				"class": "actor-line 200",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "actor3",
+					"x1": "75",
+					"y1": "76",
+					"x2": "75",
+					"y2": "631",
+					"class": "actor-line 200",
+					"stroke-width": "0.5px",
+					"stroke": "#999",
+					"name": "A",
+					"data-et": "life-line",
+					"data-id": "A"
+				},
+				"text": "",
+				"box": {
+					"x": 75,
+					"y": 76,
+					"width": 0,
+					"height": 555
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "root-3",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "root-3",
+					"data-look": "neo",
+					"data-et": "participant",
+					"data-type": "participant",
+					"data-id": "A"
+				},
+				"text": "A",
+				"box": {
+					"x": 0,
+					"y": 0,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-top",
+				"parent_id": "root-3",
+				"parent_class": "",
+				"attributes": {
+					"x": "0",
+					"y": "0",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "150",
+					"height": "76",
+					"name": "A",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-top",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(232, 121, 249); fill: rgb(253, 244, 255);"
+				},
+				"text": "",
+				"box": {
+					"x": 0,
+					"y": 0,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(253, 244, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "root-3",
+				"parent_class": "",
+				"attributes": {
+					"x": "75",
+					"y": "38",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "A",
+				"box": {
+					"x": 69.4765625,
+					"y": 28,
+					"width": 11.046875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "75",
+					"dy": "0"
+				},
+				"text": "A",
+				"box": {
+					"x": 69.4765625,
+					"y": 28,
+					"width": 11.046875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "",
+				"box": {
+					"x": 0,
+					"y": 0,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"data-et": "control-structure",
+					"data-id": "i5"
+				},
+				"text": "opt[Cached]",
+				"box": {
+					"x": 64,
+					"y": 181,
+					"width": 225,
+					"height": 95
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "64",
+					"y1": "181",
+					"x2": "289",
+					"y2": "181",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 64,
+					"y": 181,
+					"width": 225,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "289",
+					"y1": "181",
+					"x2": "289",
+					"y2": "276",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 289,
+					"y": 181,
+					"width": 0,
+					"height": 95
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "64",
+					"y1": "276",
+					"x2": "289",
+					"y2": "276",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 64,
+					"y": 276,
+					"width": 225,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "64",
+					"y1": "181",
+					"x2": "64",
+					"y2": "276",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 64,
+					"y": 181,
+					"width": 0,
+					"height": 95
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "polygon",
+				"id": "",
+				"class": "labelBox",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"points": "64,181 114,181 114,209 105.6,216 64,216",
+					"class": "labelBox"
+				},
+				"text": "",
+				"box": {
+					"x": 64,
+					"y": 181,
+					"width": 50,
+					"height": 35
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "labelText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "89",
+					"y": "201",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "labelText",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "opt",
+				"box": {
+					"x": 76.6875,
+					"y": 189.359375,
+					"width": 24.625,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "loopText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "201.5",
+					"y": "199",
+					"text-anchor": "middle",
+					"class": "loopText",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "[Cached]",
+				"box": {
+					"x": 166.4609375,
+					"y": 183,
+					"width": 70.078125,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "loopText",
+				"attributes": {
+					"x": "201.5"
+				},
+				"text": "[Cached]",
+				"box": {
+					"x": 166.4609375,
+					"y": 183,
+					"width": 70.078125,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"data-et": "control-structure",
+					"data-id": "i12"
+				},
+				"text": "critical[Reserve resource][Resource unavailable]",
+				"box": {
+					"x": 63.765625,
+					"y": 381,
+					"width": 500.234375,
+					"height": 220
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "64",
+					"y1": "381",
+					"x2": "564",
+					"y2": "381",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 64,
+					"y": 381,
+					"width": 500,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "564",
+					"y1": "381",
+					"x2": "564",
+					"y2": "601",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 564,
+					"y": 381,
+					"width": 0,
+					"height": 220
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "64",
+					"y1": "601",
+					"x2": "564",
+					"y2": "601",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 64,
+					"y": 601,
+					"width": 500,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "64",
+					"y1": "381",
+					"x2": "64",
+					"y2": "601",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 64,
+					"y": 381,
+					"width": 0,
+					"height": 220
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "64",
+					"y1": "511",
+					"x2": "564",
+					"y2": "511",
+					"class": "loopLine",
+					"style": "stroke-dasharray: 3, 3;"
+				},
+				"text": "",
+				"box": {
+					"x": 64,
+					"y": 511,
+					"width": 500,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "polygon",
+				"id": "",
+				"class": "labelBox",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"points": "64,381 114,381 114,409 105.6,416 64,416",
+					"class": "labelBox"
+				},
+				"text": "",
+				"box": {
+					"x": 64,
+					"y": 381,
+					"width": 50,
+					"height": 35
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "labelText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "89",
+					"y": "401",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "labelText",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "critical",
+				"box": {
+					"x": 63.765625,
+					"y": 389.359375,
+					"width": 50.46875,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "loopText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "339",
+					"y": "399",
+					"text-anchor": "middle",
+					"class": "loopText",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "[Reserve resource]",
+				"box": {
+					"x": 266.875,
+					"y": 383,
+					"width": 144.25,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "loopText",
+				"attributes": {
+					"x": "339"
+				},
+				"text": "[Reserve resource]",
+				"box": {
+					"x": 266.875,
+					"y": 383,
+					"width": 144.25,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "sectionTitle",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "314",
+					"y": "529",
+					"text-anchor": "middle",
+					"class": "sectionTitle",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "[Resource unavailable]",
+				"box": {
+					"x": 227.796875,
+					"y": 513,
+					"width": 172.40625,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"data-et": "control-structure",
+					"data-id": "i13"
+				},
+				"text": "par[First operation][Second operation]",
+				"box": {
+					"x": 54,
+					"y": 86,
+					"width": 520,
+					"height": 525
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "54",
+					"y1": "86",
+					"x2": "574",
+					"y2": "86",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 54,
+					"y": 86,
+					"width": 520,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "574",
+					"y1": "86",
+					"x2": "574",
+					"y2": "611",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 574,
+					"y": 86,
+					"width": 0,
+					"height": 525
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "54",
+					"y1": "611",
+					"x2": "574",
+					"y2": "611",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 54,
+					"y": 611,
+					"width": 520,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "54",
+					"y1": "86",
+					"x2": "54",
+					"y2": "611",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 54,
+					"y": 86,
+					"width": 0,
+					"height": 525
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "54",
+					"y1": "291",
+					"x2": "574",
+					"y2": "291",
+					"class": "loopLine",
+					"style": "stroke-dasharray: 3, 3;"
+				},
+				"text": "",
+				"box": {
+					"x": 54,
+					"y": 291,
+					"width": 520,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "polygon",
+				"id": "",
+				"class": "labelBox",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"points": "54,86 104,86 104,114 95.6,121 54,121",
+					"class": "labelBox"
+				},
+				"text": "",
+				"box": {
+					"x": 54,
+					"y": 86,
+					"width": 50,
+					"height": 35
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "labelText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "79",
+					"y": "106",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "labelText",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "par",
+				"box": {
+					"x": 66.515625,
+					"y": 94.359375,
+					"width": 24.96875,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "loopText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "339",
+					"y": "104",
+					"text-anchor": "middle",
+					"class": "loopText",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "[First operation]",
+				"box": {
+					"x": 278.4609375,
+					"y": 88,
+					"width": 121.078125,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "loopText",
+				"attributes": {
+					"x": "339"
+				},
+				"text": "[First operation]",
+				"box": {
+					"x": 278.4609375,
+					"y": 88,
+					"width": 121.078125,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "sectionTitle",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "314",
+					"y": "309",
+					"text-anchor": "middle",
+					"class": "sectionTitle",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "[Second operation]",
+				"box": {
+					"x": 241.1796875,
+					"y": 293,
+					"width": 145.640625,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "174",
+					"y": "136",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Request",
+				"box": {
+					"x": 143.171875,
+					"y": 140.359375,
+					"width": 61.65625,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine0",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "82",
+					"y1": "171",
+					"x2": "271",
+					"y2": "171",
+					"class": "messageLine0",
+					"data-et": "message",
+					"data-id": "i2",
+					"data-from": "A",
+					"data-to": "B",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 82,
+					"y": 171,
+					"width": 189,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "75",
+					"y1": "171",
+					"x2": "75",
+					"y2": "171",
+					"stroke-width": "0",
+					"marker-start": "url(#oracle-sequencenumber)"
+				},
+				"text": "",
+				"box": {
+					"x": 75,
+					"y": 171,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "sequenceNumber",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "75",
+					"y": "175",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"text-anchor": "middle",
+					"class": "sequenceNumber"
+				},
+				"text": "1",
+				"box": {
+					"x": 71.65625,
+					"y": 164,
+					"width": 6.6875,
+					"height": 14
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "180",
+					"y": "231",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Cached response",
+				"box": {
+					"x": 113.4765625,
+					"y": 235.359375,
+					"width": 133.046875,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine1",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "283",
+					"y1": "266",
+					"x2": "82",
+					"y2": "266",
+					"class": "messageLine1",
+					"data-et": "message",
+					"data-id": "i4",
+					"data-from": "B",
+					"data-to": "A",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "stroke-dasharray: 3, 3; fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 82,
+					"y": 266,
+					"width": 201,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "278",
+					"y1": "266",
+					"x2": "278",
+					"y2": "266",
+					"stroke-width": "0",
+					"marker-start": "url(#oracle-sequencenumber)"
+				},
+				"text": "",
+				"box": {
+					"x": 278,
+					"y": 266,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "sequenceNumber",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "278",
+					"y": "270",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"text-anchor": "middle",
+					"class": "sequenceNumber"
+				},
+				"text": "2",
+				"box": {
+					"x": 274.65625,
+					"y": 259,
+					"width": 6.6875,
+					"height": 14
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "274",
+					"y": "336",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Other request",
+				"box": {
+					"x": 221.9296875,
+					"y": 340.359375,
+					"width": 104.140625,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine0",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "82",
+					"y1": "371",
+					"x2": "471",
+					"y2": "371",
+					"class": "messageLine0",
+					"data-et": "message",
+					"data-id": "i7",
+					"data-from": "A",
+					"data-to": "C",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 82,
+					"y": 371,
+					"width": 389,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "75",
+					"y1": "371",
+					"x2": "75",
+					"y2": "371",
+					"stroke-width": "0",
+					"marker-start": "url(#oracle-sequencenumber)"
+				},
+				"text": "",
+				"box": {
+					"x": 75,
+					"y": 371,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "sequenceNumber",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "75",
+					"y": "375",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"text-anchor": "middle",
+					"class": "sequenceNumber"
+				},
+				"text": "3",
+				"box": {
+					"x": 71.65625,
+					"y": 364,
+					"width": 6.6875,
+					"height": 14
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "479",
+					"y": "431",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Acquire lock",
+				"box": {
+					"x": 431.8515625,
+					"y": 435.359375,
+					"width": 94.296875,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "path",
+				"id": "",
+				"class": "messageLine0",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"d": "M 479,466 C 539,456 539,496 479,486",
+					"class": "messageLine0",
+					"data-et": "message",
+					"data-id": "i9",
+					"data-from": "C",
+					"data-to": "C",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"x1": "485",
+					"style": "fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 479,
+					"y": 464.38104248046875,
+					"width": 45,
+					"height": 23.2379150390625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "478",
+					"y1": "466",
+					"x2": "478",
+					"y2": "466",
+					"stroke-width": "0",
+					"marker-start": "url(#oracle-sequencenumber)"
+				},
+				"text": "",
+				"box": {
+					"x": 478,
+					"y": 466,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "sequenceNumber",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "478",
+					"y": "470",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"text-anchor": "middle",
+					"class": "sequenceNumber"
+				},
+				"text": "4",
+				"box": {
+					"x": 474.65625,
+					"y": 459,
+					"width": 6.6875,
+					"height": 14
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "280",
+					"y": "556",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Retry",
+				"box": {
+					"x": 260.0546875,
+					"y": 560.359375,
+					"width": 39.890625,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine1",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "483",
+					"y1": "591",
+					"x2": "82",
+					"y2": "591",
+					"class": "messageLine1",
+					"data-et": "message",
+					"data-id": "i11",
+					"data-from": "C",
+					"data-to": "A",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "stroke-dasharray: 3, 3; fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 82,
+					"y": 591,
+					"width": 401,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "478",
+					"y1": "591",
+					"x2": "478",
+					"y2": "591",
+					"stroke-width": "0",
+					"marker-start": "url(#oracle-sequencenumber)"
+				},
+				"text": "",
+				"box": {
+					"x": 478,
+					"y": 591,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "sequenceNumber",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "478",
+					"y": "595",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"text-anchor": "middle",
+					"class": "sequenceNumber"
+				},
+				"text": "5",
+				"box": {
+					"x": 474.65625,
+					"y": 584,
+					"width": 6.6875,
+					"height": 14
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": -50,
+			"y": -10,
+			"width": 674,
+			"height": 758
+		}
+	},
+	"svg_sha256": "bd4d0c0eb945964a3610d960f317bac12b895623e137a185b0afd37dc4fceb13"
+}

@@ -1,5 +1,6 @@
 import Flowchart
 import FlowText
+import FlowSource
 import SequenceData
 
 SequenceParse :: {}.{
@@ -49,10 +50,18 @@ SequenceParse :: {}.{
 					ensured = SequenceParse.ensure($participants, id)
 					$participants = ensured.participants
 					# ensure proves this index is in bounds.
-					$participants = $participants.set(ensured.index, { id, label: SequenceParse.label(label), actor }) ?? []
+					$participants = $participants.set(ensured.index, { id, label: SequenceParse.content(label).text, actor, wrap: SequenceParse.content(label).wrap, source_text: SequenceParse.content(label).source_text }) ?? []
 				}
-			} else if line == "autonumber" {
-				$autonumber = True
+			} else if line == "autonumber" or line.starts_with("autonumber ") {
+				match SequenceParse.numbering(line) {
+					Err(_) => {
+						$problems = $problems.append(Syntax({ near: line }))
+					}
+					Ok(numbering) => {
+						$autonumber = numbering.visible
+						$events = $events.append(Numbering(numbering))
+					}
+				}
 			} else if line.starts_with("title ") {
 				$title = SequenceParse.label(Str.from_utf8_lossy(line.to_utf8().drop_first(6)))
 			} else if line.starts_with("activate ") or line.starts_with("deactivate ") {
@@ -93,12 +102,12 @@ SequenceParse :: {}.{
 				if !allowed {
 					$problems = $problems.append(Syntax({ near: line }))
 				} else {
-					$events = $events.append(Branch({ kind, text: SequenceParse.label(Str.from_utf8_lossy(line.to_utf8().drop_first(kind.to_utf8().len()))) }))
+					$events = $events.append(Branch({ kind, text: SequenceParse.content(Str.from_utf8_lossy(line.to_utf8().drop_first(kind.to_utf8().len()))).text, wrap: SequenceParse.content(Str.from_utf8_lossy(line.to_utf8().drop_first(kind.to_utf8().len()))).wrap, source_text: SequenceParse.content(Str.from_utf8_lossy(line.to_utf8().drop_first(kind.to_utf8().len()))).source_text }))
 				}
 			} else if SequenceParse.block_kind(line) != "" {
 				kind = SequenceParse.block_kind(line)
 				$blocks = $blocks.append(kind)
-				$events = $events.append(StartBlock({ kind, text: SequenceParse.label(Str.from_utf8_lossy(line.to_utf8().drop_first(kind.to_utf8().len()))) }))
+				$events = $events.append(StartBlock({ kind, text: SequenceParse.content(Str.from_utf8_lossy(line.to_utf8().drop_first(kind.to_utf8().len()))).text, wrap: SequenceParse.content(Str.from_utf8_lossy(line.to_utf8().drop_first(kind.to_utf8().len()))).wrap, source_text: SequenceParse.content(Str.from_utf8_lossy(line.to_utf8().drop_first(kind.to_utf8().len()))).source_text }))
 			} else if line.starts_with("Note ") or line.starts_with("note ") {
 				raw = Str.from_utf8_lossy(line.to_utf8().drop_first(5))
 				match SequenceParse.split(raw, ":") {
@@ -130,7 +139,7 @@ SequenceParse :: {}.{
 							first = SequenceParse.ensure($participants, ids.first() ?? "")
 							last = SequenceParse.ensure(first.participants, ids.last() ?? "")
 							$participants = last.participants
-							$events = $events.append(Note({ from: first.index, to: last.index, side, text: SequenceParse.label(parts.after) }))
+							$events = $events.append(Note({ from: first.index, to: last.index, side, text: SequenceParse.content(parts.after).text, wrap: SequenceParse.content(parts.after).wrap, source_text: SequenceParse.content(parts.after).source_text }))
 						}
 					}
 				}
@@ -143,7 +152,7 @@ SequenceParse :: {}.{
 						first = SequenceParse.ensure($participants, m.from)
 						last = SequenceParse.ensure(first.participants, m.to)
 						$participants = last.participants
-						$events = $events.append(Message({ from: first.index, to: last.index, text: SequenceParse.label(m.text), dotted: m.dotted, head: m.head, both: m.both, activation: m.activation }))
+						$events = $events.append(Message({ from: first.index, to: last.index, text: SequenceParse.content(m.text).text, wrap: SequenceParse.content(m.text).wrap, source_text: SequenceParse.content(m.text).source_text, dotted: m.dotted, head: m.head, both: m.both, activation: m.activation }))
 					}
 				}
 			}
@@ -192,6 +201,60 @@ SequenceParse :: {}.{
 
 	block_kind : Str -> Str
 	block_kind = |line| ["alt", "opt", "loop", "par", "critical", "break"].find_first(|kind| line == kind or line.starts_with("${kind} ")) ?? ""
+
+	content : Str -> { text : Str, wrap : Bool, source_text : Str }
+	content = |raw| {
+		value = raw.trim()
+		prefix = if value.starts_with("wrap:") {
+			5
+		} else if value.starts_with("nowrap:") {
+			7
+		} else if value.starts_with(":wrap:") {
+			6
+		} else if value.starts_with(":nowrap:") {
+			8
+		} else {
+			0
+		}
+		stripped = Str.from_utf8_lossy(value.to_utf8().drop_first(prefix)).trim()
+		stored = Str.from_utf8_lossy(FlowSource.encode_entities("x ${stripped}".to_utf8()).drop_first(2))
+		{ text: SequenceParse.label(stripped), source_text: stored, wrap: value.starts_with("wrap:") or value.starts_with(":wrap:") }
+	}
+
+	numbering : Str -> Try({ visible : Bool, start : [None, Some(F64)], step : [None, Some(F64)] }, [Invalid])
+	numbering = |line| {
+		parts = line.split_on(" ").keep_if(|p| !p.is_empty())
+		match parts {
+			["autonumber"] => Ok({ visible: True, start: None, step: None })
+			["autonumber", "off"] => Ok({ visible: False, start: None, step: None })
+			["autonumber", raw_start] => {
+				start = SequenceParse.number(raw_start)?
+				Ok({ visible: True, start: Some(start), step: Some(1) })
+			}
+			["autonumber", raw_start, raw_step] => {
+				start = SequenceParse.number(raw_start)?
+				step = SequenceParse.number(raw_step)?
+				Ok({ visible: True, start: Some(start), step: Some(step) })
+			}
+			_ => Err(Invalid)
+		}
+	}
+
+	number : Str -> Try(F64, [Invalid])
+	number = |raw| {
+		parts = raw.split_on(".")
+		if parts.len() > 2 or raw.is_empty() or !raw.to_utf8().all(|c| (c >= '0' and c <= '9') or c == '.') or (parts.len() == 2 and ((parts.last() ?? "").to_utf8().len() > 2 or (parts.last() ?? "").is_empty())) {
+			return Err(Invalid)
+		}
+		match F64.from_str(raw) {
+			Ok(value) => if F64.is_finite(value) {
+				Ok(value)
+			} else {
+				Err(Invalid)
+			}
+			Err(_) => Err(Invalid)
+		}
+	}
 
 	label : Str -> Str
 	label = |raw| {
@@ -291,7 +354,7 @@ SequenceParse :: {}.{
 	ensure = |participants, id| {
 		match participants.find_first_index(|p| p.id == id) {
 			Ok(index) => { participants, index }
-			Err(_) => { participants: participants.append({ id, label: id, actor: False }), index: participants.len() }
+			Err(_) => { participants: participants.append({ id, label: id, actor: False, wrap: False, source_text: id }), index: participants.len() }
 		}
 	}
 
