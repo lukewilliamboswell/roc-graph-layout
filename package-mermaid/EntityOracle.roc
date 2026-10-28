@@ -153,6 +153,7 @@ EntityOracle :: {}.{
 		}
 		OracleJson.object([
 			("view_box", OracleJson.rect(picture.view)),
+			("groups", "[]"),
 			("nodes", OracleJson.array(boxes.map_with_index(|box, i| OracleJson.object([("id", OracleJson.string(ids.get(i) ?? "")), ("box", OracleJson.rect(box))])))),
 			("edges", OracleJson.array(edges.map_with_index(|edge, i| OracleJson.object([("id", OracleJson.string(i.to_str())), ("from", OracleJson.string(ids.get(edge.from) ?? "")), ("to", OracleJson.string(ids.get(edge.to) ?? "")), ("points", OracleJson.array((routes.get(i) ?? []).map(OracleJson.point)))])))),
 			("labels", OracleJson.array($observed)),
