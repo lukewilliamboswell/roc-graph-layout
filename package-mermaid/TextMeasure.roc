@@ -418,6 +418,12 @@ TextMeasure :: {}.{
 	fallback = |metrics, cp|
 		if TextMeasure.is_invisible(cp) {
 			{ advance: 0.0, ink: NoInk }
+		} else if cp == 0xFB02 {
+			# Pinned Chrome on macOS selects Times / Times-Roman for the fl
+			# ligature absent from Inter. CDP reports its 556/1000-em advance;
+			# fixed-point rounding yields 8.90625px at 16px, not glyph zero's
+			# 10.5px. This explicit metric keeps native output deterministic.
+			{ advance: TextMeasure.floor(metrics.em * 556.0 / 1000.0 * 65536.0), ink: NoInk }
 		} else if TextMeasure.is_emoji(cp) {
 			# Noto Color Emoji's 136 px advance at its 109 px strike.
 			{ advance: TextMeasure.floor(metrics.em * 136.0 / 109.0 * 65536.0), ink: NoInk }
@@ -560,3 +566,6 @@ expect TextMeasure.block("F*", inter).width == 17.296875
 expect TextMeasure.block("no\u(00A0)break  here", { ..inter, wrap: NoWrap }).lines == ["no break here"]
 expect TextMeasure.block("x < y\u(00A0)z", { ..inter, wrap: NoWrap }).lines == ["x < y\u(00A0)z"]
 expect TextMeasure.block("日本語のラベル", inter).width == 98.0
+
+## Oracle regression: CDP identifies Times-Roman for U+FB02 on pinned Chrome.
+expect TextMeasure.block("ﬂ", { font: TextMeasure.inter, size: 16, line_height: 1.1, wrap: NoWrap, align: Start }).width == 8.90625
