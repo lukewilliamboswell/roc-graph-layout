@@ -68,12 +68,13 @@ result = Layered.layout(input, settings, Layered.default_run)?
 # result.layout.bounds encloses the drawing
 ```
 
-## Mermaid flowcharts
+## Mermaid diagrams
 
 Each release also publishes a Mermaid package, built on the layout package of
-the same release. `Mermaid.svg` turns Mermaid flowchart text into a standalone
-SVG document whose labels are measured as Mermaid measures them in the Inter
-typeface; `Mermaid.draw` gives the same picture as outlines and text for other
+the same release. `Mermaid.svg` turns flowcharts, sequence diagrams, entity
+relationship diagrams, class diagrams and state diagrams into standalone
+SVG documents. Labels are measured in the Inter typeface;
+`Mermaid.draw` gives the same picture as outlines and text for other
 renderers. The release notes give its URL, which applications declare as
 `mermaid`. See [the Mermaid example](examples/mermaid_svg/main.roc).
 
@@ -81,6 +82,21 @@ renderers. The release notes give its URL, which applications declare as
 svg = Mermaid.svg("flowchart LR\n  A[Start] --> B{Choice}\n")
 # Ok(svg) is an SVG document; Err(problems) says why the text was not drawn
 ```
+
+Use `Mermaid.svg_with` or `Mermaid.draw_with` to override appearance. Record
+properties have defaults, so only changed choices are needed:
+
+```roc
+options = Mermaid.Options.{ theme: Theme.Options.{ font_size: 16, max_label_width: 180 } }
+svg = Mermaid.svg_with(source, options)
+```
+
+Import `mermaid.Theme` for the options above. The theme controls colours,
+text size and line spacing, wrapping, padding, outlines, rounded corners and
+optional shadows. Text is measured before layout with those same settings.
+Flowchart `classDef`, `class`, `style` and `linkStyle` declarations override
+theme colours and outline widths. Unsupported syntax is reported explicitly;
+support for these diagram families does not imply every Mermaid extension.
 
 ## Example gallery
 
@@ -94,6 +110,8 @@ Click a layout to open the example app that generated it.
 | [Cloud deployment](examples/cloud_deployment/main.roc) — compound<br>[![A cloud deployment with nested infrastructure groups](examples/cloud_deployment/output.svg)](examples/cloud_deployment/main.roc) | [Release workflow](examples/release_workflow/main.roc) — constrained<br>[![A release workflow arranged into responsibility lanes](examples/release_workflow/output.svg)](examples/release_workflow/main.roc) |
 | [Transit network](examples/transit_network/main.roc) — stress<br>[![A transit network whose drawn distances reflect network distance](examples/transit_network/output.svg)](examples/transit_network/main.roc) | |
 | [UML component diagram](examples/uml_component/main.roc) — compound<br>[![A UML component diagram with nested packages](examples/uml_component/output.svg)](examples/uml_component/main.roc) | [UML class diagram](examples/uml_class/main.roc) — layered and routed<br>[![A UML class diagram with shared inheritance routing](examples/uml_class/output.svg)](examples/uml_class/main.roc) |
+| [Mermaid conversation](examples/mermaid_sequence/main.roc)<br>[![A Mermaid sequence diagram](examples/mermaid_sequence/output.svg)](examples/mermaid_sequence/main.roc) | [Mermaid database model](examples/mermaid_entity/main.roc)<br>[![A Mermaid entity relationship diagram](examples/mermaid_entity/output.svg)](examples/mermaid_entity/main.roc) |
+| [Mermaid class model](examples/mermaid_class/main.roc)<br>[![A Mermaid class diagram](examples/mermaid_class/output.svg)](examples/mermaid_class/main.roc) | [Mermaid lifecycle](examples/mermaid_state/main.roc)<br>[![A Mermaid state diagram](examples/mermaid_state/output.svg)](examples/mermaid_state/main.roc) |
 
 See the [build-pipeline example](examples/build_pipeline/main.roc) for a
 complete program that writes the result as SVG, the

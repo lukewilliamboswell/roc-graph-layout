@@ -1,8 +1,12 @@
 package
 	[
+		ClassDiagram,
 		Drawing,
+		EntityRelationship,
 		Flowchart,
 		Mermaid,
+		Sequence,
+		StateDiagram,
 		Svg,
 		Theme,
 	]

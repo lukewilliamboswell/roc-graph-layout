@@ -1,4 +1,5 @@
 import Drawing
+import FlowTheme
 import Theme
 import TextMeasure
 import font.Font
@@ -99,7 +100,7 @@ EntityDraw :: {}.{
 		for i in 0..<edges.len() {
 			match (edges.get(i), result.layout.routes.get(i)) {
 				(Ok(edge), Ok(route)) => {
-					points = EntityDraw.route_points(route)
+					points = EntityDraw.clip_points(EntityDraw.route_points(route), edge, measured, result.layout.positions, theme.corner_radius)
 					$items = $items.concat(EntityDraw.route(points, edge.dashed, theme))
 					if points.len() >= 2 {
 						a = points.first() ?? { x: 0, y: 0 }
@@ -161,6 +162,29 @@ EntityDraw :: {}.{
 		Line(a, b) => [a, b]
 		Polyline(ps) => ps
 		Curves(parts) => parts.fold([], |out, p| out.concat([p.from, p.to]))
+	}
+
+	## The placer routes against the node boxes. Match the two terminal
+	## points to the rounded borders actually painted by the table renderer.
+	clip_points : List(Drawing.Point), Edge, List(Measured), List(Drawing.Point), F64 -> List(Drawing.Point)
+	clip_points = |points, edge, boxes, centers, radius| {
+		if points.len() < 2 or radius <= 0 {
+			return points
+		}
+		match (boxes.get(edge.from), centers.get(edge.from), boxes.get(edge.to), centers.get(edge.to)) {
+			(Ok(a), Ok(p), Ok(b), Ok(q)) => {
+				from_rect = { x: p.x - a.width / 2, y: p.y - a.height / 2, width: a.width, height: a.height }
+				to_rect = { x: q.x - b.width / 2, y: q.y - b.height / 2, width: b.width, height: b.height }
+				first = points.first() ?? p
+				last = points.last() ?? q
+				from = FlowTheme.rounded_point(from_rect, radius, first, points.get(1) ?? first)
+				to = FlowTheme.rounded_point(to_rect, radius, last, points.get(points.len() - 2) ?? last)
+				# len >= 2 proves both endpoint indices are in bounds.
+				last_index = points.len() - 1
+				(points.set(0, from) ?? []).set(last_index, to) ?? []
+			}
+			_ => points
+		}
 	}
 
 	route : List(Drawing.Point), Bool, Theme.Options -> List(Drawing.Item)
@@ -276,4 +300,20 @@ expect {
 	theme = Theme.Options.{ font_size: 0.001, line_height: 0.01, padding: 0 }
 	cell = EntityDraw.measure_text("a\nb", theme)
 	cell.baseline > 0 and cell.height > cell.baseline and cell.step > 0
+}
+
+## regression: table connectors meet custom rounded corners, on the same axis.
+expect {
+	theme = Theme.Options.{}
+	box = EntityDraw.measure({ title: "Table", sections: [] }, theme)
+	first = { x: box.width / 2 - 1, y: -box.height / 2 }
+	last = { x: 200 - box.width / 2, y: 0 }
+	points = [first, { x: first.x, y: first.y - 50 }, { x: last.x, y: first.y - 50 }, last]
+	edge = { from: 0, to: 1, label: "", from_label: "", to_label: "", from_mark: None, to_mark: None, dashed: False }
+	clipped = EntityDraw.clip_points(points, edge, [box, box], [{ x: 0, y: 0 }, { x: 200, y: 0 }], 30)
+	match clipped.first() {
+		Ok(p) => clipped.len() == points.len() and p.x == first.x and p.y > first.y
+			and clipped.last() == Ok(last)
+		Err(_) => False
+	}
 }

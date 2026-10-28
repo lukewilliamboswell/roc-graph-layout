@@ -1,4 +1,5 @@
 import Drawing
+import DiagramView
 import SequenceDraw
 import SequenceParse
 import Theme
@@ -40,7 +41,7 @@ Sequence :: {}.{
 		match Sequence.parse(source) {
 			Err(found) => Err(problems.concat(found))
 			Ok(diagram) => if problems.is_empty() {
-				Ok(SequenceDraw.draw(diagram, theme))
+				Ok(DiagramView.finish(SequenceDraw.draw(diagram, theme), theme))
 			} else {
 				Err(problems)
 			}

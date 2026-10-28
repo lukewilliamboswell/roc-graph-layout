@@ -1,4 +1,5 @@
 import Drawing
+import DiagramView
 import StateDraw
 import StateParser
 import Theme
@@ -52,7 +53,7 @@ StateDiagram := [].{
 		problems = Theme.validate(options)
 		match StateDiagram.parse(source) {
 			Err(syntax) => Err(problems.concat(syntax))
-			Ok(diagram) => if (problems.is_empty()) Ok(StateDraw.draw(diagram, options)) else Err(problems)
+			Ok(diagram) => if (problems.is_empty()) Ok(DiagramView.finish(StateDraw.draw(diagram, options), options)) else Err(problems)
 		}
 	}
 

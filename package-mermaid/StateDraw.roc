@@ -5,6 +5,7 @@ import FlowDrawEdge
 import FlowDrawStyle
 import FlowGeometry
 import FlowLayout
+import FlowTheme
 import StateModel
 import StateParser
 import TextMeasure
@@ -137,7 +138,7 @@ StateDraw :: {}.{
 	draw = |diagram, options| {
 		flow = StateDraw.make_flow(diagram)
 		sizes = StateDraw.measure_sizes(diagram, options)
-		geometry = FlowLayout.layout(flow, sizes)
+		geometry = FlowTheme.clip_routes(flow, FlowLayout.layout(flow, sizes), options.corner_radius)
 		theme = StateDraw.drawing_theme(options)
 		var $items = []
 		# Composite bodies precede edges and state bodies in painting order.

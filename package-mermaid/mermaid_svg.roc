@@ -1,6 +1,7 @@
 app [main!] {
 	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
 	font: "https://github.com/lukewilliamboswell/roc-font/releases/download/0.1.0-rc2/A14BmicBaf6dm4K9kdYH9j8Y6BoAZrpUmxWh9sojsFy5.tar.zst",
+	layout: "../package/main.roc",
 }
 
 import cli.OsStr
@@ -8,7 +9,7 @@ import cli.Path
 import cli.Stderr
 import Mermaid
 
-## Turns Mermaid flowchart files into SVG through `Mermaid.svg`, the public
+## Turns supported Mermaid diagram files into SVG through `Mermaid.svg`, the public
 ## API, so the whole pipeline can be compared with Mermaid's own rendering
 ## (see `tools/mermaid-oracle/e2e.mjs`).
 ##

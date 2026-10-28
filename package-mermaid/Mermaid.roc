@@ -1,7 +1,12 @@
 import "FontInter-OFL.txt" as inter_licence_file : List(U8)
 import Drawing
+import DiagramView
+import ClassDiagram
+import EntityRelationship
 import Flowchart
 import FlowTheme
+import Sequence
+import StateDiagram
 import Svg
 import Theme
 
@@ -10,8 +15,11 @@ import Theme
 ## out text, so show the result with Inter available (for example as a web
 ## font) for text to fit its boxes exactly.
 ##
-## Flowcharts (`flowchart` and `graph`) are supported. For other text, or
-## features not interpreted yet, the problems say why; see `Flowchart`.
+## Supports `flowchart`/`graph`, `sequenceDiagram`, `erDiagram`,
+## `classDiagram`, and `stateDiagram`/`stateDiagram-v2`. Each family module
+## describes its supported syntax and exposes its source-ordered model.
+## Unsupported features are reported explicitly. The layout package stays
+## independent of syntax, text measurement and rendering.
 Mermaid := [].{
 
 	## Override only the appearance choices you need. For example,
@@ -19,7 +27,9 @@ Mermaid := [].{
 	## at 16 pixels and gives them the corresponding space before layout.
 	Options := { theme : Theme.Options ?? Theme.Options.{} }
 
-	Problem : Flowchart.Problem
+	## Source problems and invalid numeric theme properties. `Syntax` names
+	## the text near an error; `Unsupported` explains an unsupported feature.
+	Problem : [NotAFlowchart, Syntax({ near : Str }), Unsupported(Str), InvalidTheme(Str), TooManyEdges, MissingLinkStyleEdge(Str), UnnamedGroup]
 
 	## Read and lay out Mermaid text, giving a picture of outlines and text
 	## lines that any vector renderer can paint.
@@ -29,9 +39,23 @@ Mermaid := [].{
 	## Draw with selected appearance options. Invalid numeric properties
 	## and independent source problems are reported together.
 	draw_with : Str, Options -> Try(Drawing.Picture, List(Problem))
-	draw_with = |text, options| match FlowTheme.draw(text, options.theme) {
-		Ok(picture) => Ok(MermaidParts.finish(picture, options.theme))
-		Err(problems) => Err(problems)
+	draw_with = |text, options| {
+		header = MermaidParts.header(text)
+		result = match header {
+			"sequenceDiagram" => Sequence.draw(text, options.theme)
+			"erDiagram" => EntityRelationship.draw(text, options.theme)
+			"classDiagram" => ClassDiagram.draw(text, options.theme)
+			"stateDiagram" | "stateDiagram-v2" => StateDiagram.draw(text, options.theme)
+			_ => if header == "flowchart" or header == "graph" or header.starts_with("flowchart ") or header.starts_with("graph ") or header.starts_with("%%{") or header == "---" {
+				FlowTheme.draw(text, options.theme)
+			} else {
+				Err([Unsupported("diagram type: ${header}")].concat(Theme.validate(options.theme)))
+			}
+		}
+		match result {
+			Ok(picture) => Ok(MermaidParts.finish(picture, options.theme))
+			Err(problems) => Err(problems)
+		}
 	}
 
 	## Read and lay out Mermaid text as a standalone SVG document whose labels
@@ -63,24 +87,20 @@ Mermaid := [].{
 }
 
 MermaidParts :: {}.{
-	finish : Drawing.Picture, Theme.Options -> Drawing.Picture
-	finish = |picture, theme| {
-		if picture.items.is_empty() {
-			return picture
+	header : Str -> Str
+	header = |source| {
+		for line in source.split_on("\n") {
+			clean = line.trim()
+			if !clean.is_empty() and (!clean.starts_with("%%") or clean.starts_with("%%{")) {
+				declaration = (clean.split_on("%%").first() ?? clean).trim()
+				return (declaration.split_on(";").first() ?? declaration).trim()
+			}
 		}
-		# Account for wide strokes and an optional offset shadow in the
-		# exported view, then paint a true background for dark themes too.
-		margin = theme.line_width / 2
-		shadow = match theme.shadow {
-			NoShadow => { x: 0, y: 0 }
-			Shadow(s) => { x: s.dx, y: s.dy }
-		}
-		left = margin + (-shadow.x).max(0)
-		top = margin + (-shadow.y).max(0)
-		view = { x: picture.view.x - left, y: picture.view.y - top, width: picture.view.width + left + margin + shadow.x.max(0), height: picture.view.height + top + margin + shadow.y.max(0) }
-		background = Shape({ path: Drawing.rectangle(view), paint: { fill: Fill(theme.background), stroke: NoStroke } })
-		{ view, items: [background].concat(picture.items) }
+		""
 	}
+
+	finish : Drawing.Picture, Theme.Options -> Drawing.Picture
+	finish = DiagramView.finish
 }
 
 expect
@@ -89,7 +109,7 @@ expect
 		Err(_) => False
 	}
 
-expect Mermaid.svg("sequenceDiagram\n") == Err([NotAFlowchart])
+expect Mermaid.svg("pie\n") == Err([Unsupported("diagram type: pie")])
 
 expect
 	match Mermaid.draw("flowchart TD\n") {
@@ -97,7 +117,43 @@ expect
 		Err(_) => False
 	}
 
+expect [
+	"sequenceDiagram\nAlice->>Bob: Hello\nBob-->>Alice: Reply\n",
+	"erDiagram\nCUSTOMER ||--o{ ORDER : places\n",
+	"classDiagram\nAnimal <|-- Duck\nDuck : +swim()\n",
+	"stateDiagram-v2\n[*] --> Idle\nIdle --> Working : start\nWorking --> [*]\n",
+].all(
+	|source| match Mermaid.draw(source) {
+		Ok(picture) => Drawing.is_finite(picture) and !picture.items.is_empty()
+			and Mermaid.draw(source) == Ok(picture)
+			and Mermaid.svg(source) == Ok(Svg.document(picture, "Inter, sans-serif"))
+		Err(_) => False
+	},
+)
+
 expect Mermaid.font_licence.contains("SIL Open Font License, Version 1.1")
+
+## regression: family declarations may end with a Mermaid comment.
+expect [
+	"sequenceDiagram %% conversation\nA->>B: Hi\n",
+	"erDiagram %% database\nA ||--o{ B : owns\n",
+	"classDiagram %% model\nA <|-- B\n",
+	"stateDiagram-v2 %% lifecycle\n[*] --> Idle\n",
+].all(
+	|source| match Mermaid.draw(source) {
+		Ok(picture) => Drawing.is_finite(picture) and !picture.items.is_empty()
+		Err(_) => False
+	},
+)
+
+## regression: explicit thick outlines must not be clipped by the SVG view.
+expect
+	match Mermaid.draw("flowchart TD\nA[Hello]\nstyle A stroke-width:100\n") {
+		Ok(picture) => picture.view.x <= -38 and picture.view.y <= -38
+			and picture.view.x + picture.view.width >= 166
+			and picture.view.y + picture.view.height >= 103
+		Err(_) => False
+	}
 
 expect {
 	options = Mermaid.Options.{ theme: Theme.Options.{ font_size: 20, line_height: 1.8, max_label_width: 90, background: Drawing.rgb(0x0F172A), node_text: Drawing.white } }

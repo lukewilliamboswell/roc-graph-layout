@@ -1,11 +1,14 @@
 import Drawing
-import Flowchart
 
 ## Shared appearance for Mermaid diagrams. Colours are sRGB and distances
 ## are CSS pixels. Construct `Options.{}` for a readable light palette, or
 ## supply only the properties you want to change. Labels are measured and
 ## drawn in Inter; changing their size also changes the space they receive.
 Theme :: {}.{
+
+	## A numeric property outside its documented range.
+	Problem : [InvalidTheme(Str)]
+
 	Options := {
 		background : Drawing.Color ?? Drawing.white,
 		node_fill : Drawing.Color ?? Drawing.rgb(0xEEF2FF),
@@ -31,7 +34,7 @@ Theme :: {}.{
 	## bounded to keep downstream geometry finite: text up to 1024 pixels,
 	## line spacing up to 8 em, wrapping and padding up to 16384 pixels,
 	## and outlines and corner radii up to 1024 pixels.
-	validate : Options -> List(Flowchart.Problem)
+	validate : Options -> List(Problem)
 	validate = |options| {
 		var $problems = []
 		for field in [

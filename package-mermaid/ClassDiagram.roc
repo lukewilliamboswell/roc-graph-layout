@@ -1,4 +1,5 @@
 import Drawing
+import DiagramView
 import EntityDraw
 import EntityText
 import Flowchart
@@ -21,6 +22,7 @@ ClassDiagram :: {}.{
 	RelationshipKind : [Inheritance, Realization, Composition, Aggregation, Association, Dependency, Link, DottedLink]
 	Relationship : { from : U64, to : U64, kind : RelationshipKind, reversed : Bool, bidirectional : Bool, label : Str, from_multiplicity : Str, to_multiplicity : Str }
 	Diagram : { classes : List(Class), relationships : List(Relationship), direction : [Down, Up, Left, Right] }
+
 	## Source statement problems and invalid numeric theme properties.
 	Problem : [NotAFlowchart, Syntax({ near : Str }), Unsupported(Str), InvalidTheme(Str), TooManyEdges, MissingLinkStyleEdge(Str), UnnamedGroup]
 
@@ -137,7 +139,7 @@ ClassDiagram :: {}.{
 		match ClassDiagram.parse(source) {
 			Err(found) => Err(problems.concat(found))
 			Ok(diagram) => if problems.is_empty() {
-				Ok(ClassDiagramInternals.draw(diagram, theme))
+				Ok(DiagramView.finish(ClassDiagramInternals.draw(diagram, theme), theme))
 			} else {
 				Err(problems)
 			}

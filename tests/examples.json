@@ -60,6 +60,58 @@
           "name": "default",
           "stderr": "",
           "stdin": "",
+          "stdout": "Drew Mermaid class diagram -> examples/mermaid_class/output.svg\n"
+        }
+      ],
+      "path": "examples/mermaid_class/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
+          "stdout": "Drew Mermaid entity diagram -> examples/mermaid_entity/output.svg\n"
+        }
+      ],
+      "path": "examples/mermaid_entity/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
+          "stdout": "Drew examples/mermaid_sequence/output.svg\n"
+        }
+      ],
+      "path": "examples/mermaid_sequence/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
+          "stdout": "Drew a Mermaid state lifecycle -> examples/mermaid_state/output.svg\n"
+        }
+      ],
+      "path": "examples/mermaid_state/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Drew a Mermaid flowchart -> examples/mermaid_svg/output.svg\n"
         }
       ],

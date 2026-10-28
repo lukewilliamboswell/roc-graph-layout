@@ -6,6 +6,7 @@ app [target] {
 
 import fuzz.Fuzz
 import Drawing
+import DiagramView
 import Sequence
 import SequenceDraw
 import Svg
@@ -50,7 +51,7 @@ verify = |bytes| {
 			}
 			match Sequence.draw(source, theme) {
 				Err(_) => crash "parsed sequence failed to draw"
-				Ok(other) => if other != picture {
+				Ok(other) => if other != DiagramView.finish(picture, theme) {
 					crash "sequence one-call equivalence"
 				}
 			}
