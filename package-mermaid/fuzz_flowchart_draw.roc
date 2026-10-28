@@ -55,7 +55,7 @@ shape_count = |diagram, sizes, geometry|
 		|item|
 			match item {
 				Shape(_) => True
-				Text(_) => False
+				Text(_) | StyledText(_) => False
 			},
 	)
 

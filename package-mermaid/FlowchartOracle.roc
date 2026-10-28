@@ -68,7 +68,7 @@ FlowchartOracle :: {}.{
 				|size| {
 					known = match size.kind {
 						"node" => d.nodes.any(|n| n.id == size.id)
-						"group" => d.groups.any(|g| g.id == size.id)
+						"group" => d.groups.any(|group| group.id == size.id)
 						"label" => d.edges.any(|e| e.id == size.id and !e.label.is_empty())
 						_ => False
 					}
