@@ -1,0 +1,11 @@
+stateDiagram-v2
+    state "Work queue" as Queue {
+        [*] --> Waiting
+        Waiting --> Running: start
+        Running --> [*]
+    }
+    classDef work fill:#D1FAE5,color:#065F46
+    classDef work stroke:#34D399
+    class Waiting,Running work
+    style Queue fill:#F8FAFC,stroke:#64748B
+    style Waiting fill:#FFFBEB,stroke:#FBBF24

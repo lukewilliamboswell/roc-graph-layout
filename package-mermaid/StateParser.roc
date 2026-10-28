@@ -7,7 +7,7 @@ import StateModel
 StateParser :: {}.{
 	RawTransition : { from : Str, to : Str, label : Str }
 	RawNote : { state : Str, side : [Left, Right], text : Str }
-	Reader : { direction : Flowchart.Direction, states : List(StateModel.State), transitions : List(RawTransition), groups : List(Flowchart.Group), classes : List(Flowchart.ClassDef), notes : List(RawNote), stack : List(U64), problems : List(Flowchart.Problem) }
+	Reader : { direction : Flowchart.Direction, states : List(StateModel.State), transitions : List(RawTransition), groups : List(StateModel.Group), classes : List(Flowchart.ClassDef), notes : List(RawNote), stack : List(U64), problems : List(Flowchart.Problem) }
 
 	parse : Str -> Try(StateModel.Diagram, List(Flowchart.Problem))
 	parse = |source| {
@@ -47,6 +47,7 @@ StateParser :: {}.{
 												$reader = { ..$reader, problems: $reader.problems.append(problem) }
 											}
 											Ok(found) => {
+												$reader = StateParser.ensure($reader, found.note.state, StateParser.current_container($reader))
 												if found.inline {
 													$reader = { ..$reader, notes: $reader.notes.append(found.note) }
 												} else {
@@ -105,7 +106,7 @@ StateParser :: {}.{
 		}
 	}
 
-	endpoint : Str, List(StateModel.State), List(Flowchart.Group) -> Try(Flowchart.Endpoint, [Missing])
+	endpoint : Str, List(StateModel.State), List(StateModel.Group) -> Try(Flowchart.Endpoint, [Missing])
 	endpoint = |id, states, groups| {
 		var $found = Err(Missing)
 		for i in 0..<states.len() {
@@ -114,7 +115,7 @@ StateParser :: {}.{
 			}
 		}
 		for i in 0..<groups.len() {
-			if (groups.get(i) ?? { id: "", title: "", container: Root, direction: Inherit, classes: [] }).id == id {
+			if (groups.get(i) ?? { id: "", title: "", descriptions: [], container: Root, direction: Inherit, classes: [], styles: [] }).id == id {
 				$found = Ok(Group(i))
 			}
 		}
@@ -170,8 +171,8 @@ StateParser :: {}.{
 			} else {
 				next = StateParser.ensure(reader, id, StateParser.current_container(reader))
 				description = FlowText.display(FlowText.trim(found.right))
-				states = next.states.map(|state| if (state.id == id) { ..state, descriptions: state.descriptions.append(description) } else state)
-				groups = next.groups.map(|group| if (group.id == id) { ..group, title: description } else group)
+				states = next.states.map(|state| if (state.id == id) { ..state, label: if (state.descriptions.is_empty()) description else state.label, descriptions: state.descriptions.append(description) } else state)
+				groups = next.groups.map(|group| if (group.id == id) { ..group, title: if (group.descriptions.is_empty()) description else group.title, descriptions: group.descriptions.append(description) } else group)
 				{ ..next, states, groups }
 			}
 		} else if text.starts_with("%%{") or text.starts_with("---") or text.starts_with("click ") {
@@ -210,19 +211,20 @@ StateParser :: {}.{
 					Ok(state) => state.styles
 					Err(_) => []
 				}
-				class_name = "@style:${id}"
-				prior_title = match prior {
-					Ok(state) => if (state.descriptions.is_empty()) state.label else Str.join_with(state.descriptions, "\n")
-					Err(_) => id
-				}
-				group = { id, title: if (named.found) label else prior_title, container: StateParser.current_container(reader), direction: Inherit, classes: if (styles.is_empty()) classes else classes.append(class_name) }
-				{ ..reader, groups: reader.groups.append(group), stack: reader.stack.append(reader.groups.len()), classes: if (styles.is_empty()) reader.classes else reader.classes.append({ name: class_name, styles }) }
+				descriptions = (
+					match prior {
+						Ok(state) => state.descriptions
+						Err(_) => []
+					}
+				).concat(if (named.found) [label] else [])
+				group = { id, title: descriptions.first() ?? id, descriptions, container: StateParser.current_container(reader), direction: Inherit, classes, styles }
+				{ ..reader, groups: reader.groups.append(group), stack: reader.stack.append(reader.groups.len()) }
 			}
 		} else if reader.groups.any(|group| group.id == id) {
 			if annotation.found {
 				StateParser.problem(reader, Unsupported("composite state annotation"))
 			} else {
-				{ ..reader, groups: reader.groups.map(|group| if (group.id == id) { ..group, title: label, classes: group.classes.concat(styled.classes) } else group) }
+				{ ..reader, groups: reader.groups.map(|group| if (group.id == id) { ..group, title: if (group.descriptions.is_empty()) label else group.title, descriptions: group.descriptions.concat(if (named.found) [label] else []), classes: group.classes.concat(styled.classes) } else group) }
 			}
 		} else {
 			kind : StateModel.Kind
@@ -241,7 +243,7 @@ StateParser :: {}.{
 			if !known_annotation {
 				StateParser.problem(next, Unsupported("state annotation <<${annotation.right}"))
 			} else {
-				{ ..next, states: next.states.map(|state| if (state.id == id) { ..state, label, kind, container: StateParser.current_container(reader), classes: state.classes.concat(styled.classes) } else state) }
+				{ ..next, states: next.states.map(|state| if (state.id == id) { ..state, label: if (named.found and state.descriptions.is_empty()) label else state.label, descriptions: state.descriptions.concat(if (named.found) [label] else []), kind: if (annotation.found) kind else state.kind, container: StateParser.current_container(reader), classes: state.classes.concat(styled.classes) } else state) }
 			}
 		}
 	}
@@ -314,7 +316,11 @@ StateParser :: {}.{
 		if !parts.found or !StateParser.valid_id(parts.left) {
 			StateParser.problem(reader, Syntax({ near: text }))
 		} else {
-			{ ..reader, classes: reader.classes.append({ name: parts.left, styles: StateParser.css(parts.right) }) }
+			if reader.classes.any(|definition| definition.name == parts.left) {
+				{ ..reader, classes: reader.classes.map(|definition| if (definition.name == parts.left) { ..definition, styles: definition.styles.concat(StateParser.css(parts.right)) } else definition) }
+			} else {
+				{ ..reader, classes: reader.classes.append({ name: parts.left, styles: StateParser.css(parts.right) }) }
+			}
 		}
 	}
 
@@ -343,11 +349,10 @@ StateParser :: {}.{
 		if !parts.found or !StateParser.valid_id(id) {
 			StateParser.problem(reader, Syntax({ near: text }))
 		} else if reader.groups.any(|group| group.id == id) {
-			name = "@style:${id}"
-			{ ..reader, classes: reader.classes.append({ name, styles }), groups: reader.groups.map(|g| if (g.id == id) { ..g, classes: g.classes.append(name) } else g) }
+			{ ..reader, groups: reader.groups.map(|group| if (group.id == id) { ..group, styles } else group) }
 		} else {
 			next = StateParser.ensure(reader, id, StateParser.current_container(reader))
-			{ ..next, states: next.states.map(|s| if (s.id == id) { ..s, styles: s.styles.concat(styles) } else s) }
+			{ ..next, states: next.states.map(|s| if (s.id == id) { ..s, styles } else s) }
 		}
 	}
 

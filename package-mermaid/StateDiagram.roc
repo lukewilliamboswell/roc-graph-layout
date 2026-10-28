@@ -26,11 +26,13 @@ StateDiagram := [].{
 	## A zero-based state index or a zero-based composite group index.
 	Endpoint : [Node(U64), Group(U64)]
 
-	## A state's display name, description rows, shape and assigned styles.
+	## Descriptions retain every authored alias and description in order.
+	## The first description is the display label, or the id when none was
+	## supplied; further descriptions form the state's body compartment.
 	State : { id : Str, label : Str, descriptions : List(Str), kind : Kind, container : Container, classes : List(Str), styles : List(Str) }
 	Transition : { from : Endpoint, to : Endpoint, label : Str }
 	Note : { state : Endpoint, side : [Left, Right], text : Str }
-	Group : { id : Str, title : Str, container : Container, direction : [Inherit, Set(Direction)], classes : List(Str) }
+	Group : { id : Str, title : Str, descriptions : List(Str), container : Container, direction : [Inherit, Set(Direction)], classes : List(Str), styles : List(Str) }
 	ClassDef : { name : Str, styles : List(Str) }
 
 	## States, transitions, composites, style classes and notes remain in
@@ -67,7 +69,7 @@ expect
 
 expect
 	match StateDiagram.parse("stateDiagram\nstate \"Waiting for approval\" as Waiting\nWaiting: entry / notify\nWaiting: exit / dismiss\n") {
-		Ok(d) => d.states.len() == 1 and (d.states.first()?.label == "Waiting for approval") and d.states.first()?.descriptions == ["entry / notify", "exit / dismiss"]
+		Ok(d) => d.states.len() == 1 and (d.states.first()?.label == "Waiting for approval") and d.states.first()?.descriptions == ["Waiting for approval", "entry / notify", "exit / dismiss"]
 		Err(_) => False
 	}
 
@@ -103,7 +105,7 @@ expect
 
 expect
 	match StateDiagram.draw("stateDiagram-v2\nA --> B : a long transition label that needs to wrap into several lines\nB --> A\n", Theme.Options.{ max_label_width: 90, line_height: 1.8 }) {
-		Ok(picture) => Drawing.is_finite(picture) and picture == StateDraw.draw(StateDiagram.parse("stateDiagram-v2\nA --> B : a long transition label that needs to wrap into several lines\nB --> A\n")?, Theme.Options.{ max_label_width: 90, line_height: 1.8 })
+		Ok(picture) => Drawing.is_finite(picture) and picture == DiagramView.finish(StateDraw.draw(StateDiagram.parse("stateDiagram-v2\nA --> B : a long transition label that needs to wrap into several lines\nB --> A\n")?, Theme.Options.{ max_label_width: 90, line_height: 1.8 }), Theme.Options.{ max_label_width: 90, line_height: 1.8 })
 		Err(_) => False
 	}
 

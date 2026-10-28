@@ -1,0 +1,10 @@
+stateDiagram-v2
+    direction LR
+    [*] --> Ready
+    Ready --> Done: finish
+    note left of Ready: Prepare the work before it starts.
+    note right of Done
+        The work has finished.
+        Notify its subscribers.
+    end note
+    Done --> [*]

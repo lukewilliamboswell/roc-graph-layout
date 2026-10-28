@@ -17,16 +17,18 @@ StateDraw :: {}.{
 	Block : FlowGeometry.TextBlock
 
 	block : Str, Theme.Options -> Block
-	block = |text, options| {
-		measured = TextMeasure.block(text, { font: TextMeasure.inter, size: options.font_size, line_height: options.line_height, wrap: Width(options.max_label_width), align: Middle })
-		# line_height controls baseline spacing, not the first glyph's box.
-		# Reserve unrounded font extents too: tiny accepted font sizes must
-		# not disappear when browser-style whole-pixel metrics round to zero.
-		height = if text == "" {
-			0
-		} else {
-			StateDraw.baseline(options) + StateDraw.descent(options) + (measured.lines.len().max(1) - 1).to_f64() * options.font_size * options.line_height
-		}
+	block = |text, options| StateDraw.measure_block(text, options, Width(options.max_label_width))
+
+	measure_block : Str, Theme.Options, [NoWrap, Width(F64)] -> Block
+	measure_block = |text, options, wrap| {
+		measured = TextMeasure.block(text, { font: TextMeasure.inter, size: options.font_size, line_height: options.line_height, wrap, align: Middle })
+		# Browser-rounded metrics are authoritative at ordinary sizes.
+		# Unrounded font extents retain finite tiny text without charging
+		# every ordinary label for an emoji descender it does not contain.
+		metrics = Font.metrics(TextMeasure.inter)
+		scale = options.font_size / Font.units_per_em(TextMeasure.inter).to_f64()
+		raw_height = (metrics.ascent + metrics.descent).to_f64() * scale
+		height = if (text == "") 0 else raw_height + (measured.lines.len().max(1) - 1).to_f64() * options.font_size * options.line_height
 		{ ..measured, height: height.max(measured.height) }
 	}
 
@@ -51,12 +53,12 @@ StateDraw :: {}.{
 		nodes: diagram.states.map(
 			|state| {
 				id: state.id,
-				label: StateDraw.label(state),
+				label: StateDraw.display_label(state),
 				shape: match state.kind {
 					Initial | Final => Circle
 					Choice => Diamond
 					Fork | Join => Rectangle
-					Normal => Rounded
+					Normal => if (state.descriptions.len() > 1) Rectangle else Rounded
 				},
 				container: state.container,
 				classes: state.classes,
@@ -77,31 +79,30 @@ StateDraw :: {}.{
 				styles: [],
 			},
 		),
-		groups: diagram.groups,
-		classes: diagram.classes,
+		groups: diagram.groups.map(|group| { id: group.id, title: group.title, container: group.container, direction: group.direction, classes: if (group.styles.is_empty()) group.classes else group.classes.append("@style:${group.id}") }),
+		classes: diagram.classes.concat(diagram.groups.keep_if(|group| !group.styles.is_empty()).map(|group| { name: "@style:${group.id}", styles: group.styles })),
 	}
 
-	label : StateModel.State -> Str
-	label = |state| if (state.kind == Normal) Str.join_with([state.label].concat(state.descriptions), "\n") else ""
+	display_label : StateModel.State -> Str
+	display_label = |state| if (state.kind == Normal) Str.join_with(if (state.descriptions.is_empty()) [state.label] else state.descriptions, "\n") else ""
 
 	measure_sizes : StateModel.Diagram, Theme.Options -> FlowGeometry.Sizes
 	measure_sizes = |diagram, options| {
 		nodes: diagram.states.map(
 			|state| {
-				title = StateDraw.block(state.label, options)
-				body = StateDraw.block(Str.join_with(state.descriptions, "\n"), options)
-				text = StateDraw.block(StateDraw.label(state), options)
+				title = if (state.descriptions.len() > 1) StateDraw.unwrapped(state.label, options) else StateDraw.block(state.label, options)
+				body = StateDraw.unwrapped(Str.join_with(state.descriptions.drop_first(1), "\n"), options)
+				text = StateDraw.block(StateDraw.display_label(state), options)
 				size = match state.kind {
-					Initial => { width: 18, height: 18 }
-					Final => { width: 26, height: 26 }
-					Choice => { width: 34, height: 34 }
+					Initial | Final => { width: 14, height: 14 }
+					Choice => { width: 28, height: 28 }
 					Fork | Join => match diagram.direction {
-						Left | Right => { width: 8, height: 70 }
-						Up | Down => { width: 70, height: 8 }
+						Left | Right => { width: 10, height: 70 }
+						Up | Down => { width: 70, height: 10 }
 					}
 					Normal => {
-						width: (title.width.max(body.width) + options.padding * 2).max(80),
-						height: title.height + body.height + options.padding * (if (state.descriptions.is_empty()) 2 else 3),
+						width: if (state.descriptions.len() > 1) title.width.max(body.width) + options.padding else title.width.max(120) + options.padding * 2,
+						height: if (state.descriptions.len() > 1) title.height + body.height + options.padding * 1.5 + 5 else title.height + options.padding * 2,
 					}
 				}
 				{ width: size.width, height: size.height, label: text }
@@ -109,6 +110,126 @@ StateDraw :: {}.{
 		),
 		edge_labels: diagram.transitions.map(|edge| if (edge.label == "") None else Some(StateDraw.block(edge.label, options))),
 		group_titles: diagram.groups.map(|group| StateDraw.block(group.title, options)),
+	}
+
+	unwrapped : Str, Theme.Options -> Block
+	unwrapped = |text, options| StateDraw.measure_block(text, options, NoWrap)
+
+	Setup : { flow : Flowchart.Diagram, sizes : FlowGeometry.Sizes, geometry : FlowGeometry.Geometry }
+
+	setup : StateModel.Diagram, Theme.Options -> Setup
+	setup = |diagram, options| StateDraw.setup_sized(diagram, options, [])
+
+	SizeInput : { kind : Str, id : Str, width : F64, height : F64 }
+
+	setup_sized : StateModel.Diagram, Theme.Options, List(SizeInput) -> Setup
+	setup_sized = |diagram, options, inputs| {
+		base = StateDraw.make_flow(diagram)
+		measured = StateDraw.measure_sizes(diagram, options)
+		blank = { lines: [], width: 0, height: 0 }
+		note_nodes = diagram.notes.map_with_index(
+			|note, i| {
+				id: "@state-note:${i.to_str()}",
+				label: note.text,
+				shape: Rectangle,
+				container: Group(base.groups.len() + i),
+				classes: [],
+				styles: [],
+			},
+		)
+		note_groups = diagram.notes.map_with_index(
+			|_note, i| {
+				id: "@state-note-group:${i.to_str()}",
+				title: "",
+				container: Root,
+				direction: Inherit,
+				classes: [],
+			},
+		)
+		associations = diagram.notes.map_with_index(
+			|note, i| {
+				note_endpoint = Node(base.nodes.len() + i)
+				{ id: "state-note-edge-${i.to_str()}", from: if (note.side == Left) note_endpoint else note.state, to: if (note.side == Left) note.state else note_endpoint, label: "", line: Dotted, start: None, end: None, length: 1, classes: [], styles: [] }
+			},
+		)
+		flow = { ..base, nodes: base.nodes.concat(note_nodes), groups: base.groups.concat(note_groups), edges: base.edges.concat(associations) }
+		sizes = {
+			..measured,
+			nodes: measured.nodes.concat(
+				diagram.notes.map(
+					|note| {
+						label = StateDraw.block(note.text, options)
+						padding = options.padding + 7
+						{ label, width: label.width.max(120) + padding * 2, height: label.height + padding * 2 }
+					},
+				),
+			),
+			edge_labels: measured.edge_labels.concat(diagram.notes.map(|_| None)),
+			group_titles: measured.group_titles.concat(diagram.notes.map(|_| { ..blank, height: StateDraw.block("M", options).height })),
+		}
+		supplied = {
+			..sizes,
+			nodes: sizes.nodes.map_with_index(
+				|node, i| {
+					id = match diagram.states.get(i) {
+						Ok(state) => StateModel.state_id(diagram, state)
+						Err(_) => "${StateModel.endpoint_id(diagram, (diagram.notes.get(i - diagram.states.len()) ?? { state: Node(0), side: Right, text: "" }).state)}----note"
+					}
+					bounds = StateDraw.measured_size(inputs, "node", id, { width: node.width, height: node.height })
+					{ ..node, width: bounds.width, height: bounds.height }
+				},
+			),
+			group_titles: sizes.group_titles.map_with_index(
+				|title, i| {
+					match diagram.groups.get(i) {
+						Err(_) => title
+						Ok(group) => {
+							bounds = StateDraw.measured_size(inputs, "group", "group-${group.id}", { width: title.width, height: title.height })
+							{ ..title, width: bounds.width, height: bounds.height }
+						}
+					}
+				},
+			),
+			edge_labels: sizes.edge_labels.map_with_index(
+				|label, i| match label {
+					None => None
+					Some(label_block) => {
+						bounds = StateDraw.measured_size(inputs, "label", "transition-${i.to_str()}", { width: label_block.width, height: label_block.height })
+						Some({ ..label_block, width: bounds.width, height: bounds.height })
+					}
+				},
+			),
+		}
+		placed = FlowLayout.layout(flow, supplied)
+		# Flowchart diamonds are drawn half a pixel right of the layout
+		# box. State choices are centred on that box instead.
+		state_nodes = placed.nodes.map_with_index(
+			|rect, i| match diagram.states.get(i) {
+				Ok(state) if state.kind == Choice => { ..rect, x: rect.x - 0.5 }
+				_ => rect
+			},
+		)
+		label_boxes = supplied.edge_labels.map(
+			|label| match label {
+				None => None
+				Some(label_block) => Some({ width: label_block.width + 4, height: label_block.height + 4 })
+			},
+		)
+		title_boxes = supplied.group_titles.map(|title_block| { width: title_block.width, height: title_block.height })
+		normalized = FlowLayout.normalise({ ..placed, nodes: state_nodes }, label_boxes, title_boxes)
+		geometry = FlowTheme.clip_routes(flow, normalized, options.corner_radius)
+		{ flow, sizes: supplied, geometry }
+	}
+
+	measured_size : List(SizeInput), Str, Str, { width : F64, height : F64 } -> { width : F64, height : F64 }
+	measured_size = |inputs, kind, id, original| match inputs.find_first(|input| input.kind == kind and input.id == id) {
+		Err(_) => original
+		Ok(input) => {
+			if !F64.is_finite(input.width) or !F64.is_finite(input.height) or input.width < 0 or input.height < 0 {
+				crash "invalid measured state layout size"
+			}
+			{ width: input.width, height: input.height }
+		}
 	}
 
 	drawing_theme : Theme.Options -> FlowDraw.Theme
@@ -135,14 +256,18 @@ StateDraw :: {}.{
 	}
 
 	draw : StateModel.Diagram, Theme.Options -> Drawing.Picture
-	draw = |diagram, options| {
-		flow = StateDraw.make_flow(diagram)
-		sizes = StateDraw.measure_sizes(diagram, options)
-		geometry = FlowTheme.clip_routes(flow, FlowLayout.layout(flow, sizes), options.corner_radius)
+	draw = |diagram, options| StateDraw.draw_setup(diagram, options, StateDraw.setup(diagram, options))
+
+	draw_setup : StateModel.Diagram, Theme.Options, Setup -> Drawing.Picture
+	draw_setup = |diagram, options, prepared| {
+		flow = prepared.flow
+		sizes = prepared.sizes
+		geometry = prepared.geometry
 		theme = StateDraw.drawing_theme(options)
 		var $items = []
+		base_groups = flow.groups.take_first(diagram.groups.len())
 		# Composite bodies precede edges and state bodies in painting order.
-		for g in FlowDraw.group_order(flow.groups).order {
+		for g in FlowDraw.group_order(base_groups).order {
 			match (flow.groups.get(g), geometry.groups.get(g), sizes.group_titles.get(g)) {
 				(Ok(group), Ok(rect), Ok(title)) => {
 					o = FlowDrawStyle.resolve(flow.classes, group.classes, [], False)
@@ -187,75 +312,21 @@ StateDraw :: {}.{
 				_ => {}
 			}
 		}
-		# Notes live in side columns. Their state names identify the attachment;
-		# stacking avoids both node collisions and collisions between notes.
-		var $left_bottom = geometry.bounds.y
-		var $right_bottom = geometry.bounds.y
-		var $view = geometry.bounds
-		match options.shadow {
-			NoShadow => {}
-			Shadow(shadow) => {
-				for rect in geometry.nodes {
-					$view = StateDraw.union($view, { ..rect, x: rect.x + shadow.dx, y: rect.y + shadow.dy })
+		# A note is an actual layout node with a dashed association, as in
+		# Mermaid's state renderer. Its implicit group is transparent.
+		for i in 0..<diagram.notes.len() {
+			match (diagram.notes.get(i), geometry.nodes.get(diagram.states.len() + i)) {
+				(Ok(note), Ok(rect)) => {
+					note_block = StateDraw.block(note.text, options)
+					paint = { fill: Fill(options.group_fill), stroke: Stroke({ color: options.group_stroke, width: options.line_width }) }
+					$items = $items.append(Shape({ path: StateDraw.note_path(rect), paint }))
+					$items = $items.concat(StateDraw.lines(note_block.lines, rect.x + rect.width / 2, rect.y + options.padding + 7, options.label_text, options))
 				}
+				_ => {}
 			}
 		}
-		var $outline_width = options.line_width
-		for state in diagram.states {
-			match FlowDrawStyle.resolve(diagram.classes, state.classes, state.styles, True).stroke_width {
-				Keep => {}
-				Width(width) => {
-					$outline_width = $outline_width.max(width)
-				}
-			}
-		}
-		for group in diagram.groups {
-			match FlowDrawStyle.resolve(diagram.classes, group.classes, [], False).stroke_width {
-				Keep => {}
-				Width(width) => {
-					$outline_width = $outline_width.max(width)
-				}
-			}
-		}
-		for note in diagram.notes {
-			anchor = match note.state {
-				Node(i) => geometry.nodes.get(i) ?? geometry.bounds
-				Group(i) => geometry.groups.get(i) ?? geometry.bounds
-			}
-			name = match note.state {
-				Node(i) => (diagram.states.get(i) ?? { id: "", label: "", descriptions: [], kind: Normal, container: Root, classes: [], styles: [] }).label
-				Group(i) => (diagram.groups.get(i) ?? { id: "", title: "", container: Root, direction: Inherit, classes: [] }).title
-			}
-			title = StateDraw.block(name, options)
-			body = StateDraw.block(note.text, options)
-			width = title.width.max(body.width) + options.padding * 2
-			height = title.height + body.height + options.padding * 3
-			y = match note.side {
-				Left => anchor.y.max($left_bottom)
-				Right => anchor.y.max($right_bottom)
-			}
-			x = match note.side {
-				Left => geometry.bounds.x - width - 24
-				Right => geometry.bounds.x + geometry.bounds.width + 24
-			}
-			rect = { x, y, width, height }
-			paint = { fill: Fill(options.group_fill), stroke: Stroke({ color: options.group_stroke, width: options.line_width }) }
-			$items = $items.append(Shape({ path: StateDraw.note_path(rect), paint }))
-			$items = $items.concat(StateDraw.lines(title.lines, x + width / 2, y + options.padding, options.node_text, options))
-			$items = $items.concat(StateDraw.lines(body.lines, x + width / 2, y + options.padding * 2 + title.height, options.label_text, options))
-			match note.side {
-				Left => {
-					$left_bottom = y + height + 16
-				}
-				Right => {
-					$right_bottom = y + height + 16
-				}
-			}
-			$view = StateDraw.union($view, rect)
-		}
-		margin = ($outline_width / 2).max(8)
-		view = { x: $view.x - margin, y: $view.y - margin, width: $view.width + margin * 2, height: $view.height + margin * 2 }
-		{ view, items: [Shape({ path: Drawing.rectangle(view), paint: { fill: Fill(options.background), stroke: NoStroke } })].concat($items) }
+
+		{ view: geometry.bounds, items: $items }
 	}
 
 	node : StateModel.Diagram, StateModel.State, Drawing.Rect, Theme.Options -> List(Drawing.Item)
@@ -272,7 +343,7 @@ StateDraw :: {}.{
 			Initial | Final => Drawing.ellipse({ x: cx, y: cy }, rect.width / 2, rect.height / 2)
 			Choice => Drawing.polygon([{ x: cx, y: rect.y }, { x: rect.x + rect.width, y: cy }, { x: cx, y: rect.y + rect.height }, { x: rect.x, y: cy }])
 			Fork | Join => Drawing.rectangle(rect)
-			Normal => Drawing.rounded_rectangle(rect, options.corner_radius)
+			Normal => if (state.descriptions.len() > 1) Drawing.rectangle(rect) else Drawing.rounded_rectangle(rect, options.corner_radius)
 		}
 		fill = match state.kind {
 			Initial => { fill: Fill(options.accent), stroke: NoStroke }
@@ -282,16 +353,16 @@ StateDraw :: {}.{
 		}
 		var $items = FlowDraw.shadows(StateDraw.drawing_theme(options), [path], fill, options.background).append(Shape({ path, paint: fill }))
 		if state.kind == Final {
-			$items = $items.append(Shape({ path: Drawing.ellipse({ x: cx, y: cy }, rect.width / 2 - 5, rect.height / 2 - 5), paint: { fill: Fill(options.accent), stroke: NoStroke } }))
+			$items = $items.append(Shape({ path: Drawing.ellipse({ x: cx, y: cy }, rect.width * 5 / 28, rect.height * 5 / 28), paint: { fill: Fill(options.accent), stroke: NoStroke } }))
 		}
 		if state.kind == Normal {
-			title = StateDraw.block(state.label, options)
-			body = StateDraw.block(Str.join_with(state.descriptions, "\n"), options)
-			$items = $items.concat(StateDraw.lines(title.lines, cx, rect.y + options.padding, color, options))
-			if !state.descriptions.is_empty() {
-				y = rect.y + options.padding * 1.5 + title.height
+			title = if (state.descriptions.len() > 1) StateDraw.unwrapped(state.label, options) else StateDraw.block(state.label, options)
+			body = StateDraw.unwrapped(Str.join_with(state.descriptions.drop_first(1), "\n"), options)
+			$items = $items.concat(StateDraw.lines(title.lines, cx, rect.y + (if (state.descriptions.len() > 1) options.padding / 2 else options.padding), color, options))
+			if state.descriptions.len() > 1 {
+				y = rect.y + options.padding / 2 + title.height
 				$items = $items.append(Shape({ path: [MoveTo({ x: rect.x, y }), LineTo({ x: rect.x + rect.width, y })], paint: { fill: NoFill, stroke: paint.stroke } }))
-				$items = $items.concat(StateDraw.lines(body.lines, cx, rect.y + options.padding * 2 + title.height, color, options))
+				$items = $items.concat(StateDraw.lines(body.lines, cx, rect.y + options.padding + title.height + 5, color, options))
 			}
 		}
 		$items
@@ -304,11 +375,11 @@ StateDraw :: {}.{
 	## note, or edge-label box, rather than merely fitting the outer canvas.
 	labels_contained : Drawing.Picture, Theme.Options -> Bool
 	labels_contained = |picture, options| {
-		scale = options.font_size / Font.units_per_em(TextMeasure.inter).to_f64()
-		metrics = Font.metrics(TextMeasure.inter)
-		ascent = (metrics.ascent.to_f64() * scale).max(options.font_size * 0.95)
-		below = (metrics.descent.to_f64() * scale).max(options.font_size * 0.25)
-		candidates = picture.items.drop_first(1).fold(
+		visible_items = match picture.items.first() {
+			Ok(Shape(first)) if first.path == Drawing.rectangle(picture.view) and first.paint == { fill: Fill(options.background), stroke: NoStroke } => picture.items.drop_first(1)
+			_ => picture.items
+		}
+		candidates = visible_items.fold(
 			[],
 			|out, item| match item {
 				Text(_) | StyledText(_) => out
@@ -344,9 +415,13 @@ StateDraw :: {}.{
 						measured = TextMeasure.block(text_item.text, { font: TextMeasure.inter, size: options.font_size, line_height: options.line_height, wrap: NoWrap, align: Middle })
 						left = text_item.origin.x - measured.width / 2
 						right = text_item.origin.x + measured.width / 2
-						top = text_item.origin.y - ascent
-						bottom = text_item.origin.y + below
-						candidates.any(|bounds| left >= bounds.left - 0.001 and right <= bounds.right + 0.001 and top >= bounds.top - 0.001 and bottom <= bounds.bottom + 0.001)
+						# A normal row must not be charged the emoji descent
+						# of another font. Use this row's browser-style box,
+						# retaining unrounded extents for tiny font settings.
+						row_box = StateDraw.unwrapped(text_item.text, options)
+						row_top = text_item.origin.y - StateDraw.baseline(options)
+						row_bottom = row_top + row_box.height
+						candidates.any(|bounds| left >= bounds.left - 0.001 and right <= bounds.right + 0.001 and row_top >= bounds.top - 0.001 and row_bottom <= bounds.bottom + 0.001)
 					}
 				}
 			},
@@ -371,7 +446,7 @@ StateDraw :: {}.{
 ## move description ink across the title/body divider at zero padding.
 expect {
 	options = Theme.Options.{ font_size: 64, line_height: 0.1, padding: 0, max_label_width: 300 }
-	state = { id: "A", label: "Titleg", descriptions: ["Bodyg"], kind: Normal, container: Root, classes: [], styles: [] }
+	state = { id: "A", label: "Titleg", descriptions: ["Titleg", "Bodyg"], kind: Normal, container: Root, classes: [], styles: [] }
 	diagram = { direction: Down, states: [state], transitions: [], groups: [], classes: [], notes: [] }
 	size = StateDraw.measure_sizes(diagram, options).nodes.first()?
 	rect = { x: 0, y: 0, width: size.width, height: size.height }

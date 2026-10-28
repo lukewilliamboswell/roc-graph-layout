@@ -1,0 +1,8 @@
+stateDiagram-v2
+    [*] --> Plain
+    Plain: A description replaces the identifier
+    state "An alias is the first description" as Aliased
+    Aliased: entry / initialise
+    Aliased: exit / clean up
+    Plain --> Aliased: advance
+    Aliased --> [*]
