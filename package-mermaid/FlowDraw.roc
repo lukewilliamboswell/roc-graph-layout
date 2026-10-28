@@ -131,7 +131,7 @@ FlowDraw :: {}.{
 									}
 									_ => {}
 								}
-							Text(_) => {}
+							Text(_) | StyledText(_) => {}
 						}
 					}
 					$items = $items.concat(drawn)
@@ -554,7 +554,7 @@ expect {
 	is_text = |item|
 		match item {
 			Shape(_) => False
-			Text(_) => True
+			Text(_) | StyledText(_) => True
 		}
 	picture.items.len() == 1 and picture.items.all(is_text)
 }
@@ -600,7 +600,7 @@ expect {
 						(Fill(c), _) => if (c == shadow_color) "shadow" else "node"
 						_ => "other"
 					}
-				Text(_) => "text"
+				Text(_) | StyledText(_) => "text"
 			},
 	)
 	kinds == ["shadow", "shadow", "edge", "node", "text", "node", "text"]

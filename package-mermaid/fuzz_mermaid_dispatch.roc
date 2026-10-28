@@ -55,6 +55,9 @@ verify = |bytes| {
 					Text(painted_text) => if !inside(painted_text.origin, picture.view) {
 						crash "text anchor outside view"
 					}
+					StyledText(styled) => if !inside(styled.label.origin, picture.view) {
+						crash "styled text anchor outside view"
+					}
 					Shape(shape) => for segment in shape.path {
 						points = match segment {
 							MoveTo(p) | LineTo(p) => [p]

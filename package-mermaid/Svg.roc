@@ -45,15 +45,42 @@ SvgParts :: {}.{
 					"<path d=\"${d}\" fill=\"${fill}\"${stroke}/>\n"
 				}
 			}
-			Text(label) => {
-				anchor = match label.align {
-					Start => ""
-					Center => " text-anchor=\"middle\""
-					End => " text-anchor=\"end\""
-				}
-				"<text x=\"${SvgParts.number(label.origin.x)}\" y=\"${SvgParts.number(label.origin.y)}\" font-family=\"${family}\" font-size=\"${SvgParts.number(label.size)}\" fill=\"${SvgParts.color(label.color)}\"${anchor}>${SvgParts.escape(label.text)}</text>\n"
-			}
+			Text(label) => SvgParts.label_item(label, family, "")
+			StyledText(styled) => SvgParts.label_item(
+				styled.label,
+				family,
+				Str.join_with(
+					[
+						if styled.italic {
+							" font-style=\"italic\""
+						} else {
+							""
+						},
+						if styled.underline {
+							" text-decoration=\"underline\""
+						} else {
+							""
+						},
+						if styled.bold {
+							" font-weight=\"bold\""
+						} else {
+							""
+						},
+					],
+					"",
+				),
+			)
 		}
+
+	label_item : Drawing.Label, Str, Str -> Str
+	label_item = |label, family, attributes| {
+		anchor = match label.align {
+			Start => ""
+			Center => " text-anchor=\"middle\""
+			End => " text-anchor=\"end\""
+		}
+		"<text x=\"${SvgParts.number(label.origin.x)}\" y=\"${SvgParts.number(label.origin.y)}\" font-family=\"${family}\" font-size=\"${SvgParts.number(label.size)}\" fill=\"${SvgParts.color(label.color)}\"${anchor}${attributes}>${SvgParts.escape(label.text)}</text>\n"
+	}
 
 	## Path data in absolute commands.
 	path_data : List(Drawing.Segment) -> Str
@@ -169,3 +196,9 @@ expect
 		"Inter",
 	)
 		== "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 20\" width=\"10\" height=\"20\">\n<path d=\"M1 2L4 2L4 6L1 6Z\" fill=\"#ffffff\" stroke=\"#000000\" stroke-width=\"2\"/>\n<text x=\"5\" y=\"6\" font-family=\"Inter\" font-size=\"14\" fill=\"#000000\" text-anchor=\"middle\">A&amp;B</text>\n</svg>\n"
+
+expect {
+	picture = { view: { x: 0, y: 0, width: 100, height: 40 }, items: [StyledText({ label: { text: "<member>", origin: { x: 12, y: 20 }, size: 14, align: Start, color: Drawing.black }, italic: True, underline: True, bold: False })] }
+	svg = Svg.document(picture, "Inter")
+	Drawing.is_finite(picture) and svg.contains("font-style=\"italic\"") and svg.contains("text-decoration=\"underline\"") and svg.contains("&lt;member&gt;")
+}

@@ -19,7 +19,7 @@ DiagramView :: {}.{
 		var $bottom = picture.view.y + picture.view.height
 		for item in picture.items {
 			match item {
-				Text(_) => {}
+				Text(_) | StyledText(_) => {}
 				Shape(shape) => {
 					margin = match shape.paint.stroke {
 						NoStroke => 0

@@ -49,6 +49,10 @@ Drawing :: {}.{
 	Item : [
 		Shape({ path : List(Segment), paint : Paint }),
 		Text(Label),
+
+		## Font styling remains explicit for renderers. Existing `Text`
+		## items use regular, undecorated text.
+		StyledText({ label : Label, italic : Bool, underline : Bool, bold : Bool }),
 	]
 
 	## The visible area and everything painted in it.
@@ -178,6 +182,7 @@ Drawing :: {}.{
 				|item|
 					match item {
 						Text(label) => ok(label.origin) and F64.is_finite(label.size)
+						StyledText(styled) => ok(styled.label.origin) and F64.is_finite(styled.label.size)
 						Shape(shape) => {
 							width_ok = match shape.paint.stroke {
 								NoStroke => True
