@@ -6,8 +6,10 @@ import FlowDrawStyle
 import FlowGeometry
 import FlowLayout
 import StateModel
+import StateParser
 import TextMeasure
 import Theme
+import font.Font
 
 ## State-specific sizing and painting over the reusable compound flow layout.
 StateDraw :: {}.{
@@ -16,7 +18,30 @@ StateDraw :: {}.{
 	block : Str, Theme.Options -> Block
 	block = |text, options| {
 		measured = TextMeasure.block(text, { font: TextMeasure.inter, size: options.font_size, line_height: options.line_height, wrap: Width(options.max_label_width), align: Middle })
-		{ ..measured, height: if (text == "") 0 else options.font_size * options.line_height * measured.lines.len().to_f64() }
+		# line_height controls baseline spacing, not the first glyph's box.
+		# Reserve unrounded font extents too: tiny accepted font sizes must
+		# not disappear when browser-style whole-pixel metrics round to zero.
+		height = if text == "" {
+			0
+		} else {
+			StateDraw.baseline(options) + StateDraw.descent(options) + (measured.lines.len().max(1) - 1).to_f64() * options.font_size * options.line_height
+		}
+		{ ..measured, height: height.max(measured.height) }
+	}
+
+	baseline : Theme.Options -> F64
+	baseline = |options| {
+		metrics = Font.metrics(TextMeasure.inter)
+		ascent = metrics.ascent.to_f64() * options.font_size / Font.units_per_em(TextMeasure.inter).to_f64()
+		ascent.max(TextMeasure.round(ascent)).max(options.font_size * 0.95).max(TextMeasure.round(options.font_size * 0.95))
+	}
+
+	descent : Theme.Options -> F64
+	descent = |options| {
+		metrics = Font.metrics(TextMeasure.inter)
+		extent = metrics.descent.to_f64() * options.font_size / Font.units_per_em(TextMeasure.inter).to_f64()
+		# Fallback emoji can reach a quarter-em below the baseline.
+		extent.max(TextMeasure.round(extent)).max(options.font_size * 0.25).max(TextMeasure.round(options.font_size * 0.25))
 	}
 
 	make_flow : StateModel.Diagram -> Flowchart.Diagram
@@ -89,6 +114,8 @@ StateDraw :: {}.{
 	drawing_theme = |options| {
 		..FlowDraw.mermaid,
 		font_size: options.font_size,
+		line_height: options.line_height,
+		corner_radius: options.corner_radius,
 		background: options.background,
 		node_fill: options.node_fill,
 		node_stroke: options.node_stroke,
@@ -270,7 +297,60 @@ StateDraw :: {}.{
 	}
 
 	lines : List(Str), F64, F64, Drawing.Color, Theme.Options -> List(Drawing.Item)
-	lines = |rows, x, top, color, options| rows.map_with_index(|text, i| Text({ text, origin: { x, y: top + options.font_size + i.to_f64() * options.font_size * options.line_height }, size: options.font_size, align: Center, color }))
+	lines = |rows, x, top, color, options| rows.map_with_index(|text, i| Text({ text, origin: { x, y: top + StateDraw.baseline(options) + i.to_f64() * options.font_size * options.line_height }, size: options.font_size, align: Center, color }))
+
+	## Contract probe: every text ink box belongs to a painted node, group,
+	## note, or edge-label box, rather than merely fitting the outer canvas.
+	labels_contained : Drawing.Picture, Theme.Options -> Bool
+	labels_contained = |picture, options| {
+		scale = options.font_size / Font.units_per_em(TextMeasure.inter).to_f64()
+		metrics = Font.metrics(TextMeasure.inter)
+		ascent = (metrics.ascent.to_f64() * scale).max(options.font_size * 0.95)
+		below = (metrics.descent.to_f64() * scale).max(options.font_size * 0.25)
+		candidates = picture.items.drop_first(1).fold(
+			[],
+			|out, item| match item {
+				Text(_) => out
+				Shape(painted) => match painted.paint.fill {
+					NoFill => out
+					Fill(_) => {
+						points = painted.path.fold(
+							[],
+							|ps, segment| match segment {
+								MoveTo(p) | LineTo(p) => ps.append(p)
+								CubicTo(c) => ps.concat([c.control_1, c.control_2, c.end])
+								Close => ps
+							},
+						)
+						match points.first() {
+							Err(_) => out
+							Ok(first) => {
+								extents = points.fold({ left: first.x, top: first.y, right: first.x, bottom: first.y }, |bounds, p| { left: bounds.left.min(p.x), top: bounds.top.min(p.y), right: bounds.right.max(p.x), bottom: bounds.bottom.max(p.y) })
+								out.append(extents)
+							}
+						}
+					}
+				}
+			},
+		)
+		picture.items.all(
+			|item| match item {
+				Shape(_) => True
+				Text(text_item) => {
+					if text_item.text.is_empty() {
+						True
+					} else {
+						measured = TextMeasure.block(text_item.text, { font: TextMeasure.inter, size: options.font_size, line_height: options.line_height, wrap: NoWrap, align: Middle })
+						left = text_item.origin.x - measured.width / 2
+						right = text_item.origin.x + measured.width / 2
+						top = text_item.origin.y - ascent
+						bottom = text_item.origin.y + below
+						candidates.any(|bounds| left >= bounds.left - 0.001 and right <= bounds.right + 0.001 and top >= bounds.top - 0.001 and bottom <= bounds.bottom + 0.001)
+					}
+				}
+			},
+		)
+	}
 
 	note_path : Drawing.Rect -> List(Drawing.Segment)
 	note_path = |rect| {
@@ -284,4 +364,61 @@ StateDraw :: {}.{
 		y = a.y.min(b.y)
 		{ x, y, width: (a.x + a.width).max(b.x + b.width) - x, height: (a.y + a.height).max(b.y + b.height) - y }
 	}
+}
+
+## Regression: tight baseline spacing cannot shrink the first glyph or
+## move description ink across the title/body divider at zero padding.
+expect {
+	options = Theme.Options.{ font_size: 64, line_height: 0.1, padding: 0, max_label_width: 300 }
+	state = { id: "A", label: "Titleg", descriptions: ["Bodyg"], kind: Normal, container: Root, classes: [], styles: [] }
+	diagram = { direction: Down, states: [state], transitions: [], groups: [], classes: [], notes: [] }
+	size = StateDraw.measure_sizes(diagram, options).nodes.first()?
+	rect = { x: 0, y: 0, width: size.width, height: size.height }
+	labels = StateDraw.node(diagram, state, rect, options).fold(
+		[],
+		|out, item| match item {
+			Text(label) => out.append(label)
+			_ => out
+		},
+	)
+	scale = options.font_size / Font.units_per_em(TextMeasure.inter).to_f64()
+	metrics = Font.metrics(TextMeasure.inter)
+	ascent = metrics.ascent.to_f64() * scale
+	descent = metrics.descent.to_f64() * scale
+	divider = StateDraw.block(state.label, options).height
+	match labels {
+		[title, body] => title.origin.y - ascent >= 0 and title.origin.y + descent <= divider
+			and body.origin.y - ascent >= divider and body.origin.y + descent <= size.height
+		_ => False
+	}
+}
+
+expect {
+	options = Theme.Options.{ font_size: 64, line_height: 0.1, padding: 0, max_label_width: 90 }
+	block = StateDraw.block("g first line\ng second line with several words", options)
+	scale = options.font_size / Font.units_per_em(TextMeasure.inter).to_f64()
+	metrics = Font.metrics(TextMeasure.inter)
+	ascent = metrics.ascent.to_f64() * scale
+	descent = metrics.descent.to_f64() * scale
+	block.lines.len() > 3 and StateDraw.lines(block.lines, 0, 0, options.node_text, options).all(
+		|item| match item {
+			Text(label) => label.origin.y - ascent >= 0 and label.origin.y + descent <= block.height
+			_ => False
+		},
+	)
+}
+
+expect {
+	options = Theme.Options.{ font_size: 0.001, line_height: 0.01, padding: 0 }
+	block = StateDraw.block("a\nb", options)
+	block.height > StateDraw.baseline(options) and StateDraw.baseline(options) > 0
+}
+
+expect {
+	options = Theme.Options.{ font_size: 64, line_height: 0.1, padding: 0, max_label_width: 300, corner_radius: 19 }
+	diagram = StateParser.parse("stateDiagram-v2\nstate \"Titleg\" as A\nA: Bodyg\nA --> B : Edgeg\nnote right of A : Noteg\nstate Groupg {\nChildg\n}\nB --> Groupg\n")?
+	picture = StateDraw.draw(diagram, options)
+	theme = StateDraw.drawing_theme(options)
+	Drawing.is_finite(picture) and StateDraw.labels_contained(picture, options)
+		and theme.line_height == 0.1 and theme.corner_radius == 19
 }

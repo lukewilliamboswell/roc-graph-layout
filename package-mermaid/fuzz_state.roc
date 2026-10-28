@@ -20,22 +20,27 @@ import fuzz.Fuzz
 test : List(U8) -> Fuzz.Outcome
 test = |bytes| {
 	source = Str.from_utf8_lossy(bytes)
-	_ = check(source)
+	options = match (bytes.first() ?? 0) % 4 {
+		0 => Theme.Options.{}
+		1 => Theme.Options.{ font_size: 64, line_height: 0.1, padding: 0, max_label_width: 300 }
+		2 => Theme.Options.{ font_size: 64, line_height: 0.01, padding: 0, max_label_width: 90 }
+		_ => Theme.Options.{ font_size: 0.001, line_height: 0.01, padding: 0 }
+	}
+	_ = check(source, options)
 	count = 1 + (bytes.first() ?? 0).to_u64() % 12
 	var $lines = ["stateDiagram-v2", "[*] --> S0"]
 	for i in 0..<count {
 		j = (bytes.get(i + 1) ?? i.to_u8_wrap()).to_u64() % count
 		$lines = $lines.append("S${i.to_str()} --> S${j.to_str()} : transition ${i.to_str()}")
 	}
-	$lines = $lines.append("S0 --> [*]")
-	check(Str.join_with($lines, "\n"))
+	$lines = $lines.concat(["S0 --> [*]", "S0: entry / synchronize", "note right of S0 : Retryg"])
+	check(Str.join_with($lines, "\n"), options)
 }
 
-check : Str -> Fuzz.Outcome
-check = |source| match StateDiagram.parse(source) {
+check : Str, Theme.Options -> Fuzz.Outcome
+check = |source, options| match StateDiagram.parse(source) {
 	Err(_) => Fuzz.reject
 	Ok(diagram) => {
-		options = Theme.Options.{}
 		sizes = StateDraw.measure_sizes(diagram, options)
 		geometry = FlowLayout.layout(StateDraw.make_flow(diagram), sizes)
 		if geometry.nodes.len() != diagram.states.len() or geometry.edges.len() != diagram.transitions.len() or geometry.groups.len() != diagram.groups.len() {
@@ -59,6 +64,9 @@ check = |source| match StateDiagram.parse(source) {
 		}
 		if !Drawing.is_finite(first) {
 			crash "state rendering emitted non-finite geometry"
+		}
+		if !StateDraw.labels_contained(first, options) {
+			crash "state text escaped its node, group, note, or edge-label box"
 		}
 		svg = Svg.document(first, "Inter")
 		if !svg.starts_with("<svg ") or !svg.ends_with("</svg>\n") {
