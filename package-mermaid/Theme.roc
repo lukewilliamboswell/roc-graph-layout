@@ -28,8 +28,10 @@ Theme :: {}.{
 		font_size : F64 ?? 14,
 		line_height : F64 ?? 1.1,
 		max_label_width : F64 ?? 120,
+		wrapping : [FamilyDefault, Wrap, NoWrap] ?? FamilyDefault,
 		padding : F64 ?? 15,
 		corner_radius : F64 ?? 12,
+		corners : [FamilyDefault, Rounded, Square] ?? FamilyDefault,
 		shadow : [NoShadow, Shadow({ dx : F64, dy : F64, opacity : F64 })] ?? Shadow({ dx: 4, dy: 4, opacity: 0.06 }),
 	}
 
