@@ -13,7 +13,8 @@ import Theme
 ## Turn Mermaid text into a picture or an SVG document in one call. Labels
 ## are measured with the metrics of the Inter typeface, as Mermaid 12 lays
 ## out text, so show the result with Inter available (for example as a web
-## font) for text to fit its boxes exactly.
+## font). Missing glyphs also depend on the host fallback fonts; Inter
+## alone cannot make those glyphs render identically on every platform.
 ##
 ## Supports `flowchart`/`graph`, `sequenceDiagram`, `erDiagram`,
 ## `classDiagram`, and `stateDiagram`/`stateDiagram-v2`. Each family module

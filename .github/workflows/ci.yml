@@ -108,7 +108,7 @@ jobs:
 
       - name: Generate independent references for the runner's font environment
         run: |
-          node tools/mermaid-oracle/oracle.mjs record tests/mermaid/flowchart tests/mermaid/layout tests/mermaid/measure tests/mermaid/themed tests/mermaid/sequence tests/mermaid/entity tests/mermaid/class tests/mermaid/state
+          node tools/mermaid-oracle/oracle.mjs record --force tests/mermaid/flowchart tests/mermaid/layout tests/mermaid/measure tests/mermaid/themed tests/mermaid/sequence tests/mermaid/entity tests/mermaid/class tests/mermaid/state
           node tools/mermaid-oracle/oracle.mjs check tests/mermaid/flowchart tests/mermaid/layout tests/mermaid/measure tests/mermaid/themed tests/mermaid/sequence tests/mermaid/entity tests/mermaid/class tests/mermaid/state
 
       - name: Build the native production-path probe

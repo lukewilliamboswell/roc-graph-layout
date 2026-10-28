@@ -1,14 +1,14 @@
 import Drawing
 
-## Shared appearance for Mermaid diagrams. Colours are sRGB and distances
-## use a 14px flowchart base. Other families retain Mermaid's role
+## Shared appearance for Mermaid diagrams. Colours are sRGB and sizes use
+## CSS pixels, with a 14px flowchart font base. Other families retain Mermaid's role
 ## proportions (for example 16px sequence messages and 8px state padding).
 ## Construct `Options.{}` for pinned Mermaid defaults, or
 ## supply only the properties you want to change. Labels are measured and
 ## drawn in Inter; changing their size also changes the space they receive.
 ## Empty `node_palette` selects family defaults; one entry selects flat
-## actor/table/state-container colours. Graph edges use `line`; sequence messages and their
-## note outlines use `message_colors`. Flow labels use `label_background`
+## actor/table/state-container colours. Graph edges use `line`; sequence
+## messages and their note outlines use `message_colors`. Flow labels use `label_background`
 ## with `label_background_opacity`; state transitions and ER/class relations
 ## use `transition_label_background`. Sequence and table fills use their
 ## palettes; use a one-entry `node_palette` rather than `node_fill` and
