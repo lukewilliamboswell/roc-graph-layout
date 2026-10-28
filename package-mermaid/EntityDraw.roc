@@ -8,6 +8,7 @@ import layout.Geom
 import Flowchart
 import FlowGeometry
 import FlowDraw
+import FlowDrawEdge
 import FlowLayout
 import EntityLayout
 import OracleJson
@@ -428,28 +429,19 @@ EntityDraw :: {}.{
 
 	route : List(Drawing.Point), Bool, Theme.Options -> List(Drawing.Item)
 	route = |points, dashed, theme| {
-		var $out = []
-		if points.len() >= 2 {
-			for i in 1..<points.len() {
-				a = points.get(i - 1) ?? { x: 0, y: 0 }
-				b = points.get(i) ?? a
-				if !dashed {
-					$out = $out.append(EntityDraw.line(a, b, theme.line, theme.line_width))
-				}
-				else {
-					dx = b.x - a.x
-					dy = b.y - a.y
-					length = (dx * dx + dy * dy).sqrt()
-					count = ((length / 8 + 1).to_u64_try() ?? 0).min(4096)
-					for j in 0..<count {
-						lo = j.to_f64() / count.to_f64()
-						hi = (j.to_f64() + 0.5) / count.to_f64()
-						$out = $out.append(EntityDraw.line({ x: a.x + dx * lo, y: a.y + dy * lo }, { x: a.x + dx * hi, y: a.y + dy * hi }, theme.line, theme.line_width))
-					}
-				}
-			}
+		pieces = FlowDrawEdge.pieces(points, [])
+		total = pieces.fold(0.0, |sum, piece| sum + FlowDrawEdge.length(piece))
+		stretches = if dashed {
+			FlowDrawEdge.dashes(total, [3, 3])
+		} else {
+			[{ from: 0, to: total }]
 		}
-		$out
+		path = FlowDrawEdge.trace(pieces, stretches)
+		if path.is_empty() {
+			[]
+		} else {
+			[Shape({ path, paint: { fill: NoFill, stroke: Stroke({ color: theme.line, width: theme.line_width }) } })]
+		}
 	}
 
 	marker_offset : Mark -> F64
