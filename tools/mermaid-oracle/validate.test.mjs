@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {differences} from './contracts.mjs';
-import {geometryDifferences,layoutMetrics,nonFinite,invalidGeometry,parityProblems} from './validate.mjs';
+import {geometryDifferences,layoutMetrics,nonFinite,invalidGeometry,parityProblems,tokenDifferences} from './validate.mjs';
 test('semantics never tolerate a number, missing property, or list-order difference',()=>{
  assert.equal(differences({a:1},{a:1.00001}).length,1);
  assert.equal(differences({a:[]},{}).length,1);
@@ -38,4 +38,10 @@ test('new diagram parity gates reject bad pixels and wrong canvas sizes without 
  assert.ok(parityProblems('state',0, {...box,width:101.01},box).length);
  assert.ok(parityProblems('class',NaN,box,box).length);
  assert.ok(parityProblems('entity',-0.1,box,box).length);
+});
+
+test('rendered text cannot disappear behind a small whole-image pixel score',()=>{
+ assert.deepEqual(tokenDifferences('A[hello] B : value','A [ hello ] B:value'),{missing:[],extra:[]});
+ assert.deepEqual(tokenDifferences('Hello World','World'),{missing:[{token:'Hello',count:1}],extra:[]});
+ assert.ok(tokenDifferences('listen','silent').missing.length);
 });

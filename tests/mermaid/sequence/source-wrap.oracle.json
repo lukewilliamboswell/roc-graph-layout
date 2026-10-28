@@ -1,9 +1,16 @@
 {
-	"schema": 9,
-	"key": "7e9c737be2f1c43d421940a6850748d0abf2298307abb403fa389bb38a26acf2",
+	"schema": 10,
+	"key": "63e8428b5422abd3b592c2db36f88892a0490d347ffe4d91cab78e4a7a05987f",
 	"provenance": {
-		"extractor": 9,
+		"extractor": 10,
 		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
+		"tool_sha256": "96ee409ebad6eb661687da17d8923ea8d757074a4c24647d9b4b33822435aba9",
+		"measurement_viewport": {
+			"width": 800,
+			"height": 600,
+			"deviceScaleFactor": 1
+		},
+		"browser_context": "fresh page for each source",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",
@@ -166,6 +173,38 @@
 				"x": 0,
 				"y": -16,
 				"width": 32.734375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A",
+			"rows": [
+				"A"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 10.671875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A",
+			"rows": [
+				"A"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 11.046875,
 				"height": 20
 			}
 		},
@@ -4162,12 +4201,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor16",
+				"id": "actor1",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor16",
+					"id": "actor1",
 					"x1": "362",
 					"y1": "156",
 					"x2": "362",
@@ -4204,12 +4243,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-16",
+				"id": "root-1",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-16",
+					"id": "root-1",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -4242,7 +4281,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-16",
+				"parent_id": "root-1",
 				"parent_class": "",
 				"attributes": {
 					"x": "241.5",
@@ -4286,7 +4325,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-16",
+				"parent_id": "root-1",
 				"parent_class": "",
 				"attributes": {
 					"x": "362",
@@ -4384,12 +4423,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor15",
+				"id": "actor0",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor15",
+					"id": "actor0",
 					"x1": "75",
 					"y1": "156",
 					"x2": "75",
@@ -4426,12 +4465,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-15",
+				"id": "root-0",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-15",
+					"id": "root-0",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -4464,7 +4503,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-15",
+				"parent_id": "root-0",
 				"parent_class": "",
 				"attributes": {
 					"x": "0",
@@ -4508,7 +4547,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-15",
+				"parent_id": "root-0",
 				"parent_class": "",
 				"attributes": {
 					"x": "75",
@@ -4578,7 +4617,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-15",
+				"parent_id": "root-0",
 				"parent_class": "",
 				"attributes": {
 					"x": "75",
@@ -4648,7 +4687,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-15",
+				"parent_id": "root-0",
 				"parent_class": "",
 				"attributes": {
 					"x": "75",
@@ -4718,7 +4757,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-15",
+				"parent_id": "root-0",
 				"parent_class": "",
 				"attributes": {
 					"x": "75",
@@ -4788,7 +4827,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-15",
+				"parent_id": "root-0",
 				"parent_class": "",
 				"attributes": {
 					"x": "75",
@@ -5588,5 +5627,5 @@
 			"height": 653
 		}
 	},
-	"svg_sha256": "aee5823cb8192a9df29b10e838586984b465b71a8eb44119dca4aa0a8914aa97"
+	"svg_sha256": "33390931d732bd3ed51b43fd5f252b2f2a465b035327a7c4a459b20ebdd12d14"
 }

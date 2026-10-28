@@ -1,9 +1,16 @@
 {
-	"schema": 9,
-	"key": "3916539031ea4e213472b1361dbc38a45504158430723e342180c4434dcf82f0",
+	"schema": 10,
+	"key": "49367b87929bbdf918f4b0a4eeb51ba421e1fd0183dc2a9906861729f574b3d9",
 	"provenance": {
-		"extractor": 9,
+		"extractor": 10,
 		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
+		"tool_sha256": "96ee409ebad6eb661687da17d8923ea8d757074a4c24647d9b4b33822435aba9",
+		"measurement_viewport": {
+			"width": 800,
+			"height": 600,
+			"deviceScaleFactor": 1
+		},
+		"browser_context": "fresh page for each source",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",

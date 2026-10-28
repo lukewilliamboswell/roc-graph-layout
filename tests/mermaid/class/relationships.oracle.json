@@ -1,9 +1,16 @@
 {
-	"schema": 9,
-	"key": "32f9d26b25c25f18b1c3178a12d988088327684264b6227c4597af122e60ba4a",
+	"schema": 10,
+	"key": "29d3be2b8418f8f52637bbfded8069fbc2734542d0408ef606a2ed9dd6ae8f83",
 	"provenance": {
-		"extractor": 9,
+		"extractor": 10,
 		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
+		"tool_sha256": "96ee409ebad6eb661687da17d8923ea8d757074a4c24647d9b4b33822435aba9",
+		"measurement_viewport": {
+			"width": 800,
+			"height": 600,
+			"deviceScaleFactor": 1
+		},
+		"browser_context": "fresh page for each source",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",
@@ -66,7 +73,7 @@
 						"service"
 					],
 					"styles": [],
-					"domId": "classId-Service-20"
+					"domId": "classId-Service-0"
 				}
 			],
 			[
@@ -82,7 +89,7 @@
 					"members": [],
 					"annotations": [],
 					"styles": [],
-					"domId": "classId-List-21"
+					"domId": "classId-List-1"
 				}
 			],
 			[
@@ -98,7 +105,7 @@
 					"members": [],
 					"annotations": [],
 					"styles": [],
-					"domId": "classId-Isolated-22"
+					"domId": "classId-Isolated-2"
 				}
 			],
 			[
@@ -114,7 +121,7 @@
 					"members": [],
 					"annotations": [],
 					"styles": [],
-					"domId": "classId-Base-23"
+					"domId": "classId-Base-3"
 				}
 			],
 			[
@@ -130,7 +137,7 @@
 					"members": [],
 					"annotations": [],
 					"styles": [],
-					"domId": "classId-Interface-24"
+					"domId": "classId-Interface-4"
 				}
 			],
 			[
@@ -146,7 +153,7 @@
 					"members": [],
 					"annotations": [],
 					"styles": [],
-					"domId": "classId-Record-25"
+					"domId": "classId-Record-5"
 				}
 			]
 		],
@@ -284,7 +291,7 @@
 					"service"
 				],
 				"styles": [],
-				"domId": "classId-Service-20",
+				"domId": "classId-Service-0",
 				"isGroup": false,
 				"look": "classic",
 				"colorIndex": 0
@@ -299,7 +306,7 @@
 				"members": [],
 				"annotations": [],
 				"styles": [],
-				"domId": "classId-List-21",
+				"domId": "classId-List-1",
 				"isGroup": false,
 				"look": "classic",
 				"colorIndex": 1
@@ -314,7 +321,7 @@
 				"members": [],
 				"annotations": [],
 				"styles": [],
-				"domId": "classId-Isolated-22",
+				"domId": "classId-Isolated-2",
 				"isGroup": false,
 				"look": "classic",
 				"colorIndex": 2
@@ -329,7 +336,7 @@
 				"members": [],
 				"annotations": [],
 				"styles": [],
-				"domId": "classId-Base-23",
+				"domId": "classId-Base-3",
 				"isGroup": false,
 				"look": "classic",
 				"colorIndex": 3
@@ -344,7 +351,7 @@
 				"members": [],
 				"annotations": [],
 				"styles": [],
-				"domId": "classId-Interface-24",
+				"domId": "classId-Interface-4",
 				"isGroup": false,
 				"look": "classic",
 				"colorIndex": 4
@@ -359,7 +366,7 @@
 				"members": [],
 				"annotations": [],
 				"styles": [],
-				"domId": "classId-Record-25",
+				"domId": "classId-Record-5",
 				"isGroup": false,
 				"look": "classic",
 				"colorIndex": 5
@@ -1547,7 +1554,7 @@
 					"service"
 				],
 				"styles": [],
-				"domId": "oracle-classId-Service-26",
+				"domId": "oracle-classId-Service-6",
 				"isGroup": false,
 				"look": "neo",
 				"colorIndex": 0,
@@ -1568,7 +1575,7 @@
 				"members": [],
 				"annotations": [],
 				"styles": [],
-				"domId": "oracle-classId-List-27",
+				"domId": "oracle-classId-List-7",
 				"isGroup": false,
 				"look": "neo",
 				"colorIndex": 1,
@@ -1589,7 +1596,7 @@
 				"members": [],
 				"annotations": [],
 				"styles": [],
-				"domId": "oracle-classId-Isolated-28",
+				"domId": "oracle-classId-Isolated-8",
 				"isGroup": false,
 				"look": "neo",
 				"colorIndex": 2,
@@ -1610,7 +1617,7 @@
 				"members": [],
 				"annotations": [],
 				"styles": [],
-				"domId": "oracle-classId-Base-29",
+				"domId": "oracle-classId-Base-9",
 				"isGroup": false,
 				"look": "neo",
 				"colorIndex": 3,
@@ -1631,7 +1638,7 @@
 				"members": [],
 				"annotations": [],
 				"styles": [],
-				"domId": "oracle-classId-Interface-30",
+				"domId": "oracle-classId-Interface-10",
 				"isGroup": false,
 				"look": "neo",
 				"colorIndex": 4,
@@ -1652,7 +1659,7 @@
 				"members": [],
 				"annotations": [],
 				"styles": [],
-				"domId": "oracle-classId-Record-31",
+				"domId": "oracle-classId-Record-11",
 				"isGroup": false,
 				"look": "neo",
 				"colorIndex": 5,
@@ -3088,6 +3095,38 @@
 			"id": "",
 			"class": "",
 			"parent_id": "",
+			"text": "List&lt;T&gt;",
+			"rows": [
+				"List&lt;T&gt;"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 86.25,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "List&lt;T&gt;",
+			"rows": [
+				"List&lt;T&gt;"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 90.515625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
 			"text": "Isolated",
 			"rows": [
 				"Isolated"
@@ -3354,6 +3393,38 @@
 				"y": 9.5367431640625e-7,
 				"width": 110.15625,
 				"height": 17.130859375
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "-String token",
+			"rows": [
+				"-String token"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 90.71875,
+				"height": 18
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "-String token",
+			"rows": [
+				"-String token"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 98.5625,
+				"height": 20
 			}
 		},
 		{
@@ -6101,13 +6172,13 @@
 			},
 			{
 				"tag": "g",
-				"id": "oracle-classId-Service-26",
+				"id": "oracle-classId-Service-6",
 				"class": "node default",
 				"parent_id": "",
 				"parent_class": "nodes",
 				"attributes": {
 					"class": "node default",
-					"id": "oracle-classId-Service-26",
+					"id": "oracle-classId-Service-6",
 					"data-color-id": "color-0",
 					"data-look": "neo",
 					"transform": "translate(260.515625, 208.6630859375)"
@@ -6139,7 +6210,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "basic label-container outer-path",
-				"parent_id": "oracle-classId-Service-26",
+				"parent_id": "oracle-classId-Service-6",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "basic label-container outer-path"
@@ -6244,7 +6315,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "annotation-group text",
-				"parent_id": "oracle-classId-Service-26",
+				"parent_id": "oracle-classId-Service-6",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "annotation-group text",
@@ -6476,7 +6547,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "label-group text",
-				"parent_id": "oracle-classId-Service-26",
+				"parent_id": "oracle-classId-Service-6",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "label-group text",
@@ -6743,7 +6814,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "members-group text",
-				"parent_id": "oracle-classId-Service-26",
+				"parent_id": "oracle-classId-Service-6",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "members-group text",
@@ -7009,7 +7080,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "methods-group text",
-				"parent_id": "oracle-classId-Service-26",
+				"parent_id": "oracle-classId-Service-6",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "methods-group text",
@@ -7309,7 +7380,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "divider neo-line",
-				"parent_id": "oracle-classId-Service-26",
+				"parent_id": "oracle-classId-Service-6",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "divider neo-line",
@@ -7379,7 +7450,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "divider neo-line",
-				"parent_id": "oracle-classId-Service-26",
+				"parent_id": "oracle-classId-Service-6",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "divider neo-line",
@@ -7447,13 +7518,13 @@
 			},
 			{
 				"tag": "g",
-				"id": "oracle-classId-List-27",
+				"id": "oracle-classId-List-7",
 				"class": "node default",
 				"parent_id": "",
 				"parent_class": "nodes",
 				"attributes": {
 					"class": "node default",
-					"id": "oracle-classId-List-27",
+					"id": "oracle-classId-List-7",
 					"data-color-id": "color-1",
 					"data-look": "neo",
 					"transform": "translate(833.5390625, 206.5107421875)"
@@ -7485,7 +7556,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "basic label-container outer-path",
-				"parent_id": "oracle-classId-List-27",
+				"parent_id": "oracle-classId-List-7",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "basic label-container outer-path"
@@ -7590,7 +7661,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "annotation-group text",
-				"parent_id": "oracle-classId-List-27",
+				"parent_id": "oracle-classId-List-7",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "annotation-group text",
@@ -7623,7 +7694,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "label-group text",
-				"parent_id": "oracle-classId-List-27",
+				"parent_id": "oracle-classId-List-7",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "label-group text",
@@ -7856,7 +7927,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "members-group text",
-				"parent_id": "oracle-classId-List-27",
+				"parent_id": "oracle-classId-List-7",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "members-group text",
@@ -7889,7 +7960,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "methods-group text",
-				"parent_id": "oracle-classId-List-27",
+				"parent_id": "oracle-classId-List-7",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "methods-group text",
@@ -7922,7 +7993,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "divider neo-line",
-				"parent_id": "oracle-classId-List-27",
+				"parent_id": "oracle-classId-List-7",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "divider neo-line",
@@ -7992,7 +8063,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "divider neo-line",
-				"parent_id": "oracle-classId-List-27",
+				"parent_id": "oracle-classId-List-7",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "divider neo-line",
@@ -8060,13 +8131,13 @@
 			},
 			{
 				"tag": "g",
-				"id": "oracle-classId-Isolated-28",
+				"id": "oracle-classId-Isolated-8",
 				"class": "node default",
 				"parent_id": "",
 				"parent_class": "nodes",
 				"attributes": {
 					"class": "node default",
-					"id": "oracle-classId-Isolated-28",
+					"id": "oracle-classId-Isolated-8",
 					"data-color-id": "color-2",
 					"data-look": "neo",
 					"transform": "translate(53.5625, 50.5)"
@@ -8098,7 +8169,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "basic label-container outer-path",
-				"parent_id": "oracle-classId-Isolated-28",
+				"parent_id": "oracle-classId-Isolated-8",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "basic label-container outer-path"
@@ -8203,7 +8274,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "annotation-group text",
-				"parent_id": "oracle-classId-Isolated-28",
+				"parent_id": "oracle-classId-Isolated-8",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "annotation-group text",
@@ -8236,7 +8307,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "label-group text",
-				"parent_id": "oracle-classId-Isolated-28",
+				"parent_id": "oracle-classId-Isolated-8",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "label-group text",
@@ -8469,7 +8540,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "members-group text",
-				"parent_id": "oracle-classId-Isolated-28",
+				"parent_id": "oracle-classId-Isolated-8",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "members-group text",
@@ -8502,7 +8573,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "methods-group text",
-				"parent_id": "oracle-classId-Isolated-28",
+				"parent_id": "oracle-classId-Isolated-8",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "methods-group text",
@@ -8535,7 +8606,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "divider neo-line",
-				"parent_id": "oracle-classId-Isolated-28",
+				"parent_id": "oracle-classId-Isolated-8",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "divider neo-line",
@@ -8605,7 +8676,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "divider neo-line",
-				"parent_id": "oracle-classId-Isolated-28",
+				"parent_id": "oracle-classId-Isolated-8",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "divider neo-line",
@@ -8673,13 +8744,13 @@
 			},
 			{
 				"tag": "g",
-				"id": "oracle-classId-Base-29",
+				"id": "oracle-classId-Base-9",
 				"class": "node default",
 				"parent_id": "",
 				"parent_class": "nodes",
 				"attributes": {
 					"class": "node default",
-					"id": "oracle-classId-Base-29",
+					"id": "oracle-classId-Base-9",
 					"data-color-id": "color-3",
 					"data-look": "neo",
 					"transform": "translate(66.8359375, 167.5)"
@@ -8711,7 +8782,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "basic label-container outer-path",
-				"parent_id": "oracle-classId-Base-29",
+				"parent_id": "oracle-classId-Base-9",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "basic label-container outer-path"
@@ -8816,7 +8887,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "annotation-group text",
-				"parent_id": "oracle-classId-Base-29",
+				"parent_id": "oracle-classId-Base-9",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "annotation-group text",
@@ -8849,7 +8920,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "label-group text",
-				"parent_id": "oracle-classId-Base-29",
+				"parent_id": "oracle-classId-Base-9",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "label-group text",
@@ -9082,7 +9153,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "members-group text",
-				"parent_id": "oracle-classId-Base-29",
+				"parent_id": "oracle-classId-Base-9",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "members-group text",
@@ -9115,7 +9186,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "methods-group text",
-				"parent_id": "oracle-classId-Base-29",
+				"parent_id": "oracle-classId-Base-9",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "methods-group text",
@@ -9148,7 +9219,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "divider neo-line",
-				"parent_id": "oracle-classId-Base-29",
+				"parent_id": "oracle-classId-Base-9",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "divider neo-line",
@@ -9218,7 +9289,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "divider neo-line",
-				"parent_id": "oracle-classId-Base-29",
+				"parent_id": "oracle-classId-Base-9",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "divider neo-line",
@@ -9286,13 +9357,13 @@
 			},
 			{
 				"tag": "g",
-				"id": "oracle-classId-Interface-30",
+				"id": "oracle-classId-Interface-10",
 				"class": "node default",
 				"parent_id": "",
 				"parent_class": "nodes",
 				"attributes": {
 					"class": "node default",
-					"id": "oracle-classId-Interface-30",
+					"id": "oracle-classId-Interface-10",
 					"data-color-id": "color-4",
 					"data-look": "neo",
 					"transform": "translate(53.5625, 284.5)"
@@ -9324,7 +9395,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "basic label-container outer-path",
-				"parent_id": "oracle-classId-Interface-30",
+				"parent_id": "oracle-classId-Interface-10",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "basic label-container outer-path"
@@ -9429,7 +9500,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "annotation-group text",
-				"parent_id": "oracle-classId-Interface-30",
+				"parent_id": "oracle-classId-Interface-10",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "annotation-group text",
@@ -9462,7 +9533,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "label-group text",
-				"parent_id": "oracle-classId-Interface-30",
+				"parent_id": "oracle-classId-Interface-10",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "label-group text",
@@ -9695,7 +9766,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "members-group text",
-				"parent_id": "oracle-classId-Interface-30",
+				"parent_id": "oracle-classId-Interface-10",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "members-group text",
@@ -9728,7 +9799,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "methods-group text",
-				"parent_id": "oracle-classId-Interface-30",
+				"parent_id": "oracle-classId-Interface-10",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "methods-group text",
@@ -9761,7 +9832,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "divider neo-line",
-				"parent_id": "oracle-classId-Interface-30",
+				"parent_id": "oracle-classId-Interface-10",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "divider neo-line",
@@ -9831,7 +9902,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "divider neo-line",
-				"parent_id": "oracle-classId-Interface-30",
+				"parent_id": "oracle-classId-Interface-10",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "divider neo-line",
@@ -9899,13 +9970,13 @@
 			},
 			{
 				"tag": "g",
-				"id": "oracle-classId-Record-31",
+				"id": "oracle-classId-Record-11",
 				"class": "node default",
 				"parent_id": "",
 				"parent_class": "nodes",
 				"attributes": {
 					"class": "node default",
-					"id": "oracle-classId-Record-31",
+					"id": "oracle-classId-Record-11",
 					"data-color-id": "color-5",
 					"data-look": "neo",
 					"transform": "translate(615.6640625, 185.75)"
@@ -9937,7 +10008,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "basic label-container outer-path",
-				"parent_id": "oracle-classId-Record-31",
+				"parent_id": "oracle-classId-Record-11",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "basic label-container outer-path"
@@ -10042,7 +10113,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "annotation-group text",
-				"parent_id": "oracle-classId-Record-31",
+				"parent_id": "oracle-classId-Record-11",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "annotation-group text",
@@ -10075,7 +10146,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "label-group text",
-				"parent_id": "oracle-classId-Record-31",
+				"parent_id": "oracle-classId-Record-11",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "label-group text",
@@ -10308,7 +10379,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "members-group text",
-				"parent_id": "oracle-classId-Record-31",
+				"parent_id": "oracle-classId-Record-11",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "members-group text",
@@ -10341,7 +10412,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "methods-group text",
-				"parent_id": "oracle-classId-Record-31",
+				"parent_id": "oracle-classId-Record-11",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "methods-group text",
@@ -10374,7 +10445,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "divider neo-line",
-				"parent_id": "oracle-classId-Record-31",
+				"parent_id": "oracle-classId-Record-11",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "divider neo-line",
@@ -10444,7 +10515,7 @@
 				"tag": "g",
 				"id": "",
 				"class": "divider neo-line",
-				"parent_id": "oracle-classId-Record-31",
+				"parent_id": "oracle-classId-Record-11",
 				"parent_class": "node default",
 				"attributes": {
 					"class": "divider neo-line",
@@ -10521,5 +10592,5 @@
 			"height": 327
 		}
 	},
-	"svg_sha256": "3feefec9a1d44518ec0c560b17249cf228425bf612ab19b6db55a9cefa79bbe2"
+	"svg_sha256": "14971c862752e7ccc5bdaab9eb217c8aae82e35a6c1e9c26fadb9efb0f25e50f"
 }

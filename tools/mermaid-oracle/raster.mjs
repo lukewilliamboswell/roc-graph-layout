@@ -68,25 +68,35 @@ export async function compare(page, svgA, boxA, svgB, boxB = boxA, { maxShift = 
 	const cap = v => Math.min(8000, v);
 	await page.setViewport({ width: cap(a.w + b.w + 40), height: cap(Math.max(a.h, b.h) + 20), deviceScaleFactor: SCALE });
 	await page.evaluate(
-		(textA, textB, sa, sb) => {
-			const place = (id, text, s) => {
+		(textA, textB, sa, sb, va, vb) => {
+			const place = (id, text, s, view) => {
 				const host = document.getElementById(id);
 				host.innerHTML = text;
 				const svg = host.querySelector('svg');
+				// Expand only the white raster cell, preserving one CSS pixel per
+				// SVG unit. Rounding the viewport alone would rescale the drawing.
+				svg.setAttribute('viewBox', `${view.x} ${view.y} ${s.w} ${s.h}`);
 				svg.setAttribute('width', s.w);
 				svg.setAttribute('height', s.h);
 				svg.style.maxWidth = 'none';
 				svg.style.display = 'block';
+				svg.style.width = `${s.w}px`;
+				svg.style.height = `${s.h}px`;
+				svg.style.clipPath = `inset(0 ${s.w-view.width}px ${s.h-view.height}px 0)`;
+				const transform = svg.getScreenCTM();
+				if (Math.abs(transform.a-1)>1e-9 || Math.abs(transform.d-1)>1e-9 || transform.b!==0 || transform.c!==0) throw new Error('raster comparison rescaled an SVG');
 				host.style.width = `${s.w}px`;
 				host.style.height = `${s.h}px`;
 			};
-			place('a', textA, sa);
-			place('b', textB, sb);
+			place('a', textA, sa, va);
+			place('b', textB, sb, vb);
 		},
 		svgA,
 		svgB,
 		a,
 		b,
+		boxA,
+		boxB,
 	);
 	const shotA = await (await page.$('#a')).screenshot({ encoding: 'base64' });
 	const shotB = await (await page.$('#b')).screenshot({ encoding: 'base64' });

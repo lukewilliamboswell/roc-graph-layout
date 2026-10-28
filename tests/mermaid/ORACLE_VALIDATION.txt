@@ -1,0 +1,76 @@
+Mermaid independent oracle validation — 2026-10-28
+
+Result: 143 cases, 0 failures. This is the actual native comparison, not unit expectations alone.
+
+Reference: Mermaid12.2.0, Puppeteer25.16.0, Chrome156.0.8078.47, Inter Regular.
+Host: macOS arm64. Package compiler: nightly-2026-10-26-3c0fffe.
+Script compiler: nightly-2026-10-23-18478ff.
+Extractor schema10; every source gets a fresh browser page.
+Native binary SHA256: 1f74022ab169a579b1e4ddc894695cd912be1db77bf4e30cf20145b51fd406e0
+Full provenance, comparator hashes and per-case scores: validation-report.json.
+
+RAW PUBLIC SVG PIXEL DIFFERENCES
+(Unmatched ink, RGB tolerance40, spatial tolerance1 CSS pixel, device scale2;
+exactly1 CSS pixel per SVG unit, no rescaling or best-shift normalization.)
+
+Family       Cases  Rendered  Mean %   Worst %
+flowchart     116        92     2.66     41.84
+sequence        7         7     0.95      2.28
+entity          5         3     0.22      0.52
+class           6         6     1.91      3.20
+state           9         9     0.90      1.63
+
+ACCEPTANCE CRITERIA
+Exact canonical parser semantics and expected acceptance/rejection for every case.
+Inspector/public API acceptance agree; new-family rendered text tokens agree.
+Finite, source-aligned geometry; no ignored or unconsumed measurement overrides.
+Oracle-sized node/group boxes within1 CSS pixel; no reference positions/routes injected.
+New-family raw SVG mismatch <=5%, canvas width/height within1 CSS pixel.
+Flowchart isolated layout: identical layers/ranks/order; no additional crossings.
+
+Flow controls: 92; layer/rank/order agreement100%; crossings 8/8 (native/oracle).
+All isolated node/group boxes pass the1px gate. Largest centred flow node residual <0.49px.
+
+EXPLICIT SCOPE AND REMAINING DIFFERENCES
+Five accepted flowchart cases are explicitly unsupported and must report Unsupported.
+Two ellipse cases are accepted by Mermaid’s parser but its own renderer throws
+"No such shape: ellipse". They remain visible in the report; native semantics,
+public rendering and finite geometry are checked, without claiming oracle image parity.
+
+Raw flowchart images have remaining outliers; no claim of universal pixel parity.
+The multiline measurement fixture exposes different handling of empty label rows
+and node/text bounds. Entity-reference fixtures retain the documented text-preservation
+differences. Host glyph bounds/fallbacks also affect measurement and antialiasing.
+These raw scores are reported separately from the strict known-size geometry gate.
+See the case-level rendered_text and measurement/layout fields rather than treating
+a raw pixel score as an isolated layout score.
+
+The seven sequence defaults have exact view boxes/participant boxes/routes.
+Wrapped sequence initial measurement stages retain native metrics where no stable
+reference role is available; the default end-to-end result is independently compared.
+The sized control must not be described as replacing every intermediate measurement.
+
+COVERAGE AND REGRESSIONS
+New families:7 sequence,5 ER (including2 oracle rejections),6 class,9 state.
+Includes alias rejection/tokenization, generics/static/abstract members, crowded
+four-port multiplicities, scoped markers, notes, composite palettes, declaration
+order, wrapped captions, entity escapes, activations and numbering.
+This is coverage of documented syntax, not the complete Mermaid grammar.
+
+GUARD TESTS
+Missing/stale records, empty coverage, bad native reads/profiles, serialized null
+geometry, unconsumed dimensions and missing text fail the actual CLI. Dishonest
+renderers can supply the exact reference SVG and still fail independent gates.
+Repeated renders and reordered independent recordings are byte-identical.
+A fractional-view-box test asserts a unit SVG-to-CSS transform.
+
+REPRODUCE
+npm ci --prefix tools/mermaid-oracle
+roc build package-mermaid/oracle_dump.roc --output=/tmp/mermaid-oracle-dump
+node --test tools/mermaid-oracle/validate.test.mjs
+ORACLE_DUMP=/tmp/mermaid-oracle-dump node --test tools/mermaid-oracle/validate.integration.test.mjs
+node tools/mermaid-oracle/validate.mjs /tmp/mermaid-oracle-dump /tmp/mermaid-oracle-results
+
+CI force-records independent references for its own font environment, applies
+these gates, and uploads compiler version, both SVGs, differences and full JSON.
+Local artifacts for this run: /tmp/mermaid-oracle-cold-verified-results.

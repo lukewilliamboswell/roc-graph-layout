@@ -2,6 +2,7 @@
 // browser error, unsupported accepted input, crash, or zero-coverage pass.
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { FAMILY_DIRS, differences } from './contracts.mjs';
@@ -79,6 +80,26 @@ export function layoutMetrics(expected,actual) {
  metrics.edges={reference:expected?.edges?.length??0,actual:actual?.edges?.length??0,matched:errors.length,max_control_point_hausdorff:Math.max(0,...errors)};
  return metrics;
 }
+export function tokenDifferences(expected,actual) {
+ const counts=words=>{const m=new Map();for(const word of words.match(/[\p{L}\p{N}_]+|[^\s\p{L}\p{N}_]/gu)??[])m.set(word,(m.get(word)??0)+1);return m;};
+ const a=counts(expected),b=counts(actual),missing=[],extra=[];
+ for(const token of new Set([...a.keys(),...b.keys()])) {
+  const delta=(a.get(token)??0)-(b.get(token)??0);
+  if(delta>0)missing.push({token,count:delta});else if(delta<0)extra.push({token,count:-delta});
+ }
+ return {missing,extra};
+}
+async function renderedTextDifferences(page) {
+ const texts=await page.evaluate(()=>{
+  const walk=node=>{
+   if(node.nodeType===Node.TEXT_NODE)return node.textContent;
+   const content=[...node.childNodes].map(walk).join('');
+   return node.tagName?.toLowerCase()==='tspan'&&(node.hasAttribute('x')||node.hasAttribute('y')||node.hasAttribute('dy')||node.classList.contains('row'))?` ${content} `:content;
+  };
+  return ['a','b'].map(id=>[...document.getElementById(id).querySelectorAll('text')].filter(e=>!e.closest('defs')).map(walk).join(' '));
+ });
+ return tokenDifferences(texts[0],texts[1]);
+}
 export function parityProblems(family,score,actual,expected) {
  const problems=[];
  if(!Number.isFinite(score)||score<0||score>1)problems.push({why:'invalid pixel score',actual:score});
@@ -95,6 +116,7 @@ const write=(file,value)=>fs.writeFile(file,JSON.stringify(value,null,'\t')+'\n'
 async function main() {
  const [binary,outDir,...flags]=process.argv.slice(2);
  if(!binary||!outDir) throw new Error('usage: validate.mjs <native oracle_dump> <output> [--report-only] [--families=sequence,entity,class,state,flowchart]');
+ const caseRoot=flags.find(x=>x.startsWith('--case-root='))?.slice(12)??'';
  const selected=flags.find(x=>x.startsWith('--families='))?.slice(11).split(',')??Object.keys(FAMILY_DIRS);
  for(const f of selected) if(!Object.hasOwn(FAMILY_DIRS,f)) throw new Error(`unknown family ${f}`);
  if(!selected.length)throw new Error('zero families selected');
@@ -106,7 +128,8 @@ async function main() {
    const familyStart=results.length;
    const {normalizeReference}=await import(`./families/${family}.mjs`);
    let count=0;
-   for(const dir of FAMILY_DIRS[family]) {
+   for(const relativeDir of FAMILY_DIRS[family]) {
+    const dir=path.join(caseRoot,relativeDir);
     for(const file of (await fs.readdir(dir)).filter(x=>x.endsWith('.mmd')).sort()) {
      count++;
      const source=path.join(dir,file),id=`${family}-${path.basename(dir)}-${file.slice(0,-4)}`;
@@ -166,6 +189,8 @@ async function main() {
         await writePng(`${base}.png`,pixel.png);
         const {png,...metrics}=pixel;
         outcome.pixels=metrics;
+        outcome.rendered_text=await renderedTextDifferences(raster.page);
+        if(family!=='flowchart'&&(outcome.rendered_text.missing.length||outcome.rendered_text.extra.length))row.errors.push({profile,why:'rendered text differs from reference',differences:outcome.rendered_text});
         row.errors.push(...parityProblems(family,metrics.score,box,refbox).map(problem=>({profile,...problem})));
         outcome.view_box={expected:refbox,actual:box,width_ratio:box.width/refbox.width,height_ratio:box.height/refbox.height};
        }
@@ -180,7 +205,10 @@ async function main() {
    if(!results.slice(familyStart).some(r=>r.reference_accepted && !r.unsupported && r.profiles.default?.accepted && r.profiles.default?.pixels))failures.push(`${family}: zero rendered comparisons`);
   }
  } finally {await browser.close();await raster.close();}
- const report={schema:1,provenance:prov,criteria:{semantics:'exact',geometry_tolerance_css_px:1,isolated_geometry_gate:'node and group boxes within one CSS pixel',flow_quality_gate:'same layers/ranks/order; no additional crossings',pixels:{sequence:0.05,entity:0.05,class:0.05,state:0.05,flowchart:'reported with isolated layout quality; deliberate text rendering extensions retained'},view_dimension_tolerance_css_px:1},summary:{cases:results.length,failed:failures.length,failures},results};
+ const native={binary:path.basename(binary),sha256:createHash('sha256').update(await fs.readFile(binary)).digest('hex')};
+ const comparison_tools={};
+ for(const file of ['validate.mjs','raster.mjs','contracts.mjs','model.mjs',...selected.map(f=>`families/${f}.mjs`)])comparison_tools[file]=createHash('sha256').update(await fs.readFile(new URL(file,import.meta.url))).digest('hex');
+ const report={schema:1,provenance:prov,native,comparison_tools,criteria:{semantics:'exact',raster:{css_pixels_per_svg_unit:1,device_scale:2,spatial_tolerance_css_px:1,color_tolerance_per_channel:40},rendered_text:'exact token multiset for new families',geometry_tolerance_css_px:1,isolated_geometry_gate:'node and group boxes within one CSS pixel',flow_quality_gate:'same layers/ranks/order; no additional crossings',pixels:{sequence:0.05,entity:0.05,class:0.05,state:0.05,flowchart:'reported with isolated layout quality; deliberate text rendering extensions retained'},view_dimension_tolerance_css_px:1},summary:{cases:results.length,failed:failures.length,failures},results};
  await write(path.join(outDir,'report.json'),report);
  if(!results.length)throw new Error('zero cases compared');
  if(failures.length&&!flags.includes('--report-only'))process.exitCode=1;

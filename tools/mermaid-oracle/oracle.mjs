@@ -21,10 +21,11 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 
 // Bump when the shape or meaning of a record changes.
-const EXTRACTOR_VERSION = 9;
+const EXTRACTOR_VERSION = 10;
 export const FONT_FAMILY = 'Oracle Inter';
 export const FONT_FILE = path.join(here, 'fonts', 'Inter-Regular.ttf');
 const CASE_TIMEOUT_MS = 20000;
+const MEASUREMENT_VIEWPORT = { width: 800, height: 600, deviceScaleFactor: 1 };
 
 // Fixed configuration. HTML labels are off so every label is SVG text whose
 // width is measured by the pinned font, not by HTML line breaking.
@@ -46,6 +47,9 @@ export async function provenance() {
 	return {
 		extractor: EXTRACTOR_VERSION,
 		extractor_sha256: sha256(Buffer.from(extractInPage.toString())),
+		tool_sha256: sha256(await fs.readFile(fileURLToPath(import.meta.url))),
+		measurement_viewport: MEASUREMENT_VIEWPORT,
+		browser_context: 'fresh page for each source',
 		mermaid: installedVersion('mermaid'),
 		// Puppeteer pins the exact browser build it downloads.
 		puppeteer: installedVersion('puppeteer'),
@@ -401,6 +405,7 @@ export async function openBrowser() {
 
 	async function freshPage() {
 		const page = await browser.newPage();
+		await page.setViewport(MEASUREMENT_VIEWPORT);
 		await page.setRequestInterception(true);
 		page.on('request', request => (request.url().startsWith('data:') ? request.continue() : request.abort()));
 		await page.setContent(
@@ -416,23 +421,24 @@ export async function openBrowser() {
 		return page;
 	}
 
-	let page = await freshPage();
 	return {
 		version: await browser.version(),
 		async extract(source) {
+			// Mermaid memoizes text measurements. A fresh page keeps traces and
+			// all production observations independent of earlier case order.
+			const page = await freshPage();
 			const run = page.evaluate(extractInPage, source);
 			let timer;
 			const timeout = new Promise(resolve => {
 				timer = setTimeout(() => resolve({ accepted: null, error: 'oracle timeout' }), CASE_TIMEOUT_MS);
 			});
-			const out = await Promise.race([run.catch(error => ({ accepted: null, error: `oracle failure: ${error.message}` })), timeout]);
-			clearTimeout(timer);
-			// A timeout or page crash leaves the page in an unknown state.
-			if (out.accepted === null) {
+			try {
+				return await Promise.race([run.catch(error => ({ accepted: null, error: `oracle failure: ${error.message}` })), timeout]);
+			} finally {
+				clearTimeout(timer);
 				await page.close().catch(() => {});
-				page = await freshPage();
 			}
-			return out;
+
 		},
 		close: () => browser.close(),
 	};

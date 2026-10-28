@@ -112,7 +112,15 @@ jobs:
           node tools/mermaid-oracle/oracle.mjs check tests/mermaid/flowchart tests/mermaid/layout tests/mermaid/measure tests/mermaid/themed tests/mermaid/sequence tests/mermaid/entity tests/mermaid/class tests/mermaid/state
 
       - name: Build the native production-path probe
-        run: roc build package-mermaid/oracle_dump.roc --output="${{ runner.temp }}/mermaid-oracle-dump"
+        run: |
+          mkdir -p "${{ runner.temp }}/mermaid-oracle-results"
+          roc version > "${{ runner.temp }}/mermaid-oracle-results/compiler.txt"
+          roc build package-mermaid/oracle_dump.roc --output="${{ runner.temp }}/mermaid-oracle-dump"
+
+      - name: Exercise failure gates against the real native CLI
+        env:
+          ORACLE_DUMP: ${{ runner.temp }}/mermaid-oracle-dump
+        run: node --test tools/mermaid-oracle/validate.integration.test.mjs
 
       - name: Compare every supported diagram family
         run: node tools/mermaid-oracle/validate.mjs "${{ runner.temp }}/mermaid-oracle-dump" "${{ runner.temp }}/mermaid-oracle-results"

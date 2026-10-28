@@ -1,9 +1,16 @@
 {
-	"schema": 9,
-	"key": "bcd4cc430449abda2d506aa9d0e8d1ec293760c0017b0eda75fb8624dd9863bb",
+	"schema": 10,
+	"key": "09782f4a2314b14958ca373ddc81e3db65ae52aeec724d4dad03caaebe92c378",
 	"provenance": {
-		"extractor": 9,
+		"extractor": 10,
 		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
+		"tool_sha256": "96ee409ebad6eb661687da17d8923ea8d757074a4c24647d9b4b33822435aba9",
+		"measurement_viewport": {
+			"width": 800,
+			"height": 600,
+			"deviceScaleFactor": 1
+		},
+		"browser_context": "fresh page for each source",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",
@@ -1642,12 +1649,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor4",
+				"id": "actor2",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor4",
+					"id": "actor2",
 					"x1": "568",
 					"y1": "76",
 					"x2": "568",
@@ -1684,12 +1691,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-4",
+				"id": "root-2",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-4",
+					"id": "root-2",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -1722,7 +1729,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-4",
+				"parent_id": "root-2",
 				"parent_class": "",
 				"attributes": {
 					"x": "491.5",
@@ -1766,7 +1773,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-4",
+				"parent_id": "root-2",
 				"parent_class": "",
 				"attributes": {
 					"x": "568",
@@ -1864,12 +1871,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor3",
+				"id": "actor1",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor3",
+					"id": "actor1",
 					"x1": "288",
 					"y1": "76",
 					"x2": "288",
@@ -1906,12 +1913,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-3",
+				"id": "root-1",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-3",
+					"id": "root-1",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -1944,7 +1951,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-3",
+				"parent_id": "root-1",
 				"parent_class": "",
 				"attributes": {
 					"x": "212",
@@ -1988,7 +1995,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-3",
+				"parent_id": "root-1",
 				"parent_class": "",
 				"attributes": {
 					"x": "288",
@@ -2086,12 +2093,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor2",
+				"id": "actor0",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor2",
+					"id": "actor0",
 					"x1": "75",
 					"y1": "76",
 					"x2": "75",
@@ -3183,12 +3190,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor-man-torso2",
+				"id": "actor-man-torso0",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "actor-man actor-top",
 				"attributes": {
-					"id": "actor-man-torso2",
+					"id": "actor-man-torso0",
 					"x1": "75",
 					"y1": "20.307692307692307",
 					"x2": "75",
@@ -3219,12 +3226,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor-man-arms2",
+				"id": "actor-man-arms0",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "actor-man actor-top",
 				"attributes": {
-					"id": "actor-man-arms2",
+					"id": "actor-man-arms0",
 					"x1": "62.815384615384616",
 					"y1": "25.72307692307692",
 					"x2": "87.18461538461538",
@@ -4405,12 +4412,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor-man-torso4",
+				"id": "actor-man-torso2",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "actor-man actor-bottom",
 				"attributes": {
-					"id": "actor-man-torso4",
+					"id": "actor-man-torso2",
 					"x1": "75",
 					"y1": "657.3076923076923",
 					"x2": "75",
@@ -4441,12 +4448,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor-man-arms4",
+				"id": "actor-man-arms2",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "actor-man actor-bottom",
 				"attributes": {
-					"id": "actor-man-arms4",
+					"id": "actor-man-arms2",
 					"x1": "62.815384615384616",
 					"y1": "662.723076923077",
 					"x2": "87.18461538461538",
@@ -4808,5 +4815,5 @@
 			"height": 798
 		}
 	},
-	"svg_sha256": "bd32023473757f2aca10adfb03b7e03fbc21ab89147e4514b50fcfe1eb5c187b"
+	"svg_sha256": "89e179f425687cb3ea5718b9ffc6dc898547247c1aa3402600c47b93fbabe4ce"
 }

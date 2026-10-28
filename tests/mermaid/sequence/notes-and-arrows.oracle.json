@@ -1,9 +1,16 @@
 {
-	"schema": 9,
-	"key": "aff7b589b3c725d61617ab59f1ec4698d1080cb6d49966f78ffff8fc302d4e70",
+	"schema": 10,
+	"key": "ce64fbfda03eb850dbdfac613fb578744d1d53fd00ba0552d589b90e74209109",
 	"provenance": {
-		"extractor": 9,
+		"extractor": 10,
 		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
+		"tool_sha256": "96ee409ebad6eb661687da17d8923ea8d757074a4c24647d9b4b33822435aba9",
+		"measurement_viewport": {
+			"width": 800,
+			"height": 600,
+			"deviceScaleFactor": 1
+		},
+		"browser_context": "fresh page for each source",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",
@@ -1158,12 +1165,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor10",
+				"id": "actor2",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor10",
+					"id": "actor2",
 					"x1": "1059.5",
 					"y1": "76",
 					"x2": "1059.5",
@@ -1200,12 +1207,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-10",
+				"id": "root-2",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-10",
+					"id": "root-2",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -1238,7 +1245,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-10",
+				"parent_id": "root-2",
 				"parent_class": "",
 				"attributes": {
 					"x": "984.5",
@@ -1282,7 +1289,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-10",
+				"parent_id": "root-2",
 				"parent_class": "",
 				"attributes": {
 					"x": "1059.5",
@@ -1380,12 +1387,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor9",
+				"id": "actor1",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor9",
+					"id": "actor1",
 					"x1": "713",
 					"y1": "76",
 					"x2": "713",
@@ -1422,12 +1429,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-9",
+				"id": "root-1",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-9",
+					"id": "root-1",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -1460,7 +1467,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-9",
+				"parent_id": "root-1",
 				"parent_class": "",
 				"attributes": {
 					"x": "491.5",
@@ -1504,7 +1511,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-9",
+				"parent_id": "root-1",
 				"parent_class": "",
 				"attributes": {
 					"x": "713",
@@ -1602,12 +1609,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor8",
+				"id": "actor0",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor8",
+					"id": "actor0",
 					"x1": "75",
 					"y1": "76",
 					"x2": "75",
@@ -2140,12 +2147,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor-man-torso8",
+				"id": "actor-man-torso0",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "actor-man actor-top",
 				"attributes": {
-					"id": "actor-man-torso8",
+					"id": "actor-man-torso0",
 					"x1": "75",
 					"y1": "20.307692307692307",
 					"x2": "75",
@@ -2176,12 +2183,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor-man-arms8",
+				"id": "actor-man-arms0",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "actor-man actor-top",
 				"attributes": {
-					"id": "actor-man-arms8",
+					"id": "actor-man-arms0",
 					"x1": "62.815384615384616",
 					"y1": "25.72307692307692",
 					"x2": "87.18461538461538",
@@ -3001,12 +3008,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor-man-torso10",
+				"id": "actor-man-torso2",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "actor-man actor-bottom",
 				"attributes": {
-					"id": "actor-man-torso10",
+					"id": "actor-man-torso2",
 					"x1": "75",
 					"y1": "652.3076923076923",
 					"x2": "75",
@@ -3037,12 +3044,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor-man-arms10",
+				"id": "actor-man-arms2",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "actor-man actor-bottom",
 				"attributes": {
-					"id": "actor-man-arms10",
+					"id": "actor-man-arms2",
 					"x1": "62.815384615384616",
 					"y1": "657.723076923077",
 					"x2": "87.18461538461538",
@@ -3329,5 +3336,5 @@
 			"height": 753
 		}
 	},
-	"svg_sha256": "4f95e843ffe8f5493c731d893266ba0a1f2c184c423c4723fe3b34cfe4b117f0"
+	"svg_sha256": "837e0d6be5c5f490e3a3d57439c3877193855ebede3d646a48635e13aa904306"
 }

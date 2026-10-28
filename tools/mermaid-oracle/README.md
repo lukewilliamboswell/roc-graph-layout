@@ -203,3 +203,22 @@ comparison against implementation-generated golden images. Committed records
 retain their host provenance for inspection and local reproducibility. The CI
 artifact contains the complete JSON report, both SVGs and image differences,
 and is uploaded on failure too.
+
+The recorder creates a fresh browser page for each source. Mermaid memoizes
+text measurements; reusing a page made diagnostic traces depend on earlier
+cases even when the final SVG was unchanged. Reordering and independently
+re-recording flow, sequence, class and state samples is checked byte for byte.
+
+Raster cells are padded to integer dimensions while the SVG view-box extent
+is expanded by that same padding, preserving exactly one CSS pixel per SVG
+unit. Content is clipped to its original extent. The comparator asserts the
+root transformation has unit scale; it never rounds only the viewport and
+silently rescales the image. A fractional-view-box integration test guards it.
+The report retains the native binary hash and comparison-tool hashes.
+
+`validate.integration.test.mjs` exercises missing/stale/zero coverage, native
+read/profile failures, serialized null geometry, unconsumed dimensions and
+missing rendered text. Its dishonest renderers can supply the exact oracle
+SVG, demonstrating that model/geometry checks are independent of image scores.
+Run it with `ORACLE_DUMP=/tmp/mermaid-oracle-dump node --test
+ tools/mermaid-oracle/validate.integration.test.mjs` after building the probe.
