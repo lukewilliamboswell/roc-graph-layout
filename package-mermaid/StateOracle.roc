@@ -23,10 +23,14 @@ StateOracle :: {}.{
 
 	inspect_sized : Str, Theme.Options, List(OracleJson.Size) -> Str
 	inspect_sized = |source, theme, inputs| match StateDiagram.parse(source) {
-		Err(_) => OracleJson.rejected("state")
+		Err(_) => OracleJson.object([("accepted", "false"), ("family", OracleJson.string("state")), ("size_problems", "[]")])
 		Ok(diagram) => {
 			if !Theme.validate(theme).is_empty() {
-				return OracleJson.rejected("state")
+				return OracleJson.object([("accepted", "false"), ("family", OracleJson.string("state")), ("size_problems", "[]")])
+			}
+			size_problems = StateOracle.size_problems(diagram, inputs)
+			if !size_problems.is_empty() {
+				return OracleJson.object([("accepted", "false"), ("family", OracleJson.string("state")), ("size_problems", OracleJson.strings(size_problems))])
 			}
 			setup = StateDraw.setup_sized(diagram, theme, inputs)
 			picture = DiagramView.finish(StateDraw.draw_setup(diagram, theme, setup), theme)
@@ -89,6 +93,7 @@ StateOracle :: {}.{
 			)
 			OracleJson.object([
 				("accepted", "true"),
+				("size_problems", "[]"),
 				("family", OracleJson.string("state")),
 				("semantic", StateOracle.semantic(diagram)),
 				(
@@ -104,6 +109,28 @@ StateOracle :: {}.{
 				),
 			])
 		}
+	}
+
+	## Only actual layout inputs are accepted: leaf boxes, composite title
+	## measurements, hidden note-title measurements, and nonempty edge labels.
+	size_problems : StateDiagram.Diagram, List(OracleJson.Size) -> List(Str)
+	size_problems = |diagram, inputs| {
+		nodes = diagram.states.map_with_index(|_, i| StateOracle.node_id(diagram, i)).concat(diagram.notes.map_with_index(|_, i| StateOracle.node_id(diagram, diagram.states.len() + i)))
+		groups = diagram.groups.map(|group| "group-${group.id}").concat(diagram.notes.map(|note| "note-group-${StateOracle.flow_endpoint(diagram, note.state)}"))
+		labels = diagram.transitions.map_with_index(|edge, i| if (edge.label == "") "" else "transition-${i.to_str()}").keep_if(|id| id != "")
+		invalid = inputs.keep_if(
+			|input| {
+				valid = match input.kind {
+					"node" => nodes.contains(input.id)
+					"group" => groups.contains(input.id)
+					"label" => labels.contains(input.id)
+					_ => False
+				}
+				!valid or !F64.is_finite(input.width) or !F64.is_finite(input.height) or input.width < 0 or input.height < 0 or input.width > 1_000_000_000 or input.height > 1_000_000_000
+			},
+		).map(|input| "${input.kind}:${input.id}")
+		duplicates = inputs.map_with_index(|input, i| if (inputs.take_first(i).any(|other| other.kind == input.kind and other.id == input.id)) "duplicate:${input.kind}:${input.id}" else "").keep_if(|problem| problem != "")
+		invalid.concat(duplicates)
 	}
 
 	label_json : Drawing.Label, U64, Theme.Options -> Str
@@ -368,4 +395,20 @@ expect {
 	(isolated.x - 304.578125).abs() < 0.0001 and (isolated.y - 191.63221740722653).abs() < 0.0001
 		and (start.x - 223.2890625).abs() < 0.0001 and (start.y - 66.5).abs() < 0.0001
 		and (note.x - 63.2890625).abs() < 0.0001 and (note.y - 176.92147827148435).abs() < 0.0001
+}
+
+expect {
+	observed = StateOracle.inspect_sized("stateDiagram-v2\nA --> B\n", StateOracle.reference_theme, [{ kind: "node", id: "missing", width: 10, height: 20 }, { kind: "label", id: "transition-0", width: 30, height: 10 }, { kind: "group", id: "A", width: 30, height: 10 }])
+	observed == "{\"accepted\":false,\"family\":\"state\",\"size_problems\":[\"node:missing\",\"label:transition-0\",\"group:A\"]}"
+}
+
+## Pinned state transition labels stay unwrapped by default even when
+## ordinary state/note labels use the120px wrapping width.
+expect {
+	d = StateDiagram.parse("stateDiagram-v2\nA --> B: changes requested\n")?
+	sizes = StateDraw.measure_sizes(d, StateOracle.reference_theme)
+	match sizes.edge_labels.first()? {
+		Some(label) => label.lines == ["changes requested"]
+		None => False
+	}
 }

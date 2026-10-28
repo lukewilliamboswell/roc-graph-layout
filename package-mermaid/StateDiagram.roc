@@ -62,7 +62,8 @@ StateDiagram := [].{
 	## independent syntax problems are reported together. A base padding of 15
 	## gives 8 pixels around state labels and 15 around notes; other padding
 	## values scale these roles together. Family-default wrapping applies
-	## to ordinary states and notes; description compartments stay unwrapped.
+	## to ordinary states and notes; transition labels and description
+	## compartments stay unwrapped.
 	## Explicit wrapping/corner choices override the role defaults.
 	## `transition_label_background` colours the square backing of transition
 	## labels; its default is white.

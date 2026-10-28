@@ -121,7 +121,7 @@ StateDraw :: {}.{
 				{ width: size.width, height: size.height, label: text }
 			},
 		),
-		edge_labels: diagram.transitions.map(|edge| if (edge.label == "") None else Some(StateDraw.block(edge.label, options))),
+		edge_labels: diagram.transitions.map(|edge| if (edge.label == "") None else Some(StateDraw.compartment_block(edge.label, options))),
 		group_titles: diagram.groups.map(|group| StateDraw.compartment_block(group.title, options)),
 	}
 
