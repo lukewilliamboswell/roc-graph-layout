@@ -245,7 +245,8 @@ EntityDraw :: {}.{
 		)
 		geometry = FlowLayout.normalise({ nodes: adjusted.nodes, edges: adjusted.edges, groups: adjusted.groups, bounds: { x: 0, y: 0, width: 0, height: 0 } }, label_sizes, [])
 
-		label_anchors = $labels.map(
+		terminal_placements = EntityLayout.placements(placed, terminal_sizes, vertical)
+		initial_anchors = $labels.map(
 			|spec| {
 				route = geometry.edges.get(spec.edge) ?? { points: [], label: None }
 				edge = edges.get(spec.edge) ?? { from: 0, to: 0, label: "", from_label: "", to_label: "", from_mark: None, to_mark: None, dashed: False }
@@ -254,20 +255,99 @@ EntityDraw :: {}.{
 						Some(point) => point
 						None => route.points.first() ?? { x: 0, y: 0 }
 					}
-					Near(endpoint) => EntityDraw.terminal_label(route.points, endpoint, spec.block, if (endpoint == From) edge.from_mark else edge.to_mark)
+					Near(endpoint) => {
+						ends = terminal_placements.get(spec.edge) ?? { from: None, to: None }
+						placement = if endpoint == From {
+							ends.from
+						} else {
+							ends.to
+						}
+						match placement {
+							None => EntityDraw.terminal_label(route.points, endpoint, spec.block, if (endpoint == From) edge.from_mark else edge.to_mark)
+							Some(value) => {
+								port = if endpoint == From {
+									route.points.first() ?? value.port
+								} else {
+									route.points.last() ?? value.port
+								}
+								{ x: value.point.x + port.x - value.port.x, y: value.point.y + port.y - value.port.y }
+							}
+						}
+					}
 				}
 			},
 		)
+		label_anchors = EntityDraw.terminal_sides($labels, initial_anchors, geometry)
 		painted = geometry.nodes.map_with_index(
 			|box, i| {
 				m = measured.get(i) ?? { title: { lines: [], width: 0, height: 0, baseline: 0, step: 0, font_size: 0 }, annotations: [], sections: [], table: [], column_widths: [], row_heights: [], title_height: 0, shape_width: box.width, width: box.width, height: box.height }
 				{ ..box, x: box.x + (box.width - m.shape_width) / 2 }
 			},
 		)
-		canvas = FlowLayout.normalise({ ..geometry, nodes: painted }, label_sizes, [])
+		terminals = $labels.map_with_index(|spec, i| { spec, point: label_anchors.get(i) ?? { x: 0, y: 0 } }).keep_if(|value| value.spec.placement != Center)
+		canvas_edges = geometry.edges.concat(terminals.map(|value| { points: [], label: Some(value.point) }))
+		canvas_sizes = label_sizes.concat(terminals.map(|value| Some({ width: value.spec.block.width, height: value.spec.block.height })))
+		canvas = FlowLayout.normalise({ ..geometry, nodes: painted, edges: canvas_edges }, canvas_sizes, [])
 		result = { layout: { positions: geometry.nodes.map(|r| { x: r.x + r.width / 2, y: r.y + r.height / 2 }), bounds: canvas.bounds, routes: geometry.edges.map(|edge| Polyline(edge.points)) }, label_anchors }
 		{ measured, labels: $labels, result }
 	}
+
+	## Mermaid reflects endpoint labels onto their named side only when the
+	## mirrored text box is clear of other routes, nodes and measured labels.
+	terminal_sides : List(LabelSpec), List(Drawing.Point), FlowGeometry.Geometry -> List(Drawing.Point)
+	terminal_sides = |labels, points, geometry| {
+		var $points = points
+		for i in 0..<labels.len() {
+			spec = labels.get(i) ?? crash "label index"
+			match spec.placement {
+				Center => {}
+				Near(endpoint) => {
+					route = (geometry.edges.get(spec.edge) ?? { points: [], label: None }).points
+					if route.len() >= 2 {
+						segment = if endpoint == From {
+							0
+						} else {
+							route.len() - 2
+						}
+						from = route.get(segment) ?? { x: 0, y: 0 }
+						to = route.get(segment + 1) ?? from
+						dx = to.x - from.x
+						dy = to.y - from.y
+						length = (dx * dx + dy * dy).sqrt()
+						if length > 0 {
+							normal = { x: -dy / length, y: dx / length }
+							point = $points.get(i) ?? from
+							offset = (point.x - from.x) * normal.x + (point.y - from.y) * normal.y
+							if offset != 0 and ((offset > 0) != (endpoint == From)) {
+								mirrored = { x: point.x - 2 * offset * normal.x, y: point.y - 2 * offset * normal.y }
+								box = EntityDraw.label_box(mirrored, spec.block.width, spec.block.height)
+								nodes_hit = geometry.nodes.any(|r| EntityDraw.boxes_overlap(box, { x1: r.x, y1: r.y, x2: r.x + r.width, y2: r.y + r.height }))
+								routes_hit = geometry.edges.map_with_index(|edge, e| edge.points.map_with_index(|p, j| j + 1 < edge.points.len() and !(e == spec.edge and j == segment) and FlowLayoutAdjust.segment_hits_box(p, edge.points.get(j + 1) ?? p, box)).any(|hit| hit)).any(|hit| hit)
+								labels_hit = labels.map_with_index(
+									|other, j| {
+										pad = if other.placement == Center {
+											4
+										} else {
+											0
+										}
+										j != i and EntityDraw.boxes_overlap(box, EntityDraw.label_box($points.get(j) ?? { x: 0, y: 0 }, other.block.width + pad, other.block.height + pad))
+									},
+								).any(|hit| hit)
+								if !nodes_hit and !routes_hit and !labels_hit {
+									$points = $points.set(i, mirrored) ?? []
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		$points
+	}
+	label_box : Drawing.Point, F64, F64 -> { x1 : F64, y1 : F64, x2 : F64, y2 : F64 }
+	label_box = |p, w, h| { x1: p.x - w / 2, y1: p.y - h / 2, x2: p.x + w / 2, y2: p.y + h / 2 }
+	boxes_overlap : { x1 : F64, y1 : F64, x2 : F64, y2 : F64 }, { x1 : F64, y1 : F64, x2 : F64, y2 : F64 } -> Bool
+	boxes_overlap = |a, b| a.x1 < b.x2 and b.x1 < a.x2 and a.y1 < b.y2 and b.y1 < a.y2
 
 	terminal_label : List(Drawing.Point), [From, To], Block, Mark -> Drawing.Point
 	terminal_label = |raw_points, endpoint, block, mark| {

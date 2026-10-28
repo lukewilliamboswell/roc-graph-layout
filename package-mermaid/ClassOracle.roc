@@ -81,3 +81,20 @@ expect {
 		}
 	}
 }
+
+## Independent four-port multiplicity fixture: source label cells require
+## three14px strip rows, then named-side reflection must respect other routes.
+expect {
+	match ClassDiagram.parse("classDiagram\nHub \"1..*\" --> \"0..1\" A\nHub \"1..*\" --> \"0..1\" B\nHub \"1..*\" --> \"0..1\" C\nHub \"1..*\" --> \"0..1\" D") {
+		Err(_) => False
+		Ok(diagram) => {
+			arranged = EntityDraw.arrange(ClassRender.nodes(diagram.classes), ClassRender.edges(diagram.relationships), Down, Theme.Options.{})
+			arranged.result.layout.positions.get(1) == Ok({ x: 28.8359375, y: 263.5 })
+				and arranged.result.layout.bounds.width == 331.71875
+				and arranged.result.label_anchors.get(0) == Ok({ x: 141.73359375, y: 100 })
+				and arranged.result.label_anchors.get(2) == Ok({ x: 174.31484375, y: 114 })
+				and arranged.result.label_anchors.get(4) == Ok({ x: 180.56796875, y: 128 })
+				and arranged.result.label_anchors.get(6) == Ok({ x: 186.82109375, y: 100 })
+		}
+	}
+}
