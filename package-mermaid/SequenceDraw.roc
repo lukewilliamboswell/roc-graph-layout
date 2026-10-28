@@ -95,7 +95,7 @@ SequenceDraw :: {}.{
 					if hops == 0 {
 						$gap = $gap.max(label.width + theme.padding * 2 + 40)
 						if m.from + 1 == diagram.participants.len() {
-							$right_note = $right_note.max(label.width / 2 + 60)
+							$right_note = $right_note.max(label.width.max(60) + 40)
 						}
 					} else {
 						$gap = $gap.max((label.width + theme.padding * 2 + 24) / hops.to_f64())
@@ -106,10 +106,20 @@ SequenceDraw :: {}.{
 						$widths = $widths.set(n.from, ($widths.get(n.from) ?? 0).max(label.width + theme.padding * 2)) ?? []
 					}
 					if n.side == Left {
-						$left_note = $left_note.max(label.width + theme.padding * 2 + 20)
+						if n.from == 0 {
+							$left_note = $left_note.max(label.width + theme.padding * 2 + 20)
+						}
+						else {
+							$gap = $gap.max(label.width + theme.padding * 2 + 32)
+						}
 					}
 					if n.side == Right {
-						$right_note = $right_note.max(label.width + theme.padding * 2 + 20)
+						if n.from + 1 == diagram.participants.len() {
+							$right_note = $right_note.max(label.width + theme.padding * 2 + 20)
+						}
+						else {
+							$gap = $gap.max(label.width + theme.padding * 2 + 32)
+						}
 					}
 				}
 				StartBlock(_) => {
@@ -180,7 +190,7 @@ SequenceDraw :: {}.{
 			rows: $rows,
 			header_height: $header_height,
 			width: final_width,
-			height: if $widths.is_empty() {
+			height: if $widths.is_empty() and diagram.events.is_empty() and diagram.title.is_empty() {
 				0
 			} else {
 				$top + 24 + $header_height + margin
@@ -192,7 +202,7 @@ SequenceDraw :: {}.{
 	draw : SequenceData.Diagram, Theme.Options -> Drawing.Picture
 	draw = |diagram, theme| {
 		geometry = SequenceDraw.layout(diagram, theme)
-		if diagram.participants.is_empty() {
+		if diagram.participants.is_empty() and diagram.events.is_empty() {
 			label = SequenceDraw.block(diagram.title, theme)
 			if diagram.title.is_empty() {
 				return { view: { x: 0, y: 0, width: 0, height: 0 }, items: [] }
@@ -305,6 +315,9 @@ SequenceDraw :: {}.{
 						$items = $items.append(SequenceDraw.line({ x: right, y }, { x: right, y: y + 28 }, m.dotted, theme.line, theme.line_width))
 						$items = $items.append(SequenceDraw.line({ x: right, y: y + 28 }, { x: to_x, y: y + 28 }, m.dotted, theme.line, theme.line_width))
 						$items = $items.concat(SequenceDraw.head({ x: to_x, y: y + 28 }, -1, m.head, theme))
+						if m.both {
+							$items = $items.concat(SequenceDraw.head({ x: from_x, y }, -1, m.head, theme))
+						}
 					} else {
 						direction = if to_x >= from_x {
 							1.0
@@ -353,9 +366,39 @@ SequenceDraw :: {}.{
 			NoShadow => { left: 0.0, top: 0.0, right: 0.0, bottom: 0.0 }
 			Shadow(shadow) => { left: (-shadow.dx).max(0), top: (-shadow.dy).max(0), right: shadow.dx.max(0), bottom: shadow.dy.max(0) }
 		}
-		view = { x: -extent.left, y: -extent.top, width: geometry.width + extent.left + extent.right, height: geometry.height + extent.top + extent.bottom }
+		stroke_margin = theme.line_width / 2
+		view = { x: -extent.left - stroke_margin, y: -extent.top - stroke_margin, width: geometry.width + extent.left + extent.right + stroke_margin * 2, height: geometry.height + extent.top + extent.bottom + stroke_margin * 2 }
 		background = Shape({ path: Drawing.rectangle(view), paint: { fill: Fill(theme.background), stroke: NoStroke } })
 		{ view, items: [background].concat($items) }
+	}
+
+	## Conservative shape/control-point bounds and measured text extents.
+	## Used by contract fuzzing as well as regression expectations.
+	contains : Drawing.Picture, Theme.Options -> Bool
+	contains = |picture, theme| {
+		view = picture.view
+		inside = |p| p.x >= view.x - 0.001 and p.x <= view.x + view.width + 0.001 and p.y >= view.y - 0.001 and p.y <= view.y + view.height + 0.001
+		style = { font: TextMeasure.inter, size: theme.font_size, line_height: theme.line_height, wrap: NoWrap, align: Middle }
+		picture.items.all(
+			|item| match item {
+				Shape(painted) => painted.path.all(
+					|segment| match segment {
+						MoveTo(p) | LineTo(p) => inside(p)
+						CubicTo(c) => inside(c.control_1) and inside(c.control_2) and inside(c.end)
+						Close => True
+					},
+				)
+				Text(label) => {
+					measured = TextMeasure.block(label.text, style)
+					left = match label.align {
+						Start => label.origin.x
+						Center => label.origin.x - measured.width / 2
+						End => label.origin.x - measured.width
+					}
+					inside({ x: left, y: label.origin.y }) and inside({ x: left + measured.width, y: label.origin.y })
+				}
+			},
+		)
 	}
 
 	box : List(Drawing.Segment), Drawing.Color, Drawing.Color, Theme.Options -> List(Drawing.Item)
@@ -435,5 +478,45 @@ expect
 			small = SequenceDraw.layout(d, Theme.Options.{ font_size: 12, max_label_width: 100 })
 			large = SequenceDraw.layout(d, Theme.Options.{ font_size: 24, max_label_width: 100 })
 			large.height > small.height and large.header_height > small.header_height
+		}
+	}
+
+## fuzz regression: self messages reserve their entire loop width, even
+## when callers choose wrapping widths larger than the default.
+expect
+	match SequenceParse.parse("sequenceDiagram\nA->>A: This is a deliberately lengthy self message whose line remains much wider than the default wrap width when a caller chooses a wider wrapping setting for their diagrams\n") {
+		Err(_) => False
+		Ok(d) => {
+			theme = Theme.Options.{ max_label_width: 500 }
+			SequenceDraw.contains(SequenceDraw.draw(d, theme), theme)
+		}
+	}
+
+## A bidirectional self message has two arrowheads, rather than silently
+## becoming a one-way self call.
+expect
+	match (SequenceParse.parse("sequenceDiagram\nA->>A: self\n"), SequenceParse.parse("sequenceDiagram\nA<<->>A: self\n")) {
+		(Ok(one), Ok(both)) => SequenceDraw.draw(both, Theme.Options.{}).items.len() == SequenceDraw.draw(one, Theme.Options.{}).items.len() + 1
+		_ => False
+	}
+
+## Blocks remain visible when a conversation has no participants.
+expect
+	match SequenceParse.parse("sequenceDiagram\nloop Retry\nend\n") {
+		Err(_) => False
+		Ok(d) => {
+			p = SequenceDraw.draw(d, Theme.Options.{})
+			!p.items.is_empty() and p.view.width > 0 and p.view.height > 0 and SequenceDraw.contains(p, Theme.Options.{})
+		}
+	}
+
+expect
+	match SequenceParse.parse("sequenceDiagram\nparticipant A\nparticipant B\nNote left of B: A long explanation that must fit between the two participant lifelines without covering the first lifeline\n") {
+		Err(_) => False
+		Ok(d) => {
+			theme = Theme.Options.{}
+			g = SequenceDraw.layout(d, theme)
+			label = SequenceDraw.block("A long explanation that must fit between the two participant lifelines without covering the first lifeline", theme)
+			((g.centers.get(1) ?? 0) - (g.centers.get(0) ?? 0)) > label.width + theme.padding * 2 + 16
 		}
 	}

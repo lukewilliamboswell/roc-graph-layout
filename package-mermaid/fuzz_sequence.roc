@@ -22,22 +22,42 @@ verify = |bytes| {
 	match Sequence.parse(source) {
 		Err(_) => Fuzz.reject
 		Ok(d) => {
-			theme = Theme.Options.{}
+			themes = [
+				Theme.Options.{},
+				Theme.Options.{ font_size: 28, max_label_width: 100, line_height: 1.8 },
+				Theme.Options.{ font_size: 128, max_label_width: 800 },
+				Theme.Options.{ padding: 0, line_width: 0, corner_radius: 0 },
+				Theme.Options.{ max_label_width: 500 },
+				Theme.Options.{ shadow: Shadow({ dx: -80, dy: 120, opacity: 0.3 }), line_width: 20 },
+			]
+			theme = themes.get(bytes.len() % themes.len()) ?? Theme.Options.{}
+			if !Theme.validate(theme).is_empty() {
+				crash "fuzz theme must be valid"
+			}
 			geometry = SequenceDraw.layout(d, theme)
 			if geometry.centers.len() != d.participants.len() or geometry.rows.len() != d.events.len() {
 				crash "sequence source alignment"
 			}
-			picture = Sequence.draw_diagram(d, theme)
+			picture = SequenceDraw.draw(d, theme)
 			if !Drawing.is_finite(picture) {
 				crash "sequence finite output"
 			}
-			if picture != Sequence.draw_diagram(d, theme) {
+			if !SequenceDraw.contains(picture, theme) {
+				crash "sequence exported bounds"
+			}
+			if picture != SequenceDraw.draw(d, theme) {
 				crash "sequence determinism"
 			}
 			match Sequence.draw(source, theme) {
 				Err(_) => crash "parsed sequence failed to draw"
 				Ok(other) => if other != picture {
 					crash "sequence one-call equivalence"
+				}
+			}
+			match Sequence.draw(source, Theme.Options.{ font_size: F64.nan, padding: -1, line_width: F64.infinity }) {
+				Ok(_) => crash "invalid sequence theme accepted"
+				Err(problems) => if problems.len() < 3 {
+					crash "sequence theme problems not aggregated"
 				}
 			}
 			svg = Svg.document(picture, "Inter")

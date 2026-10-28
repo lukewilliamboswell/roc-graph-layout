@@ -1,5 +1,4 @@
 import Drawing
-import Flowchart
 import SequenceDraw
 import SequenceParse
 import Theme
@@ -18,7 +17,15 @@ Sequence :: {}.{
 	Event : [Message(Message), Note(Note), Activate(U64), Deactivate(U64), StartBlock({ kind : Str, text : Str }), Branch({ kind : Str, text : Str }), EndBlock]
 	Diagram : { participants : List(Participant), events : List(Event), autonumber : Bool, title : Str }
 
-	Problem : Flowchart.Problem
+	Problem : [
+		NotAFlowchart,
+		Syntax({ near : Str }),
+		Unsupported(Str),
+		InvalidTheme(Str),
+		TooManyEdges,
+		MissingLinkStyleEdge(Str),
+		UnnamedGroup,
+	]
 
 	## Read a conversation, preserving participant and event source order.
 	## Independent syntax and activation problems are returned together.
@@ -33,17 +40,13 @@ Sequence :: {}.{
 		match Sequence.parse(source) {
 			Err(found) => Err(problems.concat(found))
 			Ok(diagram) => if problems.is_empty() {
-				Ok(Sequence.draw_diagram(diagram, theme))
+				Ok(SequenceDraw.draw(diagram, theme))
 			} else {
 				Err(problems)
 			}
 		}
 	}
 
-	## Draw an already read conversation with a valid theme. Positions and
-	## paint order are deterministic. Empty conversations have empty pictures.
-	draw_diagram : Diagram, Theme.Options -> Drawing.Picture
-	draw_diagram = SequenceDraw.draw
 }
 
 expect
@@ -73,5 +76,11 @@ expect
 expect
 	match Sequence.draw("sequenceDiagram\nA->>B: message\n", Theme.Options.{ shadow: Shadow({ dx: -30, dy: 40, opacity: 0.2 }) }) {
 		Err(_) => False
-		Ok(p) => Drawing.is_finite(p) and p.view.x == -30
+		Ok(p) => Drawing.is_finite(p) and p.view.x == -30 - 0.75
+	}
+
+expect
+	match Sequence.draw("sequenceDiagram\nA->>B: message\n", Theme.Options.{ font_size: F64.nan, padding: -1, line_width: F64.infinity }) {
+		Err(problems) => problems.len() == 3
+		Ok(_) => False
 	}

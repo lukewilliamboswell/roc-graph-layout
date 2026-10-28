@@ -8,7 +8,7 @@ SequenceParse :: {}.{
 		if source.split_on("\n").map(Str.trim).any(|line| line.starts_with("%%{")) {
 			return Err([Unsupported("sequence configuration directive")])
 		}
-		lines = source.split_on("\n").map(Str.trim).keep_if(|line| !line.is_empty() and !line.starts_with("%%"))
+		lines = SequenceParse.statements(source)
 		if (lines.first() ?? "") != "sequenceDiagram" {
 			return Err([Unsupported("expected sequenceDiagram")])
 		}
@@ -19,7 +19,10 @@ SequenceParse :: {}.{
 		var $autonumber = False
 		var $title = ""
 		for line in lines.drop_first(1) {
-			if line.starts_with("participant ") or line.starts_with("actor ") {
+			if FlowText.has_markup(line) {
+				$problems = $problems.append(Unsupported("sequence HTML label"))
+			}
+			else if line.starts_with("participant ") or line.starts_with("actor ") {
 				actor = line.starts_with("actor ")
 				raw = Str.from_utf8_lossy(
 					line.to_utf8().drop_first(
@@ -37,7 +40,10 @@ SequenceParse :: {}.{
 				} else {
 					id
 				}
-				if !SequenceParse.valid_id(id) or label.is_empty() {
+				if FlowText.has_markup(label) {
+					$problems = $problems.append(Unsupported("sequence HTML label"))
+				}
+				else if !SequenceParse.valid_id(id) or label.is_empty() {
 					$problems = $problems.append(Syntax({ near: line }))
 				} else {
 					ensured = SequenceParse.ensure($participants, id)
@@ -48,7 +54,7 @@ SequenceParse :: {}.{
 			} else if line == "autonumber" {
 				$autonumber = True
 			} else if line.starts_with("title ") {
-				$title = Str.from_utf8_lossy(line.to_utf8().drop_first(6)).trim()
+				$title = SequenceParse.label(Str.from_utf8_lossy(line.to_utf8().drop_first(6)))
 			} else if line.starts_with("activate ") or line.starts_with("deactivate ") {
 				activate = line.starts_with("activate ")
 				id = Str.from_utf8_lossy(
@@ -87,12 +93,12 @@ SequenceParse :: {}.{
 				if !allowed {
 					$problems = $problems.append(Syntax({ near: line }))
 				} else {
-					$events = $events.append(Branch({ kind, text: Str.from_utf8_lossy(line.to_utf8().drop_first(kind.to_utf8().len())).trim() }))
+					$events = $events.append(Branch({ kind, text: SequenceParse.label(Str.from_utf8_lossy(line.to_utf8().drop_first(kind.to_utf8().len()))) }))
 				}
 			} else if SequenceParse.block_kind(line) != "" {
 				kind = SequenceParse.block_kind(line)
 				$blocks = $blocks.append(kind)
-				$events = $events.append(StartBlock({ kind, text: Str.from_utf8_lossy(line.to_utf8().drop_first(kind.to_utf8().len())).trim() }))
+				$events = $events.append(StartBlock({ kind, text: SequenceParse.label(Str.from_utf8_lossy(line.to_utf8().drop_first(kind.to_utf8().len()))) }))
 			} else if line.starts_with("Note ") or line.starts_with("note ") {
 				raw = Str.from_utf8_lossy(line.to_utf8().drop_first(5))
 				match SequenceParse.split(raw, ":") {
@@ -188,7 +194,87 @@ SequenceParse :: {}.{
 	block_kind = |line| ["alt", "opt", "loop", "par", "critical", "break"].find_first(|kind| line == kind or line.starts_with("${kind} ")) ?? ""
 
 	label : Str -> Str
-	label = |raw| FlowText.display(raw.trim())
+	label = |raw| {
+		bytes = raw.trim().to_utf8()
+		var $out = []
+		var $i = 0
+		while $i < bytes.len() {
+			c = bytes.get($i) ?? 0
+			stop = SequenceParse.entity_end(bytes, $i)
+			if c == '#' and stop > $i {
+				first = bytes.get($i + 1) ?? 0
+				$out = $out.append('&')
+				if first >= '0' and first <= '9' {
+					$out = $out.append('#')
+				}
+				$out = $out.concat(bytes.drop_first($i + 1).take_first(stop - $i))
+				$i = stop + 1
+			} else {
+				$out = $out.append(c)
+				$i = $i + 1
+			}
+		}
+		FlowText.display(FlowText.sanitize(Str.from_utf8_lossy($out)))
+	}
+
+	entity_end : List(U8), U64 -> U64
+	entity_end = |bytes, start| {
+		first = bytes.get(start) ?? 0
+		if first != '#' and first != '&' {
+			return start
+		}
+		var $i = start + 1
+		while $i < bytes.len() {
+			c = bytes.get($i) ?? 0
+			if c == ';' {
+				return if $i > start + 1 {
+					$i
+				} else {
+					start
+				}
+			}
+			if !((c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c >= '0' and c <= '9') or c == '#') {
+				return start
+			}
+			$i = $i + 1
+		}
+		start
+	}
+
+	statements : Str -> List(Str)
+	statements = |source| {
+		var $out = []
+		for physical in source.split_on("\n") {
+			if !physical.trim().starts_with("%%") {
+				bytes = physical.to_utf8()
+				var $current = []
+				var $i = 0
+				while $i < bytes.len() {
+					c = bytes.get($i) ?? 0
+					stop = SequenceParse.entity_end(bytes, $i)
+					if stop > $i {
+						$current = $current.concat(bytes.drop_first($i).take_first(stop - $i + 1))
+						$i = stop + 1
+					} else if c == ';' {
+						statement = Str.from_utf8_lossy($current).trim()
+						if !statement.is_empty() {
+							$out = $out.append(statement)
+						}
+						$current = []
+						$i = $i + 1
+					} else {
+						$current = $current.append(c)
+						$i = $i + 1
+					}
+				}
+				statement = Str.from_utf8_lossy($current).trim()
+				if !statement.is_empty() {
+					$out = $out.append(statement)
+				}
+			}
+		}
+		$out
+	}
 
 	valid_id : Str -> Bool
 	valid_id = |id| !id.is_empty() and id.to_utf8().all(|c| c != ' ' and c != '\t' and c != ':' and c != ';' and c != '-' and c != '>' and c != '<' and c != '{' and c != '}' and c != '"')
@@ -297,6 +383,23 @@ expect
 
 expect
 	match SequenceParse.parse("%%{init: {}}%%\nsequenceDiagram\nA->>B: request\n") {
+		Err([Unsupported(_)]) => True
+		_ => False
+	}
+
+## fuzz regression: a semicolon separates statements, while a Mermaid
+## character reference's terminating semicolon belongs to its label.
+expect
+	match SequenceParse.parse("sequenceDiagram;A->>B: hello#59; world;B-->>A: #35;42 and #quot;yes#quot;;") {
+		Err(_) => False
+		Ok(d) => d.events.len() == 2 and match (d.events.get(0), d.events.get(1)) {
+			(Ok(Message(first)), Ok(Message(second))) => first.text == "hello; world" and second.text == "#42 and \"yes\""
+			_ => False
+		}
+	}
+
+expect
+	match SequenceParse.parse("sequenceDiagram\nA->>B: <b>bold</b>\n") {
 		Err([Unsupported(_)]) => True
 		_ => False
 	}
