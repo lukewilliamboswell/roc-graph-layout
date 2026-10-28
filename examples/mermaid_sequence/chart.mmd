@@ -1,0 +1,20 @@
+sequenceDiagram
+    title Checkout with payment retry
+    autonumber
+    actor Customer
+    participant Shop as Checkout service
+    participant Pay as Payment provider
+    Customer->>Shop: Place an order
+    activate Shop
+    Note over Shop,Pay: All requests carry an idempotency key
+    loop Until accepted or retries exhausted
+        Shop->>+Pay: Authorize the card payment
+        alt Approved
+            Pay-->>-Shop: Authorization reference
+            Shop->>Shop: Persist the order and reserve stock
+        else Temporary failure
+            Pay-->>Shop: Please retry later
+        end
+    end
+    Shop-->>Customer: Order confirmation
+    deactivate Shop
