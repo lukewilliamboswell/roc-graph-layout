@@ -3,6 +3,26 @@ import Drawing
 ## Internal JSON vocabulary for native oracle probes, never exported by the
 ## package. Numbers remain numbers; a non-finite observation is explicit.
 OracleJson :: {}.{
+
+	## Reference-sized layout probes use the same production layout phase,
+	## with oracle-measured node/label boxes in place of native measurement.
+	Size : { kind : Str, id : Str, width : F64, height : F64 }
+
+	sizes : Str -> List(Size)
+	sizes = |text| text.split_on("\n").keep_if(|line| !line.trim().is_empty()).map(
+		|line| match line.split_on("\t") {
+			[kind, id, width, height] => {
+				w = F64.from_str(width) ?? crash "invalid oracle size width"
+				h = F64.from_str(height) ?? crash "invalid oracle size height"
+				if !F64.is_finite(w) or !F64.is_finite(h) or w < 0 or h < 0 {
+					crash "non-finite or negative oracle size"
+				}
+				{ kind, id, width: w, height: h }
+			}
+			_ => crash "invalid oracle size row"
+		},
+	)
+
 	string : Str -> Str
 	string = |text| {
 		hex = |n| if n < 10 {
