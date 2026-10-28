@@ -11,7 +11,7 @@ import src/Script
 ## Test an examples archive, unchanged, against the bundles it names.
 ##
 ##     blueprint run test-bundle
-##     BUNDLE_PATH=dist/<hash>.tar.zst MERMAID_BUNDLE_PATH=dist/<hash>.tar.zst EXAMPLES_ARCHIVE=dist/roc-graph-layout-examples-0.2.0.zip blueprint run test-bundle
+##     BUNDLE_PATH=dist/layout-<hash>.tar.zst MERMAID_BUNDLE_PATH=dist/mermaid-<hash>.tar.zst EXAMPLES_ARCHIVE=dist/roc-graph-layout-examples-0.2.0.zip blueprint run test-bundle
 ##
 ## Tests the layout and Mermaid bundles and the only examples archive in
 ## `dist` unless `BUNDLE_PATH`, `MERMAID_BUNDLE_PATH` and `EXAMPLES_ARCHIVE`
