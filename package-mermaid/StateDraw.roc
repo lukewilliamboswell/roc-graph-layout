@@ -505,13 +505,23 @@ StateDraw :: {}.{
 	lines : List(Str), F64, F64, Drawing.Color, Theme.Options -> List(Drawing.Item)
 	lines = |rows, x, top, color, options| rows.map_with_index(|text, i| Text({ text, origin: { x, y: top + StateDraw.baseline(options) + i.to_f64() * options.font_size * options.line_height }, size: options.font_size, align: Center, color }))
 
-	## Contract probe: every text ink box belongs to a painted node, group,
+	## Measured title boxes include floating labels of empty composites.
+	title_boxes : StateModel.Diagram, Setup -> List(Drawing.Rect)
+	title_boxes = |diagram, prepared| diagram.groups.map_with_index(
+		|_, i| {
+			rect = prepared.geometry.groups.get(i) ?? prepared.geometry.bounds
+			title = prepared.sizes.group_titles.get(i) ?? { lines: [], width: 0, height: 0 }
+			{ x: rect.x + rect.width / 2 - title.width / 2, y: rect.y - 2, width: title.width, height: title.height }
+		},
+	)
+
+	## Contract probe: every measured text box belongs to a painted node, group,
 	## note, or edge-label box, rather than merely fitting the outer canvas.
 	labels_contained : Drawing.Picture, Theme.Options -> Bool
 	labels_contained = |picture, options| StateDraw.labels_contained_in(picture, options, [])
 
-	## Composite titles deliberately overhang their frame by2px in pinned
-	## Mermaid; this explicit allowance applies only to authored groups.
+	## Explicit measured title boxes also cover the floating labels of empty
+	## composites. They do not expand the allowed bounds of other labels.
 	labels_contained_in : Drawing.Picture, Theme.Options, List(Drawing.Rect) -> Bool
 	labels_contained_in = |picture, options, headers| {
 		visible_items = match picture.items.first() {
@@ -544,7 +554,7 @@ StateDraw :: {}.{
 				}
 			},
 		)
-		candidates = painted_candidates.concat(headers.map(|rect| { left: rect.x, top: rect.y - 2, right: rect.x + rect.width, bottom: rect.y + rect.height }))
+		candidates = painted_candidates.concat(headers.map(|rect| { left: rect.x, top: rect.y, right: rect.x + rect.width, bottom: rect.y + rect.height }))
 		picture.items.all(
 			|item| match item {
 				Shape(_) => True
@@ -552,7 +562,7 @@ StateDraw :: {}.{
 					if text_item.text.is_empty() {
 						True
 					} else {
-						measured = TextMeasure.block(text_item.text, { font: TextMeasure.inter, size: options.font_size, line_height: options.line_height, wrap: NoWrap, align: Middle })
+						measured = StateDraw.unwrapped(text_item.text, options)
 						left = match text_item.align {
 							Start => text_item.origin.x
 							Center => text_item.origin.x - measured.width / 2
@@ -562,7 +572,7 @@ StateDraw :: {}.{
 						# A normal row must not be charged the emoji descent
 						# of another font. Use this row's browser-style box,
 						# retaining unrounded extents for tiny font settings.
-						row_box = StateDraw.unwrapped(text_item.text, options)
+						row_box = measured
 						row_top = text_item.origin.y - StateDraw.baseline(options)
 						row_bottom = row_top + row_box.height
 						candidates.any(|bounds| left >= bounds.left - 0.001 and right <= bounds.right + 0.001 and row_top >= bounds.top - 0.001 and row_bottom <= bounds.bottom + 0.001)
@@ -639,6 +649,6 @@ expect {
 	diagram = StateParser.parse("stateDiagram-v2\nstate \"Titleg\" as A\nA: Bodyg\nA --> B : Edgeg\nnote right of A : Noteg\nstate Groupg {\nChildg\n}\nB --> Groupg\n")?
 	picture = StateDraw.draw(diagram, options)
 	theme = StateDraw.drawing_theme(options)
-	Drawing.is_finite(picture) and StateDraw.labels_contained_in(picture, options, StateDraw.setup(diagram, options).geometry.groups.take_first(diagram.groups.len()))
+	Drawing.is_finite(picture) and StateDraw.labels_contained_in(picture, options, StateDraw.title_boxes(diagram, StateDraw.setup(diagram, options)))
 		and theme.line_height == 0.1 and theme.corner_radius == 19
 }

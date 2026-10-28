@@ -64,7 +64,7 @@ check = |source, options| match StateDiagram.parse(source) {
 		if !Drawing.is_finite(first) {
 			crash "state rendering emitted non-finite geometry"
 		}
-		if !StateDraw.labels_contained_in(first, options, geometry.groups.take_first(diagram.groups.len())) {
+		if !StateDraw.labels_contained_in(first, options, StateDraw.title_boxes(diagram, prepared)) {
 			crash "state text escaped its node, group, note, or edge-label box"
 		}
 		svg = Svg.document(first, "Inter")
@@ -85,4 +85,16 @@ expect {
 expect {
 	_ = test("stateDiagram-v2\nstate Nested {\n[*] --> A\nA --> [*]\n}\n[*] --> Nested\nNested --> [*]\n".to_utf8())
 	True
+}
+
+## fuzz regression: an empty composite paints a floating title above its
+## zero-height frame. Probe the default and compressed large-font themes
+## explicitly, rather than letting the initial source byte select tiny text.
+expect {
+	source = " stateDiagram-v2\nstate Empty {\n}\n"
+	diagram = StateDiagram.parse(source)?
+	for options in [Theme.Options.{}, Theme.Options.{ font_size: 64, line_height: 0.01, padding: 0 }] {
+		_ = check(source, options)
+	}
+	diagram.groups.len() == 1 and diagram.states.is_empty()
 }
