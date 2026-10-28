@@ -21,6 +21,7 @@ Theme :: {}.{
 		line : Drawing.Color ?? Drawing.rgb(0x000000),
 		line_width : F64 ?? 2,
 		label_background : Drawing.Color ?? Drawing.rgb(0xE5E5E5),
+		transition_label_background : Drawing.Color ?? Drawing.white,
 		label_text : Drawing.Color ?? Drawing.rgb(0x28253D),
 		accent : Drawing.Color ?? Drawing.rgb(0x28253D),
 		group_fill : Drawing.Color ?? Drawing.rgb(0xFDF4FF),
