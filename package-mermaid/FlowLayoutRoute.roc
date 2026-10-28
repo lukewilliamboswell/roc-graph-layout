@@ -1141,3 +1141,40 @@ expect FlowLayoutRoute.number(
 	[{ source: 0, target: 1, weight: 1, critical: False, alive: True }, { source: 1, target: 2, weight: 1, critical: False, alive: True }],
 )
 	== [0, 1, 2]
+
+## Oracle regression: multiline-flow reserves a 497.484375px title on the
+## internal flow axis. Actual pinned ELK keeps the raw frame 507.484375px
+## tall, then Mermaid trims only the painted frame; D stays at y569.484375.
+## Dimensions below are the renderer's measured inputs, not output boxes.
+expect {
+	source = "flowchart TD\nsubgraph services [A long group title that needs to wrap without colliding with the nodes inside]\nA[First service with a particularly long explanatory label]\nB[Second service<br>With an explicit break]\nC[Third service]\nA -->|A long relationship label explaining why this transition happens| B\nA --> C\nB --> A\nend\nC --> D([Completed])\n"
+	diagram = Flowchart.parse(source) ?? { direction: Down, nodes: [], groups: [], edges: [], classes: [] }
+	setup = FlowLayoutImport.build(
+		diagram,
+		{
+			nodes: [
+				{ width: 152, height: 71.79999542236328, label: { lines: [], width: 0, height: 0 } },
+				{ width: 152, height: 71.79999542236328, label: { lines: [], width: 0, height: 0 } },
+				{ width: 152, height: 41, label: { lines: [], width: 0, height: 0 } },
+				{ width: 170.2289276123047, height: 41, label: { lines: [], width: 0, height: 0 } },
+			],
+			edge_labels: [Some({ lines: [], width: 191.5, height: 47.79999923706055 }), None, None, None],
+			group_titles: [{ lines: [], width: 497.484375, height: 17.021484375 }],
+		},
+	)
+	var $m = setup.model
+	for g in [1, 0] {
+		$m = FlowLayoutLayers.prepare($m, g, FlowLayoutLayers.features($m, g, True))
+	}
+	ordered = FlowLayoutOrder.minimize_traced($m, 0, True, False, [])
+	$m = ordered.model
+	for g in [1, 0] {
+		prepared = FlowLayoutPlace.prepare($m, g, True)
+		positioned = FlowLayoutPlace.brandes_koepf(prepared, g)
+		$m = FlowLayoutRoute.finish(positioned, g, True, False, ordered.randoms.get(g) ?? FlowLayoutRandom.from_seed(1)).model
+	}
+	group = FlowLayoutGraph.node($m, setup.group_node.get(0) ?? 0)
+	d = FlowLayoutGraph.node($m, setup.node_of.get(3) ?? 0)
+	root = FlowLayoutGraph.graph($m, 0)
+	group.width == 507.484375 and group.height == 479 and group.margin.top == 9.2421875 and d.x + root.offset_x + root.padding.left == 569.484375
+}

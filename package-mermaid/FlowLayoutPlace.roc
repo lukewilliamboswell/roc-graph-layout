@@ -121,6 +121,39 @@ FlowLayoutPlace :: {}.{
 					$top = $top.max(0 - port.y)
 					$bottom = $bottom.max(port.y + port.height - node.height)
 				}
+				# A title is centred across its physical container. ELK's
+				# internal title minimum can enlarge the flow axis instead, so
+				# its ink may overhang the other axis. Reserve those margins
+				# before node placement, just as for ports outside a node.
+				inside = if node.nested != FlowLayoutGraph.nil {
+					node.nested
+				} else {
+					node.inner
+				}
+				if inside != FlowLayoutGraph.nil {
+					inner = FlowLayoutGraph.graph($m, inside)
+					label_width = match inner.direction {
+						Down | Up => inner.title_height
+						_ => inner.title_width
+					}
+					vertical = match FlowLayoutGraph.graph($m, g).direction {
+						Down | Up => True
+						_ => False
+					}
+					box_width = if vertical {
+						node.height
+					} else {
+						node.width
+					}
+					overhang = ((label_width - box_width) / 2).max(0)
+					if vertical {
+						$top = $top.max(overhang)
+						$bottom = $bottom.max(overhang)
+					} else {
+						$left = $left.max(overhang)
+						$right = $right.max(overhang)
+					}
+				}
 				$m = FlowLayoutGraph.set_node($m, n, { ..node, margin: { top: $top, right: $right, bottom: $bottom, left: $left } })
 			}
 		}
@@ -1073,4 +1106,49 @@ expect {
 	m = r.model
 	e = FlowLayoutGraph.node(m, r.setup.group_node.get(0) ?? 0)
 	e.ports.map(|p| FlowLayoutGraph.port(m, p).y) == [10]
+}
+
+## Oracle regression: multiline-flow's 497.484375px title overhangs the
+## actual 479px ELK container by 9.2421875px on each side. Those margins
+## belong to placement, before balancing and root bounds are computed.
+expect
+	[Down, Up, Right, Left].all(
+		|direction| {
+			vertical = match direction {
+				Down | Up => True
+				_ => False
+			}
+			node = {
+				..FlowLayoutGraph.blank_node,
+				nested: 1,
+				width: if vertical {
+					507.484375
+				} else {
+					479
+				},
+				height: if vertical {
+					479
+				} else {
+					507.484375
+				},
+			}
+			outer = { ..FlowLayoutGraph.blank_graph, direction, layers: [[0]], nodes: [0] }
+			inner = { ..FlowLayoutGraph.blank_graph, direction: Down, parent: 0, title_width: 15.021484375, title_height: 497.484375 }
+			m = { graphs: [outer, inner], nodes: [node], ports: [], edges: [], loops: [] }
+			margin = FlowLayoutGraph.node(FlowLayoutPlace.margins(m, 0), 0).margin
+			if vertical {
+				margin == { top: 9.2421875, bottom: 9.2421875, left: 0, right: 0 }
+			} else {
+				margin == { top: 0, bottom: 0, left: 9.2421875, right: 9.2421875 }
+			}
+		},
+	)
+
+## An unpainted note-group title has no width and reserves no ink margin.
+expect {
+	node = { ..FlowLayoutGraph.blank_node, nested: 1, width: 100, height: 100 }
+	outer = { ..FlowLayoutGraph.blank_graph, direction: Down, layers: [[0]], nodes: [0] }
+	inner = { ..FlowLayoutGraph.blank_graph, direction: Down, parent: 0, title_width: 20, title_height: 0 }
+	m = { graphs: [outer, inner], nodes: [node], ports: [], edges: [], loops: [] }
+	FlowLayoutGraph.node(FlowLayoutPlace.margins(m, 0), 0).margin == FlowLayoutGraph.no_box
 }

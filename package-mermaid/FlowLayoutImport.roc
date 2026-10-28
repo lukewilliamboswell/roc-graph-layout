@@ -235,7 +235,20 @@ FlowLayoutImport :: {}.{
 						label_room = if (title_h > 0) title_h + FlowLayoutImport.title_gap else 0
 						pad = FlowLayoutImport.group_padding
 						padding = FlowLayoutImport.internal_padding(inner_dir, { top: pad + label_room, right: pad, bottom: pad, left: pad })
-						min = FlowLayoutImport.internal_size(inner_dir, title_w + 8, 0)
+						# ELK keeps minimum-size options on its internal flow axis,
+						# even for UP/DOWN. NODE_LABELS independently requires five
+						# pixels on each side of a nonempty title on that same axis.
+						# The painted title can still overhang the physical box.
+						min = {
+							width: title_w + (
+								if title_w > 0 {
+									10
+								} else {
+									8
+								}
+							),
+							height: 0.0,
+						}
 						title_size = FlowLayoutImport.internal_size(inner_dir, title_w, title_h)
 						gi = $model.graphs.len()
 						$model = { ..$model, graphs: $model.graphs.append({ ..FlowLayoutGraph.blank_graph, parent: n, spacing: FlowLayoutImport.group_spacing, padding, min_width: min.width, min_height: min.height, title_width: title_size.width, title_height: title_size.height, direction: inner_dir, separate: own }) }
@@ -1013,3 +1026,28 @@ expect {
 		and FlowLayoutImport.registered_children(diagram, Group(0), registration) == [GroupItem(1)]
 		and FlowLayoutImport.registered_children(diagram, Root, []) == [GroupItem(0), NodeItem(0), NodeItem(1)]
 }
+
+## Oracle regression: pinned ELK leaves container minimum-size options on
+## its internal flow axis for DOWN/UP as well as RIGHT/LEFT. A 1000px title
+## independently reserves 5px on each side through NODE_LABELS: 1010px.
+expect
+	["TD", "BT", "LR", "RL"].all(
+		|direction| {
+			match Flowchart.parse("flowchart ${direction}\nsubgraph s [Long title]\nA --> B\nend\nB --> D\n") {
+				Err(_) => False
+				Ok(diagram) => {
+					box = { width: 152, height: 41, label: { lines: [], width: 0, height: 0 } }
+					setup = FlowLayoutImport.build(
+						diagram,
+						{
+							nodes: List.repeat(box, diagram.nodes.len()),
+							edge_labels: diagram.edges.map(|_| None),
+							group_titles: [{ lines: [], width: 1000, height: 17.021484375 }],
+						},
+					)
+					group = FlowLayoutGraph.graph(setup.model, setup.group_graph.get(0) ?? 0)
+					group.min_width == 1010 and group.min_height == 0 and !group.separate
+				}
+			}
+		},
+	)
