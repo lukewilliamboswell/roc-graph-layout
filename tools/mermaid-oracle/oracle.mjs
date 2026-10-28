@@ -21,7 +21,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 
 // Bump when the shape or meaning of a record changes.
-const EXTRACTOR_VERSION = 6;
+const EXTRACTOR_VERSION = 8;
 export const FONT_FAMILY = 'Oracle Inter';
 export const FONT_FILE = path.join(here, 'fonts', 'Inter-Regular.ttf');
 const CASE_TIMEOUT_MS = 20000;
@@ -42,18 +42,20 @@ export const CONFIG = {
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const installedVersion = name => require(`${name}/package.json`).version;
 
-async function provenance() {
+export async function provenance() {
 	return {
 		extractor: EXTRACTOR_VERSION,
+		extractor_sha256: sha256(Buffer.from(extractInPage.toString())),
 		mermaid: installedVersion('mermaid'),
 		// Puppeteer pins the exact browser build it downloads.
 		puppeteer: installedVersion('puppeteer'),
+		browser_revision: await require('puppeteer').default.browserVersion(),
 		font_sha256: sha256(await fs.readFile(FONT_FILE)),
 		config: CONFIG,
 	};
 }
 
-const keyOf = (prov, sourceBytes) => sha256(JSON.stringify({ prov, source: sha256(sourceBytes) }));
+export const keyOf = (prov, sourceBytes) => sha256(JSON.stringify({ prov, source: sha256(sourceBytes) }));
 
 // ---------------------------------------------------------------- browser side
 
@@ -79,7 +81,66 @@ async function extractInPage(source) {
 	}
 	result.accepted = true;
 	result.diagram_type = diagram.type;
-	if (diagram.type !== 'flowchart-v2' && diagram.type !== 'flowchart') return result;
+	if (diagram.type !== 'flowchart-v2' && diagram.type !== 'flowchart') {
+		// Keep the pinned parser's facts, not a model reconstructed from our
+		// implementation. Family normalizers consume these getter snapshots.
+		const plain = (value, depth = 0) => {
+			if (depth > 32) throw new Error('oracle model exceeds supported extraction depth');
+			if (value instanceof Map) return [...value].map(([key, item]) => [key, plain(item, depth + 1)]);
+			if (value instanceof Set) return [...value].map(item => plain(item, depth + 1));
+			if (Array.isArray(value)) return value.map(item => plain(item, depth + 1));
+			if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).filter(([, item]) => typeof item !== 'function').map(([key, item]) => [key, plain(item, depth + 1)]));
+			return value;
+		};
+		result.model = {};
+		for (const name of ['getActors', 'getActorKeys', 'getMessages', 'getNotes', 'getBoxes', 'getCreatedActors', 'getDestroyedActors', 'showSequenceNumbers', 'getClasses', 'getRelations', 'getNamespaces', 'getEntities', 'getRelationships', 'getStates', 'getRootDoc', 'getRootDocV2', 'getDirection', 'getDiagramTitle', 'getAccTitle', 'getAccDescription']) {
+			if (typeof diagram.db[name] === 'function') result.model[name] = plain(diagram.db[name]());
+		}
+		if (typeof diagram.db.getData === 'function') {
+			// State's parser has already extracted its source document. Do not
+			// extract it a second time or change the reference model here.
+			result.layout_input = plain(diagram.db.getData());
+		}
+		const host = document.getElementById('host');
+		host.replaceChildren();
+		let svgText;
+		try { svgText = (await m.render('oracle', source, host)).svg; }
+		catch (error) { result.render_error = String(error?.message ?? error).slice(0, 2000); return result; }
+		host.innerHTML = svgText;
+		const svg = host.querySelector('svg');
+		const inverse = svg.getScreenCTM().inverse();
+		const boxOf = element => {
+			const b = element.getBBox();
+			const matrix = inverse.multiply(element.getScreenCTM());
+			const corners = [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]].map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
+			const x = Math.min(...corners.map(p => p.x)), y = Math.min(...corners.map(p => p.y));
+			return { x, y, width: Math.max(...corners.map(p => p.x)) - x, height: Math.max(...corners.map(p => p.y)) - y };
+		};
+		const vb = svg.viewBox.baseVal;
+		const view_box = { x: vb.x, y: vb.y, width: vb.width, height: vb.height };
+		const elements = [...svg.querySelectorAll('g,rect,path,line,polyline,polygon,circle,ellipse,text,tspan')].filter(element => !element.closest('defs')).map(element => {
+			const style = getComputedStyle(element);
+			const matrix = inverse.multiply(element.getScreenCTM());
+			const origin = new DOMPoint(0, 0).matrixTransform(matrix);
+			return {
+				tag: element.tagName.toLowerCase(),
+				id: element.id,
+				class: element.getAttribute('class') ?? '',
+				parent_id: element.parentElement?.id ?? '',
+				parent_class: element.parentElement?.getAttribute('class') ?? '',
+				attributes: Object.fromEntries([...element.attributes].map(a => [a.name, a.value])),
+				text: element.textContent,
+				box: boxOf(element),
+				origin: { x: origin.x, y: origin.y },
+				style: Object.fromEntries(['fill', 'stroke', 'stroke-width', 'font-family', 'font-size', 'font-weight', 'font-style', 'text-decoration', 'text-anchor'].map(key => [key, style.getPropertyValue(key)])),
+			};
+		});
+		result.rendering = { view_box, elements };
+		result.layout = { view_box };
+		result.svg_sha256 = null;
+		result.svg = svgText;
+		return result;
+	}
 
 	const db = diagram.db;
 	const textOf = value => (value === undefined || value === null ? null : String(value));
@@ -256,6 +317,10 @@ export async function openBrowser() {
 	// every network request is refused below. The sandbox is disabled because
 	// common Linux hosts block the unprivileged namespaces Chrome needs.
 	const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--font-render-hinting=none'] });
+	if (!(await browser.version()).endsWith(`/${await puppeteer.default.browserVersion()}`)) {
+		await browser.close();
+		throw new Error('oracle browser does not match Puppeteer\'s pinned revision');
+	}
 	const font = (await fs.readFile(FONT_FILE)).toString('base64');
 	const mermaidJs = require.resolve('mermaid/dist/mermaid.min.js');
 
