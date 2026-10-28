@@ -1,7 +1,8 @@
 import Drawing
 import DiagramView
-import EntityDraw
+import ClassRender
 import EntityText
+import ClassMember
 import Flowchart
 import Theme
 
@@ -9,16 +10,16 @@ import Theme
 ## operation compartments. Inheritance, realization, composition, aggregation,
 ## association and dependency keep their distinct end markers and line styles.
 ## Quoted multiplicities and association labels receive space along the routes.
-## Abstract (`*`) and static (`$`) member suffixes are displayed as measured
-## `«abstract»` and `«static»` annotations. This explicit notation works in
-## every vector renderer without requiring italic or underlined font styles;
-## the parsed model retains the original member spelling.
+## Abstract (`*`) and static (`$`) member suffixes select italic and
+## underlined member labels, as in Mermaid. The parsed model retains the
+## original member spelling; drawing uses canonical member text, including
+## the separator before an operation return type.
 ##
 ## Supports class declarations, member blocks, `Class : member`, annotations,
 ## generic names (`List~T~`) and reading directions. Namespaces, interactions
 ## and style directives are reported as unsupported rather than approximated.
 ClassDiagram :: {}.{
-	Class : { id : Str, label : Str, fields : List(Str), methods : List(Str), annotations : List(Str) }
+	Class : { id : Str, label : Str, generic_type : Str, fields : List(Str), methods : List(Str), annotations : List(Str) }
 	RelationshipKind : [Inheritance, Realization, Composition, Aggregation, Association, Dependency, Link, DottedLink]
 	Relationship : { from : U64, to : U64, kind : RelationshipKind, reversed : Bool, bidirectional : Bool, label : Str, from_multiplicity : Str, to_multiplicity : Str }
 	Diagram : { classes : List(Class), relationships : List(Relationship), direction : [Down, Up, Left, Right] }
@@ -74,7 +75,7 @@ ClassDiagram :: {}.{
 						match ClassDiagramInternals.declaration(line) {
 							Some(decl) => {
 								found = ClassDiagramInternals.ensure($classes, decl.id)
-								current = found.classes.get(found.index) ?? { id: "", label: "", fields: [], methods: [], annotations: [] }
+								current = found.classes.get(found.index) ?? { id: "", label: "", generic_type: "", fields: [], methods: [], annotations: [] }
 								$classes = found.classes.set(found.index, { ..current, label: if (decl.explicit_label) decl.label else current.label }) ?? []
 								if decl.open {
 									$open = Some(found.index)
@@ -150,51 +151,7 @@ ClassDiagram :: {}.{
 
 ClassDiagramInternals :: {}.{
 	draw : ClassDiagram.Diagram, Theme.Options -> Drawing.Picture
-	draw = |diagram, theme| EntityDraw.draw(
-		diagram.classes.map(
-			|c| {
-				title = Str.join_with(c.annotations.concat([c.label]), "\n")
-				sections = if (c.fields.is_empty() and c.methods.is_empty()) [] else [c.fields.map(ClassDiagramInternals.display_member), c.methods.map(ClassDiagramInternals.display_member)]
-				{ title, sections }
-			},
-		),
-		diagram.relationships.map(
-			|r| {
-				marker = match r.kind {
-					Inheritance | Realization => Triangle
-					Composition => Diamond(True)
-					Aggregation => Diamond(False)
-					Association | Dependency => Arrow
-					Link | DottedLink => None
-				}
-				{ from: r.from, to: r.to, label: r.label, from_label: r.from_multiplicity, to_label: r.to_multiplicity, from_mark: if (r.reversed or r.bidirectional) marker else None, to_mark: if (!r.reversed or r.bidirectional) marker else None, dashed: r.kind == Dependency or r.kind == Realization or r.kind == DottedLink }
-			},
-		),
-		diagram.direction,
-		theme,
-	)
-
-	display_member : Str -> Str
-	display_member = |raw| {
-		var $text = EntityText.trim(raw)
-		var $abstract = False
-		var $static = False
-		var $remaining = True
-		while $remaining and !$text.is_empty() {
-			if $text.ends_with("*") {
-				$abstract = True
-				$text = EntityText.trim(Str.from_utf8_lossy($text.to_utf8().drop_last(1)))
-			} else if $text.ends_with("$") {
-				$static = True
-				$text = EntityText.trim(Str.from_utf8_lossy($text.to_utf8().drop_last(1)))
-			} else {
-				$remaining = False
-			}
-		}
-		abstract = if ($abstract) " «abstract»" else ""
-		static = if ($static) " «static»" else ""
-		"${$text}${abstract}${static}"
-	}
+	draw = |diagram, theme| ClassRender.draw(diagram, theme)
 
 	declaration : Str -> [Some({ id : Str, label : Str, open : Bool, explicit_label : Bool }), None]
 	declaration = |line| {
@@ -238,22 +195,23 @@ ClassDiagramInternals :: {}.{
 	}
 
 	ensure : List(ClassDiagram.Class), Str -> { classes : List(ClassDiagram.Class), index : U64 }
-	ensure = |classes, id| {
+	ensure = |classes, raw| {
+		named = ClassMember.class_name(raw)
 		var $found = None
 		for i in 0..<classes.len() {
-			if (classes.get(i) ?? { id: "", label: "", fields: [], methods: [], annotations: [] }).id == id {
+			if (classes.get(i) ?? { id: "", label: "", generic_type: "", fields: [], methods: [], annotations: [] }).id == named.id {
 				$found = Some(i)
 			}
 		}
 		match $found {
 			Some(index) => { classes, index }
-			None => { classes: classes.append({ id, label: ClassDiagramInternals.display(id), fields: [], methods: [], annotations: [] }), index: classes.len() }
+			None => { classes: classes.append({ id: named.id, label: named.id, generic_type: named.generic_type, fields: [], methods: [], annotations: [] }), index: classes.len() }
 		}
 	}
 
 	member : List(ClassDiagram.Class), U64, Str -> List(ClassDiagram.Class)
 	member = |classes, index, text| {
-		item = classes.get(index) ?? { id: "", label: "", fields: [], methods: [], annotations: [] }
+		item = classes.get(index) ?? { id: "", label: "", generic_type: "", fields: [], methods: [], annotations: [] }
 		changed = if text.starts_with("<<") and text.ends_with(">>") {
 			{ ..item, annotations: item.annotations.append(text) }
 		}
@@ -313,7 +271,7 @@ ClassDiagramInternals :: {}.{
 }
 
 expect match ClassDiagram.parse("classDiagram\n class Animal {\n +String name\n +speak() String\n }\n Animal <|-- Dog\n Owner \"1\" *-- \"many\" Dog : owns\n") {
-	Ok(d) => d.classes.len() == 3 and d.relationships.len() == 2 and (d.classes.get(0) ?? { id: "", label: "", fields: [], methods: [], annotations: [] }).methods == ["+speak() String"]
+	Ok(d) => d.classes.len() == 3 and d.relationships.len() == 2 and (d.classes.get(0) ?? { id: "", label: "", generic_type: "", fields: [], methods: [], annotations: [] }).methods == ["+speak() String"]
 	Err(_) => False
 }
 expect match ClassDiagram.draw("classDiagram", Theme.Options.{}) {
@@ -327,12 +285,12 @@ expect match ClassDiagram.parse("classDiagram\n namespace A {\n click A callback
 
 ## Regression: a compact class member block preserves its operation.
 expect match ClassDiagram.parse("classDiagram; class A { +get() String }; A-->A : self") {
-	Ok(d) => d.classes.len() == 1 and d.relationships.len() == 1 and (d.classes.get(0) ?? { id: "", label: "", fields: [], methods: [], annotations: [] }).methods == ["+get() String"]
+	Ok(d) => d.classes.len() == 1 and d.relationships.len() == 1 and (d.classes.get(0) ?? { id: "", label: "", generic_type: "", fields: [], methods: [], annotations: [] }).methods == ["+get() String"]
 	Err(_) => False
 }
 
 expect match ClassDiagram.parse("classDiagram\n class List~T~\n class A[\"Display name\"]\n A -- List~T~\n") {
-	Ok(d) => (d.classes.get(0) ?? { id: "", label: "", fields: [], methods: [], annotations: [] }).label == "List<T>" and (d.classes.get(1) ?? { id: "", label: "", fields: [], methods: [], annotations: [] }).label == "Display name"
+	Ok(d) => (d.classes.get(0) ?? { id: "", label: "", generic_type: "", fields: [], methods: [], annotations: [] }).label == "List" and (d.classes.get(1) ?? { id: "", label: "", generic_type: "", fields: [], methods: [], annotations: [] }).label == "Display name"
 	Err(_) => False
 }
 
@@ -377,13 +335,13 @@ expect {
 		Ok(picture) => Drawing.is_finite(picture)
 			and picture.items.any(
 				|item| match item {
-					Text(label) => label.text.contains("«abstract»")
+					StyledText(styled) => styled.italic and styled.label.text == "+method()"
 					_ => False
 				},
 			)
 			and picture.items.any(
 				|item| match item {
-					Text(label) => label.text.contains("«static»")
+					StyledText(styled) => styled.underline
 					_ => False
 				},
 			)

@@ -1,6 +1,6 @@
 import Drawing
 import DiagramView
-import EntityDraw
+import EntityRender
 import EntityText
 import Flowchart
 import Theme
@@ -83,6 +83,9 @@ EntityRelationship :: {}.{
 								to = EntityRelationshipInternals.ensure(from.entities, parsed.to)
 								$entities = EntityRelationshipInternals.rename(EntityRelationshipInternals.rename(to.entities, from.index, parsed.from_label), to.index, parsed.to_label)
 								$relationships = $relationships.append({ from: from.index, to: to.index, from_cardinality: parsed.from_cardinality, to_cardinality: parsed.to_cardinality, identifying: parsed.identifying, label: parsed.label })
+								for trailing in parsed.trailing_entities {
+									$entities = EntityRelationshipInternals.ensure($entities, trailing).entities
+								}
 							}
 						}
 					} else {
@@ -134,25 +137,7 @@ EntityRelationship :: {}.{
 
 EntityRelationshipInternals :: {}.{
 	draw : EntityRelationship.Diagram, Theme.Options -> Drawing.Picture
-	draw = |diagram, theme| EntityDraw.draw(
-		diagram.entities.map(
-			|e| {
-				title: e.label,
-				sections: if (e.attributes.is_empty()) [] else [
-					e.attributes.map(
-						|a| {
-							keys = if (a.keys.is_empty()) "" else "  ${Str.join_with(a.keys, ", ")}"
-							comment = if (a.comment.is_empty()) "" else "  — ${a.comment}"
-							"${a.type} ${a.name}${keys}${comment}"
-						},
-					),
-				],
-			},
-		),
-		diagram.relationships.map(|r| { from: r.from, to: r.to, label: r.label, from_label: "", to_label: "", from_mark: Cardinality(r.from_cardinality), to_mark: Cardinality(r.to_cardinality), dashed: !r.identifying }),
-		diagram.direction,
-		theme,
-	)
+	draw = |diagram, theme| EntityRender.draw(diagram, theme)
 
 	Reference : { id : Str, label : [Some(Str), None] }
 	reference : Str -> [Some(Reference), None]
@@ -167,7 +152,11 @@ EntityRelationshipInternals :: {}.{
 				id = EntityText.trim(id_raw)
 				label = EntityText.trim(label_raw)
 				if EntityText.identifier(id) and label.ends_with("]") {
-					display = EntityText.unquote(Str.from_utf8_lossy(label.to_utf8().drop_last(1)))
+					raw_display = EntityText.trim(Str.from_utf8_lossy(label.to_utf8().drop_last(1)))
+					if !EntityText.identifier(raw_display) {
+						return None
+					}
+					display = EntityText.unquote(raw_display)
 					if display.is_empty() {
 						None
 					} else {
@@ -248,7 +237,7 @@ EntityRelationshipInternals :: {}.{
 		_ => Err(Invalid)
 	}
 
-	relationship : Str -> Try({ from : Str, to : Str, from_label : [Some(Str), None], to_label : [Some(Str), None], from_cardinality : EntityRelationship.Cardinality, to_cardinality : EntityRelationship.Cardinality, identifying : Bool, label : Str }, [Invalid])
+	relationship : Str -> Try({ from : Str, to : Str, from_label : [Some(Str), None], to_label : [Some(Str), None], from_cardinality : EntityRelationship.Cardinality, to_cardinality : EntityRelationship.Cardinality, identifying : Bool, label : Str, trailing_entities : List(Str) }, [Invalid])
 	relationship = |line| {
 		match EntityText.split(line, ":") {
 			Missing => Err(Invalid)
@@ -288,7 +277,11 @@ EntityRelationshipInternals :: {}.{
 							"o{" => ZeroMany
 							_ => return Err(Invalid)
 						}
-						Ok({ from: from_ref.id, to: to_ref.id, from_label: from_ref.label, to_label: to_ref.label, from_cardinality, to_cardinality, identifying, label: EntityText.unquote(label) })
+						words = EntityText.tokens(label)
+						if words.is_empty() or !words.all(EntityText.identifier) {
+							return Err(Invalid)
+						}
+						Ok({ from: from_ref.id, to: to_ref.id, from_label: from_ref.label, to_label: to_ref.label, from_cardinality, to_cardinality, identifying, label: EntityText.unquote(words.first() ?? ""), trailing_entities: words.drop_first(1).map(EntityText.unquote) })
 					}
 				}
 			}
@@ -316,7 +309,7 @@ expect match EntityRelationship.parse("erDiagram; A { int id PK }; A||--o{B : co
 }
 
 expect {
-	source = "erDiagram\n A ||--o{ A : self\n A ||..|{ B : parallel one\n A ||--o{ B : parallel two\n ISOLATED\n"
+	source = "erDiagram\n A ||--o{ A : self\n A ||..|{ B : \"parallel one\"\n A ||--o{ B : \"parallel two\"\n ISOLATED\n"
 	match EntityRelationship.parse(source) {
 		Err(_) => False
 		Ok(d) => d.entities.len() == 3 and d.relationships.len() == 3 and [Down, Up, Left, Right].all(
@@ -342,7 +335,7 @@ expect match EntityRelationship.parse("erDiagram\n A }o..o| B : \"a: b\"\n") {
 }
 
 ## Entity aliases change visible headers without changing source references.
-expect match EntityRelationship.parse("erDiagram\n CUSTOMER[Customer account] {\n string? display_name\n int account_id PK, FK \"account reference\"\n }\n CUSTOMER ||--o{ ORDER[\"Purchase order\"] : places\n CUSTOMER\n") {
+expect match EntityRelationship.parse("erDiagram\n CUSTOMER[\"Customer account\"] {\n string? display_name\n int account_id PK, FK \"account reference\"\n }\n CUSTOMER ||--o{ ORDER[\"Purchase order\"] : places\n CUSTOMER\n") {
 	Ok(d) => match (d.entities.get(0), d.entities.get(1)) {
 		(Ok(customer), Ok(order)) => customer.id == "CUSTOMER" and customer.label == "Customer account" and order.id == "ORDER" and order.label == "Purchase order" and match customer.attributes.get(1) {
 			Ok(attribute) => attribute.keys == ["PK", "FK"] and attribute.comment == "account reference"
@@ -361,7 +354,7 @@ expect match EntityRelationship.parse("erDiagram\n A[\"Name: one--two\"] ||--o{ 
 	Err(_) => False
 }
 
-expect match EntityRelationship.draw("erDiagram\n A[Customer account]\n A ||--o{ B[\"Purchase order\"] : places\n", Theme.Options.{}) {
+expect match EntityRelationship.draw("erDiagram\n A[\"Customer account\"]\n A ||--o{ B[\"Purchase order\"] : places\n", Theme.Options.{}) {
 	Ok(picture) => Drawing.is_finite(picture) and picture.items.any(
 		|item| match item {
 			Text(label) => label.text == "Customer account"
@@ -380,4 +373,19 @@ expect match EntityRelationship.parse("erDiagram %% schema\nA ||--o{ B : has\n")
 expect match EntityRelationship.parse("erDiagram\nA {\nstring name \"first\" \"second\"\n}\n") {
 	Err([Syntax(_)]) => True
 	_ => False
+}
+
+## Oracle regression: unquoted spaces delimit further entity statements.
+expect match EntityRelationship.parse("erDiagram\n A ||--o{ B : parent of\n") {
+	Ok(d) => d.entities.map(|e| e.id) == ["A", "B", "of"] and match d.relationships.first() {
+		Ok(r) => r.label == "parent"
+		Err(_) => False
+	}
+	Err(_) => False
+}
+
+## Oracle regression: spaces in an entity alias require a quoted string.
+expect match EntityRelationship.parse("erDiagram\n CUSTOMER[Customer account]\n") {
+	Err(_) => True
+	Ok(_) => False
 }

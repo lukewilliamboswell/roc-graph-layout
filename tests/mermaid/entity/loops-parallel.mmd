@@ -9,6 +9,6 @@ erDiagram
         int id PK
     }
     ISOLATED
-    ACCOUNT |o..o{ ACCOUNT : parent of
+    ACCOUNT |o..o{ ACCOUNT : "parent of"
     ACCOUNT ||--|{ AUDIT : writes
-    ACCOUNT ||..o{ AUDIT : inspected by
+    ACCOUNT ||..o{ AUDIT : "inspected by"

@@ -1,49 +1,100 @@
 import Drawing
+import ClassMember
 import FlowTheme
 import Theme
 import TextMeasure
 import font.Font
 import layout.Geom
-import layout.Layered
+import Flowchart
+import FlowGeometry
+import FlowLayout
+import EntityLayout
+import OracleJson
 
 ## Internal measured compartments and semantic relationship ends. Shared by
 ## class and entity diagrams; the public readers preserve their own models.
 EntityDraw :: {}.{
-	Node : { title : Str, sections : List(List(Str)) }
+	Node : { kind : [ClassBox, EntityBox], title : Str, annotations : List(Str), sections : List(List(Str)), table : List(List(Str)) }
 	Cardinality : [ExactlyOne, ZeroOne, OneMany, ZeroMany]
 	Mark : [None, Arrow, Triangle, Diamond(Bool), Cardinality(Cardinality)]
 	Edge : { from : U64, to : U64, label : Str, from_label : Str, to_label : Str, from_mark : Mark, to_mark : Mark, dashed : Bool }
-	Block : { lines : List(Str), width : F64, height : F64, baseline : F64, step : F64 }
-	Measured : { title : Block, sections : List(List(Block)), width : F64, height : F64 }
+	Block : { lines : List(Str), width : F64, height : F64, baseline : F64, step : F64, font_size : F64 }
+	Measured : { title : Block, annotations : List(Block), sections : List(List(Block)), table : List(List(Block)), column_widths : List(F64), row_heights : List(F64), title_height : F64, width : F64, height : F64 }
+
+	radius : Theme.Options -> F64
+	radius = |theme| match theme.corners {
+		Rounded => theme.corner_radius
+		FamilyDefault | Square => 0
+	}
 
 	measure_text : Str, Theme.Options -> Block
-	measure_text = |text, theme| {
-		measured = TextMeasure.block(text, { font: TextMeasure.inter, size: theme.font_size, line_height: theme.line_height, wrap: Width(theme.max_label_width), align: Start })
+	measure_text = |text, theme| EntityDraw.measure_text_at(text, theme, theme.font_size)
+
+	measure_text_at : Str, Theme.Options, F64 -> Block
+	measure_text_at = |text, theme, font_size| {
+		measured = TextMeasure.block(
+			text,
+			{
+				font: TextMeasure.inter,
+				size: font_size,
+				line_height: theme.line_height,
+				wrap: (
+					match theme.wrapping {
+						Wrap => Width(theme.max_label_width)
+						FamilyDefault | NoWrap => NoWrap
+					}
+				),
+				align: Start,
+			},
+		)
 		metrics = Font.metrics(TextMeasure.inter)
-		scale = theme.font_size / Font.units_per_em(TextMeasure.inter).to_f64()
+		scale = font_size / Font.units_per_em(TextMeasure.inter).to_f64()
 		# Reserve real font ascent/descent independently of the requested
 		# baseline spacing. Very tight lines may overlap within a cell, but
 		# they cannot escape that cell or cover the next compartment. The
 		# fallback emoji font can extend a quarter-em below the baseline.
-		baseline = (metrics.ascent.to_f64() * scale).max(TextMeasure.round(metrics.ascent.to_f64() * scale)).max(theme.font_size * 0.95).max(TextMeasure.round(theme.font_size * 0.95))
-		descent = (metrics.descent.to_f64() * scale).max(TextMeasure.round(metrics.descent.to_f64() * scale)).max(theme.font_size * 0.25).max(TextMeasure.round(theme.font_size * 0.25))
-		step = theme.font_size * theme.line_height
+		baseline = (metrics.ascent.to_f64() * scale).max(TextMeasure.round(metrics.ascent.to_f64() * scale)).max(font_size * 0.95).max(TextMeasure.round(font_size * 0.95))
+		descent = if (font_size >= 1) TextMeasure.round(metrics.descent.to_f64() * scale) else metrics.descent.to_f64() * scale
+		step = font_size * theme.line_height
 		height = if measured.lines.is_empty() {
 			0
 		} else {
 			baseline + descent + (measured.lines.len() - 1).to_f64() * step
 		}
-		{ lines: measured.lines, width: measured.width, height: height.max(measured.height), baseline, step }
+		{ lines: measured.lines, width: measured.width, height: height.max(measured.height), baseline, step, font_size }
 	}
 
 	measure : Node, Theme.Options -> Measured
 	measure = |node, theme| {
 		title = EntityDraw.measure_text(node.title, theme)
-		sections = node.sections.map(|section| section.map(|row| EntityDraw.measure_text(row, theme)))
-		width = sections.fold(title.width, |w, section| section.fold(w, |v, row| v.max(row.width))) + theme.padding * 2
-		title_h = title.height + theme.padding * 2
-		height = sections.fold(title_h, |h, section| h + section.fold(0.0, |n, row| n + row.height) + theme.padding * 2)
-		{ title, sections, width: width.max(100), height: height.max(40) }
+		annotations = node.annotations.map(|label| EntityDraw.measure_text(label, theme))
+		sections = node.sections.map(|section| section.map(|row| EntityDraw.measure_text(if (node.kind == ClassBox) ClassMember.parse(row, row.contains("(")).text else row, theme)))
+		table = node.table.map(|row| row.map(|cell| EntityDraw.measure_text(cell, theme)))
+		if node.kind == EntityBox {
+			if table.is_empty() {
+				padding = theme.padding * 24 / 150 / 15
+				height = title.height + padding * 3
+				{ title, annotations, sections: [], table, column_widths: [], row_heights: [], title_height: height, width: (title.width + padding * 2).max(100), height }
+			} else {
+				padding = theme.padding * 24 / 155 / 15
+				text_padding = theme.padding * 18.75 / 15
+				count = (table.first() ?? []).len()
+				widths = List.repeat(0.0, count).map_with_index(|_, column| table.fold(0.0, |width, row| width.max((row.get(column) ?? { lines: [], width: 0, height: 0, baseline: 0, step: 0, font_size: 0 }).width)) + padding)
+				content_width = widths.fold(0.0, |sum, width| sum + width)
+				extra = (title.width + padding * 2 - content_width).max(0)
+				column_widths = widths.map(|width| width + extra / count.to_f64())
+				row_heights = table.map(|row| row.fold(0.0, |height, cell| height.max(cell.height)) + text_padding)
+				title_height = title.height + text_padding
+				{ title, annotations, sections: [], table, column_widths, row_heights, title_height, width: content_width + extra, height: row_heights.fold(title_height, |sum, height| sum + height) }
+			}
+		} else {
+			title_width = annotations.fold(title.width, |current_width, annotation| current_width.max(annotation.width))
+			member_width = sections.fold(0.0, |width, section| section.fold(width, |value, row| value.max(row.width)))
+			width = title_width.max(member_width + title_width / 2) + theme.padding * 24 / 15
+			title_height = annotations.fold(title.height, |height, annotation| height + annotation.height) + theme.padding * 24 / 15
+			height = sections.fold(title_height, |h, section| h + section.fold(0.0, |n, row| n + row.height) + (if (section.is_empty()) 0 else (section.len() - 1).to_f64() * theme.font_size * 3 / 14) + theme.padding * 12 / 15 * (if (node.sections.all(List.is_empty)) 1.5 else 2))
+			{ title, annotations, sections, table: [], column_widths: [], row_heights: [], title_height, width: width.max(1), height: height.max(1) }
+		}
 	}
 
 	paint : Drawing.Color, Drawing.Color, F64 -> Drawing.Paint
@@ -53,31 +104,162 @@ EntityDraw :: {}.{
 	line = |a, b, color, width| Shape({ path: [MoveTo(a), LineTo(b)], paint: { fill: NoFill, stroke: Stroke({ color, width }) } })
 
 	text : Block, Drawing.Point, Drawing.Align, Theme.Options, Drawing.Color -> List(Drawing.Item)
-	text = |block, top, align, theme, color| block.lines.map_with_index(|row, i| Text({ text: row, origin: { x: top.x, y: top.y + block.baseline + i.to_f64() * block.step }, size: theme.font_size, align, color }))
+	text = |block, top, align, _theme, color| block.lines.map_with_index(|row, i| Text({ text: row, origin: { x: top.x, y: top.y + block.baseline + i.to_f64() * block.step }, size: block.font_size, align, color }))
 
-	draw : List(Node), List(Edge), [Down, Up, Left, Right], Theme.Options -> Drawing.Picture
-	draw = |nodes, edges, direction, theme| {
-		measured = nodes.map(|node| EntityDraw.measure(node, theme))
-		sizes = measured.map(|m| { width: m.width, height: m.height })
-		graph = { nodes: sizes, edges: edges.map(|e| { from: e.from, to: e.to }) }
-		# Label records retain their source edge and role, even for parallel edges.
+	style_items : List(Drawing.Item), Bool, Bool, Bool -> List(Drawing.Item)
+	style_items = |items, italic, underline, bold| if !italic and !underline and !bold {
+		items
+	} else {
+		items.map(
+			|item| match item {
+				Text(label) => StyledText({ label, italic, underline, bold })
+				_ => item
+			},
+		)
+	}
+
+	LabelSpec : { edge : U64, placement : [Center, Near([From, To])], block : Block }
+	Placed : { layout : { positions : List(Drawing.Point), bounds : Drawing.Rect, routes : List(Geom.Route) }, label_anchors : List(Drawing.Point) }
+	Arrangement : { measured : List(Measured), labels : List(LabelSpec), result : Placed }
+
+	arrange : List(Node), List(Edge), [Down, Up, Left, Right], Theme.Options -> Arrangement
+	arrange = |nodes, edges, direction, theme| EntityDraw.arrange_sized(nodes, edges, direction, theme, [], [])
+
+	arrange_sized : List(Node), List(Edge), [Down, Up, Left, Right], Theme.Options, List(Str), List(OracleJson.Size) -> Arrangement
+	arrange_sized = |nodes, edges, direction, theme, ids, overrides| {
+		measured = nodes.map_with_index(
+			|node, i| {
+				native = EntityDraw.measure(node, theme)
+				id = ids.get(i) ?? i.to_str()
+				size = overrides.find_first(|candidate| candidate.kind == "node" and candidate.id == id)
+				match size {
+					Ok(value) => { ..native, width: value.width, height: value.height }
+					Err(_) => native
+				}
+			},
+		)
 		var $labels = []
 		for e in 0..<edges.len() {
 			edge = edges.get(e) ?? { from: 0, to: 0, label: "", from_label: "", to_label: "", from_mark: None, to_mark: None, dashed: False }
 			for spec in [(edge.label, Center), (edge.from_label, Near(From)), (edge.to_label, Near(To))] {
 				if !spec.0.is_empty() {
-					block = EntityDraw.measure_text(spec.0, theme)
+					font_size = match spec.1 {
+						Center => theme.font_size
+						Near(_) => theme.font_size * 11 / 14
+					}
+					native = EntityDraw.measure_text_at(spec.0, theme, font_size)
+					role = match spec.1 {
+						Center => "label"
+						Near(From) => "from-label"
+						Near(To) => "to-label"
+					}
+					id = "${e.to_str()}-${role}"
+					size = overrides.find_first(|value| (value.kind == "label" or value.kind == "edge-label") and value.id == id)
+					block = match size {
+						Ok(value) => { ..native, width: value.width, height: value.height }
+						Err(_) => native
+					}
 					$labels = $labels.append({ edge: e, placement: spec.1, block })
 				}
 			}
 		}
-		input = { ..Layered.default_input, graph, edge_labels: $labels.map(|s| { edge: s.edge, placement: s.placement, width: s.block.width + 12, height: s.block.height + 8 }) }
-		# Every index is constructed from these exact source lists. Generated
-		# sizes/settings are nonnegative and finite after theme validation.
-		result = match Layered.layout(input, { ..Layered.default_settings, direction, node_gap: 56, layer_gap: 64 }, Layered.default_run) {
-			Ok(r) => r
-			Err(_) => crash "internally generated entity geometry failed preparation"
+		diagram : Flowchart.Diagram
+		diagram = {
+			direction,
+			nodes: nodes.map_with_index(|node, i| { id: ids.get(i) ?? i.to_str(), label: node.title, shape: Rectangle, container: Root, classes: [], styles: [] }),
+			edges: edges.map_with_index(|edge, i| { id: i.to_str(), from: Node(edge.from), to: Node(edge.to), label: edge.label, line: if (edge.dashed) Dotted else Solid, start: None, end: None, length: 1, classes: [], styles: [] }),
+			groups: [],
+			classes: [],
 		}
+		sizes : FlowGeometry.Sizes
+		sizes = {
+			nodes: measured.map(|m| { width: m.width, height: m.height, label: { lines: m.title.lines, width: m.title.width, height: m.title.height } }),
+			edge_labels: edges.map_with_index(
+				|edge, i| {
+					if edge.label.is_empty() {
+						None
+					} else {
+						match $labels.find_first(|spec| spec.edge == i and spec.placement == Center) {
+							Ok(spec) => Some({ lines: spec.block.lines, width: spec.block.width, height: spec.block.height })
+							Err(_) => None
+						}
+					}
+				},
+			),
+			group_titles: [],
+		}
+		raw_geometry = FlowLayout.layout(diagram, sizes)
+		vertical = direction == Down or direction == Up
+		terminals = $labels.fold(
+			[],
+			|out, spec| match spec.placement {
+				Center => out
+				Near(endpoint) => {
+					edge = edges.get(spec.edge) ?? { from: 0, to: 0, label: "", from_label: "", to_label: "", from_mark: None, to_mark: None, dashed: False }
+					route = raw_geometry.edges.get(spec.edge) ?? { points: [], label: None }
+					points = if (endpoint == From) route.points else route.points.rev()
+					point = points.first() ?? { x: 0, y: 0 }
+					next = points.get(1) ?? point
+					marker = if (endpoint == From) edge.from_mark else edge.to_mark
+					pad = if (marker == None) 0 else 12
+					extent = (if (vertical) spec.block.height else spec.block.width) + pad + 4
+					out.append({ node: if (endpoint == From) edge.from else edge.to, point, next, extent })
+				}
+			},
+		)
+		spaced = EntityLayout.reserve(raw_geometry, terminals, vertical)
+		label_sizes = sizes.edge_labels.map(
+			|label| match label {
+				None => None
+				Some(block) => Some({ width: block.width + 4, height: block.height + 4 })
+			},
+		)
+		geometry = FlowLayout.normalise(spaced, label_sizes, [])
+		label_anchors = $labels.map(
+			|spec| {
+				route = geometry.edges.get(spec.edge) ?? { points: [], label: None }
+				edge = edges.get(spec.edge) ?? { from: 0, to: 0, label: "", from_label: "", to_label: "", from_mark: None, to_mark: None, dashed: False }
+				match spec.placement {
+					Center => match route.label {
+						Some(point) => point
+						None => route.points.first() ?? { x: 0, y: 0 }
+					}
+					Near(endpoint) => EntityDraw.terminal_label(route.points, endpoint, spec.block, if (endpoint == From) edge.from_mark else edge.to_mark)
+				}
+			},
+		)
+		result = { layout: { positions: geometry.nodes.map(|r| { x: r.x + r.width / 2, y: r.y + r.height / 2 }), bounds: geometry.bounds, routes: geometry.edges.map(|edge| Polyline(edge.points)) }, label_anchors }
+		{ measured, labels: $labels, result }
+	}
+
+	terminal_label : List(Drawing.Point), [From, To], Block, Mark -> Drawing.Point
+	terminal_label = |raw_points, endpoint, _block, mark| {
+		points = if (endpoint == From) raw_points else raw_points.rev()
+		first = points.first() ?? { x: 0, y: 0 }
+		next = points.get(1) ?? { x: first.x + 1, y: first.y }
+		dx = next.x - first.x
+		dy = next.y - first.y
+		length = (dx * dx + dy * dy).sqrt()
+		ux = if (length > 0) dx / length else 1
+		uy = if (length > 0) dy / length else 0
+		marker = if (mark == None) 0 else 10
+		along = (25.0 + marker) / 2
+		side = 10.0 + marker * 0.5
+		# Source multiplicity is on start-right, target on end-left, matching
+		# the class DB's terminal roles rather than creating additional ranks.
+		sign = if (endpoint == From) 1.0 else -1.0
+		{ x: first.x + ux * along + uy * side * sign, y: first.y + uy * along - ux * side * sign }
+	}
+
+	draw : List(Node), List(Edge), [Down, Up, Left, Right], Theme.Options -> Drawing.Picture
+	draw = |nodes, edges, direction, theme| EntityDraw.draw_sized(nodes, edges, direction, theme, [], [])
+
+	draw_sized : List(Node), List(Edge), [Down, Up, Left, Right], Theme.Options, List(Str), List(OracleJson.Size) -> Drawing.Picture
+	draw_sized = |nodes, edges, direction, theme, ids, overrides| {
+		arranged = EntityDraw.arrange_sized(nodes, edges, direction, theme, ids, overrides)
+		measured = arranged.measured
+		labels = arranged.labels
+		result = arranged.result
 		var $items = []
 		match theme.shadow {
 			NoShadow => {}
@@ -89,7 +271,7 @@ EntityDraw :: {}.{
 						match (measured.get(i), result.layout.positions.get(i)) {
 							(Ok(m), Ok(p)) => {
 								rect = { x: p.x - m.width / 2 + shadow.dx, y: p.y - m.height / 2 + shadow.dy, width: m.width, height: m.height }
-								$items = $items.append(Shape({ path: Drawing.rounded_rectangle(rect, theme.corner_radius), paint: { fill: Fill(color), stroke: NoStroke } }))
+								$items = $items.append(Shape({ path: Drawing.rounded_rectangle(rect, EntityDraw.radius(theme)), paint: { fill: Fill(color), stroke: NoStroke } }))
 							}
 							_ => {}
 						}
@@ -100,7 +282,7 @@ EntityDraw :: {}.{
 		for i in 0..<edges.len() {
 			match (edges.get(i), result.layout.routes.get(i)) {
 				(Ok(edge), Ok(route)) => {
-					points = EntityDraw.clip_points(EntityDraw.route_points(route), edge, measured, result.layout.positions, theme.corner_radius)
+					points = EntityDraw.clip_points(EntityDraw.route_points(route), edge, measured, result.layout.positions, EntityDraw.radius(theme))
 					$items = $items.concat(EntityDraw.route(points, edge.dashed, theme))
 					if points.len() >= 2 {
 						a = points.first() ?? { x: 0, y: 0 }
@@ -114,11 +296,11 @@ EntityDraw :: {}.{
 				_ => {}
 			}
 		}
-		for i in 0..<$labels.len() {
-			match ($labels.get(i), result.label_anchors.get(i)) {
+		for i in 0..<labels.len() {
+			match (labels.get(i), result.label_anchors.get(i)) {
 				(Ok(s), Ok(p)) => {
 					h = s.block.height
-					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x: p.x - s.block.width / 2 - 4, y: p.y - h / 2 - 2, width: s.block.width + 8, height: h + 4 }, 3), paint: { fill: Fill(theme.label_background), stroke: NoStroke } }))
+					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x: p.x - s.block.width / 2 - 2, y: p.y - h / 2 - 2, width: s.block.width + 4, height: h + 4 }, 3), paint: { fill: Fill(theme.label_background), stroke: NoStroke } }))
 					$items = $items.concat(EntityDraw.text(s.block, { x: p.x, y: p.y - h / 2 }, Center, theme, theme.label_text))
 				}
 				_ => {}
@@ -129,32 +311,61 @@ EntityDraw :: {}.{
 				(Ok(m), Ok(p)) => {
 					x = p.x - m.width / 2
 					y = p.y - m.height / 2
-					title_h = m.title.height + theme.padding * 2
-					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: m.height }, theme.corner_radius), paint: EntityDraw.paint(theme.background, theme.node_stroke, theme.line_width) }))
-					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: title_h }, theme.corner_radius), paint: { fill: Fill(theme.node_fill), stroke: NoStroke } }))
-					$items = $items.concat(EntityDraw.text(m.title, { x: p.x, y: y + theme.padding }, Center, theme, theme.node_text))
-					var $top = y + title_h
-					for section in m.sections {
-						$items = $items.append(EntityDraw.line({ x, y: $top }, { x: x + m.width, y: $top }, theme.node_stroke, theme.line_width))
-						$top = $top + theme.padding
-						for row in section {
-							$items = $items.concat(EntityDraw.text(row, { x: x + theme.padding, y: $top }, Start, theme, theme.node_text))
-							$top = $top + row.height
-						}
-						$top = $top + theme.padding
+					title_h = m.title_height
+					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: m.height }, EntityDraw.radius(theme)), paint: EntityDraw.paint(theme.background, theme.node_stroke, theme.line_width) }))
+					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: title_h }, EntityDraw.radius(theme)), paint: { fill: Fill(theme.node_fill), stroke: NoStroke } }))
+					node = nodes.get(i) ?? { kind: ClassBox, title: "", annotations: [], sections: [], table: [] }
+					annotation_height = m.annotations.fold(0.0, |height, annotation| height + annotation.height)
+					var $title_top = y + (m.title_height - m.title.height - annotation_height) / 2
+					for annotation in m.annotations {
+						$items = $items.concat(EntityDraw.text(annotation, { x: p.x, y: $title_top }, Center, theme, theme.node_text))
+						$title_top = $title_top + annotation.height
 					}
-					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: m.height }, theme.corner_radius), paint: { fill: NoFill, stroke: Stroke({ color: theme.node_stroke, width: theme.line_width }) } }))
+					$items = $items.concat(EntityDraw.style_items(EntityDraw.text(m.title, { x: p.x, y: $title_top }, Center, theme, theme.node_text), False, False, node.kind == ClassBox))
+					var $top = y + title_h
+					for section_index in 0..<m.sections.len() {
+						section = m.sections.get(section_index) ?? []
+						raw_section = node.sections.get(section_index) ?? []
+						$items = $items.append(EntityDraw.line({ x, y: $top }, { x: x + m.width, y: $top }, theme.node_stroke, theme.line_width))
+						section_padding = theme.padding * 12 / 15 * (if (node.sections.all(List.is_empty)) 0.75 else 1)
+						$top = $top + section_padding
+						for row_index in 0..<section.len() {
+							row = section.get(row_index) ?? { lines: [], width: 0, height: 0, baseline: 0, step: 0, font_size: 0 }
+							raw = raw_section.get(row_index) ?? ""
+							member = ClassMember.parse(raw, raw.contains("("))
+							row_items = EntityDraw.text(row, { x: x + theme.padding * 12 / 15, y: $top }, Start, theme, theme.node_text)
+							$items = $items.concat(EntityDraw.style_items(row_items, node.kind == ClassBox and member.classifier == "*", node.kind == ClassBox and member.classifier == "$", False))
+							$top = $top + row.height
+							if row_index + 1 < section.len() {
+								$top = $top + theme.font_size * 3 / 14
+							}
+						}
+						$top = $top + section_padding
+					}
+					if !m.table.is_empty() {
+						$top = y + title_h
+						for row_index in 0..<m.table.len() {
+							row = m.table.get(row_index) ?? []
+							row_height = m.row_heights.get(row_index) ?? 0
+							$items = $items.append(EntityDraw.line({ x, y: $top }, { x: x + m.width, y: $top }, theme.node_stroke, theme.line_width))
+							var $left = x
+							for column in 0..<row.len() {
+								cell = row.get(column) ?? { lines: [], width: 0, height: 0, baseline: 0, step: 0, font_size: 0 }
+								$items = $items.concat(EntityDraw.text(cell, { x: $left + theme.padding * 24 / 155 / 30, y: $top + (row_height - cell.height) / 2 }, Start, theme, theme.node_text))
+								if column > 0 {
+									$items = $items.append(EntityDraw.line({ x: $left, y: y + title_h }, { x: $left, y: y + m.height }, theme.node_stroke, theme.line_width))
+								}
+								$left = $left + (m.column_widths.get(column) ?? 0)
+							}
+							$top = $top + row_height
+						}
+					}
+					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: m.height }, EntityDraw.radius(theme)), paint: { fill: NoFill, stroke: Stroke({ color: theme.node_stroke, width: theme.line_width }) } }))
 				}
 				_ => {}
 			}
 		}
-		shadow_margin = match theme.shadow {
-			NoShadow => 0
-			Shadow(shadow) => shadow.dx.abs().max(shadow.dy.abs())
-		}
-		margin = theme.padding.max(16) + 18 + shadow_margin
-		b = result.layout.bounds
-		{ view: { x: b.x - margin, y: b.y - margin, width: b.width + margin * 2, height: b.height + margin * 2 }, items: $items }
+		{ view: result.layout.bounds, items: $items }
 	}
 
 	route_points : Geom.Route -> List(Drawing.Point)
@@ -245,13 +456,14 @@ EntityDraw :: {}.{
 ## of the first glyph. Zero padding must still contain every compartment.
 expect {
 	theme = Theme.Options.{ font_size: 64, line_height: 0.1, padding: 0, max_label_width: 300 }
-	node = { title: "Title", sections: [["first", "second"]] }
+	node = { kind: ClassBox, table: [], annotations: [], title: "Title", sections: [["first", "second"]] }
 	measured = EntityDraw.measure(node, theme)
 	picture = EntityDraw.draw([node], [], Down, theme)
 	labels = picture.items.fold(
 		[],
 		|out, item| match item {
 			Text(label) => out.append(label)
+			StyledText(styled) => out.append(styled.label)
 			_ => out
 		},
 	)
@@ -259,7 +471,7 @@ expect {
 		[title, first, second] => title.origin.y >= 60
 			and first.origin.y - title.origin.y >= 64
 			and second.origin.y - first.origin.y >= 64
-			and second.origin.y + 16 <= measured.height
+			and second.origin.y + 15 <= measured.height + FlowLayout.content_origin
 		_ => False
 	}
 }
@@ -267,12 +479,12 @@ expect {
 ## Regression: wrapped and explicit multiline cells reserve the full glyph
 ## extents even when successive baselines are much closer than one em.
 expect {
-	theme = Theme.Options.{ font_size: 64, line_height: 0.01, padding: 0, max_label_width: 90 }
+	theme = Theme.Options.{ font_size: 64, line_height: 0.01, padding: 0, max_label_width: 90, wrapping: Wrap }
 	cell = EntityDraw.measure_text("first line\nsecond line with several words", theme)
 	items = EntityDraw.text(cell, { x: 0, y: 0 }, Start, theme, theme.node_text)
 	cell.lines.len() > 2 and cell.height >= 64 and items.all(
 		|item| match item {
-			Text(label) => label.origin.y >= 60 and label.origin.y + 16 <= cell.height
+			Text(label) => label.origin.y >= 60 and label.origin.y + 15 <= cell.height
 			_ => False
 		},
 	)
@@ -280,9 +492,9 @@ expect {
 
 ## Regression: edge-label reservations use their measured text boxes too.
 expect {
-	theme = Theme.Options.{ font_size: 64, line_height: 0.1, padding: 0, max_label_width: 90 }
+	theme = Theme.Options.{ font_size: 64, line_height: 0.1, padding: 0, max_label_width: 90, wrapping: Wrap }
 	picture = EntityDraw.draw(
-		[{ title: "A", sections: [["field"]] }, { title: "B", sections: [] }],
+		[{ kind: ClassBox, table: [], annotations: [], title: "A", sections: [["field"]] }, { kind: ClassBox, table: [], annotations: [], title: "B", sections: [] }],
 		[{ from: 0, to: 1, label: "a long\nlabel", from_label: "1", to_label: "many", from_mark: None, to_mark: Arrow, dashed: False }],
 		Right,
 		theme,
@@ -290,7 +502,7 @@ expect {
 	Drawing.is_finite(picture) and picture.items.all(
 		|item| match item {
 			Text(label) => label.origin.y - 62 >= picture.view.y
-				and label.origin.y + 16 <= picture.view.y + picture.view.height
+				and label.origin.y + 15 <= picture.view.y + picture.view.height
 			_ => True
 		},
 	)
@@ -305,7 +517,7 @@ expect {
 ## regression: table connectors meet custom rounded corners, on the same axis.
 expect {
 	theme = Theme.Options.{}
-	box = EntityDraw.measure({ title: "Table", sections: [] }, theme)
+	box = EntityDraw.measure({ kind: ClassBox, table: [], annotations: [], title: "Table", sections: [] }, theme)
 	first = { x: box.width / 2 - 1, y: -box.height / 2 }
 	last = { x: 200 - box.width / 2, y: 0 }
 	points = [first, { x: first.x, y: first.y - 50 }, { x: last.x, y: first.y - 50 }, last]

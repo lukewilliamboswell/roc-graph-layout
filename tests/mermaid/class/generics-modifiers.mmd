@@ -1,0 +1,9 @@
+classDiagram
+ class List~T~
+ class List~U~
+ class Store {
+  +List~T~ values$
+  +read(id)* Result
+  +write(value)$ bool
+ }
+ Store --> List~T~ : returns
