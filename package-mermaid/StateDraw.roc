@@ -337,7 +337,7 @@ StateDraw :: {}.{
 		picture.items.all(
 			|item| match item {
 				Shape(_) => True
-				Text(text_item) | StyledText({ label: text_item }) => {
+				Text(text_item) | StyledText({ label: text_item, italic: _, underline: _, bold: _ }) => {
 					if text_item.text.is_empty() {
 						True
 					} else {
@@ -378,7 +378,7 @@ expect {
 	labels = StateDraw.node(diagram, state, rect, options).fold(
 		[],
 		|out, item| match item {
-			Text(label) | StyledText({ label }) => out.append(label)
+			Text(label) | StyledText({ label, italic: _, underline: _, bold: _ }) => out.append(label)
 			_ => out
 		},
 	)
