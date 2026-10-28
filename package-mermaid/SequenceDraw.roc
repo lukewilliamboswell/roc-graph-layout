@@ -70,6 +70,7 @@ SequenceDraw :: {}.{
 		var $left_note = 0.0
 		var $right_note = 0.0
 		var $frame_width = 0.0
+		var $activation_depths = List.repeat(0.U64, diagram.participants.len())
 		for event in diagram.events {
 			raw = SequenceDraw.event_text(event)
 			label_text = match event {
@@ -85,6 +86,31 @@ SequenceDraw :: {}.{
 			}
 			label = SequenceDraw.block(label_text, theme)
 			$texts = $texts.append(label)
+			action = match event {
+				Activate(index) => Some({ index, start: True })
+				Deactivate(index) => Some({ index, start: False })
+				Message(m) => match m.activation {
+					Keep => None
+					Start => Some({ index: m.to, start: True })
+					Stop => Some({ index: m.from, start: False })
+				}
+				_ => None
+			}
+			match action {
+				None => {}
+				Some(a) => {
+					depth = $activation_depths.get(a.index) ?? 0
+					if a.start {
+						next = depth + 1
+						# Parsed activation indices are in bounds. A wide header
+						# also reserves space for the stack beside its lifeline.
+						$activation_depths = $activation_depths.set(a.index, next) ?? []
+						$widths = $widths.set(a.index, ($widths.get(a.index) ?? 0).max((next.to_f64() * 5 + 12) * 2)) ?? []
+					} else if depth > 0 {
+						$activation_depths = $activation_depths.set(a.index, depth - 1) ?? []
+					}
+				}
+			}
 			match event {
 				Message(m) => {
 					hops = if m.from > m.to {
@@ -520,3 +546,13 @@ expect
 			((g.centers.get(1) ?? 0) - (g.centers.get(0) ?? 0)) > label.width + theme.padding * 2 + 16
 		}
 	}
+
+## fuzz regression: deep nested activation stacks reserve their actual
+## horizontal extent instead of escaping the last participant's column.
+expect {
+	source = "sequenceDiagram\nparticipant A\n${Str.join_with(List.repeat("activate A", 40), "\n")}\nA->>A: nested operation\n${Str.join_with(List.repeat("deactivate A", 40), "\n")}\n"
+	match SequenceParse.parse(source) {
+		Err(_) => False
+		Ok(d) => SequenceDraw.contains(SequenceDraw.draw(d, Theme.Options.{}), Theme.Options.{})
+	}
+}

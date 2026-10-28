@@ -246,7 +246,15 @@ SequenceParse :: {}.{
 		var $out = []
 		for physical in source.split_on("\n") {
 			if !physical.trim().starts_with("%%") {
-				bytes = physical.to_utf8()
+				# A declaration may carry a comment. Message text on subsequent
+				# lines (including literal percent signs) is not stripped.
+				declaration = (physical.split_on("%%").first() ?? physical).trim()
+				raw = if declaration == "sequenceDiagram" {
+					declaration
+				} else {
+					physical
+				}
+				bytes = raw.to_utf8()
 				var $current = []
 				var $i = 0
 				while $i < bytes.len() {
@@ -402,4 +410,10 @@ expect
 	match SequenceParse.parse("sequenceDiagram\nA->>B: <b>bold</b>\n") {
 		Err([Unsupported(_)]) => True
 		_ => False
+	}
+
+expect
+	match SequenceParse.parse("sequenceDiagram %% conversation\nA->>B: Hi\n") {
+		Ok(d) => d.participants.len() == 2 and d.events.len() == 1
+		Err(_) => False
 	}
