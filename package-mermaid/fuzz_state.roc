@@ -64,7 +64,7 @@ check = |source, options| match StateDiagram.parse(source) {
 		if !Drawing.is_finite(first) {
 			crash "state rendering emitted non-finite geometry"
 		}
-		if !StateDraw.labels_contained(first, options) {
+		if !StateDraw.labels_contained_in(first, options, geometry.groups.take_first(diagram.groups.len())) {
 			crash "state text escaped its node, group, note, or edge-label box"
 		}
 		svg = Svg.document(first, "Inter")

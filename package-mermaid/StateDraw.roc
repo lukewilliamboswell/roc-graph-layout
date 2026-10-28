@@ -263,8 +263,18 @@ StateDraw :: {}.{
 		)
 		title_boxes = supplied.group_titles.map(|title_block| { width: title_block.width, height: title_block.height })
 		normalized = FlowLayout.normalise({ ..placed, nodes: state_nodes }, label_boxes, title_boxes)
-		geometry = FlowTheme.clip_routes(flow, normalized, StateDraw.radius(options))
-		{ flow, sizes: supplied, geometry }
+		clipped = FlowTheme.clip_routes(flow, normalized, StateDraw.radius(options))
+		# SVG cluster titles overhang the painted frame by2px. Include their
+		# actual label boxes with Mermaid's8px diagram margin in the frame.
+		var $bounds = clipped.bounds
+		for i in 0..<diagram.groups.len() {
+			title = supplied.group_titles.get(i) ?? blank
+			rect = clipped.groups.get(i) ?? clipped.bounds
+			if title.height > 0 {
+				$bounds = StateDraw.union($bounds, { x: rect.x + rect.width / 2 - title.width / 2 - 8, y: rect.y - 10, width: title.width + 16, height: title.height + 16 })
+			}
+		}
+		{ flow, sizes: supplied, geometry: { ..clipped, bounds: $bounds } }
 	}
 
 	measured_size : List(SizeInput), Str, Str, { width : F64, height : F64 } -> { width : F64, height : F64 }
@@ -315,24 +325,21 @@ StateDraw :: {}.{
 		# Composite bodies precede edges and state bodies in painting order.
 		for g in FlowDraw.group_order(base_groups).order {
 			match (flow.groups.get(g), geometry.groups.get(g), sizes.group_titles.get(g)) {
-				(Ok(group), Ok(rect), Ok(title)) => {
-					o = FlowDrawStyle.resolve(flow.classes, group.classes, [], False)
-					paint = FlowDraw.paint_of(o, options.group_fill, options.group_stroke, options.line_width)
-					color = match o.color {
-						Paint(c) => c
-						Keep => options.node_text
-					}
-					$items = $items.append(Shape({ path: Drawing.rounded_rectangle(rect, StateDraw.radius(options)), paint }))
-					body_fill = match o.fill {
-						Paint(fill) => Fill(fill)
-						Remove => NoFill
-						Keep => Fill(options.background)
-					}
+				(Ok(_group), Ok(rect), Ok(title)) => {
+					original = diagram.groups.get(g) ?? crash "authored group index aligned"
+					styled = !original.styles.is_empty() or !original.classes.is_empty()
+					# Pinned Mermaid suppresses the composite palette for authored
+					# styles but does not apply those declarations to cluster shapes.
+					paint = { fill: Fill(if (styled) options.node_fill else options.group_fill), stroke: Stroke({ color: if (styled) options.node_stroke else options.group_stroke, width: options.line_width }) }
+					color = options.node_text
+					group_radius = if (options.corners == Rounded) options.corner_radius else 0
+					$items = $items.append(Shape({ path: Drawing.rounded_rectangle(rect, group_radius), paint }))
+					body_fill = Fill(if (styled) options.node_fill else options.background)
 					inner = { x: rect.x, y: rect.y + title.height + 2, width: rect.width, height: (rect.height - title.height - 6).max(0) }
 					if inner.height > 0 {
 						$items = $items.append(Shape({ path: Drawing.rectangle(inner), paint: { fill: body_fill, stroke: paint.stroke } }))
 					}
-					$items = $items.concat(StateDraw.lines(title.lines, rect.x + rect.width / 2, rect.y, color, options))
+					$items = $items.concat(StateDraw.lines(title.lines, rect.x + rect.width / 2, rect.y - 2, color, options))
 				}
 				_ => {}
 			}
@@ -401,7 +408,7 @@ StateDraw :: {}.{
 			Normal => if (options.corners == Square or (state.descriptions.len() > 1 and options.corners == FamilyDefault)) Drawing.rectangle(rect) else Drawing.rounded_rectangle(rect, StateDraw.radius(options))
 		}
 		fill = match state.effective_kind {
-			Initial => { fill: Fill(options.line), stroke: NoStroke }
+			Initial => { fill: Fill(options.line), stroke: Stroke({ color: options.node_stroke, width: options.line_width / 2 }) }
 			Fork | Join => FlowDraw.paint_of(overrides, options.line, options.line, options.line_width)
 			Final => { fill: Fill(options.background), stroke: Stroke({ color: options.line, width: options.line_width }) }
 			Normal | Choice => paint
@@ -429,12 +436,17 @@ StateDraw :: {}.{
 	## Contract probe: every text ink box belongs to a painted node, group,
 	## note, or edge-label box, rather than merely fitting the outer canvas.
 	labels_contained : Drawing.Picture, Theme.Options -> Bool
-	labels_contained = |picture, options| {
+	labels_contained = |picture, options| StateDraw.labels_contained_in(picture, options, [])
+
+	## Composite titles deliberately overhang their frame by2px in pinned
+	## Mermaid; this explicit allowance applies only to authored groups.
+	labels_contained_in : Drawing.Picture, Theme.Options, List(Drawing.Rect) -> Bool
+	labels_contained_in = |picture, options, headers| {
 		visible_items = match picture.items.first() {
 			Ok(Shape(first)) if first.path == Drawing.rectangle(picture.view) and first.paint == { fill: Fill(options.background), stroke: NoStroke } => picture.items.drop_first(1)
 			_ => picture.items
 		}
-		candidates = visible_items.fold(
+		painted_candidates = visible_items.fold(
 			[],
 			|out, item| match item {
 				Text(_) | StyledText(_) => out
@@ -460,6 +472,7 @@ StateDraw :: {}.{
 				}
 			},
 		)
+		candidates = painted_candidates.concat(headers.map(|rect| { left: rect.x, top: rect.y - 2, right: rect.x + rect.width, bottom: rect.y + rect.height }))
 		picture.items.all(
 			|item| match item {
 				Shape(_) => True
@@ -550,6 +563,6 @@ expect {
 	diagram = StateParser.parse("stateDiagram-v2\nstate \"Titleg\" as A\nA: Bodyg\nA --> B : Edgeg\nnote right of A : Noteg\nstate Groupg {\nChildg\n}\nB --> Groupg\n")?
 	picture = StateDraw.draw(diagram, options)
 	theme = StateDraw.drawing_theme(options)
-	Drawing.is_finite(picture) and StateDraw.labels_contained(picture, options)
+	Drawing.is_finite(picture) and StateDraw.labels_contained_in(picture, options, StateDraw.setup(diagram, options).geometry.groups.take_first(diagram.groups.len()))
 		and theme.line_height == 0.1 and theme.corner_radius == 19
 }

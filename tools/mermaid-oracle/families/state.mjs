@@ -66,7 +66,15 @@ export function normalizeReference(record) {
     const nodeIds = new Set([...states.keys(), ...groups.keys(), ...notes.map(note => `${note.state}----note`), ...notes.map(note => `${note.state}----parent`)]);
     const domId = value => String(value ?? '').replace(/^.*?-state-/, '').replace(/-\d+$/, '');
     const nodes = elements.filter(element => element.tag === 'g' && element.class.split(/\s+/).includes('node')).map(element => ({ id: cleanId(domId(element.id)), box: element.box })).filter(node => nodeIds.has(node.id));
-    const groupGeometry = elements.filter(element => element.tag === 'g' && element.class.split(/\s+/).includes('statediagram-cluster')).map(element => ({ id: cleanId(domId(element.id)), box: element.box })).filter(node => groups.has(node.id));
+    const groupGeometry = [];
+    let frameGroup;
+    const framed = new Set();
+    for (const element of elements) {
+        if (element.tag === 'g' && element.class.split(/\s+/).includes('statediagram-cluster')) frameGroup = cleanId(domId(element.id));
+        if (element.tag === 'rect' && element.class === 'outer' && groups.has(frameGroup) && !framed.has(frameGroup)) {
+            groupGeometry.push({id:frameGroup,box:element.box}); framed.add(frameGroup);
+        }
+    }
     const edgeModels = data.edges ?? [];
     const edges = [];
     let transitionIndex = 0, noteIndex = 0;
@@ -95,7 +103,9 @@ export function normalizeReference(record) {
     for (const element of elements) {
         if (element.tag === 'g' && element.class.split(/\s+/).includes('statediagram-cluster')) currentGroup = groups.get(cleanId(domId(element.id)));
         if (element.tag === 'g' && element.class === 'cluster-label' && currentGroup) {
-            labels.push({ id: `group-${currentGroup.id}`, size_kind: 'group', text: currentGroup.descriptions[0] ?? currentGroup.id, box: element.box });
+            const measured = (record.measured_input?.nodes ?? []).find(node => cleanId(node.id) === currentGroup.id)?.labelData;
+            if (!Number.isFinite(measured?.width) || !Number.isFinite(measured?.height)) throw new Error(`missing actual composite title input ${currentGroup.id}; refresh reference`);
+            labels.push({ id: `group-${currentGroup.id}`, size_kind: 'group', text: currentGroup.descriptions[0] ?? currentGroup.id, box: element.box, input_box:{width:measured.width,height:measured.height+2} });
         }
     }
     // The recorder captures the actual label measurement handed to ELK.

@@ -9,7 +9,9 @@ import Theme
 ## nested composite states, directions and choice/fork/join markers retain
 ## their state-machine meaning. Notes are adjacent layout nodes joined
 ## to their states by dashed associations. `classDef`, `class` and `style`
-## change node and composite colours, outlines and text colours.
+## change state colours, outlines and text colours. Pinned Mermaid retains
+## composite style declarations but paints those composites using the
+## base node colours; unstyled composites use the group colours.
 ##
 ## Concurrent regions, history states and interactions are reported as
 ## unsupported rather than approximated. State and transition lists preserve
@@ -64,7 +66,8 @@ StateDiagram := [].{
 	## values scale these roles together. Family-default wrapping applies
 	## to ordinary states and notes; transition labels and description
 	## compartments stay unwrapped.
-	## Explicit wrapping/corner choices override the role defaults.
+	## Composite frames are square by default, while ordinary states are
+	## rounded. Explicit wrapping/corner choices override the role defaults.
 	## `transition_label_background` colours the square backing of transition
 	## labels; its default is white.
 	draw : Str, Theme.Options -> Try(Drawing.Picture, List(Problem))

@@ -16,7 +16,7 @@ StateOracle :: {}.{
 	## The palette matches its classic white-state picture independently
 	## from the package's independently configurable appearance options.
 	reference_theme : Theme.Options
-	reference_theme = Theme.Options.{ font_size: 14, line_height: 1.1, padding: 15, max_label_width: 120, corner_radius: 12, line_width: 2, background: Drawing.white, node_fill: Drawing.white, node_stroke: Drawing.rgb(0x28253D), node_text: Drawing.rgb(0x28253D), line: Drawing.black, transition_label_background: Drawing.white, label_text: Drawing.rgb(0x28253D), accent: Drawing.black, group_fill: Drawing.rgb(0xFDF4FF), group_stroke: Drawing.rgb(0xE879F9), note_fill: Drawing.rgb(0xFFF5AD), note_stroke: Drawing.rgb(0x28253D), note_text: Drawing.rgb(0x28253D) }
+	reference_theme = Theme.Options.{}
 
 	inspect : Str, Theme.Options -> Str
 	inspect = |source, theme| StateOracle.inspect_sized(source, theme, [])
@@ -79,7 +79,7 @@ StateOracle :: {}.{
 						("id", OracleJson.string("group-${group.id}")),
 						("size_kind", OracleJson.string("group")),
 						("text", OracleJson.string(group.title)),
-						("box", OracleJson.rect({ x: rect.x + rect.width / 2 - block.width / 2, y: rect.y, width: block.width, height: block.height })),
+						("box", OracleJson.rect({ x: rect.x + rect.width / 2 - block.width / 2, y: rect.y - 2, width: block.width, height: block.height })),
 					])
 				},
 			)
@@ -410,5 +410,21 @@ expect {
 	match sizes.edge_labels.first()? {
 		Some(label) => label.lines == ["changes requested"]
 		None => False
+	}
+}
+
+## Pinned composite rendering suppresses the palette when the author adds
+## styles, without applying those declarations to the cluster rectangle.
+## Retain their source semantics while exposing both theme colour roles.
+expect {
+	d = StateDiagram.parse("stateDiagram-v2\nstate Queue {\nA --> B\n}\nstyle Queue fill:#F8FAFC,stroke:#64748B\n")?
+	options = Theme.Options.{ node_fill: Drawing.rgb(0x123456), node_stroke: Drawing.rgb(0x654321) }
+	setup = StateDraw.setup(d, options)
+	picture = StateDraw.draw_setup(d, options, setup)
+	match picture.items.first()? {
+		Shape(shape) => shape.path == Drawing.rectangle(setup.geometry.groups.first()?)
+			and shape.paint == { fill: Fill(options.node_fill), stroke: Stroke({ color: options.node_stroke, width: options.line_width }) }
+			and d.groups.first()?.styles == ["fill:#F8FAFC", "stroke:#64748B"]
+		_ => False
 	}
 }
