@@ -1,10 +1,14 @@
 {
-	"schema": 6,
-	"key": "2fb41637793d460ada1429129cecc725247bc6f90df0a8b39eb948f0b2894844",
+	"schema": 8,
+	"key": "dc0875ce9f6cc202f1f7925fc2d0209cdea963cd9f5c977c94642c44baac8bbe",
 	"provenance": {
-		"extractor": 6,
+		"extractor": 8,
+		"extractor_sha256": "7a128f0b9c6da9437db11b4e0b2ac76aae5e91bb8ecf22e989b6970eb16794a2",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "darwin",
+		"architecture": "arm64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
@@ -250,7 +254,7 @@
 				"label": {
 					"x": 83.1640625,
 					"y": 24.000000953674316,
-					"width": 10,
+					"width": 9.671875,
 					"height": 17
 				},
 				"text": {
@@ -260,7 +264,7 @@
 					"box": {
 						"x": -4.8359375,
 						"y": 9.5367431640625e-7,
-						"width": 10,
+						"width": 9.671875,
 						"height": 17
 					}
 				}
@@ -464,9 +468,9 @@
 				"marker_start": "url(#oracle_flowchart-v2-pointStart-margin)",
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
 				"label": {
-					"x": 214.763671875,
+					"x": 214.96875,
 					"y": 23.5,
-					"width": 25.20703125,
+					"width": 24.796875,
 					"height": 17
 				},
 				"text": {
@@ -476,7 +480,7 @@
 					"box": {
 						"x": -12.3984375,
 						"y": 9.5367431640625e-7,
-						"width": 25.20703125,
+						"width": 24.796875,
 						"height": 17
 					}
 				}
@@ -530,9 +534,9 @@
 				"marker_start": null,
 				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
 				"label": {
-					"x": 211.24365234375,
+					"x": 211.3984375,
 					"y": 185.5,
-					"width": 32.2470703125,
+					"width": 31.9375,
 					"height": 17
 				},
 				"text": {
@@ -542,12 +546,12 @@
 					"box": {
 						"x": -15.96875,
 						"y": 9.5367431640625e-7,
-						"width": 32.2470703125,
+						"width": 31.9375,
 						"height": 17
 					}
 				}
 			}
 		]
 	},
-	"svg_sha256": "c1acbb8375b248a61f5220949b773c8ed8901bc22ac9f4b4110d94cbdb94e398"
+	"svg_sha256": "64759b8fcf1b40e2626b0748be48a68c72bb9be40a84014774ecf570c4dd70d2"
 }

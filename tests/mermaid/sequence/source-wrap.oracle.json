@@ -1,10 +1,14 @@
 {
-	"schema": 7,
-	"key": "95ba517251e6e7fbc6ec45c814b18c7b7389f811cb87b7e6e426da4b2a04b291",
+	"schema": 8,
+	"key": "c2ab50e84272909013fcff65dd74c765be747441490cc8b564912c96d86b5327",
 	"provenance": {
-		"extractor": 7,
+		"extractor": 8,
+		"extractor_sha256": "2f2d682b8aa0ca6418cb246e096bc47706b6a753ca49643cc70f4e64568c3abe",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "darwin",
+		"architecture": "arm64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
@@ -57,6 +61,10 @@
 				}
 			]
 		],
+		"getActorKeys": [
+			"A",
+			"B"
+		],
 		"getMessages": [
 			{
 				"id": "0",
@@ -89,6 +97,9 @@
 			}
 		],
 		"getBoxes": [],
+		"getCreatedActors": [],
+		"getDestroyedActors": [],
+		"showSequenceNumbers": false,
 		"getDiagramTitle": "",
 		"getAccTitle": "",
 		"getAccDescription": ""
@@ -701,12 +712,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor7",
+				"id": "actor16",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor7",
+					"id": "actor16",
 					"x1": "362",
 					"y1": "156",
 					"x2": "362",
@@ -743,12 +754,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-7",
+				"id": "root-16",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-7",
+					"id": "root-16",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -781,7 +792,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-7",
+				"parent_id": "root-16",
 				"parent_class": "",
 				"attributes": {
 					"x": "241.5",
@@ -825,7 +836,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-7",
+				"parent_id": "root-16",
 				"parent_class": "",
 				"attributes": {
 					"x": "362",
@@ -923,12 +934,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor6",
+				"id": "actor15",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor6",
+					"id": "actor15",
 					"x1": "75",
 					"y1": "156",
 					"x2": "75",
@@ -965,12 +976,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-6",
+				"id": "root-15",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-6",
+					"id": "root-15",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -1003,7 +1014,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-6",
+				"parent_id": "root-15",
 				"parent_class": "",
 				"attributes": {
 					"x": "0",
@@ -1047,7 +1058,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-6",
+				"parent_id": "root-15",
 				"parent_class": "",
 				"attributes": {
 					"x": "75",
@@ -1117,7 +1128,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-6",
+				"parent_id": "root-15",
 				"parent_class": "",
 				"attributes": {
 					"x": "75",
@@ -1187,7 +1198,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-6",
+				"parent_id": "root-15",
 				"parent_class": "",
 				"attributes": {
 					"x": "75",
@@ -1257,7 +1268,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-6",
+				"parent_id": "root-15",
 				"parent_class": "",
 				"attributes": {
 					"x": "75",
@@ -1327,7 +1338,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-6",
+				"parent_id": "root-15",
 				"parent_class": "",
 				"attributes": {
 					"x": "75",
@@ -2096,6 +2107,29 @@
 			}
 		]
 	},
+	"measurements": [
+		{
+			"kind": "sequence-message",
+			"id": "0",
+			"text": "A long operation label whose words must wrap into the available message width without changing the text",
+			"width": 801.65625,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "1",
+			"text": "A note with enough descriptive text to wrap into a narrow note box",
+			"width": 502.921875,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "2",
+			"text": "An explicit one line response",
+			"width": 217.046875,
+			"height": 20
+		}
+	],
 	"layout": {
 		"view_box": {
 			"x": -50,
@@ -2104,5 +2138,5 @@
 			"height": 653
 		}
 	},
-	"svg_sha256": "54b9b7bd4cec6c501c9d846c625716a43e21635bd8443ad8918a34d41b71898e"
+	"svg_sha256": "aee5823cb8192a9df29b10e838586984b465b71a8eb44119dca4aa0a8914aa97"
 }

@@ -50,6 +50,10 @@ export async function provenance() {
 		// Puppeteer pins the exact browser build it downloads.
 		puppeteer: installedVersion('puppeteer'),
 		browser_revision: await require('puppeteer').default.browserVersion(),
+		// Glyph ink bounds and fonts missing from Inter are host-dependent.
+		// Never reuse a cache entry across operating systems or architectures.
+		platform: process.platform,
+		architecture: process.arch,
 		font_sha256: sha256(await fs.readFile(FONT_FILE)),
 		config: CONFIG,
 	};
@@ -136,6 +140,34 @@ async function extractInPage(source) {
 			};
 		});
 		result.rendering = { view_box, elements };
+		// Some layout inputs are never painted (state note-group titles), or
+		// are decoded only after measurement (sequence entity placeholders).
+		// Measure the original text with the reference font; never infer an
+		// input dimension from a final container or a decoded visible label.
+		const measureUnwrapped = (value, size, lineHeight) => {
+			const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+			text.setAttribute('font-family', '"Oracle Inter"');
+			text.setAttribute('font-size', String(size));
+			text.setAttribute('font-weight', 'normal');
+			text.setAttribute('visibility', 'hidden');
+			const rows = String(value ?? '').replace(/<br\s*\/?>/gi, '\n').split('\n');
+			for (const [index, row] of rows.entries()) {
+				const span = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+				span.setAttribute('x', '0');
+				span.setAttribute('y', String(index * size * lineHeight));
+				span.textContent = row;
+				text.appendChild(span);
+			}
+			svg.appendChild(text);
+			const b = text.getBBox();
+			const measured = { width: b.width, height: b.height };
+			text.remove();
+			return measured;
+		};
+		result.measurements = [
+			...(result.layout_input?.nodes ?? []).filter(node => node.shape === 'noteGroup').map(node => ({ kind: 'group', id: node.id, text: node.label, ...measureUnwrapped(node.label, 14, 1.1) })),
+			...(result.model.getMessages ?? []).filter(message => typeof message.message === 'string').map(message => ({ kind: 'sequence-message', id: String(message.id), text: message.message, ...measureUnwrapped(message.message, 16, 1.25) })),
+		];
 		result.layout = { view_box };
 		result.svg_sha256 = null;
 		result.svg = svgText;

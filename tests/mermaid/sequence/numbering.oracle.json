@@ -1,10 +1,14 @@
 {
-	"schema": 7,
-	"key": "a988ee8ace2f152c72944acc1bb4bfc7c5cde31a8cfbbc45157869ef8c62b127",
+	"schema": 8,
+	"key": "13b08ce0fa776bf8f7757494de563ec2438d447f86571e6d2e07f933dcb1523a",
 	"provenance": {
-		"extractor": 7,
+		"extractor": 8,
+		"extractor_sha256": "2f2d682b8aa0ca6418cb246e096bc47706b6a753ca49643cc70f4e64568c3abe",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "darwin",
+		"architecture": "arm64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
@@ -56,6 +60,10 @@
 					"type": "participant"
 				}
 			]
+		],
+		"getActorKeys": [
+			"A",
+			"B"
 		],
 		"getMessages": [
 			{
@@ -126,6 +134,9 @@
 			}
 		],
 		"getBoxes": [],
+		"getCreatedActors": [],
+		"getDestroyedActors": [],
+		"showSequenceNumbers": false,
 		"getDiagramTitle": "",
 		"getAccTitle": "",
 		"getAccDescription": ""
@@ -458,12 +469,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor3",
+				"id": "actor12",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor3",
+					"id": "actor12",
 					"x1": "298",
 					"y1": "76",
 					"x2": "298",
@@ -500,12 +511,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-3",
+				"id": "root-12",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-3",
+					"id": "root-12",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -538,7 +549,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-3",
+				"parent_id": "root-12",
 				"parent_class": "",
 				"attributes": {
 					"x": "223",
@@ -582,7 +593,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-3",
+				"parent_id": "root-12",
 				"parent_class": "",
 				"attributes": {
 					"x": "298",
@@ -680,12 +691,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor2",
+				"id": "actor11",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor2",
+					"id": "actor11",
 					"x1": "75",
 					"y1": "76",
 					"x2": "75",
@@ -722,12 +733,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-2",
+				"id": "root-11",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-2",
+					"id": "root-11",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -760,7 +771,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-2",
+				"parent_id": "root-11",
 				"parent_class": "",
 				"attributes": {
 					"x": "0",
@@ -804,7 +815,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-2",
+				"parent_id": "root-11",
 				"parent_class": "",
 				"attributes": {
 					"x": "75",
@@ -1382,6 +1393,36 @@
 			}
 		]
 	},
+	"measurements": [
+		{
+			"kind": "sequence-message",
+			"id": "0",
+			"text": "Before numbering",
+			"width": 135.8125,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "2",
+			"text": "First numbered call",
+			"width": 145,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "4",
+			"text": "Hidden number",
+			"width": 116.71875,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "6",
+			"text": "Numbering resumes",
+			"width": 153.265625,
+			"height": 20
+		}
+	],
 	"layout": {
 		"view_box": {
 			"x": -50,
@@ -1390,5 +1431,5 @@
 			"height": 423
 		}
 	},
-	"svg_sha256": "638d55552a86d2130a1503d3945167625ba10e27947e5c288625abb452d40bd3"
+	"svg_sha256": "bbca7baf303b07846b8c3a402083aaa98af683522e3bdd860f46e47e5bb3271f"
 }

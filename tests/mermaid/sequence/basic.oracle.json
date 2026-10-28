@@ -1,10 +1,14 @@
 {
-	"schema": 7,
-	"key": "4eb0889451244fe9617dbbe7571946d38819a7631e0b5c941f751f5da66555e9",
+	"schema": 8,
+	"key": "b871c70bf0041ef641daf2bf7fdfce9156e4b33bef923d3c5b06caddbed4dadb",
 	"provenance": {
-		"extractor": 7,
+		"extractor": 8,
+		"extractor_sha256": "2f2d682b8aa0ca6418cb246e096bc47706b6a753ca49643cc70f4e64568c3abe",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "darwin",
+		"architecture": "arm64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
@@ -57,6 +61,10 @@
 				}
 			]
 		],
+		"getActorKeys": [
+			"A",
+			"B"
+		],
 		"getMessages": [
 			{
 				"id": "0",
@@ -80,6 +88,9 @@
 			}
 		],
 		"getBoxes": [],
+		"getCreatedActors": [],
+		"getDestroyedActors": [],
+		"showSequenceNumbers": false,
 		"getDiagramTitle": "",
 		"getAccTitle": "",
 		"getAccDescription": ""
@@ -1022,6 +1033,22 @@
 			}
 		]
 	},
+	"measurements": [
+		{
+			"kind": "sequence-message",
+			"id": "0",
+			"text": "Hello",
+			"width": 38.5625,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "1",
+			"text": "World",
+			"width": 44.5,
+			"height": 20
+		}
+	],
 	"layout": {
 		"view_box": {
 			"x": -50,

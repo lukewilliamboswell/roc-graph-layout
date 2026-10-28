@@ -1,10 +1,14 @@
 {
-	"schema": 7,
-	"key": "184bd02bf535ad1c73c2423d2027ba2d59ba7ab5411fc264b41cdc5dd3038489",
+	"schema": 8,
+	"key": "542f67611bfb0ae28880fe4baacce9806af348d9c0d3b403e440e064aeff6b79",
 	"provenance": {
-		"extractor": 7,
+		"extractor": 8,
+		"extractor_sha256": "2f2d682b8aa0ca6418cb246e096bc47706b6a753ca49643cc70f4e64568c3abe",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "darwin",
+		"architecture": "arm64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
@@ -71,6 +75,11 @@
 					"type": "participant"
 				}
 			]
+		],
+		"getActorKeys": [
+			"User",
+			"API",
+			"Worker"
 		],
 		"getMessages": [
 			{
@@ -172,6 +181,9 @@
 			}
 		],
 		"getBoxes": [],
+		"getCreatedActors": [],
+		"getDestroyedActors": [],
+		"showSequenceNumbers": false,
 		"getDiagramTitle": "",
 		"getAccTitle": "",
 		"getAccDescription": ""
@@ -534,12 +546,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor8",
+				"id": "actor10",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor8",
+					"id": "actor10",
 					"x1": "1059.5",
 					"y1": "76",
 					"x2": "1059.5",
@@ -576,12 +588,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-8",
+				"id": "root-10",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-8",
+					"id": "root-10",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -614,7 +626,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-8",
+				"parent_id": "root-10",
 				"parent_class": "",
 				"attributes": {
 					"x": "984.5",
@@ -658,7 +670,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-8",
+				"parent_id": "root-10",
 				"parent_class": "",
 				"attributes": {
 					"x": "1059.5",
@@ -756,12 +768,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor7",
+				"id": "actor9",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor7",
+					"id": "actor9",
 					"x1": "713",
 					"y1": "76",
 					"x2": "713",
@@ -798,12 +810,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-7",
+				"id": "root-9",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-7",
+					"id": "root-9",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -836,7 +848,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-7",
+				"parent_id": "root-9",
 				"parent_class": "",
 				"attributes": {
 					"x": "491.5",
@@ -880,7 +892,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-7",
+				"parent_id": "root-9",
 				"parent_class": "",
 				"attributes": {
 					"x": "713",
@@ -978,12 +990,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor6",
+				"id": "actor8",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor6",
+					"id": "actor8",
 					"x1": "75",
 					"y1": "76",
 					"x2": "75",
@@ -1516,12 +1528,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor-man-torso6",
+				"id": "actor-man-torso8",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "actor-man actor-top",
 				"attributes": {
-					"id": "actor-man-torso6",
+					"id": "actor-man-torso8",
 					"x1": "75",
 					"y1": "20.307692307692307",
 					"x2": "75",
@@ -1552,12 +1564,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor-man-arms6",
+				"id": "actor-man-arms8",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "actor-man actor-top",
 				"attributes": {
-					"id": "actor-man-arms6",
+					"id": "actor-man-arms8",
 					"x1": "62.815384615384616",
 					"y1": "25.72307692307692",
 					"x2": "87.18461538461538",
@@ -2377,12 +2389,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor-man-torso8",
+				"id": "actor-man-torso10",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "actor-man actor-bottom",
 				"attributes": {
-					"id": "actor-man-torso8",
+					"id": "actor-man-torso10",
 					"x1": "75",
 					"y1": "652.3076923076923",
 					"x2": "75",
@@ -2413,12 +2425,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor-man-arms8",
+				"id": "actor-man-arms10",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "actor-man actor-bottom",
 				"attributes": {
-					"id": "actor-man-arms8",
+					"id": "actor-man-arms10",
 					"x1": "62.815384615384616",
 					"y1": "657.723076923077",
 					"x2": "87.18461538461538",
@@ -2625,6 +2637,78 @@
 			}
 		]
 	},
+	"measurements": [
+		{
+			"kind": "sequence-message",
+			"id": "0",
+			"text": "A note outside the first column",
+			"width": 231.47116088867188,
+			"height": 20.444595336914062
+		},
+		{
+			"kind": "sequence-message",
+			"id": "1",
+			"text": "Start a very long operation with a request label that wraps into several lines",
+			"width": 567.46533203125,
+			"height": 20.444595336914062
+		},
+		{
+			"kind": "sequence-message",
+			"id": "2",
+			"text": "Asynchronous job",
+			"width": 136.49961853027344,
+			"height": 20.444595336914062
+		},
+		{
+			"kind": "sequence-message",
+			"id": "3",
+			"text": "Completed",
+			"width": 82.44921875,
+			"height": 20.444595336914062
+		},
+		{
+			"kind": "sequence-message",
+			"id": "4",
+			"text": "Synchronize",
+			"width": 93.85346984863281,
+			"height": 20.444595336914062
+		},
+		{
+			"kind": "sequence-message",
+			"id": "5",
+			"text": "Cancel obsolete work",
+			"width": 163.84426879882812,
+			"height": 20.444595336914062
+		},
+		{
+			"kind": "sequence-message",
+			"id": "6",
+			"text": "Persist retry state",
+			"width": 133.1454315185547,
+			"height": 20.444595336914062
+		},
+		{
+			"kind": "sequence-message",
+			"id": "7",
+			"text": "A note outside the last column",
+			"width": 228.50030517578125,
+			"height": 20.444595336914062
+		},
+		{
+			"kind": "sequence-message",
+			"id": "8",
+			"text": "Shared context across the conversation",
+			"width": 299.8647155761719,
+			"height": 20.444595336914062
+		},
+		{
+			"kind": "sequence-message",
+			"id": "9",
+			"text": "Result",
+			"width": 46.6072883605957,
+			"height": 20.444595336914062
+		}
+	],
 	"layout": {
 		"view_box": {
 			"x": -252,
@@ -2633,5 +2717,5 @@
 			"height": 753
 		}
 	},
-	"svg_sha256": "d41e298a703832f63de1a2ee6e84962ca1f0273b6768bf6aa39ebd2b140f009a"
+	"svg_sha256": "4f95e843ffe8f5493c731d893266ba0a1f2c184c423c4723fe3b34cfe4b117f0"
 }

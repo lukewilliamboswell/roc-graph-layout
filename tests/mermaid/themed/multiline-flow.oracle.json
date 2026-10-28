@@ -1,0 +1,552 @@
+{
+	"schema": 8,
+	"key": "dc6f54cb0a2aa726bb1ee3adac1881efb06ca3d759b8ca5631dc8f9a1ff76ebd",
+	"provenance": {
+		"extractor": 8,
+		"extractor_sha256": "7a128f0b9c6da9437db11b4e0b2ac76aae5e91bb8ecf22e989b6970eb16794a2",
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "darwin",
+		"architecture": "arm64",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart TD\n    subgraph services [A long group title that needs to wrap without colliding with the nodes inside]\n        A[First service with a particularly long explanatory label]\n        B[Second service<br>With an explicit break]\n        C[Third service]\n        A -->|A long relationship label explaining why this transition happens| B\n        A --> C\n        B --> A\n    end\n    C --> D([Completed])\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "TB",
+		"nodes": [
+			{
+				"id": "A",
+				"text": "First service with a particularly long explanatory label",
+				"label": "First service with a particularly long explanatory label",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "B",
+				"text": "Second service<br>With an explicit break",
+				"label": "Second service\nWith an explicit break",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "C",
+				"text": "Third service",
+				"label": "Third service",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "D",
+				"text": "Completed",
+				"label": "Completed",
+				"shape": "stadium",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "A",
+				"to": "B",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "A long relationship label explaining why this transition happens",
+				"label": "A long relationship label explaining why this transition happens",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "A",
+				"to": "C",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "B",
+				"to": "A",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "C",
+				"to": "D",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [
+			{
+				"id": "services",
+				"title": "A long group title that needs to wrap without colliding with the nodes inside",
+				"label": "A long group title that needs to wrap without colliding with the nodes inside",
+				"nodes": [
+					"A",
+					"B",
+					"C"
+				],
+				"dir": null,
+				"classes": []
+			}
+		],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "services",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 0,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "A",
+				"is_group": false,
+				"parent": "services",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "B",
+				"is_group": false,
+				"parent": "services",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "C",
+				"is_group": false,
+				"parent": "services",
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "D",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "stadium",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_A_B_0",
+				"from": "A",
+				"to": "B",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_A_C_0",
+				"from": "A",
+				"to": "C",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_B_A_0",
+				"from": "B",
+				"to": "A",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_C_D_0",
+				"from": "C",
+				"to": "D",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 0,
+			"y": 4,
+			"width": 521.484375,
+			"height": 614.484375
+		},
+		"nodes": [
+			{
+				"id": "A",
+				"center": {
+					"x": 176.7421875,
+					"y": 91.92147827148438
+				},
+				"box": {
+					"x": 100.7421875,
+					"y": 56.021480560302734,
+					"width": 152,
+					"height": 71.79999542236328
+				},
+				"outer": {
+					"x": 100.7421875,
+					"y": 56.021480560302734,
+					"width": 152,
+					"height": 71.79999542236328
+				},
+				"label": {
+					"x": 117.3515625,
+					"y": 68.02147960662842,
+					"width": 118.78125,
+					"height": 47.79999923706055
+				},
+				"text": {
+					"rows": [
+						"First service with",
+						"a particularly long",
+						"explanatory label"
+					],
+					"box": {
+						"x": -59.390625,
+						"y": 9.5367431640625e-7,
+						"width": 118.78125,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "B",
+				"center": {
+					"x": 121.2421875,
+					"y": 335.521484375
+				},
+				"box": {
+					"x": 45.2421875,
+					"y": 299.62148666381836,
+					"width": 152,
+					"height": 71.79999542236328
+				},
+				"outer": {
+					"x": 45.2421875,
+					"y": 299.62148666381836,
+					"width": 152,
+					"height": 71.79999542236328
+				},
+				"label": {
+					"x": 69.84375,
+					"y": 311.62148571014404,
+					"width": 102.796875,
+					"height": 47.79999923706055
+				},
+				"text": {
+					"rows": [
+						"Second service",
+						"With an explicit",
+						"break"
+					],
+					"box": {
+						"x": -51.3984375,
+						"y": 9.5367431640625e-7,
+						"width": 102.796875,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "C",
+				"center": {
+					"x": 400.2421875,
+					"y": 213.7214813232422
+				},
+				"box": {
+					"x": 324.2421875,
+					"y": 193.2214813232422,
+					"width": 152,
+					"height": 41
+				},
+				"outer": {
+					"x": 324.2421875,
+					"y": 193.2214813232422,
+					"width": 152,
+					"height": 41
+				},
+				"label": {
+					"x": 356.875,
+					"y": 205.2214822769165,
+					"width": 86.734375,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"Third service"
+					],
+					"box": {
+						"x": -43.3671875,
+						"y": 9.5367431640625e-7,
+						"width": 86.734375,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "D",
+				"center": {
+					"x": 400.2421875,
+					"y": 589.984375
+				},
+				"box": {
+					"x": 315.12772369384766,
+					"y": 569.484375,
+					"width": 170.2289276123047,
+					"height": 41
+				},
+				"outer": {
+					"x": 315.12772369384766,
+					"y": 569.484375,
+					"width": 170.2289276123047,
+					"height": 41
+				},
+				"label": {
+					"x": 364.1484375,
+					"y": 581.4843759536743,
+					"width": 72.1875,
+					"height": 17
+				},
+				"text": {
+					"rows": [
+						"Completed"
+					],
+					"box": {
+						"x": -36.09375,
+						"y": 9.5367431640625e-7,
+						"width": 72.1875,
+						"height": 17
+					}
+				}
+			}
+		],
+		"clusters": [
+			{
+				"id": "services",
+				"box": {
+					"x": 8,
+					"y": 12,
+					"width": 505.484375,
+					"height": 383.4214782714844
+				},
+				"label": {
+					"x": 12,
+					"y": 12.000000953674316,
+					"width": 497.484375,
+					"height": 17.021484375
+				},
+				"text": {
+					"rows": [
+						"A long group title that needs to wrap without colliding with the nodes inside"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 497.484375,
+						"height": 17.021484375
+					}
+				}
+			}
+		],
+		"edges": [
+			{
+				"id": "L_A_B_0",
+				"points": [
+					{
+						"x": 176.7421875,
+						"y": 127.82147979736328
+					},
+					{
+						"x": 176.74218749999997,
+						"y": 269.6214790344238
+					},
+					{
+						"x": 142.9755208333333,
+						"y": 269.6214790344238
+					},
+					{
+						"x": 142.9755208333333,
+						"y": 299.6214790344238
+					}
+				],
+				"path": "M176.7421875,127.82147979736328L176.74218749999997,262.55041122255835Q176.74218749999997,269.6214790344238 169.6711196881345,269.6214790344238L150.04658864519877,269.6214790344238Q142.9755208333333,269.6214790344238 142.9755208333333,276.6925468462893L142.9755208333333,295.6214790344238",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 80.7421875,
+					"y": 189.8214807510376,
+					"width": 191.5,
+					"height": 47.79999923706055
+				},
+				"text": {
+					"rows": [
+						"A long relationship label",
+						"explaining why this transition",
+						"happens"
+					],
+					"box": {
+						"x": -95.75,
+						"y": 9.5367431640625e-7,
+						"width": 191.5,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "L_A_C_0",
+				"points": [
+					{
+						"x": 209.34218749999997,
+						"y": 127.82147979736328
+					},
+					{
+						"x": 209.34218749999997,
+						"y": 157.82147979736328
+					},
+					{
+						"x": 400.24218749999994,
+						"y": 157.82147979736328
+					},
+					{
+						"x": 400.24218749999994,
+						"y": 193.22147941589355
+					}
+				],
+				"path": "M209.34218749999997,127.82147979736328L209.34218749999997,150.7504119854978Q209.34218749999997,157.82147979736328 216.41325531186544,157.82147979736328L393.17111968813447,157.82147979736328Q400.24218749999994,157.82147979736328 400.24218749999994,164.89254760922876L400.24218749999994,189.22147941589355",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_B_A_0",
+				"points": [
+					{
+						"x": 99.50885416666665,
+						"y": 299.6214790344238
+					},
+					{
+						"x": 99.50885416666665,
+						"y": 269.6214790344238
+					},
+					{
+						"x": 65.74218749999997,
+						"y": 269.6214790344238
+					},
+					{
+						"x": 65.74218749999997,
+						"y": 157.82147979736328
+					},
+					{
+						"x": 144.14218749999998,
+						"y": 157.82147979736328
+					},
+					{
+						"x": 144.14218749999998,
+						"y": 127.82147979736328
+					}
+				],
+				"path": "M99.50885416666665,299.6214790344238L99.50885416666665,276.6925468462893Q99.50885416666665,269.6214790344238 92.43778635480118,269.6214790344238L72.81325531186545,269.6214790344238Q65.74218749999997,269.6214790344238 65.74218749999997,262.55041122255835L65.74218749999997,164.89254760922876Q65.74218749999997,157.82147979736328 72.81325531186545,157.82147979736328L137.0711196881345,157.82147979736328Q144.14218749999998,157.82147979736328 144.14218749999998,150.7504119854978L144.14218749999998,131.82147979736328",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_C_D_0",
+				"points": [
+					{
+						"x": 400.24218749999994,
+						"y": 234.22147941589355
+					},
+					{
+						"x": 400.2421875,
+						"y": 529.484375
+					},
+					{
+						"x": 400.2421875,
+						"y": 569.484375
+					}
+				],
+				"path": "M400.24218749999994,234.22147941589355L400.2421875,529.484375L400.2421875,565.484375",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			}
+		]
+	},
+	"svg_sha256": "4817f8a3b2b68a32a1f3e8735455d2de6392521107b12fa0e781e6d5215b2f07"
+}

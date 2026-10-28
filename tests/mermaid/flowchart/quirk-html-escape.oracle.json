@@ -1,10 +1,14 @@
 {
-	"schema": 6,
-	"key": "734817c587d6f04bec9864ffd2fa21a1e4d72fcb16c29c0da7c441cd666367b3",
+	"schema": 8,
+	"key": "3d960925ea98bb57e40d79373f5d9d5bf0b87fc8e22748ed3f93c1418a0486fb",
 	"provenance": {
-		"extractor": 6,
+		"extractor": 8,
+		"extractor_sha256": "7a128f0b9c6da9437db11b4e0b2ac76aae5e91bb8ecf22e989b6970eb16794a2",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "darwin",
+		"architecture": "arm64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,

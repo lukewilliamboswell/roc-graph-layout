@@ -1,10 +1,14 @@
 {
-	"schema": 6,
-	"key": "5d7d4ed73623f696c3eac81bd58ea63e3720c369febfa7462802072fbce597df",
+	"schema": 8,
+	"key": "58266c5142947b451a91d6b8fb2b15fa088ce14f13c83b064d1b35de383792b9",
 	"provenance": {
-		"extractor": 6,
+		"extractor": 8,
+		"extractor_sha256": "7a128f0b9c6da9437db11b4e0b2ac76aae5e91bb8ecf22e989b6970eb16794a2",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "darwin",
+		"architecture": "arm64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
@@ -172,7 +176,7 @@
 				"label": {
 					"x": 83.1640625,
 					"y": 24.000000953674316,
-					"width": 10,
+					"width": 9.671875,
 					"height": 17
 				},
 				"text": {
@@ -182,7 +186,7 @@
 					"box": {
 						"x": -4.8359375,
 						"y": 9.5367431640625e-7,
-						"width": 10,
+						"width": 9.671875,
 						"height": 17
 					}
 				}

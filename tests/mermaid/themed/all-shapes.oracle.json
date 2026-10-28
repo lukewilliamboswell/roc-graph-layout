@@ -1,0 +1,317 @@
+{
+	"schema": 8,
+	"key": "dfd2aec8485cf7a9b468275e1297f12c6892aef74a23acc353af957869b82cc6",
+	"provenance": {
+		"extractor": 8,
+		"extractor_sha256": "7a128f0b9c6da9437db11b4e0b2ac76aae5e91bb8ecf22e989b6970eb16794a2",
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "darwin",
+		"architecture": "arm64",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart LR\n    rectangle[A long label that wraps across lines]\n    rounded(A long label that wraps across lines)\n    stadium([A long label that wraps across lines])\n    subroutine[[A long label that wraps across lines]]\n    cylinder[(A long label that wraps across lines)]\n    circle((A long label that wraps across lines))\n    doublecircle(((A long label that wraps across lines)))\n    ellipse(-A long label that wraps across lines-)\n    asymmetric>A long label that wraps across lines]\n    diamond{A long label that wraps across lines}\n    hexagon{{A long label that wraps across lines}}\n    leanright[/A long label that wraps across lines/]\n    leanleft[\\A long label that wraps across lines\\]\n    trapezoid[/A long label that wraps across lines\\]\n    inverse[\\A long label that wraps across lines/]\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "LR",
+		"nodes": [
+			{
+				"id": "rectangle",
+				"text": "A long label that wraps across lines",
+				"label": "A long label that wraps across lines",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "rounded",
+				"text": "A long label that wraps across lines",
+				"label": "A long label that wraps across lines",
+				"shape": "round",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "stadium",
+				"text": "A long label that wraps across lines",
+				"label": "A long label that wraps across lines",
+				"shape": "stadium",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "subroutine",
+				"text": "A long label that wraps across lines",
+				"label": "A long label that wraps across lines",
+				"shape": "subroutine",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "cylinder",
+				"text": "A long label that wraps across lines",
+				"label": "A long label that wraps across lines",
+				"shape": "cylinder",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "circle",
+				"text": "A long label that wraps across lines",
+				"label": "A long label that wraps across lines",
+				"shape": "circle",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "doublecircle",
+				"text": "A long label that wraps across lines",
+				"label": "A long label that wraps across lines",
+				"shape": "doublecircle",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "ellipse",
+				"text": "A long label that wraps across lines",
+				"label": "A long label that wraps across lines",
+				"shape": "ellipse",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "asymmetric",
+				"text": "A long label that wraps across lines",
+				"label": "A long label that wraps across lines",
+				"shape": "odd",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "diamond",
+				"text": "A long label that wraps across lines",
+				"label": "A long label that wraps across lines",
+				"shape": "diamond",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "hexagon",
+				"text": "A long label that wraps across lines",
+				"label": "A long label that wraps across lines",
+				"shape": "hexagon",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "leanright",
+				"text": "A long label that wraps across lines",
+				"label": "A long label that wraps across lines",
+				"shape": "lean_right",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "leanleft",
+				"text": "A long label that wraps across lines",
+				"label": "A long label that wraps across lines",
+				"shape": "lean_left",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "trapezoid",
+				"text": "A long label that wraps across lines",
+				"label": "A long label that wraps across lines",
+				"shape": "trapezoid",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "inverse",
+				"text": "A long label that wraps across lines",
+				"label": "A long label that wraps across lines",
+				"shape": "inv_trapezoid",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [],
+		"subgraphs": [],
+		"classes": []
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "rectangle",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "rounded",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "roundedRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "stadium",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "stadium",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "subroutine",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "subroutine",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "cylinder",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "cylinder",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "circle",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "circle",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "doublecircle",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "doublecircle",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "ellipse",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "ellipse",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "asymmetric",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "odd",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "diamond",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "diamond",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "hexagon",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "hexagon",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "leanright",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "lean_right",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "leanleft",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "lean_left",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "trapezoid",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "trapezoid",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "inverse",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "inv_trapezoid",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": []
+	},
+	"render_error": "No such shape: ellipse. Please check your syntax."
+}

@@ -1,10 +1,14 @@
 {
-	"schema": 7,
-	"key": "9c13155b7c27b27688e513f88f7851fe968c2d1cb8fc0d28eac82ca072e640d4",
+	"schema": 8,
+	"key": "3e04453f55bf3ebc54cd215e89d71075eaa36d41ebc9e12a3a8c814f0a21c29a",
 	"provenance": {
-		"extractor": 7,
+		"extractor": 8,
+		"extractor_sha256": "2f2d682b8aa0ca6418cb246e096bc47706b6a753ca49643cc70f4e64568c3abe",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "darwin",
+		"architecture": "arm64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
@@ -57,6 +61,10 @@
 				}
 			]
 		],
+		"getActorKeys": [
+			"A",
+			"B"
+		],
 		"getMessages": [
 			{
 				"id": "0",
@@ -80,6 +88,9 @@
 			}
 		],
 		"getBoxes": [],
+		"getCreatedActors": [],
+		"getDestroyedActors": [],
+		"showSequenceNumbers": false,
 		"getDiagramTitle": "",
 		"getAccTitle": "",
 		"getAccDescription": ""
@@ -412,12 +423,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor5",
+				"id": "actor14",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor5",
+					"id": "actor14",
 					"x1": "431",
 					"y1": "76",
 					"x2": "431",
@@ -454,12 +465,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-5",
+				"id": "root-14",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-5",
+					"id": "root-14",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -492,7 +503,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-5",
+				"parent_id": "root-14",
 				"parent_class": "",
 				"attributes": {
 					"x": "356",
@@ -536,7 +547,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-5",
+				"parent_id": "root-14",
 				"parent_class": "",
 				"attributes": {
 					"x": "431",
@@ -634,12 +645,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor4",
+				"id": "actor13",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor4",
+					"id": "actor13",
 					"x1": "75",
 					"y1": "76",
 					"x2": "75",
@@ -676,12 +687,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-4",
+				"id": "root-13",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-4",
+					"id": "root-13",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -714,7 +725,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-4",
+				"parent_id": "root-13",
 				"parent_class": "",
 				"attributes": {
 					"x": "0",
@@ -758,7 +769,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-4",
+				"parent_id": "root-13",
 				"parent_class": "",
 				"attributes": {
 					"x": "75",
@@ -1022,6 +1033,22 @@
 			}
 		]
 	},
+	"measurements": [
+		{
+			"kind": "sequence-message",
+			"id": "0",
+			"text": "helloﬂ°°59¶ß world",
+			"width": 145.375,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "1",
+			"text": "ﬂ°°35¶ß42 and ﬂ°quot¶ßyesﬂ°quot¶ß",
+			"width": 285.6875,
+			"height": 20
+		}
+	],
 	"layout": {
 		"view_box": {
 			"x": -50,
@@ -1030,5 +1057,5 @@
 			"height": 323
 		}
 	},
-	"svg_sha256": "f2d8097a3014b7268e66760f56f4204ada639a5a6b26be639723296cb0702a05"
+	"svg_sha256": "9870948f85b40aa364142063fa0c1459b8002cb622401e674cb8e48f2c70d01b"
 }

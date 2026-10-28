@@ -1,10 +1,14 @@
 {
-	"schema": 6,
-	"key": "6b49dfdc772c45f76e274650f920691c1eeca7509ac032a9fbd81756dbcde9f8",
+	"schema": 8,
+	"key": "37afbea7ae14d42163be63627ac85708c0787e07d4d0649a4547537799b96b64",
 	"provenance": {
-		"extractor": 6,
+		"extractor": 8,
+		"extractor_sha256": "7a128f0b9c6da9437db11b4e0b2ac76aae5e91bb8ecf22e989b6970eb16794a2",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "darwin",
+		"architecture": "arm64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
@@ -128,9 +132,9 @@
 					"height": 56.400001525878906
 				},
 				"label": {
-					"x": 29.17987823486328,
+					"x": 29.156436920166016,
 					"y": 23.99818683019839,
-					"width": 117.64024353027344,
+					"width": 117.68712615966797,
 					"height": 32.40220260620117
 				},
 				"text": {

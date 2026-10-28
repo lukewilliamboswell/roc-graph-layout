@@ -1,10 +1,14 @@
 {
-	"schema": 6,
-	"key": "c96ef22063d4abe010e0df0585c6e176b6c0893829a0e735e75a61dc1b6e03ed",
+	"schema": 8,
+	"key": "5b09c46ffd1dfa10fbe7c55330ef3baf146b8ac32da7302028c88747196cb005",
 	"provenance": {
-		"extractor": 6,
+		"extractor": 8,
+		"extractor_sha256": "7a128f0b9c6da9437db11b4e0b2ac76aae5e91bb8ecf22e989b6970eb16794a2",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "darwin",
+		"architecture": "arm64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
@@ -592,7 +596,7 @@
 				"label": {
 					"x": 83.1640625,
 					"y": 469.5000009536743,
-					"width": 10,
+					"width": 9.671875,
 					"height": 17
 				},
 				"text": {
@@ -602,7 +606,7 @@
 					"box": {
 						"x": -4.8359375,
 						"y": 9.5367431640625e-7,
-						"width": 10,
+						"width": 9.671875,
 						"height": 17
 					}
 				}
@@ -952,7 +956,7 @@
 				"label": {
 					"x": 375.296875,
 					"y": 753.0000009536743,
-					"width": 10,
+					"width": 9.40625,
 					"height": 17
 				},
 				"text": {
@@ -962,7 +966,7 @@
 					"box": {
 						"x": -4.703125,
 						"y": 9.5367431640625e-7,
-						"width": 10,
+						"width": 9.40625,
 						"height": 17
 					}
 				}
@@ -988,7 +992,7 @@
 				"label": {
 					"x": 376.0390625,
 					"y": 834.0000009536743,
-					"width": 8,
+					"width": 7.921875,
 					"height": 17
 				},
 				"text": {
@@ -998,7 +1002,7 @@
 					"box": {
 						"x": -3.9609375,
 						"y": 9.5367431640625e-7,
-						"width": 8,
+						"width": 7.921875,
 						"height": 17
 					}
 				}

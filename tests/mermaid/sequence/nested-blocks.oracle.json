@@ -1,10 +1,14 @@
 {
-	"schema": 7,
-	"key": "5f25a3d0d1dc201cf83b4562d014af6fee29a1fc2981e291cb12f2e85d79389a",
+	"schema": 8,
+	"key": "1cd461542f9d1af52986e0f5d3ee07cef0f74c64515022889b7da5f15de2f743",
 	"provenance": {
-		"extractor": 7,
+		"extractor": 8,
+		"extractor_sha256": "2f2d682b8aa0ca6418cb246e096bc47706b6a753ca49643cc70f4e64568c3abe",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "darwin",
+		"architecture": "arm64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
@@ -71,6 +75,11 @@
 					"type": "participant"
 				}
 			]
+		],
+		"getActorKeys": [
+			"A",
+			"B",
+			"C"
 		],
 		"getMessages": [
 			{
@@ -197,6 +206,9 @@
 			}
 		],
 		"getBoxes": [],
+		"getCreatedActors": [],
+		"getDestroyedActors": [],
+		"showSequenceNumbers": false,
 		"getDiagramTitle": "",
 		"getAccTitle": "",
 		"getAccDescription": ""
@@ -673,12 +685,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor5",
+				"id": "actor7",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor5",
+					"id": "actor7",
 					"x1": "478",
 					"y1": "76",
 					"x2": "478",
@@ -715,12 +727,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-5",
+				"id": "root-7",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-5",
+					"id": "root-7",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -753,7 +765,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-5",
+				"parent_id": "root-7",
 				"parent_class": "",
 				"attributes": {
 					"x": "403",
@@ -797,7 +809,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-5",
+				"parent_id": "root-7",
 				"parent_class": "",
 				"attributes": {
 					"x": "478",
@@ -895,12 +907,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor4",
+				"id": "actor6",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor4",
+					"id": "actor6",
 					"x1": "278",
 					"y1": "76",
 					"x2": "278",
@@ -937,12 +949,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-4",
+				"id": "root-6",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-4",
+					"id": "root-6",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -975,7 +987,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-4",
+				"parent_id": "root-6",
 				"parent_class": "",
 				"attributes": {
 					"x": "203",
@@ -1019,7 +1031,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-4",
+				"parent_id": "root-6",
 				"parent_class": "",
 				"attributes": {
 					"x": "278",
@@ -1117,12 +1129,12 @@
 			},
 			{
 				"tag": "line",
-				"id": "actor3",
+				"id": "actor5",
 				"class": "actor-line 200",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "actor3",
+					"id": "actor5",
 					"x1": "75",
 					"y1": "76",
 					"x2": "75",
@@ -1159,12 +1171,12 @@
 			},
 			{
 				"tag": "g",
-				"id": "root-3",
+				"id": "root-5",
 				"class": "",
 				"parent_id": "",
 				"parent_class": "",
 				"attributes": {
-					"id": "root-3",
+					"id": "root-5",
 					"data-look": "neo",
 					"data-et": "participant",
 					"data-type": "participant",
@@ -1197,7 +1209,7 @@
 				"tag": "rect",
 				"id": "",
 				"class": "actor actor-top",
-				"parent_id": "root-3",
+				"parent_id": "root-5",
 				"parent_class": "",
 				"attributes": {
 					"x": "0",
@@ -1241,7 +1253,7 @@
 				"tag": "text",
 				"id": "",
 				"class": "actor actor-box",
-				"parent_id": "root-3",
+				"parent_id": "root-5",
 				"parent_class": "",
 				"attributes": {
 					"x": "75",
@@ -3216,6 +3228,99 @@
 			}
 		]
 	},
+	"measurements": [
+		{
+			"kind": "sequence-message",
+			"id": "1",
+			"text": "First operation",
+			"width": 109.40625,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "2",
+			"text": "Request",
+			"width": 61.65625,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "3",
+			"text": "Cached",
+			"width": 58.40625,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "4",
+			"text": "Cached response",
+			"width": 133.046875,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "5",
+			"text": "",
+			"width": 0,
+			"height": 0
+		},
+		{
+			"kind": "sequence-message",
+			"id": "6",
+			"text": "Second operation",
+			"width": 133.96875,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "7",
+			"text": "Other request",
+			"width": 104.140625,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "8",
+			"text": "Reserve resource",
+			"width": 132.765625,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "9",
+			"text": "Acquire lock",
+			"width": 94.296875,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "10",
+			"text": "Resource unavailable",
+			"width": 160.921875,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "11",
+			"text": "Retry",
+			"width": 39.890625,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "12",
+			"text": "",
+			"width": 0,
+			"height": 0
+		},
+		{
+			"kind": "sequence-message",
+			"id": "13",
+			"text": "",
+			"width": 0,
+			"height": 0
+		}
+	],
 	"layout": {
 		"view_box": {
 			"x": -50,
@@ -3224,5 +3329,5 @@
 			"height": 758
 		}
 	},
-	"svg_sha256": "bd4d0c0eb945964a3610d960f317bac12b895623e137a185b0afd37dc4fceb13"
+	"svg_sha256": "67569b104172dfc9c3498a67415bb66560a91ca564903885074ef13cf5b71720"
 }

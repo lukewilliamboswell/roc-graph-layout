@@ -1,0 +1,1221 @@
+{
+	"schema": 8,
+	"key": "c54422f8552f3a25715ba99fee8d389e121b76831259f8f0f39ff46fb27aeb92",
+	"provenance": {
+		"extractor": 8,
+		"extractor_sha256": "7a128f0b9c6da9437db11b4e0b2ac76aae5e91bb8ecf22e989b6970eb16794a2",
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "darwin",
+		"architecture": "arm64",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "flowchart LR\n    subgraph ingest [Incoming requests and validation from external systems]\n        Request([Receive a request with a long descriptive title])\n        Validate{All required fields and permissions valid?}\n        Request --> Validate\n    end\n    subgraph processing [Order processing and downstream integrations]\n        Reserve(Reserve inventory across multiple warehouses)\n        Charge(Authorize the customer's payment method)\n        Store[(Persist the order and its audit history)]\n        Reserve -->|Inventory reserved successfully| Charge\n        Charge --> Store\n    end\n    Validate -->|Validated request ready for processing| Reserve\n    Validate -->|Missing or invalid fields| Reject(Explain what needs to change)\n    Charge -->|Payment declined; retry with updated details| Request\n    Store --> Notify(Send a confirmation to the customer)\n    Store -->|Publish a durable event| Notify\n    Store --> Store\n    Observer[An independent monitoring service]\n    classDef default fill:#EEF2FF,stroke:#A5B4FC,color:#312E81\n    classDef error fill:#FFF1F2,stroke:#FDA4AF,color:#9F1239\n    class Reject error\n",
+	"accepted": true,
+	"diagram_type": "flowchart-v2",
+	"flowchart": {
+		"direction": "LR",
+		"nodes": [
+			{
+				"id": "Request",
+				"text": "Receive a request with a long descriptive title",
+				"label": "Receive a request with a long descriptive title",
+				"shape": "stadium",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "Validate",
+				"text": "All required fields and permissions valid?",
+				"label": "All required fields and permissions valid?",
+				"shape": "diamond",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "Reserve",
+				"text": "Reserve inventory across multiple warehouses",
+				"label": "Reserve inventory across multiple warehouses",
+				"shape": "round",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "Charge",
+				"text": "Authorize the customer's payment method",
+				"label": "Authorize the customer's payment method",
+				"shape": "round",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "Store",
+				"text": "Persist the order and its audit history",
+				"label": "Persist the order and its audit history",
+				"shape": "cylinder",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "Reject",
+				"text": "Explain what needs to change",
+				"label": "Explain what needs to change",
+				"shape": "round",
+				"label_type": "text",
+				"classes": [
+					"error"
+				],
+				"styles": []
+			},
+			{
+				"id": "Notify",
+				"text": "Send a confirmation to the customer",
+				"label": "Send a confirmation to the customer",
+				"shape": "round",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			},
+			{
+				"id": "Observer",
+				"text": "An independent monitoring service",
+				"label": "An independent monitoring service",
+				"shape": "square",
+				"label_type": "text",
+				"classes": [],
+				"styles": []
+			}
+		],
+		"edges": [
+			{
+				"from": "Request",
+				"to": "Validate",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "Reserve",
+				"to": "Charge",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "Inventory reserved successfully",
+				"label": "Inventory reserved successfully",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "Charge",
+				"to": "Store",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "Validate",
+				"to": "Reserve",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "Validated request ready for processing",
+				"label": "Validated request ready for processing",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "Validate",
+				"to": "Reject",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "Missing or invalid fields",
+				"label": "Missing or invalid fields",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "Charge",
+				"to": "Request",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "Payment declined; retry with updated details",
+				"label": "Payment declined; retry with updated details",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "Store",
+				"to": "Notify",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "Store",
+				"to": "Notify",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "Publish a durable event",
+				"label": "Publish a durable event",
+				"label_type": "text",
+				"classes": []
+			},
+			{
+				"from": "Store",
+				"to": "Store",
+				"id": null,
+				"type": "arrow_point",
+				"stroke": "normal",
+				"length": 1,
+				"text": "",
+				"label": "",
+				"label_type": "text",
+				"classes": []
+			}
+		],
+		"subgraphs": [
+			{
+				"id": "ingest",
+				"title": "Incoming requests and validation from external systems",
+				"label": "Incoming requests and validation from external systems",
+				"nodes": [
+					"Request",
+					"Validate"
+				],
+				"dir": null,
+				"classes": []
+			},
+			{
+				"id": "processing",
+				"title": "Order processing and downstream integrations",
+				"label": "Order processing and downstream integrations",
+				"nodes": [
+					"Reserve",
+					"Charge",
+					"Store"
+				],
+				"dir": null,
+				"classes": []
+			}
+		],
+		"classes": [
+			{
+				"id": "default",
+				"styles": [
+					"fill:#EEF2FF",
+					"stroke:#A5B4FC",
+					"color:#312E81"
+				],
+				"text_styles": [
+					"color:#312E81"
+				]
+			},
+			{
+				"id": "error",
+				"styles": [
+					"fill:#FFF1F2",
+					"stroke:#FDA4AF",
+					"color:#9F1239"
+				],
+				"text_styles": [
+					"color:#9F1239"
+				]
+			}
+		]
+	},
+	"layout_input": {
+		"nodes": [
+			{
+				"id": "processing",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 1,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "ingest",
+				"is_group": true,
+				"parent": null,
+				"declaration_index": 0,
+				"shape": "rect",
+				"padding": 8,
+				"min_width": null
+			},
+			{
+				"id": "Request",
+				"is_group": false,
+				"parent": "ingest",
+				"declaration_index": null,
+				"shape": "stadium",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "Validate",
+				"is_group": false,
+				"parent": "ingest",
+				"declaration_index": null,
+				"shape": "diamond",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "Reserve",
+				"is_group": false,
+				"parent": "processing",
+				"declaration_index": null,
+				"shape": "roundedRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "Charge",
+				"is_group": false,
+				"parent": "processing",
+				"declaration_index": null,
+				"shape": "roundedRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "Store",
+				"is_group": false,
+				"parent": "processing",
+				"declaration_index": null,
+				"shape": "cylinder",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "Reject",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "roundedRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "Notify",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "roundedRect",
+				"padding": 15,
+				"min_width": 120
+			},
+			{
+				"id": "Observer",
+				"is_group": false,
+				"parent": null,
+				"declaration_index": null,
+				"shape": "squareRect",
+				"padding": 15,
+				"min_width": 120
+			}
+		],
+		"edges": [
+			{
+				"id": "L_Request_Validate_0",
+				"from": "Request",
+				"to": "Validate",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_Reserve_Charge_0",
+				"from": "Reserve",
+				"to": "Charge",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_Charge_Store_0",
+				"from": "Charge",
+				"to": "Store",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_Validate_Reserve_0",
+				"from": "Validate",
+				"to": "Reserve",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_Validate_Reject_0",
+				"from": "Validate",
+				"to": "Reject",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_Charge_Request_0",
+				"from": "Charge",
+				"to": "Request",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_Store_Notify_0",
+				"from": "Store",
+				"to": "Notify",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_Store_Notify_2",
+				"from": "Store",
+				"to": "Notify",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			},
+			{
+				"id": "L_Store_Store_0",
+				"from": "Store",
+				"to": "Store",
+				"minlen": 1,
+				"arrow_start": "none",
+				"arrow_end": "arrow_point",
+				"pattern": "normal",
+				"thickness": "normal",
+				"curve": "basis",
+				"styles": []
+			}
+		]
+	},
+	"layout": {
+		"view_box": {
+			"x": 4,
+			"y": 4,
+			"width": 1920.3333740234375,
+			"height": 421.0669860839844
+		},
+		"nodes": [
+			{
+				"id": "Request",
+				"center": {
+					"x": 125.11822509765626,
+					"y": 126.4169921875
+				},
+				"box": {
+					"x": 36.000000000000014,
+					"y": 90.51699447631836,
+					"width": 178.2364501953125,
+					"height": 71.79999542236328
+				},
+				"outer": {
+					"x": 36.000000000000014,
+					"y": 90.51699447631836,
+					"width": 178.2364501953125,
+					"height": 71.79999542236328
+				},
+				"label": {
+					"x": 66.00531387329103,
+					"y": 102.11384701728821,
+					"width": 118.22583007812499,
+					"height": 48.05955505371094
+				},
+				"text": {
+					"rows": [
+						"Receive a request",
+						"with a long",
+						"descriptive title"
+					],
+					"box": {
+						"x": -59.109375,
+						"y": 9.5367431640625e-7,
+						"width": 118.21875,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "Validate",
+				"center": {
+					"x": 373.1364440917969,
+					"y": 182.3669891357422
+				},
+				"box": {
+					"x": 274.73644256591797,
+					"y": 83.46698760986328,
+					"width": 197.8000030517578,
+					"height": 197.8000030517578
+				},
+				"outer": {
+					"x": 274.73644256591797,
+					"y": 83.46698760986328,
+					"width": 197.8000030517578,
+					"height": 197.8000030517578
+				},
+				"label": {
+					"x": 315.3175621032715,
+					"y": 158.0638439655304,
+					"width": 115.63776397705078,
+					"height": 47.603668212890625
+				},
+				"text": {
+					"rows": [
+						"All required fields",
+						"and permissions",
+						"valid?"
+					],
+					"box": {
+						"x": -57.8203125,
+						"y": 9.5367431640625e-7,
+						"width": 115.640625,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "Reserve",
+				"center": {
+					"x": 888.2083129882812,
+					"y": 149.94583129882812
+				},
+				"box": {
+					"x": 813.2083129882812,
+					"y": 111.04583358764648,
+					"width": 150,
+					"height": 77.79999542236328
+				},
+				"outer": {
+					"x": 813.2083129882812,
+					"y": 111.04583358764648,
+					"width": 150,
+					"height": 77.79999542236328
+				},
+				"label": {
+					"x": 828.5327758789062,
+					"y": 125.64268612861633,
+					"width": 119.35107421875,
+					"height": 47.603668212890625
+				},
+				"text": {
+					"rows": [
+						"Reserve inventory",
+						"across multiple",
+						"warehouses"
+					],
+					"box": {
+						"x": -59.6953125,
+						"y": 9.5367431640625e-7,
+						"width": 119.390625,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "Charge",
+				"center": {
+					"x": 1250.7864990234373,
+					"y": 123.99583435058594
+				},
+				"box": {
+					"x": 1175.7864990234373,
+					"y": 85.0958366394043,
+					"width": 150,
+					"height": 77.79999542236328
+				},
+				"outer": {
+					"x": 1175.7864990234373,
+					"y": 85.0958366394043,
+					"width": 150,
+					"height": 77.79999542236328
+				},
+				"label": {
+					"x": 1194.936798095703,
+					"y": 99.69268918037415,
+					"width": 111.69940185546875,
+					"height": 48.114227294921875
+				},
+				"text": {
+					"rows": [
+						"Authorize the",
+						"customer's",
+						"payment method"
+					],
+					"box": {
+						"x": -55.859375,
+						"y": 9.5367431640625e-7,
+						"width": 111.71875,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "Store",
+				"center": {
+					"x": 1421.7864990234373,
+					"y": 123.99583435058594
+				},
+				"box": {
+					"x": 1349.7864990234375,
+					"y": 68.02148437499989,
+					"width": 144,
+					"height": 111.94869232177734
+				},
+				"outer": {
+					"x": 1349.7864990234373,
+					"y": 68.021484375,
+					"width": 144,
+					"height": 111.94869232177734
+				},
+				"label": {
+					"x": 1367.080799102783,
+					"y": 109.69268822669983,
+					"width": 109.4113998413086,
+					"height": 48.114227294921875
+				},
+				"text": {
+					"rows": [
+						"Persist the order",
+						"and its audit",
+						"history"
+					],
+					"box": {
+						"x": -54.703125,
+						"y": 9.5367431640625e-7,
+						"width": 109.40625,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "Reject",
+				"center": {
+					"x": 864.2083129882812,
+					"y": 284.05657958984375
+				},
+				"box": {
+					"x": 789.2083129882812,
+					"y": 252.8458366394043,
+					"width": 150,
+					"height": 62.421485900878906
+				},
+				"outer": {
+					"x": 789.2083129882812,
+					"y": 252.8458366394043,
+					"width": 150,
+					"height": 62.421485900878906
+				},
+				"label": {
+					"x": 808.9774971008301,
+					"y": 267.4426910877227,
+					"width": 110.46163177490234,
+					"height": 32.82356262207031
+				},
+				"text": {
+					"rows": [
+						"Explain what",
+						"needs to change"
+					],
+					"box": {
+						"x": -55.2265625,
+						"y": 9.5367431640625e-7,
+						"width": 110.453125,
+						"height": 32.421485900878906
+					}
+				}
+			},
+			{
+				"id": "Notify",
+				"center": {
+					"x": 1841.3333740234375,
+					"y": 118.571044921875
+				},
+				"box": {
+					"x": 1766.3333740234375,
+					"y": 79.67104721069336,
+					"width": 150,
+					"height": 77.79999542236328
+				},
+				"outer": {
+					"x": 1766.3333740234375,
+					"y": 79.67104721069336,
+					"width": 150,
+					"height": 77.79999542236328
+				},
+				"label": {
+					"x": 1791.1849212646484,
+					"y": 94.26789975166321,
+					"width": 100.29690551757812,
+					"height": 47.603668212890625
+				},
+				"text": {
+					"rows": [
+						"Send a",
+						"confirmation to",
+						"the customer"
+					],
+					"box": {
+						"x": -50.140625,
+						"y": 9.5367431640625e-7,
+						"width": 100.28125,
+						"height": 47.79999923706055
+					}
+				}
+			},
+			{
+				"id": "Observer",
+				"center": {
+					"x": 259.0182189941406,
+					"y": 381.16699218750006
+				},
+				"box": {
+					"x": 183.01821899414062,
+					"y": 345.2669944763184,
+					"width": 152,
+					"height": 71.79999542236328
+				},
+				"outer": {
+					"x": 183.01821899414062,
+					"y": 345.2669944763184,
+					"width": 152,
+					"height": 71.79999542236328
+				},
+				"label": {
+					"x": 206.60051727294922,
+					"y": 356.8638470172882,
+					"width": 104.83540344238281,
+					"height": 47.603668212890625
+				},
+				"text": {
+					"rows": [
+						"An independent",
+						"monitoring",
+						"service"
+					],
+					"box": {
+						"x": -52.4375,
+						"y": 9.5367431640625e-7,
+						"width": 104.875,
+						"height": 47.79999923706055
+					}
+				}
+			}
+		],
+		"clusters": [
+			{
+				"id": "ingest",
+				"box": {
+					"x": 12,
+					"y": 14.445507049560547,
+					"width": 484.03643798828125,
+					"height": 290.82147216796875
+				},
+				"label": {
+					"x": 69.30728912353514,
+					"y": 14.04236149787903,
+					"width": 369.38067626953125,
+					"height": 17.423564910888672
+				},
+				"text": {
+					"rows": [
+						"Incoming requests and validation from external systems"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 369.421875,
+						"height": 17.021484375
+					}
+				}
+			},
+			{
+				"id": "processing",
+				"box": {
+					"x": 789.2083129882812,
+					"y": 12,
+					"width": 728.578125,
+					"height": 200.8458251953125
+				},
+				"label": {
+					"x": 997.8411254882811,
+					"y": 11.596854448318481,
+					"width": 311.280487060547,
+					"height": 17.423564910888672
+				},
+				"text": {
+					"rows": [
+						"Order processing and downstream integrations"
+					],
+					"box": {
+						"x": 0,
+						"y": 9.5367431640625e-7,
+						"width": 311.3125,
+						"height": 17.021484375
+					}
+				}
+			}
+		],
+		"edges": [
+			{
+				"id": "L_Request_Validate_0",
+				"points": [
+					{
+						"x": 213.25558334746165,
+						"y": 134.7836582819621
+					},
+					{
+						"x": 214.2364501953125,
+						"y": 134.7836582819621
+					},
+					{
+						"x": 244.2364501953125,
+						"y": 134.7836582819621
+					},
+					{
+						"x": 244.2364501953125,
+						"y": 182.36699314117433
+					},
+					{
+						"x": 274.2364501953125,
+						"y": 182.36699314117433
+					}
+				],
+				"path": "M213.25558334746165,134.7836582819621L214.2364501953125,134.7836582819621L237.16538238344702,134.7836582819621Q244.2364501953125,134.7836582819621 244.2364501953125,141.85472609382757L244.2364501953125,175.29592532930886Q244.2364501953125,182.36699314117433 251.30751800717798,182.36699314117433L270.2364501953125,182.36699314117433",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_Reserve_Charge_0",
+				"points": [
+					{
+						"x": 963.2083282470703,
+						"y": 149.9458293914795
+					},
+					{
+						"x": 1145.7864532470703,
+						"y": 149.9458293914795
+					},
+					{
+						"x": 1145.7864532470703,
+						"y": 133.36249643961588
+					},
+					{
+						"x": 1175.7864532470703,
+						"y": 133.36249643961588
+					}
+				],
+				"path": "M963.2083282470703,149.9458293914795L1138.7153854352048,149.9458293914795Q1145.7864532470703,149.9458293914795 1145.7864532470703,142.87476157961402L1145.7864532470703,140.43356425148136Q1145.7864532470703,133.36249643961588 1152.8575210589358,133.36249643961588L1171.7864532470703,133.36249643961588",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 989.2338371276855,
+					"y": 132.54268193244934,
+					"width": 124.52720642089844,
+					"height": 32.714229583740234
+				},
+				"text": {
+					"rows": [
+						"Inventory reserved",
+						"successfully"
+					],
+					"box": {
+						"x": -62.2890625,
+						"y": 9.5367431640625e-7,
+						"width": 124.578125,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "L_Charge_Store_0",
+				"points": [
+					{
+						"x": 1325.7864532470703,
+						"y": 123.99583053588867
+					},
+					{
+						"x": 1349.7864532470703,
+						"y": 123.99583053588867
+					}
+				],
+				"path": "M1325.7864532470703,123.99583053588867L1345.7864532470703,123.99583053588867",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_Validate_Reserve_0",
+				"points": [
+					{
+						"x": 442.6697618722028,
+						"y": 153.00032596588136
+					},
+					{
+						"x": 472.0364532470703,
+						"y": 153.00032596588136
+					},
+					{
+						"x": 506.0364532470703,
+						"y": 153.00032596588136
+					},
+					{
+						"x": 759.2083282470703,
+						"y": 153.00032596588136
+					},
+					{
+						"x": 759.2083282470703,
+						"y": 149.9458293914795
+					},
+					{
+						"x": 779.2083282470703,
+						"y": 149.9458293914795
+					},
+					{
+						"x": 813.2083282470703,
+						"y": 149.9458293914795
+					}
+				],
+				"path": "M442.6697618722028,153.00032596588136L472.0364532470703,153.00032596588136L506.0364532470703,153.00032596588136L757.6810799598694,153.00032596588136Q759.2083282470703,153.00032596588136 759.2083282470703,151.47307767868043L759.2083282470703,151.47307767868043Q759.2083282470703,149.9458293914795 760.7355765342712,149.9458293914795L779.2083282470703,149.9458293914795L809.2083282470703,149.9458293914795",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 552.9402847290038,
+					"y": 135.5971863269806,
+					"width": 179.3641815185547,
+					"height": 32.82356262207031
+				},
+				"text": {
+					"rows": [
+						"Validated request ready for",
+						"processing"
+					],
+					"box": {
+						"x": -89.6796875,
+						"y": 9.5367431640625e-7,
+						"width": 179.359375,
+						"height": 32.421485900878906
+					}
+				}
+			},
+			{
+				"id": "L_Validate_Reject_0",
+				"points": [
+					{
+						"x": 442.6697618722028,
+						"y": 211.73366031646728
+					},
+					{
+						"x": 472.0364532470703,
+						"y": 211.73366031646728
+					},
+					{
+						"x": 506.0364532470703,
+						"y": 211.73366031646728
+					},
+					{
+						"x": 526.0364532470703,
+						"y": 211.73366031646728
+					},
+					{
+						"x": 526.0364532470703,
+						"y": 284.0565700531006
+					},
+					{
+						"x": 789.2083282470703,
+						"y": 284.0565700531006
+					}
+				],
+				"path": "M442.6697618722028,211.73366031646728L472.0364532470703,211.73366031646728L506.0364532470703,211.73366031646728L518.9653854352048,211.73366031646728Q526.0364532470703,211.73366031646728 526.0364532470703,218.80472812833275L526.0364532470703,276.9855022412351Q526.0364532470703,284.0565700531006 533.1075210589358,284.0565700531006L785.2083282470703,284.0565700531006",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 565.0741882324218,
+					"y": 274.1534330844879,
+					"width": 155.09637451171875,
+					"height": 17.423564910888672
+				},
+				"text": {
+					"rows": [
+						"Missing or invalid fields"
+					],
+					"box": {
+						"x": -77.5703125,
+						"y": 9.5367431640625e-7,
+						"width": 155.140625,
+						"height": 17.021484375
+					}
+				}
+			},
+			{
+				"id": "L_Charge_Request_0",
+				"points": [
+					{
+						"x": 1175.7864532470703,
+						"y": 114.62916463216146
+					},
+					{
+						"x": 1145.7864532470703,
+						"y": 114.62916463216146
+					},
+					{
+						"x": 1145.7864532470703,
+						"y": 98.04583168029785
+					},
+					{
+						"x": 779.2083282470703,
+						"y": 98.04583168029785
+					},
+					{
+						"x": 759.2083282470703,
+						"y": 98.04583168029785
+					},
+					{
+						"x": 759.2083282470703,
+						"y": 95.60032444000242
+					},
+					{
+						"x": 526.0364532470703,
+						"y": 95.60032444000242
+					},
+					{
+						"x": 526.0364532470703,
+						"y": 70.46699161529543
+					},
+					{
+						"x": 506.0364532470703,
+						"y": 70.46699161529543
+					},
+					{
+						"x": 244.2364501953125,
+						"y": 70.46699161529543
+					},
+					{
+						"x": 244.2364501953125,
+						"y": 118.05032647450766
+					},
+					{
+						"x": 214.2364501953125,
+						"y": 118.05032647450766
+					}
+				],
+				"path": "M1175.7864532470703,114.62916463216146L1152.8575210589358,114.62916463216146Q1145.7864532470703,114.62916463216146 1145.7864532470703,107.55809682029599L1145.7864532470703,105.11689949216333Q1145.7864532470703,98.04583168029785 1138.7153854352048,98.04583168029785L779.2083282470703,98.04583168029785L760.431081867218,98.04583168029785Q759.2083282470703,98.04583168029785 759.2083282470703,96.82307806015014L759.2083282470703,96.82307806015014Q759.2083282470703,95.60032444000242 757.9855746269226,95.60032444000242L533.1075210589358,95.60032444000242Q526.0364532470703,95.60032444000242 526.0364532470703,88.52925662813695L526.0364532470703,77.5380594271609Q526.0364532470703,70.46699161529543 518.9653854352048,70.46699161529543L506.0364532470703,70.46699161529543L251.30751800717798,70.46699161529543Q244.2364501953125,70.46699161529543 244.2364501953125,77.5380594271609L244.2364501953125,110.97925866264218Q244.2364501953125,118.05032647450766 237.16538238344702,118.05032647450766L218.2364501953125,118.05032647450766",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 548.0642166137694,
+					"y": 78.19717717170714,
+					"width": 189.11631774902344,
+					"height": 32.65956115722656
+				},
+				"text": {
+					"rows": [
+						"Payment declined; retry with",
+						"updated details"
+					],
+					"box": {
+						"x": -94.5859375,
+						"y": 9.5367431640625e-7,
+						"width": 189.171875,
+						"height": 32.400001525878906
+					}
+				}
+			},
+			{
+				"id": "L_Store_Notify_0",
+				"points": [
+					{
+						"x": 1493.7864532470703,
+						"y": 108.93771514892578
+					},
+					{
+						"x": 1527.7864532470703,
+						"y": 108.93771514892578
+					},
+					{
+						"x": 1547.7864532470703,
+						"y": 108.93771514892578
+					},
+					{
+						"x": 1547.7864532470703,
+						"y": 108.93771514892575
+					},
+					{
+						"x": 1647.0598907470703,
+						"y": 108.93771514892575
+					},
+					{
+						"x": 1766.3333282470703,
+						"y": 108.93771514892575
+					}
+				],
+				"path": "M1493.7864532470703,108.93771514892578L1527.7864532470703,108.93771514892578L1547.7864532470703,108.93771514892578L1547.7864532470703,108.93771514892575L1647.0598907470703,108.93771514892575L1762.3333282470703,108.93771514892575",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			},
+			{
+				"id": "L_Store_Notify_2",
+				"points": [
+					{
+						"x": 1493.7864532470703,
+						"y": 139.05394592285157
+					},
+					{
+						"x": 1527.7864532470703,
+						"y": 139.05394592285157
+					},
+					{
+						"x": 1547.7864532470703,
+						"y": 139.05394592285157
+					},
+					{
+						"x": 1547.7864532470703,
+						"y": 128.20438028971353
+					},
+					{
+						"x": 1766.3333282470703,
+						"y": 128.20438028971353
+					}
+				],
+				"path": "M1493.7864532470703,139.05394592285157L1527.7864532470703,139.05394592285157L1542.3616704305014,139.05394592285157Q1547.7864532470703,139.05394592285157 1547.7864532470703,133.62916310628253L1547.7864532470703,133.62916310628253Q1547.7864532470703,128.20438028971353 1553.2112360636393,128.20438028971353L1762.3333282470703,128.20438028971353",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": {
+					"x": 1569.7930603027344,
+					"y": 119.30122971534729,
+					"width": 154.53375244140625,
+					"height": 16.80367088317871
+				},
+				"text": {
+					"rows": [
+						"Publish a durable event"
+					],
+					"box": {
+						"x": -77.2734375,
+						"y": 9.5367431640625e-7,
+						"width": 154.546875,
+						"height": 17
+					}
+				}
+			},
+			{
+				"id": "L_Store_Store_0",
+				"points": [
+					{
+						"x": 1401.7864532470703,
+						"y": 68.49556366754041
+					},
+					{
+						"x": 1401.7864532470703,
+						"y": 68.021484375
+					},
+					{
+						"x": 1401.7864532470703,
+						"y": 56.021484375
+					},
+					{
+						"x": 1441.7864532470703,
+						"y": 56.021484375
+					},
+					{
+						"x": 1441.7864532470703,
+						"y": 68.021484375
+					}
+				],
+				"path": "M1401.7864532470703,68.49556366754041L1401.7864532470703,68.021484375L1401.7864532470703,62.021484375Q1401.7864532470703,56.021484375 1407.7864532470703,56.021484375L1437.7864532470703,56.021484375Q1441.7864532470703,56.021484375 1441.7864532470703,60.021484375L1441.7864532470703,64.021484375",
+				"marker_start": null,
+				"marker_end": "url(#oracle_flowchart-v2-pointEnd-margin)",
+				"label": null,
+				"text": null
+			}
+		]
+	},
+	"svg_sha256": "5380650d14842c2194ba7cd3ee911e9f9a95ab16be7d3a5e7dd8737156dca37a"
+}

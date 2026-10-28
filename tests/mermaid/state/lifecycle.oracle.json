@@ -1,12 +1,14 @@
 {
 	"schema": 8,
-	"key": "174dbb22d1a319a25013ab1bbe3fa7bafc7dc8d1c96ac1b9d4d4479a12c9d372",
+	"key": "54691797dc67c3eed3c49ea2a682168d01308d953c94d5dbfbfcb785acae4536",
 	"provenance": {
 		"extractor": 8,
-		"extractor_sha256": "7a128f0b9c6da9437db11b4e0b2ac76aae5e91bb8ecf22e989b6970eb16794a2",
+		"extractor_sha256": "2f2d682b8aa0ca6418cb246e096bc47706b6a753ca49643cc70f4e64568c3abe",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",
+		"platform": "darwin",
+		"architecture": "arm64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
@@ -7171,6 +7173,15 @@
 			}
 		]
 	},
+	"measurements": [
+		{
+			"kind": "group",
+			"id": "Changes----parent",
+			"text": "Keep the review discussion attached to each revision.",
+			"width": 354.9822692871094,
+			"height": 18.192880630493164
+		}
+	],
 	"layout": {
 		"view_box": {
 			"x": 4,
