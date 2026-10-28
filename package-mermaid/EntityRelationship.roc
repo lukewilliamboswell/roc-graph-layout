@@ -29,6 +29,7 @@ EntityRelationship :: {}.{
 	## Source statement problems and invalid numeric theme properties.
 	Problem : [NotAFlowchart, Syntax({ near : Str }), Unsupported(Str), InvalidTheme(Str), TooManyEdges, MissingLinkStyleEdge(Str), UnnamedGroup]
 
+	## Read supported source into an index-aligned, source-ordered model.
 	parse : Str -> Try(Diagram, List(Problem))
 	parse = |source| {
 		lines = EntityText.blocks(source)
@@ -126,6 +127,8 @@ EntityRelationship :: {}.{
 		}
 	}
 
+	## Read, size and draw with the selected theme. Invalid theme properties
+	## are reported alongside independent source problems.
 	draw : Str, Theme.Options -> Try(Drawing.Picture, List(Problem))
 	draw = |source, theme| {
 		problems = Theme.validate(theme)

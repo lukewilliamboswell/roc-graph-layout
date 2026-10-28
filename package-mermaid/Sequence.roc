@@ -13,6 +13,11 @@ import Theme
 ## Participant creation/destruction, participant boxes, `rect` highlights,
 ## links, configuration directives and front matter are not supported.
 Sequence :: {}.{
+
+	## `label` and `text` are displayed values. `source_text` retains the
+	## stored label that Mermaid measures before decoding escaped entities;
+	## it can contain its encoded placeholder forms. Keep this value when
+	## retaining a parsed diagram so sizing follows the reference renderer.
 	Participant : { id : Str, label : Str, actor : Bool, wrap : Bool, source_text : Str }
 	Message : { from : U64, to : U64, text : Str, dotted : Bool, head : [None, Arrow, Open, Cross], both : Bool, activation : [Keep, Start, Stop], wrap : Bool, source_text : Str }
 	Note : { from : U64, to : U64, text : Str, side : [Left, Right, Over], wrap : Bool, source_text : Str }

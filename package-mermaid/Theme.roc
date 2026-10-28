@@ -7,10 +7,12 @@ import Drawing
 ## supply only the properties you want to change. Labels are measured and
 ## drawn in Inter; changing their size also changes the space they receive.
 ## Empty `node_palette` selects family defaults; one entry selects flat
-## actor/table colours. Graph edges use `line`; sequence messages and their
+## actor/table/state-container colours. Graph edges use `line`; sequence messages and their
 ## note outlines use `message_colors`. Flow labels use `label_background`
 ## with `label_background_opacity`; state transitions and ER/class relations
-## use the opaque `transition_label_background`.
+## use `transition_label_background`. Sequence and table fills use their
+## palettes; use a one-entry `node_palette` rather than `node_fill` and
+## `node_stroke` to override them. Base fills also apply to ordinary states.
 Theme :: {}.{
 
 	## A numeric property outside its documented range.
@@ -55,8 +57,8 @@ Theme :: {}.{
 	}
 
 	## All independent invalid numeric properties, in a stable order. A valid
-	## theme never needs to be silently clamped by a renderer. Sizes are
-	## bounded to keep downstream geometry finite: text up to 1024 pixels,
+	## theme never needs to be silently clamped by a renderer. Base values
+	## are bounded to keep downstream geometry finite: font size up to 1024,
 	## line spacing up to 8 em, wrapping and padding up to 16384 pixels,
 	## and outlines and corner radii up to 1024 pixels.
 	validate : Options -> List(Problem)
