@@ -20,7 +20,7 @@ EntityRender :: {}.{
 					if (comments) with_keys.append(a.comment) else with_keys
 				},
 			)
-			{ kind: EntityBox, title: entity.label, annotations: [], sections: [], table }
+			{ kind: EntityBox, has_comment_column: comments, title: entity.label, annotations: [], sections: [], table }
 		},
 	)
 	edges : List(Relationship) -> List(EntityDraw.Edge)

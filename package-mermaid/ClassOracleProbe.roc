@@ -7,7 +7,9 @@ import cli.OsStr
 import cli.Path
 import ClassOracle
 import EntityOracle
-import Mermaid
+import ClassDiagram
+import EntityRelationship
+import Svg
 import OracleJson
 import Theme
 main! = |args| {
@@ -25,8 +27,8 @@ main! = |args| {
 	}
 	result = if (family == "class") ClassOracle.inspect_sized(source, theme, overrides) else EntityOracle.inspect_sized(source, theme, overrides)
 	Path.write_utf8!(Path.utf8(paths.get(2) ?? "/tmp/mermaid-native.json"), result)?
-	match Mermaid.svg_with(source, Mermaid.Options.{ theme }) {
-		Ok(svg) => Path.write_utf8!(Path.utf8("${paths.get(2) ?? "/tmp/mermaid-native.json"}.svg"), svg)?
+	match (if (family == "class") ClassDiagram.draw(source, theme) else EntityRelationship.draw(source, theme)) {
+		Ok(picture) => Path.write_utf8!(Path.utf8("${paths.get(2) ?? "/tmp/mermaid-native.json"}.svg"), Svg.document(picture, "Inter, sans-serif"))?
 		Err(_) => {}
 	}
 	Ok({})

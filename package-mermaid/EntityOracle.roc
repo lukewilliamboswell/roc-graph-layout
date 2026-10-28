@@ -60,10 +60,26 @@ EntityOracle :: {}.{
 				},
 			)
 			geometry = EntityOracle.geometry_sized(ids, EntityRender.nodes(diagram.entities), EntityRender.edges(diagram.relationships), columns, diagram.direction, theme, picture, overrides)
-			OracleJson.object([("accepted", "true"), ("family", OracleJson.string("entity")), ("semantic", semantic), ("geometry", geometry)])
+			OracleJson.object([("accepted", "true"), ("family", OracleJson.string("entity")), ("semantic", semantic), ("geometry", geometry), ("size_problems", EntityOracle.size_problems(ids, EntityRender.edges(diagram.relationships), overrides))])
 		}
 		_ => OracleJson.rejected("entity")
 	}
+
+	size_problems : List(Str), List(EntityDraw.Edge), List(OracleJson.Size) -> Str
+	size_problems = |ids, edges, overrides| OracleJson.strings(
+		overrides.keep_if(
+			|value| {
+				consumed = if value.kind == "node" {
+					ids.contains(value.id)
+				} else if value.kind == "label" or value.kind == "edge-label" {
+					edges.map_with_index(|edge, i| (!edge.label.is_empty() and value.id == "${i.to_str()}-label") or (!edge.from_label.is_empty() and value.id == "${i.to_str()}-from-label") or (!edge.to_label.is_empty() and value.id == "${i.to_str()}-to-label")).any(|matched| matched)
+				} else {
+					False
+				}
+				!consumed
+			},
+		).map(|value| "unconsumed ${value.kind}:${value.id}"),
+	)
 
 	Role : { id : Str, lines : U64 }
 	geometry : List(Str), List(EntityDraw.Node), List(EntityDraw.Edge), List(List(Str)), [Down, Up, Left, Right], Theme.Options, Drawing.Picture -> Str
@@ -153,7 +169,7 @@ EntityOracle :: {}.{
 		var $right = -F64.infinity
 		var $bottom = -F64.infinity
 		for label in labels {
-			measured = TextMeasure.block(label.text, { font: TextMeasure.inter, size: label.size, line_height: theme.line_height, wrap: NoWrap, align: Start })
+			measured = TextMeasure.block_advance(label.text, { font: TextMeasure.inter, size: label.size, line_height: theme.line_height, wrap: NoWrap, align: Start })
 			ascent = TextMeasure.round(Font.metrics(TextMeasure.inter).ascent.to_f64() * label.size / Font.units_per_em(TextMeasure.inter).to_f64())
 			left = label.origin.x - match label.align {
 				Start => 0
@@ -169,3 +185,5 @@ EntityOracle :: {}.{
 		{ x: $x, y: $y, width: $right - $x, height: $bottom - $y }
 	}
 }
+
+expect EntityOracle.inspect_sized("erDiagram\nA", Theme.Options.{}, [{ kind: "node", id: "missing", width: 10, height: 10 }]).contains("unconsumed node:missing")

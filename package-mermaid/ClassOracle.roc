@@ -56,7 +56,7 @@ ClassOracle :: {}.{
 				),
 			])
 			geometry = EntityOracle.geometry_sized(ids, ClassRender.nodes(diagram.classes), ClassRender.edges(diagram.relationships), [], diagram.direction, theme, picture, overrides)
-			OracleJson.object([("accepted", "true"), ("family", OracleJson.string("class")), ("semantic", semantic), ("geometry", geometry)])
+			OracleJson.object([("accepted", "true"), ("family", OracleJson.string("class")), ("semantic", semantic), ("geometry", geometry), ("size_problems", EntityOracle.size_problems(ids, ClassRender.edges(diagram.relationships), overrides))])
 		}
 		_ => OracleJson.rejected("class")
 	}
@@ -64,3 +64,5 @@ ClassOracle :: {}.{
 	member : ClassMember.Member -> Str
 	member = |m| OracleJson.object([("visibility", OracleJson.string(m.visibility)), ("classifier", OracleJson.string(m.classifier)), ("id", OracleJson.string(m.id)), ("parameters", OracleJson.string(m.parameters)), ("return_type", OracleJson.string(m.return_type)), ("text", OracleJson.string(m.text))])
 }
+
+expect ClassOracle.inspect_sized("classDiagram\nclass A", Theme.Options.{}, [{ kind: "label", id: "missing", width: 10, height: 10 }]).contains("unconsumed label:missing")

@@ -22,7 +22,10 @@ export function normalizeReference(record) {
         if(!group) throw new Error(`missing class node ${id}`);
         const outer=elements.find(n=>n.parent_id===group.id&&hasClass(n,'outer-path'));
         if(!outer) throw new Error(`missing class outline ${id}`);
-        return {id,box:outer.box};
+        const measured = record.measured_input?.nodes.find(n => n.id === id);
+        const width = measured?.width ?? group.box.width;
+        const height = measured?.height ?? group.box.height;
+        return {id,box:{x:group.origin.x-width/2,y:group.origin.y-height/2,width,height}};
     });
     const paths=elements.filter(e=>e.tag==='path'&&e.attributes['data-edge']==='true');
     if(paths.length!==relationships.length) throw new Error('class source-edge/path count differs');

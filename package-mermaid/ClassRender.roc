@@ -13,7 +13,7 @@ ClassRender :: {}.{
 			title = if (c.generic_type.is_empty()) c.label else "${c.label}<${c.generic_type}>"
 			annotations = c.annotations.take_first(1).map(|a| "«${Str.from_utf8_lossy(a.to_utf8().drop_first(2).drop_last(2))}»")
 			sections = [c.fields, c.methods]
-			{ kind: ClassBox, table: [], title, annotations, sections }
+			{ kind: ClassBox, has_comment_column: False, table: [], title, annotations, sections }
 		},
 	)
 	edges : List(Relationship) -> List(EntityDraw.Edge)

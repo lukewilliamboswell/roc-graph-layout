@@ -15,12 +15,12 @@ import OracleJson
 ## Internal measured compartments and semantic relationship ends. Shared by
 ## class and entity diagrams; the public readers preserve their own models.
 EntityDraw :: {}.{
-	Node : { kind : [ClassBox, EntityBox], title : Str, annotations : List(Str), sections : List(List(Str)), table : List(List(Str)) }
+	Node : { kind : [ClassBox, EntityBox], has_comment_column : Bool, title : Str, annotations : List(Str), sections : List(List(Str)), table : List(List(Str)) }
 	Cardinality : [ExactlyOne, ZeroOne, OneMany, ZeroMany]
 	Mark : [None, Arrow, Triangle, Diamond(Bool), Cardinality(Cardinality)]
 	Edge : { from : U64, to : U64, label : Str, from_label : Str, to_label : Str, from_mark : Mark, to_mark : Mark, dashed : Bool }
 	Block : { lines : List(Str), width : F64, height : F64, baseline : F64, step : F64, font_size : F64 }
-	Measured : { title : Block, annotations : List(Block), sections : List(List(Block)), table : List(List(Block)), column_widths : List(F64), row_heights : List(F64), title_height : F64, width : F64, height : F64 }
+	Measured : { title : Block, annotations : List(Block), sections : List(List(Block)), table : List(List(Block)), column_widths : List(F64), row_heights : List(F64), title_height : F64, shape_width : F64, width : F64, height : F64 }
 
 	radius : Theme.Options -> F64
 	radius = |theme| match theme.corners {
@@ -81,7 +81,7 @@ EntityDraw :: {}.{
 			if table.is_empty() {
 				padding = theme.padding * 24 / 150 / 15
 				height = title.height + padding * 3
-				{ title, annotations, sections: [], table, column_widths: [], row_heights: [], title_height: height, width: (title.width + padding * 2).max(100), height }
+				{ title, annotations, sections: [], table, column_widths: [], row_heights: [], title_height: height, shape_width: (title.width + padding * 2).max(100), width: (title.width + padding * 2).max(100), height }
 			} else {
 				padding = theme.padding * 24 / 155 / 15
 				text_padding = theme.padding * 18.75 / 15
@@ -92,7 +92,7 @@ EntityDraw :: {}.{
 				column_widths = widths.map(|width| width + extra / count.to_f64())
 				row_heights = table.map(|row| row.fold(0.0, |height, cell| height.max(cell.height)) + text_padding)
 				title_height = title.height + text_padding
-				{ title, annotations, sections: [], table, column_widths, row_heights, title_height, width: content_width + extra, height: row_heights.fold(title_height, |sum, height| sum + height) }
+				{ title, annotations, sections: [], table, column_widths, row_heights, title_height, shape_width: content_width + extra, width: content_width + extra + (if (node.has_comment_column) 0 else padding / 2), height: row_heights.fold(title_height, |sum, height| sum + height) }
 			}
 		} else {
 			title_width = annotations.fold(title.width, |current_width, annotation| current_width.max(annotation.width))
@@ -106,7 +106,7 @@ EntityDraw :: {}.{
 					h + section.fold(0.0, |n, row| n + row.height) + (if (section.is_empty()) 0 else (section.len() - 1).to_f64() * theme.font_size * 3 / 14) + theme.padding * 12 / 15 * (if (node.sections.all(List.is_empty)) 1.5 else 2) + extra
 				},
 			)
-			{ title, annotations, sections, table: [], column_widths: [], row_heights: [], title_height, width: width.max(1), height: height.max(1) }
+			{ title, annotations, sections, table: [], column_widths: [], row_heights: [], title_height, shape_width: width.max(1), width: width.max(1), height: height.max(1) }
 		}
 	}
 
@@ -146,7 +146,7 @@ EntityDraw :: {}.{
 				id = ids.get(i) ?? i.to_str()
 				size = overrides.find_first(|candidate| candidate.kind == "node" and candidate.id == id)
 				match size {
-					Ok(value) => { ..native, width: value.width, height: value.height }
+					Ok(value) => { ..native, shape_width: value.width - (native.width - native.shape_width), width: value.width, height: value.height }
 					Err(_) => native
 				}
 			},
@@ -241,12 +241,19 @@ EntityDraw :: {}.{
 				}
 			},
 		)
-		result = { layout: { positions: geometry.nodes.map(|r| { x: r.x + r.width / 2, y: r.y + r.height / 2 }), bounds: geometry.bounds, routes: geometry.edges.map(|edge| Polyline(edge.points)) }, label_anchors }
+		painted = geometry.nodes.map_with_index(
+			|box, i| {
+				m = measured.get(i) ?? { title: { lines: [], width: 0, height: 0, baseline: 0, step: 0, font_size: 0 }, annotations: [], sections: [], table: [], column_widths: [], row_heights: [], title_height: 0, shape_width: box.width, width: box.width, height: box.height }
+				{ ..box, x: box.x + (box.width - m.shape_width) / 2 }
+			},
+		)
+		canvas = FlowLayout.normalise({ ..geometry, nodes: painted }, label_sizes, [])
+		result = { layout: { positions: geometry.nodes.map(|r| { x: r.x + r.width / 2, y: r.y + r.height / 2 }), bounds: canvas.bounds, routes: geometry.edges.map(|edge| Polyline(edge.points)) }, label_anchors }
 		{ measured, labels: $labels, result }
 	}
 
 	terminal_label : List(Drawing.Point), [From, To], Block, Mark -> Drawing.Point
-	terminal_label = |raw_points, endpoint, _block, mark| {
+	terminal_label = |raw_points, endpoint, block, mark| {
 		points = if (endpoint == From) raw_points else raw_points.rev()
 		first = points.first() ?? { x: 0, y: 0 }
 		next = points.get(1) ?? { x: first.x + 1, y: first.y }
@@ -255,13 +262,11 @@ EntityDraw :: {}.{
 		length = (dx * dx + dy * dy).sqrt()
 		ux = if (length > 0) dx / length else 1
 		uy = if (length > 0) dy / length else 0
-		marker = if (mark == None) 0 else 10
-		along = (25.0 + marker) / 2
-		side = 10.0 + marker * 0.5
-		# Source multiplicity is on start-right, target on end-left, matching
-		# the class DB's terminal roles rather than creating additional ranks.
-		sign = if (endpoint == From) 1.0 else -1.0
-		{ x: first.x + ux * along + uy * side * sign, y: first.y + uy * along - ux * side * sign }
+		marker = if (mark == None) 0 else 6
+		vertical = dy.abs() >= dx.abs()
+		along = (if (vertical) block.height else block.width) / 2 + 4 + marker
+		side = (if (vertical) block.width else block.height) / 2 + 5 + marker
+		{ x: first.x + ux * along - uy * side, y: first.y + uy * along + ux * side }
 	}
 
 	draw : List(Node), List(Edge), [Down, Up, Left, Right], Theme.Options -> Drawing.Picture
@@ -283,7 +288,7 @@ EntityDraw :: {}.{
 					for i in 0..<nodes.len() {
 						match (measured.get(i), result.layout.positions.get(i)) {
 							(Ok(m), Ok(p)) => {
-								rect = { x: p.x - m.width / 2 + shadow.dx, y: p.y - m.height / 2 + shadow.dy, width: m.width, height: m.height }
+								rect = { x: p.x - m.shape_width / 2 + shadow.dx, y: p.y - m.height / 2 + shadow.dy, width: m.shape_width, height: m.height }
 								$items = $items.append(Shape({ path: Drawing.rounded_rectangle(rect, EntityDraw.radius(theme)), paint: { fill: Fill(color), stroke: Stroke({ color, width: theme.line_width }) } }))
 							}
 							_ => {}
@@ -313,7 +318,9 @@ EntityDraw :: {}.{
 			match (labels.get(i), result.label_anchors.get(i)) {
 				(Ok(s), Ok(p)) => {
 					h = s.block.height
-					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x: p.x - s.block.width / 2 - 2, y: p.y - h / 2 - 2, width: s.block.width + 4, height: h + 4 }, 3), paint: { fill: Fill(theme.label_background), stroke: NoStroke } }))
+					if s.placement == Center {
+						$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x: p.x - s.block.width / 2 - 2, y: p.y - h / 2 - 2, width: s.block.width + 4, height: h + 4 }, 3), paint: { fill: Fill(theme.transition_label_background), stroke: NoStroke } }))
+					}
 					$items = $items.concat(EntityDraw.text(s.block, { x: p.x, y: p.y - h / 2 }, Center, theme, theme.label_text))
 				}
 				_ => {}
@@ -323,12 +330,12 @@ EntityDraw :: {}.{
 			match (measured.get(i), result.layout.positions.get(i)) {
 				(Ok(m), Ok(p)) => {
 					palette = EntityDraw.node_colors(i, theme)
-					x = p.x - m.width / 2
+					x = p.x - m.shape_width / 2
 					y = p.y - m.height / 2
 					title_h = m.title_height
-					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: m.height }, EntityDraw.radius(theme)), paint: EntityDraw.paint(palette.fill, palette.stroke, theme.line_width) }))
-					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: title_h }, EntityDraw.radius(theme)), paint: { fill: Fill(palette.fill), stroke: NoStroke } }))
-					node = nodes.get(i) ?? { kind: ClassBox, title: "", annotations: [], sections: [], table: [] }
+					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.shape_width, height: m.height }, EntityDraw.radius(theme)), paint: EntityDraw.paint(palette.fill, palette.stroke, theme.line_width) }))
+					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.shape_width, height: title_h }, EntityDraw.radius(theme)), paint: { fill: Fill(palette.fill), stroke: NoStroke } }))
+					node = nodes.get(i) ?? { kind: ClassBox, has_comment_column: False, title: "", annotations: [], sections: [], table: [] }
 					annotation_height = m.annotations.fold(0.0, |height, annotation| height + annotation.height)
 					var $title_top = y + (m.title_height - m.title.height - annotation_height) / 2
 					for annotation in m.annotations {
@@ -340,7 +347,7 @@ EntityDraw :: {}.{
 					for section_index in 0..<m.sections.len() {
 						section = m.sections.get(section_index) ?? []
 						raw_section = node.sections.get(section_index) ?? []
-						$items = $items.append(EntityDraw.line({ x, y: $top }, { x: x + m.width, y: $top }, palette.stroke, theme.line_width))
+						$items = $items.append(EntityDraw.line({ x, y: $top }, { x: x + m.shape_width, y: $top }, palette.stroke, theme.line_width))
 						section_padding = theme.padding * 12 / 15 * (if (node.sections.all(List.is_empty)) 0.75 else 1)
 						extra = if (section_index == 1 and (m.sections.first() ?? []).is_empty() and !section.is_empty()) theme.padding * 6 / 15 else 0
 						$top = $top + section_padding + extra
@@ -362,20 +369,25 @@ EntityDraw :: {}.{
 						for row_index in 0..<m.table.len() {
 							row = m.table.get(row_index) ?? []
 							row_height = m.row_heights.get(row_index) ?? 0
-							$items = $items.append(EntityDraw.line({ x, y: $top }, { x: x + m.width, y: $top }, palette.stroke, theme.line_width))
+							$items = $items.append(EntityDraw.line({ x, y: $top }, { x: x + m.shape_width, y: $top }, palette.stroke, theme.line_width))
 							var $left = x
 							for column in 0..<row.len() {
 								cell = row.get(column) ?? { lines: [], width: 0, height: 0, baseline: 0, step: 0, font_size: 0 }
 								$items = $items.concat(EntityDraw.text(cell, { x: $left + theme.padding * 24 / 155 / 30, y: $top + (row_height - cell.height) / 2 }, Start, theme, theme.node_text))
-								if column > 0 {
-									$items = $items.append(EntityDraw.line({ x: $left, y: y + title_h }, { x: $left, y: y + m.height }, palette.stroke, theme.line_width))
-								}
+
 								$left = $left + (m.column_widths.get(column) ?? 0)
 							}
 							$top = $top + row_height
 						}
+						var $column_left = x
+						for column in 0..<m.column_widths.len() {
+							if column > 0 {
+								$items = $items.append(EntityDraw.line({ x: $column_left, y: y + title_h }, { x: $column_left, y: y + m.height }, palette.stroke, theme.line_width))
+							}
+							$column_left = $column_left + (m.column_widths.get(column) ?? 0)
+						}
 					}
-					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: m.height }, EntityDraw.radius(theme)), paint: { fill: NoFill, stroke: Stroke({ color: palette.stroke, width: theme.line_width }) } }))
+					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.shape_width, height: m.height }, EntityDraw.radius(theme)), paint: { fill: NoFill, stroke: Stroke({ color: palette.stroke, width: theme.line_width }) } }))
 				}
 				_ => {}
 			}
@@ -399,8 +411,8 @@ EntityDraw :: {}.{
 		}
 		match (boxes.get(edge.from), centers.get(edge.from), boxes.get(edge.to), centers.get(edge.to)) {
 			(Ok(a), Ok(p), Ok(b), Ok(q)) => {
-				from_rect = { x: p.x - a.width / 2, y: p.y - a.height / 2, width: a.width, height: a.height }
-				to_rect = { x: q.x - b.width / 2, y: q.y - b.height / 2, width: b.width, height: b.height }
+				from_rect = { x: p.x - a.shape_width / 2, y: p.y - a.height / 2, width: a.shape_width, height: a.height }
+				to_rect = { x: q.x - b.shape_width / 2, y: q.y - b.height / 2, width: b.shape_width, height: b.height }
 				first = points.first() ?? p
 				last = points.last() ?? q
 				from = FlowTheme.rounded_point(from_rect, corner, first, points.get(1) ?? first)
@@ -471,7 +483,7 @@ EntityDraw :: {}.{
 ## of the first glyph. Zero padding must still contain every compartment.
 expect {
 	theme = Theme.Options.{ font_size: 64, line_height: 0.1, padding: 0, max_label_width: 300 }
-	node = { kind: ClassBox, table: [], annotations: [], title: "Title", sections: [["first", "second"]] }
+	node = { kind: ClassBox, has_comment_column: False, table: [], annotations: [], title: "Title", sections: [["first", "second"]] }
 	measured = EntityDraw.measure(node, theme)
 	picture = EntityDraw.draw([node], [], Down, theme)
 	labels = picture.items.fold(
@@ -509,7 +521,7 @@ expect {
 expect {
 	theme = Theme.Options.{ font_size: 64, line_height: 0.1, padding: 0, max_label_width: 90, wrapping: Wrap }
 	picture = EntityDraw.draw(
-		[{ kind: ClassBox, table: [], annotations: [], title: "A", sections: [["field"]] }, { kind: ClassBox, table: [], annotations: [], title: "B", sections: [] }],
+		[{ kind: ClassBox, has_comment_column: False, table: [], annotations: [], title: "A", sections: [["field"]] }, { kind: ClassBox, has_comment_column: False, table: [], annotations: [], title: "B", sections: [] }],
 		[{ from: 0, to: 1, label: "a long\nlabel", from_label: "1", to_label: "many", from_mark: None, to_mark: Arrow, dashed: False }],
 		Right,
 		theme,
@@ -532,7 +544,7 @@ expect {
 ## regression: table connectors meet custom rounded corners, on the same axis.
 expect {
 	theme = Theme.Options.{}
-	box = EntityDraw.measure({ kind: ClassBox, table: [], annotations: [], title: "Table", sections: [] }, theme)
+	box = EntityDraw.measure({ kind: ClassBox, has_comment_column: False, table: [], annotations: [], title: "Table", sections: [] }, theme)
 	first = { x: box.width / 2 - 1, y: -box.height / 2 }
 	last = { x: 200 - box.width / 2, y: 0 }
 	points = [first, { x: first.x, y: first.y - 50 }, { x: last.x, y: first.y - 50 }, last]
@@ -550,7 +562,7 @@ expect {
 ## after its empty attributes compartment.
 expect {
 	theme = Theme.Options.{}
-	empty = EntityDraw.measure({ kind: ClassBox, title: "Empty", annotations: [], table: [], sections: [[], []] }, theme)
-	methods = EntityDraw.measure({ kind: ClassBox, title: "Methods", annotations: [], table: [], sections: [[], ["+run()"]] }, theme)
+	empty = EntityDraw.measure({ kind: ClassBox, has_comment_column: False, title: "Empty", annotations: [], table: [], sections: [[], []] }, theme)
+	methods = EntityDraw.measure({ kind: ClassBox, has_comment_column: False, title: "Methods", annotations: [], table: [], sections: [[], ["+run()"]] }, theme)
 	empty.height == 77 and methods.height == 112
 }
