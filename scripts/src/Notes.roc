@@ -65,13 +65,20 @@ Notes := [].{
 
 links = |version, urls| {
 	download = "https://github.com/${Release.repository}/releases/download/${version}"
+	# The site restores final releases only. Candidate docs are still
+	# published as an immutable archive containing both package references.
+	reference = if Release.is_final(version) {
+		"- [API reference](${Release.site}/docs/${version}/) and [Mermaid API reference](${Release.site}/docs/${version}/mermaid/)"
+	} else {
+		"- [Layout and Mermaid API references](${download}/${Release.docs_archive(version)}) (documentation archive)"
+	}
 	Str.join_with(
 		[
 			"## Links",
 			"",
 			"- Layout package: `${urls.layout}`",
 			"- Mermaid package: `${urls.mermaid}`",
-			"- [API reference](${Release.site}/docs/${version}/) and [Mermaid API reference](${Release.site}/docs/${version}/mermaid/)",
+			reference,
 			"- [Examples](${download}/${Release.examples_archive(version)}), each depending on this release",
 			"",
 			"",
@@ -95,3 +102,9 @@ expect Notes.render("# roc-graph-layout 0.2.0\n\nNo URL.\n", { notes_version: "0
 expect Notes.render("# roc-graph-layout 0.2.0\n\n{package-url} {package-docs}\n", { notes_version: "0.2.0", version: "0.2.0", urls }) == Err(UnresolvedPlaceholder)
 expect Notes.render("# roc-graph-layout 0.2.0\n\n{package-url} {mermaid-docs}\n", { notes_version: "0.2.0", version: "0.2.0", urls }) == Err(UnresolvedPlaceholder)
 expect Notes.compilers({ roc: "nightly-a", roc_stable: "nightly-b" }).contains("`roc-stable` nightly-b")
+
+## Candidates have downloadable references, not unpublished website paths.
+expect {
+	candidate = Notes.render(source, { notes_version: "0.2.0", version: "0.3.0-rc2", urls })
+	candidate.map_ok(|text| text.contains("/0.3.0-rc2/roc-graph-layout-docs-0.3.0-rc2.zip)") and !text.contains("/docs/0.3.0-rc2/")) == Ok(Bool.True)
+}
