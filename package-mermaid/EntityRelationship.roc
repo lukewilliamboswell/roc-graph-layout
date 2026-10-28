@@ -18,7 +18,6 @@ EntityRelationship :: {}.{
 	Cardinality : [ExactlyOne, ZeroOne, OneMany, ZeroMany]
 	Relationship : { from : U64, to : U64, from_cardinality : Cardinality, to_cardinality : Cardinality, identifying : Bool, label : Str }
 	Diagram : { entities : List(Entity), relationships : List(Relationship), direction : [Down, Up, Left, Right] }
-
 	## Source statement problems and invalid numeric theme properties.
 	Problem : [NotAFlowchart, Syntax({ near : Str }), Unsupported(Str), InvalidTheme(Str), TooManyEdges, MissingLinkStyleEdge(Str), UnnamedGroup]
 
@@ -217,9 +216,14 @@ EntityRelationshipInternals :: {}.{
 		[kind, name, .. as rest] => {
 			var $keys = []
 			var $comment = ""
+			var $has_comment = False
 			var $valid = EntityRelationshipInternals.attribute_word(name, False) and EntityRelationshipInternals.attribute_word(kind, True)
 			for token in rest {
 				if token.starts_with("\"") and token.ends_with("\"") {
+					if $has_comment {
+						$valid = False
+					}
+					$has_comment = True
 					$comment = EntityText.unquote(token)
 				}
 				else {
@@ -363,4 +367,15 @@ expect match EntityRelationship.draw("erDiagram\n A[Customer account]\n A ||--o{
 		},
 	)
 	Err(_) => False
+}
+
+expect match EntityRelationship.parse("erDiagram %% schema\nA ||--o{ B : has\n") {
+	Ok(diagram) => diagram.entities.len() == 2 and diagram.relationships.len() == 1
+	Err(_) => False
+}
+
+## A second comment is invalid source, never a silent replacement of the first.
+expect match EntityRelationship.parse("erDiagram\nA {\nstring name \"first\" \"second\"\n}\n") {
+	Err([Syntax(_)]) => True
+	_ => False
 }

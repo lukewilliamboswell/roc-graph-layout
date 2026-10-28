@@ -8,6 +8,10 @@ import Theme
 ## operation compartments. Inheritance, realization, composition, aggregation,
 ## association and dependency keep their distinct end markers and line styles.
 ## Quoted multiplicities and association labels receive space along the routes.
+## Abstract (`*`) and static (`$`) member suffixes are displayed as measured
+## `«abstract»` and `«static»` annotations. This explicit notation works in
+## every vector renderer without requiring italic or underlined font styles;
+## the parsed model retains the original member spelling.
 ##
 ## Supports class declarations, member blocks, `Class : member`, annotations,
 ## generic names (`List~T~`) and reading directions. Namespaces, interactions
@@ -17,7 +21,6 @@ ClassDiagram :: {}.{
 	RelationshipKind : [Inheritance, Realization, Composition, Aggregation, Association, Dependency, Link, DottedLink]
 	Relationship : { from : U64, to : U64, kind : RelationshipKind, reversed : Bool, bidirectional : Bool, label : Str, from_multiplicity : Str, to_multiplicity : Str }
 	Diagram : { classes : List(Class), relationships : List(Relationship), direction : [Down, Up, Left, Right] }
-
 	## Source statement problems and invalid numeric theme properties.
 	Problem : [NotAFlowchart, Syntax({ near : Str }), Unsupported(Str), InvalidTheme(Str), TooManyEdges, MissingLinkStyleEdge(Str), UnnamedGroup]
 
@@ -70,7 +73,7 @@ ClassDiagram :: {}.{
 							Some(decl) => {
 								found = ClassDiagramInternals.ensure($classes, decl.id)
 								current = found.classes.get(found.index) ?? { id: "", label: "", fields: [], methods: [], annotations: [] }
-								$classes = found.classes.set(found.index, { ..current, label: decl.label }) ?? []
+								$classes = found.classes.set(found.index, { ..current, label: if (decl.explicit_label) decl.label else current.label }) ?? []
 								if decl.open {
 									$open = Some(found.index)
 								}
@@ -149,7 +152,7 @@ ClassDiagramInternals :: {}.{
 		diagram.classes.map(
 			|c| {
 				title = Str.join_with(c.annotations.concat([c.label]), "\n")
-				sections = if (c.fields.is_empty() and c.methods.is_empty()) [] else [c.fields, c.methods]
+				sections = if (c.fields.is_empty() and c.methods.is_empty()) [] else [c.fields.map(ClassDiagramInternals.display_member), c.methods.map(ClassDiagramInternals.display_member)]
 				{ title, sections }
 			},
 		),
@@ -169,14 +172,36 @@ ClassDiagramInternals :: {}.{
 		theme,
 	)
 
-	declaration : Str -> [Some({ id : Str, label : Str, open : Bool }), None]
+	display_member : Str -> Str
+	display_member = |raw| {
+		var $text = EntityText.trim(raw)
+		var $abstract = False
+		var $static = False
+		var $remaining = True
+		while $remaining and !$text.is_empty() {
+			if $text.ends_with("*") {
+				$abstract = True
+				$text = EntityText.trim(Str.from_utf8_lossy($text.to_utf8().drop_last(1)))
+			} else if $text.ends_with("$") {
+				$static = True
+				$text = EntityText.trim(Str.from_utf8_lossy($text.to_utf8().drop_last(1)))
+			} else {
+				$remaining = False
+			}
+		}
+		abstract = if ($abstract) " «abstract»" else ""
+		static = if ($static) " «static»" else ""
+		"${$text}${abstract}${static}"
+	}
+
+	declaration : Str -> [Some({ id : Str, label : Str, open : Bool, explicit_label : Bool }), None]
 	declaration = |line| {
 		raw = EntityText.trim(Str.from_utf8_lossy(line.to_utf8().drop_first(6)))
 		open = raw.ends_with("{")
 		body = if (open) EntityText.trim(Str.from_utf8_lossy(raw.to_utf8().drop_last(1))) else raw
 		match EntityText.split(body, "[") {
 			Missing => if ClassDiagramInternals.identifier(body) {
-				Some({ id: body, label: ClassDiagramInternals.display(body), open })
+				Some({ id: body, label: ClassDiagramInternals.display(body), open, explicit_label: False })
 			} else {
 				None
 			}
@@ -184,7 +209,7 @@ ClassDiagramInternals :: {}.{
 				id = EntityText.trim(id_raw)
 				label = EntityText.trim(label_raw)
 				if ClassDiagramInternals.identifier(id) and label.ends_with("]") {
-					Some({ id, label: EntityText.unquote(Str.from_utf8_lossy(label.to_utf8().drop_last(1))), open })
+					Some({ id, label: EntityText.unquote(Str.from_utf8_lossy(label.to_utf8().drop_last(1))), open, explicit_label: True })
 				} else {
 					None
 				}
@@ -325,4 +350,47 @@ expect {
 expect match ClassDiagram.draw("classDiagram\n namespace unsupported\n click A url\n", Theme.Options.{ font_size: 0 }) {
 	Err(problems) => problems.len() == 3
 	Ok(_) => False
+}
+
+## Regression: a later bare declaration adds members without erasing a label.
+expect match ClassDiagram.parse("classDiagram %% model\nclass A[\"Display alias\"]\nclass A {\n+String field\n}\n") {
+	Ok(diagram) => match diagram.classes.first() {
+		Ok(item) => item.label == "Display alias" and item.fields == ["+String field"]
+		Err(_) => False
+	}
+	Err(_) => False
+}
+
+## Preserve raw member spelling while making its modifiers visible in drawing.
+expect {
+	source = "classDiagram\nclass A {\n+method()*\n+static()$\n+int count$\n}\n"
+	parsed = match ClassDiagram.parse(source) {
+		Ok(diagram) => match diagram.classes.first() {
+			Ok(item) => item.methods == ["+method()*", "+static()$"] and item.fields == ["+int count$"]
+			Err(_) => False
+		}
+		Err(_) => False
+	}
+	parsed and match ClassDiagram.draw(source, Theme.Options.{}) {
+		Ok(picture) => Drawing.is_finite(picture)
+			and picture.items.any(
+				|item| match item {
+					Text(label) => label.text.contains("«abstract»")
+					_ => False
+				},
+			)
+			and picture.items.any(
+				|item| match item {
+					Text(label) => label.text.contains("«static»")
+					_ => False
+				},
+			)
+			and !picture.items.any(
+				|item| match item {
+					Text(label) => label.text.ends_with("$") or label.text.ends_with("*")
+					_ => False
+				},
+			)
+		Err(_) => False
+	}
 }

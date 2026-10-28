@@ -1,7 +1,7 @@
 import Drawing
 import Theme
 import TextMeasure
-import FlowGeometry
+import font.Font
 import layout.Geom
 import layout.Layered
 
@@ -12,20 +12,36 @@ EntityDraw :: {}.{
 	Cardinality : [ExactlyOne, ZeroOne, OneMany, ZeroMany]
 	Mark : [None, Arrow, Triangle, Diamond(Bool), Cardinality(Cardinality)]
 	Edge : { from : U64, to : U64, label : Str, from_label : Str, to_label : Str, from_mark : Mark, to_mark : Mark, dashed : Bool }
-	Block : FlowGeometry.TextBlock
+	Block : { lines : List(Str), width : F64, height : F64, baseline : F64, step : F64 }
 	Measured : { title : Block, sections : List(List(Block)), width : F64, height : F64 }
 
 	measure_text : Str, Theme.Options -> Block
-	measure_text = |text, theme| TextMeasure.block(text, { font: TextMeasure.inter, size: theme.font_size, line_height: theme.line_height, wrap: Width(theme.max_label_width), align: Start })
+	measure_text = |text, theme| {
+		measured = TextMeasure.block(text, { font: TextMeasure.inter, size: theme.font_size, line_height: theme.line_height, wrap: Width(theme.max_label_width), align: Start })
+		metrics = Font.metrics(TextMeasure.inter)
+		scale = theme.font_size / Font.units_per_em(TextMeasure.inter).to_f64()
+		# Reserve real font ascent/descent independently of the requested
+		# baseline spacing. Very tight lines may overlap within a cell, but
+		# they cannot escape that cell or cover the next compartment. The
+		# fallback emoji font can extend a quarter-em below the baseline.
+		baseline = (metrics.ascent.to_f64() * scale).max(TextMeasure.round(metrics.ascent.to_f64() * scale)).max(theme.font_size * 0.95).max(TextMeasure.round(theme.font_size * 0.95))
+		descent = (metrics.descent.to_f64() * scale).max(TextMeasure.round(metrics.descent.to_f64() * scale)).max(theme.font_size * 0.25).max(TextMeasure.round(theme.font_size * 0.25))
+		step = theme.font_size * theme.line_height
+		height = if measured.lines.is_empty() {
+			0
+		} else {
+			baseline + descent + (measured.lines.len() - 1).to_f64() * step
+		}
+		{ lines: measured.lines, width: measured.width, height: height.max(measured.height), baseline, step }
+	}
 
 	measure : Node, Theme.Options -> Measured
 	measure = |node, theme| {
 		title = EntityDraw.measure_text(node.title, theme)
 		sections = node.sections.map(|section| section.map(|row| EntityDraw.measure_text(row, theme)))
 		width = sections.fold(title.width, |w, section| section.fold(w, |v, row| v.max(row.width))) + theme.padding * 2
-		step = theme.font_size * theme.line_height
-		title_h = title.lines.len().to_f64().max(1) * step + theme.padding * 2
-		height = sections.fold(title_h, |h, section| h + section.fold(0.0, |n, row| n + row.lines.len().to_f64().max(1) * step) + theme.padding * 2)
+		title_h = title.height + theme.padding * 2
+		height = sections.fold(title_h, |h, section| h + section.fold(0.0, |n, row| n + row.height) + theme.padding * 2)
 		{ title, sections, width: width.max(100), height: height.max(40) }
 	}
 
@@ -36,7 +52,7 @@ EntityDraw :: {}.{
 	line = |a, b, color, width| Shape({ path: [MoveTo(a), LineTo(b)], paint: { fill: NoFill, stroke: Stroke({ color, width }) } })
 
 	text : Block, Drawing.Point, Drawing.Align, Theme.Options, Drawing.Color -> List(Drawing.Item)
-	text = |block, top, align, theme, color| block.lines.map_with_index(|row, i| Text({ text: row, origin: { x: top.x, y: top.y + theme.font_size + i.to_f64() * theme.font_size * theme.line_height }, size: theme.font_size, align, color }))
+	text = |block, top, align, theme, color| block.lines.map_with_index(|row, i| Text({ text: row, origin: { x: top.x, y: top.y + block.baseline + i.to_f64() * block.step }, size: theme.font_size, align, color }))
 
 	draw : List(Node), List(Edge), [Down, Up, Left, Right], Theme.Options -> Drawing.Picture
 	draw = |nodes, edges, direction, theme| {
@@ -54,7 +70,7 @@ EntityDraw :: {}.{
 				}
 			}
 		}
-		input = { ..Layered.default_input, graph, edge_labels: $labels.map(|s| { edge: s.edge, placement: s.placement, width: s.block.width + 12, height: s.block.lines.len().to_f64() * theme.font_size * theme.line_height + 8 }) }
+		input = { ..Layered.default_input, graph, edge_labels: $labels.map(|s| { edge: s.edge, placement: s.placement, width: s.block.width + 12, height: s.block.height + 8 }) }
 		# Every index is constructed from these exact source lists. Generated
 		# sizes/settings are nonnegative and finite after theme validation.
 		result = match Layered.layout(input, { ..Layered.default_settings, direction, node_gap: 56, layer_gap: 64 }, Layered.default_run) {
@@ -100,7 +116,7 @@ EntityDraw :: {}.{
 		for i in 0..<$labels.len() {
 			match ($labels.get(i), result.label_anchors.get(i)) {
 				(Ok(s), Ok(p)) => {
-					h = s.block.lines.len().to_f64() * theme.font_size * theme.line_height
+					h = s.block.height
 					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x: p.x - s.block.width / 2 - 4, y: p.y - h / 2 - 2, width: s.block.width + 8, height: h + 4 }, 3), paint: { fill: Fill(theme.label_background), stroke: NoStroke } }))
 					$items = $items.concat(EntityDraw.text(s.block, { x: p.x, y: p.y - h / 2 }, Center, theme, theme.label_text))
 				}
@@ -112,8 +128,7 @@ EntityDraw :: {}.{
 				(Ok(m), Ok(p)) => {
 					x = p.x - m.width / 2
 					y = p.y - m.height / 2
-					step = theme.font_size * theme.line_height
-					title_h = m.title.lines.len().to_f64().max(1) * step + theme.padding * 2
+					title_h = m.title.height + theme.padding * 2
 					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: m.height }, theme.corner_radius), paint: EntityDraw.paint(theme.background, theme.node_stroke, theme.line_width) }))
 					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: title_h }, theme.corner_radius), paint: { fill: Fill(theme.node_fill), stroke: NoStroke } }))
 					$items = $items.concat(EntityDraw.text(m.title, { x: p.x, y: y + theme.padding }, Center, theme, theme.node_text))
@@ -123,7 +138,7 @@ EntityDraw :: {}.{
 						$top = $top + theme.padding
 						for row in section {
 							$items = $items.concat(EntityDraw.text(row, { x: x + theme.padding, y: $top }, Start, theme, theme.node_text))
-							$top = $top + row.lines.len().to_f64().max(1) * step
+							$top = $top + row.height
 						}
 						$top = $top + theme.padding
 					}
@@ -200,4 +215,65 @@ EntityDraw :: {}.{
 			}
 		}
 	}
+}
+
+## Regression: a valid tight line-height is baseline spacing, not the height
+## of the first glyph. Zero padding must still contain every compartment.
+expect {
+	theme = Theme.Options.{ font_size: 64, line_height: 0.1, padding: 0, max_label_width: 300 }
+	node = { title: "Title", sections: [["first", "second"]] }
+	measured = EntityDraw.measure(node, theme)
+	picture = EntityDraw.draw([node], [], Down, theme)
+	labels = picture.items.fold(
+		[],
+		|out, item| match item {
+			Text(label) => out.append(label)
+			_ => out
+		},
+	)
+	Drawing.is_finite(picture) and measured.height >= 64 * 3 and match labels {
+		[title, first, second] => title.origin.y >= 60
+			and first.origin.y - title.origin.y >= 64
+			and second.origin.y - first.origin.y >= 64
+			and second.origin.y + 16 <= measured.height
+		_ => False
+	}
+}
+
+## Regression: wrapped and explicit multiline cells reserve the full glyph
+## extents even when successive baselines are much closer than one em.
+expect {
+	theme = Theme.Options.{ font_size: 64, line_height: 0.01, padding: 0, max_label_width: 90 }
+	cell = EntityDraw.measure_text("first line\nsecond line with several words", theme)
+	items = EntityDraw.text(cell, { x: 0, y: 0 }, Start, theme, theme.node_text)
+	cell.lines.len() > 2 and cell.height >= 64 and items.all(
+		|item| match item {
+			Text(label) => label.origin.y >= 60 and label.origin.y + 16 <= cell.height
+			_ => False
+		},
+	)
+}
+
+## Regression: edge-label reservations use their measured text boxes too.
+expect {
+	theme = Theme.Options.{ font_size: 64, line_height: 0.1, padding: 0, max_label_width: 90 }
+	picture = EntityDraw.draw(
+		[{ title: "A", sections: [["field"]] }, { title: "B", sections: [] }],
+		[{ from: 0, to: 1, label: "a long\nlabel", from_label: "1", to_label: "many", from_mark: None, to_mark: Arrow, dashed: False }],
+		Right,
+		theme,
+	)
+	Drawing.is_finite(picture) and picture.items.all(
+		|item| match item {
+			Text(label) => label.origin.y - 62 >= picture.view.y
+				and label.origin.y + 16 <= picture.view.y + picture.view.height
+			_ => True
+		},
+	)
+}
+
+expect {
+	theme = Theme.Options.{ font_size: 0.001, line_height: 0.01, padding: 0 }
+	cell = EntityDraw.measure_text("a\nb", theme)
+	cell.baseline > 0 and cell.height > cell.baseline and cell.step > 0
 }
