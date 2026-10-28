@@ -7,9 +7,9 @@ import Theme
 ## Draw state lifecycles from `stateDiagram` or `stateDiagram-v2` text.
 ## Initial and final states, labelled transitions, aliases, descriptions,
 ## nested composite states, directions and choice/fork/join markers retain
-## their state-machine meaning. Notes are arranged in non-overlapping side
-## columns and name the state they describe. `classDef`, `class` and `style`
-## change node and composite colours, outlines and text.
+## their state-machine meaning. Notes are adjacent layout nodes joined
+## to their states by dashed associations. `classDef`, `class` and `style`
+## change node and composite colours, outlines and text colours.
 ##
 ## Concurrent regions, history states and interactions are reported as
 ## unsupported rather than approximated. State and transition lists preserve
@@ -29,15 +29,25 @@ StateDiagram := [].{
 	## Descriptions retain every authored alias and description in order.
 	## The first description is the display label, or the id when none was
 	## supplied; further descriptions form the state's body compartment.
-	State : { id : Str, label : Str, descriptions : List(Str), kind : Kind, container : Container, classes : List(Str), styles : List(Str) }
+	## `kind` preserves the author's declaration. `effective_kind` follows
+	## Mermaid's first registration: a stereotype declared after a transition
+	## has already created the state retains the ordinary rendered shape.
+	State : { id : Str, label : Str, descriptions : List(Str), kind : Kind, effective_kind : Kind, container : Container, classes : List(Str), styles : List(Str) }
 	Transition : { from : Endpoint, to : Endpoint, label : Str }
-	Note : { state : Endpoint, side : [Left, Right], text : Str }
+
+	## A note retains how many transitions precede its declaration, so its
+	## association preserves the source order of all graph edges.
+	Note : { state : Endpoint, side : [Left, Right], text : Str, after_transition : U64 }
 	Group : { id : Str, title : Str, descriptions : List(Str), container : Container, direction : [Inherit, Set(Direction)], classes : List(Str), styles : List(Str) }
 	ClassDef : { name : Str, styles : List(Str) }
 
 	## States, transitions, composites, style classes and notes remain in
 	## source order. Containers refer to this diagram's `groups` list.
-	Diagram : { direction : Direction, states : List(State), transitions : List(Transition), groups : List(Group), classes : List(ClassDef), notes : List(Note) }
+	## First registration order across states, composites and notes. State
+	## and composite entries carry ids; note entries index the notes list.
+	## This order determines deterministic placement and port ordering.
+	Declaration : [State(Str), Composite(Str), Note(U64)]
+	Diagram : { declarations : List(Declaration), direction : Direction, states : List(State), transitions : List(Transition), groups : List(Group), classes : List(ClassDef), notes : List(Note) }
 
 	## Statement and shared drawing problems. `Syntax` includes the text
 	## near an error; `Unsupported` explains a recognised feature that is
@@ -49,7 +59,13 @@ StateDiagram := [].{
 	parse = StateParser.parse
 
 	## Read and draw text with a shared theme. Numeric theme problems and
-	## independent syntax problems are reported together.
+	## independent syntax problems are reported together. A base padding of 15
+	## gives 8 pixels around state labels and 15 around notes; other padding
+	## values scale these roles together. Family-default wrapping applies
+	## to ordinary states and notes; description compartments stay unwrapped.
+	## Explicit wrapping/corner choices override the role defaults.
+	## `transition_label_background` colours the square backing of transition
+	## labels; its default is white.
 	draw : Str, Theme.Options -> Try(Drawing.Picture, List(Problem))
 	draw = |source, options| {
 		problems = Theme.validate(options)
@@ -164,3 +180,27 @@ expect
 		Err(_) => True
 		Ok(_) => False
 	}
+
+## Pinned Mermaid registers a state on its first transition; a later
+## stereotype preserves declaration intent without replacing its shape.
+expect
+	match StateDiagram.parse("stateDiagram-v2\n[*] --> Select\nstate Select <<choice>>\n") {
+		Ok(d) => (d.states.get(1) ?? crash "state exists").kind == Choice and (d.states.get(1) ?? crash "state exists").effective_kind == Normal
+		Err(_) => False
+	}
+
+## Pinned Mermaid trims the block's outside whitespace while preserving
+## indentation and blank lines inside a multiline note.
+expect
+	match StateDiagram.parse("stateDiagram-v2\nA\nnote right of A\n    First line\n        Second line\n\n    Fourth line\nend note\n") {
+		Ok(d) => d.notes.first()?.text == "First line\n        Second line\n\n    Fourth line"
+		Err(_) => False
+	}
+
+## The pinned state DB registers note containers inline, before a later
+## final state; association edges retain their declaration positions too.
+expect {
+	d = StateDiagram.parse("stateDiagram-v2\n[*] --> Ready\nReady --> Done\nnote left of Ready: prepare\nnote right of Done: notify\nDone --> [*]\n")?
+	d.declarations.take_last(3) == [Note(0), Note(1), State(d.states.last()?.id)]
+		and d.notes.map(|note| note.after_transition) == [2, 2]
+}

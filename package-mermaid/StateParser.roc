@@ -6,20 +6,20 @@ import StateModel
 ## a composite may be referenced before its body appears.
 StateParser :: {}.{
 	RawTransition : { from : Str, to : Str, label : Str }
-	RawNote : { state : Str, side : [Left, Right], text : Str }
-	Reader : { direction : Flowchart.Direction, states : List(StateModel.State), transitions : List(RawTransition), groups : List(StateModel.Group), classes : List(Flowchart.ClassDef), notes : List(RawNote), stack : List(U64), problems : List(Flowchart.Problem) }
+	RawNote : { state : Str, side : [Left, Right], text : Str, after_transition : U64 }
+	Reader : { declarations : List(StateModel.Declaration), direction : Flowchart.Direction, states : List(StateModel.State), transitions : List(RawTransition), groups : List(StateModel.Group), classes : List(Flowchart.ClassDef), notes : List(RawNote), stack : List(U64), problems : List(Flowchart.Problem) }
 
 	parse : Str -> Try(StateModel.Diagram, List(Flowchart.Problem))
 	parse = |source| {
 		lines = source.split_on("\n")
 		initial : Reader
-		initial = { direction: Down, states: [], transitions: [], groups: [], classes: [], notes: [], stack: [], problems: [] }
+		initial = { declarations: [], direction: Down, states: [], transitions: [], groups: [], classes: [], notes: [], stack: [], problems: [] }
 		var $reader = initial
 		var $header = False
 		var $note = None
 		for raw in lines {
 			line = FlowText.trim(StateParser.comment(raw))
-			if line != "" {
+			if line != "" or $note != None {
 				if !$header {
 					$header = True
 					if line != "stateDiagram" and line != "stateDiagram-v2" and line != "stateDiagram;" and line != "stateDiagram-v2;" {
@@ -29,10 +29,11 @@ StateParser :: {}.{
 					match $note {
 						Some(note) => {
 							if line == "end note" {
-								$reader = { ..$reader, notes: $reader.notes.append(note) }
+								$reader = { ..$reader, notes: $reader.notes.append({ ..note, text: FlowText.trim(note.text) }) }
 								$note = None
 							} else {
-								text = if (note.text == "") line else "${note.text}\n${line}"
+								content = StateParser.comment(raw)
+								text = if (note.text == "") line else "${note.text}\n${content}"
 								$note = Some({ ..note, text })
 							}
 						}
@@ -47,11 +48,12 @@ StateParser :: {}.{
 												$reader = { ..$reader, problems: $reader.problems.append(problem) }
 											}
 											Ok(found) => {
+												$reader = { ..$reader, declarations: $reader.declarations.append(Note($reader.notes.len())) }
 												$reader = StateParser.ensure($reader, found.note.state, StateParser.current_container($reader))
 												if found.inline {
-													$reader = { ..$reader, notes: $reader.notes.append(found.note) }
+													$reader = { ..$reader, notes: $reader.notes.append({ ..found.note, after_transition: $reader.transitions.len() }) }
 												} else {
-													$note = Some(found.note)
+													$note = Some({ ..found.note, after_transition: $reader.transitions.len() })
 												}
 											}
 										}
@@ -92,7 +94,7 @@ StateParser :: {}.{
 		for raw_note in reader.notes {
 			match StateParser.endpoint(raw_note.state, states, reader.groups) {
 				Ok(state) => {
-					$notes = $notes.append({ state, side: raw_note.side, text: raw_note.text })
+					$notes = $notes.append({ state, side: raw_note.side, text: raw_note.text, after_transition: raw_note.after_transition })
 				}
 				Err(_) => {
 					$problems = $problems.append(Syntax({ near: "note names unknown state ${raw_note.state}" }))
@@ -100,7 +102,7 @@ StateParser :: {}.{
 			}
 		}
 		if $problems.is_empty() {
-			Ok({ direction: reader.direction, states, transitions: $transitions, groups: reader.groups, classes: reader.classes, notes: $notes })
+			Ok({ declarations: reader.declarations, direction: reader.direction, states, transitions: $transitions, groups: reader.groups, classes: reader.classes, notes: $notes })
 		} else {
 			Err($problems)
 		}
@@ -171,7 +173,7 @@ StateParser :: {}.{
 			} else {
 				next = StateParser.ensure(reader, id, StateParser.current_container(reader))
 				description = FlowText.display(FlowText.trim(found.right))
-				states = next.states.map(|state| if (state.id == id) { ..state, label: if (state.descriptions.is_empty()) description else state.label, descriptions: state.descriptions.append(description) } else state)
+				states = next.states.map(|state| if (state.id == id) { ..state, label: if (state.descriptions.is_empty()) description else state.label, descriptions: state.descriptions.append(description), effective_kind: Normal } else state)
 				groups = next.groups.map(|group| if (group.id == id) { ..group, title: if (group.descriptions.is_empty()) description else group.title, descriptions: group.descriptions.append(description) } else group)
 				{ ..next, states, groups }
 			}
@@ -218,7 +220,7 @@ StateParser :: {}.{
 					}
 				).concat(if (named.found) [label] else [])
 				group = { id, title: descriptions.first() ?? id, descriptions, container: StateParser.current_container(reader), direction: Inherit, classes, styles }
-				{ ..reader, groups: reader.groups.append(group), stack: reader.stack.append(reader.groups.len()) }
+				{ ..reader, groups: reader.groups.append(group), declarations: if (reader.declarations.contains(State(id))) reader.declarations.map(|item| if (item == State(id)) Composite(id) else item) else reader.declarations.append(Composite(id)), stack: reader.stack.append(reader.groups.len()) }
 			}
 		} else if reader.groups.any(|group| group.id == id) {
 			if annotation.found {
@@ -243,7 +245,7 @@ StateParser :: {}.{
 			if !known_annotation {
 				StateParser.problem(next, Unsupported("state annotation <<${annotation.right}"))
 			} else {
-				{ ..next, states: next.states.map(|state| if (state.id == id) { ..state, label: if (named.found and state.descriptions.is_empty()) label else state.label, descriptions: state.descriptions.concat(if (named.found) [label] else []), kind: if (annotation.found) kind else state.kind, container: StateParser.current_container(reader), classes: state.classes.concat(styled.classes) } else state) }
+				{ ..next, states: next.states.map(|state| if (state.id == id) { ..state, label: if (named.found and state.descriptions.is_empty()) label else state.label, descriptions: state.descriptions.concat(if (named.found) [label] else []), kind: if (annotation.found) kind else state.kind, effective_kind: if (named.found) Normal else if (!reader.states.any(|previous| previous.id == id)) kind else state.effective_kind, container: StateParser.current_container(reader), classes: state.classes.concat(styled.classes) } else state) }
 			}
 		}
 	}
@@ -265,7 +267,7 @@ StateParser :: {}.{
 		} else {
 			first = StateParser.ensure(reader, from, StateParser.current_container(reader))
 			second = StateParser.ensure(first, to, StateParser.current_container(reader))
-			states = second.states.map(|state| if (state.id == from and from_text == "[*]") { ..state, kind: Initial, label: "" } else if (state.id == to and to_text == "[*]") { ..state, kind: Final, label: "" } else if (state.id == from) { ..state, classes: state.classes.concat(from_styled.classes) } else if (state.id == to) { ..state, classes: state.classes.concat(to_styled.classes) } else state)
+			states = second.states.map(|state| if (state.id == from and from_text == "[*]") { ..state, kind: Initial, effective_kind: Initial, label: "" } else if (state.id == to and to_text == "[*]") { ..state, kind: Final, effective_kind: Final, label: "" } else if (state.id == from) { ..state, classes: state.classes.concat(from_styled.classes) } else if (state.id == to) { ..state, classes: state.classes.concat(to_styled.classes) } else state)
 			if second.transitions.len() >= 500 {
 				if (second.problems.contains(TooManyEdges)) second else StateParser.problem(second, TooManyEdges)
 			} else {
@@ -291,12 +293,12 @@ StateParser :: {}.{
 		if reader.states.any(|state| state.id == id) or reader.groups.any(|group| group.id == id) {
 			reader
 		} else {
-			{ ..reader, states: reader.states.append(StateParser.empty_state(id, container)) }
+			{ ..reader, states: reader.states.append(StateParser.empty_state(id, container)), declarations: reader.declarations.append(State(id)) }
 		}
 	}
 
 	empty_state : Str, Flowchart.Container -> StateModel.State
-	empty_state = |id, container| { id, label: id, descriptions: [], kind: Normal, container, classes: [], styles: [] }
+	empty_state = |id, container| { id, label: id, descriptions: [], kind: Normal, effective_kind: Normal, container, classes: [], styles: [] }
 
 	read_note : Str -> Try({ note : RawNote, inline : Bool }, Flowchart.Problem)
 	read_note = |text| {
@@ -304,7 +306,7 @@ StateParser :: {}.{
 		words = labelled.left.split_on(" ").keep_if(|s| s != "")
 		match words {
 			["note", side, "of", id] if (side == "left" or side == "right") and StateParser.valid_id(id) =>
-				Ok({ note: { state: id, side: if (side == "left") Left else Right, text: FlowText.display(FlowText.trim(labelled.right)) }, inline: labelled.found })
+				Ok({ note: { state: id, side: if (side == "left") Left else Right, text: FlowText.display(FlowText.trim(labelled.right)), after_transition: 0 }, inline: labelled.found })
 			_ => Err(Syntax({ near: text }))
 		}
 	}

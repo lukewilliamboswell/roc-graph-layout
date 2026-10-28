@@ -33,7 +33,7 @@ export function normalizeReference(record) {
             for (const item of node.doc) visit(item, id);
             return group;
         }
-        if (node.note) notes.push({ state: id, side: node.note.position === 'left of' ? 'left' : 'right', text: display(node.note.text).trim() });
+        if (node.note) notes.push({ state: id, side: node.note.position === 'left of' ? 'left' : 'right', text: display(node.note.text).trim(), after_transition: transitions.length });
         return value;
     };
     const visit = (item, parent) => {
@@ -98,5 +98,13 @@ export function normalizeReference(record) {
             labels.push({ id: `group-${currentGroup.id}`, size_kind: 'group', text: currentGroup.descriptions[0] ?? currentGroup.id, box: element.box });
         }
     }
-    return { semantic, geometry: { view_box: record.layout?.view_box ?? record.rendering?.view_box, nodes, groups: groupGeometry, edges, labels, text_runs: textRuns } };
+    // The recorder captures the actual label measurement handed to ELK.
+    // FlowLayoutImport subtracts two pixels from the glyph box height;
+    // retain the original glyph box here, never a final container frame.
+    const measurements = (record.measured_input?.nodes ?? []).filter(node => node.shape === 'noteGroup').map(node => {
+        const box = node.labelBBox;
+        if (!Number.isFinite(box?.width) || !Number.isFinite(box?.height)) throw new Error(`missing measured note-group label ${node.id}`);
+        return { kind: 'group', id: 'note-group-' + cleanId(node.id).replace(/----parent$/, ''), text: display(node.label), width: box.width, height: box.height };
+    });
+    return { semantic, measurements, geometry: { view_box: record.layout?.view_box ?? record.rendering?.view_box, nodes, groups: groupGeometry, edges, labels, text_runs: textRuns } };
 }

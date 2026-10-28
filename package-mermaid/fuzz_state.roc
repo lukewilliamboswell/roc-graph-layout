@@ -5,7 +5,6 @@ app [target] {
 }
 
 import Drawing
-import FlowLayout
 import StateDiagram
 import StateDraw
 import Svg
@@ -41,9 +40,9 @@ check : Str, Theme.Options -> Fuzz.Outcome
 check = |source, options| match StateDiagram.parse(source) {
 	Err(_) => Fuzz.reject
 	Ok(diagram) => {
-		sizes = StateDraw.measure_sizes(diagram, options)
-		geometry = FlowLayout.layout(StateDraw.make_flow(diagram), sizes)
-		if geometry.nodes.len() != diagram.states.len() or geometry.edges.len() != diagram.transitions.len() or geometry.groups.len() != diagram.groups.len() {
+		prepared = StateDraw.setup(diagram, options)
+		geometry = prepared.geometry
+		if geometry.nodes.len() != diagram.states.len() + diagram.notes.len() or geometry.edges.len() != diagram.transitions.len() + diagram.notes.len() or geometry.groups.len() != diagram.groups.len() + diagram.notes.len() {
 			crash "state geometry lost source alignment"
 		}
 		for edge in diagram.transitions {

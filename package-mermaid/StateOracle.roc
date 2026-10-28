@@ -14,9 +14,9 @@ StateOracle :: {}.{
 	## Pinned Mermaid 12.2 state typography and label boxes: 14px Inter,
 	## 1.1em baselines, state padding8, wrapping120 and rounded corners12.
 	## The palette matches its classic white-state picture independently
-	## of the package's intentionally different public theme defaults.
+	## from the package's independently configurable appearance options.
 	reference_theme : Theme.Options
-	reference_theme = Theme.Options.{ font_size: 14, line_height: 1.1, padding: 8, max_label_width: 120, corner_radius: 12, line_width: 2, background: Drawing.white, node_fill: Drawing.white, node_stroke: Drawing.rgb(0x28253D), node_text: Drawing.rgb(0x28253D), line: Drawing.black, label_background: Drawing.rgb(0xE6E6E6), label_text: Drawing.rgb(0x28253D), accent: Drawing.black, group_fill: Drawing.rgb(0xFDF4FF), group_stroke: Drawing.rgb(0xE879F9) }
+	reference_theme = Theme.Options.{ font_size: 14, line_height: 1.1, padding: 15, max_label_width: 120, corner_radius: 12, line_width: 2, background: Drawing.white, node_fill: Drawing.white, node_stroke: Drawing.rgb(0x28253D), node_text: Drawing.rgb(0x28253D), line: Drawing.black, transition_label_background: Drawing.white, label_text: Drawing.rgb(0x28253D), accent: Drawing.black, group_fill: Drawing.rgb(0xFDF4FF), group_stroke: Drawing.rgb(0xE879F9), note_fill: Drawing.rgb(0xFFF5AD), note_stroke: Drawing.rgb(0x28253D), note_text: Drawing.rgb(0x28253D) }
 
 	inspect : Str, Theme.Options -> Str
 	inspect = |source, theme| StateOracle.inspect_sized(source, theme, [])
@@ -127,7 +127,7 @@ StateOracle :: {}.{
 						("id", OracleJson.string(StateOracle.state_id(diagram, state))),
 						("parent", StateOracle.parent(diagram, state.container)),
 						("declared_kind", OracleJson.string(StateOracle.kind(state.kind))),
-						("effective_kind", OracleJson.string(StateOracle.kind(state.kind))),
+						("effective_kind", OracleJson.string(StateOracle.kind(state.effective_kind))),
 						("descriptions", OracleJson.strings(state.descriptions)),
 						("classes", OracleJson.strings(state.classes)),
 						("styles", OracleJson.strings(state.styles)),
@@ -180,6 +180,7 @@ StateOracle :: {}.{
 						("state", OracleJson.string(StateOracle.flow_endpoint(diagram, note.state))),
 						("side", OracleJson.string(if (note.side == Left) "left" else "right")),
 						("text", OracleJson.string(note.text)),
+						("after_transition", note.after_transition.to_str()),
 					]),
 				),
 			),
@@ -239,7 +240,7 @@ StateOracle :: {}.{
 	node_id = |diagram, i| match diagram.states.get(i) {
 		Ok(state) => StateOracle.state_id(diagram, state)
 		Err(_) => {
-			note = diagram.notes.get(i - diagram.states.len()) ?? { state: Node(0), side: Right, text: "" }
+			note = diagram.notes.get(i - diagram.states.len()) ?? { state: Node(0), side: Right, text: "", after_transition: 0 }
 			"${StateOracle.flow_endpoint(diagram, note.state)}----note"
 		}
 	}
@@ -248,7 +249,7 @@ StateOracle :: {}.{
 	group_id = |diagram, i| match diagram.groups.get(i) {
 		Ok(group) => group.id
 		Err(_) => {
-			note = diagram.notes.get(i - diagram.groups.len()) ?? { state: Node(0), side: Right, text: "" }
+			note = diagram.notes.get(i - diagram.groups.len()) ?? { state: Node(0), side: Right, text: "", after_transition: 0 }
 			"${StateOracle.flow_endpoint(diagram, note.state)}----parent"
 		}
 	}
@@ -295,12 +296,12 @@ expect {
 		and setup.sizes.group_titles.last()?.height == 17
 }
 
-## The late-choice reference bug remains visible and isolated: declared
-## choice intent is preserved here, while recorded Mermaid creates a normal
-## rectangle when the first transition mentions that state before the type.
+## Oracle-derived late-choice behavior: preserve the author's declaration
+## in the public model while rendering the normal state registered by its
+## earlier transition, exactly as pinned Mermaid does.
 expect {
 	diagram = StateDiagram.parse("stateDiagram-v2\n[*] --> Pick\nstate Pick <<choice>>\nPick --> Finished: proceed\n")?
-	diagram.states.get(1)?.kind == Choice
+	diagram.states.get(1)?.kind == Choice and diagram.states.get(1)?.effective_kind == Normal
 }
 
 expect {
@@ -308,4 +309,63 @@ expect {
 	supplied = StateDraw.setup_sized(diagram, StateOracle.reference_theme, [{ kind: "node", id: "A", width: 211, height: 57 }, { kind: "label", id: "transition-0", width: 90, height: 25 }])
 	supplied.sizes.nodes.first()?.width == 211 and supplied.sizes.nodes.first()?.height == 57
 		and supplied.sizes.edge_labels.first()? == Some({ lines: ["label"], width: 90, height: 25 })
+}
+
+## Pinned Chrome/Mermaid oracle regression: two notes register inline and
+## association edges register between the second and final transition.
+## Actual glyph/node measurements are inputs; positions are independent
+## oracle outputs, not a second invocation of the native layout.
+expect {
+	d = StateDiagram.parse("stateDiagram-v2\ndirection LR\n[*] --> Ready\nReady --> Done: finish\nnote left of Ready: Prepare the work before it starts.\nnote right of Done\n        The work has finished.\n        Notify its subscribers.\nend note\nDone --> [*]\n")?
+	setup = StateDraw.setup_sized(
+		d,
+		StateOracle.reference_theme,
+		[
+			{ kind: "node", id: "root_start", width: 14, height: 14 },
+			{ kind: "node", id: "Ready", width: 136, height: 33 },
+			{ kind: "node", id: "Done", width: 136, height: 33 },
+			{ kind: "node", id: "root_end", width: 14.013293266296387, height: 14 },
+			{ kind: "node", id: "Ready----note", width: 150, height: 62.40000152587888 },
+			{ kind: "node", id: "Done----note", width: 150, height: 93.19999694824219 },
+			{ kind: "label", id: "transition-1", width: 35.90625, height: 17 },
+			{ kind: "group", id: "note-group-Ready", width: 217.78125, height: 17 },
+			{ kind: "group", id: "note-group-Done", width: 150.28125, height: 32.400001525878906 },
+		],
+	)
+	start = setup.geometry.nodes.get(0)?
+	ready = setup.geometry.nodes.get(1)?
+	left_note = setup.geometry.nodes.get(4)?
+	right_note = setup.geometry.nodes.get(5)?
+	(start.x - 205.890625).abs() < 0.0001 and (start.y - 111.69999694824217).abs() < 0.0001
+		and (ready.x - 269.890625).abs() < 0.0001 and (ready.y - 161.80000305175778).abs() < 0.0001
+		and (left_note.x - 45.890625).abs() < 0.0001 and (left_note.y - 206.6999931335449).abs() < 0.0001
+		and (right_note.x - 735.796875).abs() < 0.0001 and (right_note.y - 71.4000015258789).abs() < 0.0001
+}
+
+## Pinned oracle regression: a disconnected annotated state retains its
+## declaration order, while a separate chain has loops and parallel edges.
+expect {
+	d = StateDiagram.parse("stateDiagram-v2\ndirection LR\nstate \"An isolated state with a long name that wraps without escaping its box\" as Isolated\n[*] --> A\nA --> A: retry\nA --> B: first path\nA --> B: second path\nB --> [*]\nnote left of Isolated\n        An explicitly left-hand multi-line note.\n        This remains separate from the graph.\nend note\n")?
+	setup = StateDraw.setup_sized(
+		d,
+		StateOracle.reference_theme,
+		[
+			{ kind: "node", id: "Isolated", width: 136, height: 94.60000610351565 },
+			{ kind: "node", id: "root_start", width: 14, height: 14 },
+			{ kind: "node", id: "A", width: 136, height: 33 },
+			{ kind: "node", id: "B", width: 136, height: 33 },
+			{ kind: "node", id: "root_end", width: 14.013293266296387, height: 14 },
+			{ kind: "node", id: "Isolated----note", width: 150, height: 124.02148437500003 },
+			{ kind: "label", id: "transition-1", width: 31.140625, height: 17 },
+			{ kind: "label", id: "transition-2", width: 59.1875, height: 17 },
+			{ kind: "label", id: "transition-3", width: 82.171875, height: 17 },
+			{ kind: "group", id: "note-group-Isolated", width: 252.578125, height: 32.421485900878906 },
+		],
+	)
+	isolated = setup.geometry.nodes.get(0)?
+	start = setup.geometry.nodes.get(1)?
+	note = setup.geometry.nodes.get(5)?
+	(isolated.x - 304.578125).abs() < 0.0001 and (isolated.y - 191.63221740722653).abs() < 0.0001
+		and (start.x - 223.2890625).abs() < 0.0001 and (start.y - 66.5).abs() < 0.0001
+		and (note.x - 63.2890625).abs() < 0.0001 and (note.y - 176.92147827148435).abs() < 0.0001
 }
