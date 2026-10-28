@@ -311,7 +311,7 @@ StateDraw :: {}.{
 		candidates = picture.items.drop_first(1).fold(
 			[],
 			|out, item| match item {
-				Text(_) => out
+				Text(_) | StyledText(_) => out
 				Shape(painted) => match painted.paint.fill {
 					NoFill => out
 					Fill(_) => {
@@ -337,7 +337,7 @@ StateDraw :: {}.{
 		picture.items.all(
 			|item| match item {
 				Shape(_) => True
-				Text(text_item) => {
+				Text(text_item) | StyledText({ label: text_item }) => {
 					if text_item.text.is_empty() {
 						True
 					} else {
@@ -378,7 +378,7 @@ expect {
 	labels = StateDraw.node(diagram, state, rect, options).fold(
 		[],
 		|out, item| match item {
-			Text(label) => out.append(label)
+			Text(label) | StyledText({ label }) => out.append(label)
 			_ => out
 		},
 	)
