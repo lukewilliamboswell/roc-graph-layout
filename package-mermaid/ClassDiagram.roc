@@ -17,7 +17,9 @@ ClassDiagram :: {}.{
 	RelationshipKind : [Inheritance, Realization, Composition, Aggregation, Association, Dependency, Link, DottedLink]
 	Relationship : { from : U64, to : U64, kind : RelationshipKind, reversed : Bool, bidirectional : Bool, label : Str, from_multiplicity : Str, to_multiplicity : Str }
 	Diagram : { classes : List(Class), relationships : List(Relationship), direction : [Down, Up, Left, Right] }
-	Problem : Flowchart.Problem
+
+	## Source statement problems and invalid numeric theme properties.
+	Problem : [NotAFlowchart, Syntax({ near : Str }), Unsupported(Str), InvalidTheme(Str), TooManyEdges, MissingLinkStyleEdge(Str), UnnamedGroup]
 
 	parse : Str -> Try(Diagram, List(Problem))
 	parse = |source| {

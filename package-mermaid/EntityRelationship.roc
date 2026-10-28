@@ -18,7 +18,9 @@ EntityRelationship :: {}.{
 	Cardinality : [ExactlyOne, ZeroOne, OneMany, ZeroMany]
 	Relationship : { from : U64, to : U64, from_cardinality : Cardinality, to_cardinality : Cardinality, identifying : Bool, label : Str }
 	Diagram : { entities : List(Entity), relationships : List(Relationship), direction : [Down, Up, Left, Right] }
-	Problem : Flowchart.Problem
+
+	## Source statement problems and invalid numeric theme properties.
+	Problem : [NotAFlowchart, Syntax({ near : Str }), Unsupported(Str), InvalidTheme(Str), TooManyEdges, MissingLinkStyleEdge(Str), UnnamedGroup]
 
 	parse : Str -> Try(Diagram, List(Problem))
 	parse = |source| {
