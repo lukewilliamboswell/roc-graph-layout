@@ -128,6 +128,17 @@ SequenceLayout :: {}.{
 		}
 	}
 
+	initial : List(Size), Str, Bool, Block -> Block
+	initial = |sizes, id, wrap, block| SequenceLayout.measured(
+		sizes,
+		if wrap {
+			"${id}-initial"
+		} else {
+			id
+		},
+		block,
+	)
+
 	layout : SequenceData.Diagram, Theme.Options -> Geometry
 	layout = |diagram, theme| SequenceLayout.layout_with_sizes(diagram, theme, [])
 
@@ -192,7 +203,7 @@ SequenceLayout :: {}.{
 			event = diagram.events.get(event_index) ?? EndBlock
 			match event {
 				Message(m) => {
-					b = SequenceLayout.measured(sizes, $ids.get(event_index) ?? "", SequenceLayout.measure_source(m.text, m.source_text, m.wrap, theme.max_label_width, theme))
+					b = SequenceLayout.initial(sizes, $ids.get(event_index) ?? "", SequenceStyle.wrap(m.wrap, theme), SequenceLayout.measure_source(m.text, m.source_text, m.wrap, theme.max_label_width, theme))
 					w = TextMeasure.round(b.width) + padding * 2
 					left = m.from.min(m.to)
 					if m.from == m.to {
@@ -207,7 +218,7 @@ SequenceLayout :: {}.{
 					}
 				}
 				Note(note) => {
-					b = SequenceLayout.measured(sizes, $ids.get(event_index) ?? "", SequenceLayout.measure_source(note.text, note.source_text, note.wrap, theme.max_label_width, theme))
+					b = SequenceLayout.initial(sizes, $ids.get(event_index) ?? "", SequenceStyle.wrap(note.wrap, theme), SequenceLayout.measure_source(note.text, note.source_text, note.wrap, theme.max_label_width, theme))
 					w = TextMeasure.round(b.width) + padding * 2
 					slot = match note.side {
 						Left => if note.from > 0 {
@@ -281,7 +292,7 @@ SequenceLayout :: {}.{
 					}
 				}
 				Message(m) => {
-					b = SequenceLayout.measured(sizes, $ids.get(i) ?? "", SequenceLayout.measure_source(m.text, m.source_text, m.wrap, theme.max_label_width, theme))
+					b = SequenceLayout.initial(sizes, $ids.get(i) ?? "", SequenceStyle.wrap(m.wrap, theme), SequenceLayout.measure_source(m.text, m.source_text, m.wrap, theme.max_label_width, theme))
 					from = $centers.get(m.from) ?? 0
 					to = $centers.get(m.to) ?? 0
 					model_width = (TextMeasure.round(b.width) + padding * 2).max((from - to).abs() + padding * 2).max(minimum_width)
@@ -509,7 +520,7 @@ SequenceLayout :: {}.{
 				Note(note) => {
 					first = $headers.get(note.from) ?? SequenceLayout.zero_rect
 					last = $headers.get(note.to) ?? SequenceLayout.zero_rect
-					b = SequenceLayout.measured(sizes, $ids.get(i) ?? "", SequenceLayout.measure_source(note.text, note.source_text, note.wrap, theme.max_label_width, theme))
+					b = SequenceLayout.initial(sizes, $ids.get(i) ?? "", SequenceStyle.wrap(note.wrap, theme), SequenceLayout.measure_source(note.text, note.source_text, note.wrap, theme.max_label_width, theme))
 					width = if SequenceStyle.wrap(note.wrap, theme) {
 						(theme.max_label_width + padding * 2).max(minimum_width)
 					} else {

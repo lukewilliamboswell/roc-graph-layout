@@ -157,3 +157,15 @@ expect
 			) == [145.375, 285.6875]
 		}
 	}
+
+## A final wrapped label's measured width must not feed back into column seating.
+## The initial measurement is a different real input, at the source wrap width.
+expect
+	match Sequence.parse("sequenceDiagram\nA->>B: wrap: A long operation that wraps\n") {
+		Err(_) => False
+		Ok(diagram) => {
+			final = SequenceLayout.layout_with_sizes(diagram, Theme.Options.{}, [{ kind: "label", id: "message-0", width: 500, height: 20 }])
+			initial = SequenceLayout.layout_with_sizes(diagram, Theme.Options.{}, [{ kind: "label", id: "message-0-initial", width: 500, height: 20 }])
+			final.centers == [75, 275] and initial.centers == [75, 645] and !SequenceOracle.inspect_sized("sequenceDiagram\nA->>B: wrap: A long operation that wraps\n", Theme.Options.{}, [{ kind: "label", id: "message-0-initial", width: 500, height: 20 }]).contains("unconsumed")
+		}
+	}

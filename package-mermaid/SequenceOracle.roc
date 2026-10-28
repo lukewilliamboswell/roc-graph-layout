@@ -5,6 +5,7 @@ import Sequence
 import SequenceData
 import SequenceDraw
 import SequenceLayout
+import SequenceStyle
 import Theme
 
 ## Native observations for differential tests, never a public package API.
@@ -59,7 +60,45 @@ SequenceOracle :: {}.{
 				|size| if size.kind == "node" {
 					!diagram.participants.any(|p| p.id == size.id)
 				} else {
-					!geometry.labels.any(|label| label.id == size.id and !label.id.starts_with("participant-footer-") and !label.id.starts_with("block-kind-") and label.role != "title")
+					if size.id.ends_with("-initial") {
+						base = size.id.drop_suffix("-initial")
+						wrapping = SequenceStyle.resolve(theme)
+						if base.starts_with("message-") {
+							index = U64.from_str(base.drop_prefix("message-")) ?? diagram.events.len()
+							!(
+								diagram.events.keep_if(
+									|event| match event {
+										Message(_) => True
+										_ => False
+									},
+								).map(
+									|event| match event {
+										Message(m) => SequenceStyle.wrap(m.wrap, wrapping)
+										_ => False
+									},
+								).get(index) ?? False
+							)
+						} else if base.starts_with("note-") {
+							index = U64.from_str(base.drop_prefix("note-")) ?? diagram.events.len()
+							!(
+								diagram.events.keep_if(
+									|event| match event {
+										Note(_) => True
+										_ => False
+									},
+								).map(
+									|event| match event {
+										Note(n) => SequenceStyle.wrap(n.wrap, wrapping)
+										_ => False
+									},
+								).get(index) ?? False
+							)
+						} else {
+							True
+						}
+					} else {
+						!geometry.labels.any(|label| label.id == size.id and !label.id.starts_with("participant-footer-") and !label.id.starts_with("block-kind-") and label.role != "title")
+					}
 				},
 			)
 			OracleJson.object([
