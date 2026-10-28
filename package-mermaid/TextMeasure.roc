@@ -47,7 +47,17 @@ TextMeasure :: {}.{
 	Style : { font : Font, size : F64, line_height : F64, wrap : [Width(F64), NoWrap], align : [Start, Middle] }
 
 	block : Str, Style -> FlowGeometry.TextBlock
-	block = |text, style| {
+	block = |text, style| TextMeasure.block_width(text, style, False)
+
+	## The same text layout with typographic advance width, as SVG's class
+	## and entity shape measurement uses before the drawing is scaled. Ink
+	## overhangs do not enlarge the result. Wrapping, shaping, vertical metrics
+	## and output lines share the exact same pass as `block`.
+	block_advance : Str, Style -> FlowGeometry.TextBlock
+	block_advance = |text, style| TextMeasure.block_width(text, style, True)
+
+	block_width : Str, Style, Bool -> FlowGeometry.TextBlock
+	block_width = |text, style, use_advance| {
 		metrics = TextMeasure.metrics_of(style)
 		bytes = text.to_utf8()
 		escaped = bytes.contains('<')
@@ -76,15 +86,17 @@ TextMeasure :: {}.{
 					Middle => -extent.advance / 2.0
 					Start => 0.0
 				}
+				left = if (use_advance) 0 else extent.left + shift
+				right = if (use_advance) extent.advance else extent.right + shift
 				if !$found {
-					$low = extent.left + shift
-					$high = extent.right + shift
+					$low = left
+					$high = right
 					$top = extent.ascent
 					$first = $index
 					$found = True
 				} else {
-					$low = $low.min(extent.left + shift)
-					$high = $high.max(extent.right + shift)
+					$low = $low.min(left)
+					$high = $high.max(right)
 				}
 				$bottom = extent.descent
 				$last = $index
@@ -569,3 +581,20 @@ expect TextMeasure.block("日本語のラベル", inter).width == 98.0
 
 ## Oracle regression: CDP identifies Times-Roman for U+FB02 on pinned Chrome.
 expect TextMeasure.block("ﬂ", { font: TextMeasure.inter, size: 16, line_height: 1.1, wrap: NoWrap, align: Start }).width == 8.90625
+
+## Oracle-derived pre-viewBox SVG text advances. The class box's measured
+## width is 131.703125 + 89.453125/2 + 24 = 200.4296875 pixels.
+expect {
+	style = { font: TextMeasure.inter, size: 14, line_height: 1.1, wrap: NoWrap, align: Start }
+	TextMeasure.block_advance("+capture() : Receipt", style).width == 131.703125
+		and TextMeasure.block_advance("CardPayment", style).width == 89.453125
+		and TextMeasure.block_advance("UK", style).width == 19.828125
+		and TextMeasure.block_advance("Empty", style).width == 41.984375
+}
+
+expect {
+	style = { font: TextMeasure.inter, size: 14, line_height: 1.1, wrap: Width(90), align: Middle }
+	original = TextMeasure.block("A long paragraph with several words", style)
+	advance = TextMeasure.block_advance("A long paragraph with several words", style)
+	original.lines == advance.lines and original.height == advance.height
+}
