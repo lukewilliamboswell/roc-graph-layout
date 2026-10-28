@@ -121,3 +121,13 @@ Current upstream main bad769be8e reproduces the same error with --no-cache.
 The independently verified report is https://github.com/roc-lang/roc/issues/12677.
 PR12639 is a suspected regression window, not a proven bisect. No dependency
 workaround annotations were retained or published upstream.
+
+TEMPORARY NODE-EDITOR EXCLUSIONS — 2026-10-29
+At the user's request, the default repository and release checks explicitly
+skip the node-editor service type-check and native smoke run. CI also skips
+the node-editor browser-test job. TODOs track restoration after issue12677 and
+the remaining, unconfirmed Datastar inference errors are resolved.
+RUN_NODE_EDITOR_CHECKS=1 opts into the service and smoke checks locally; the
+repository variable of the same name opts into all node-editor checks in CI.
+The Mermaid independent oracle, core/package tests, all17 runnable examples,
+fuzz/benchmark smoke, release bundles and documentation checks remain enabled.
