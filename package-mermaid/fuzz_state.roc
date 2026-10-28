@@ -52,8 +52,8 @@ check = |source| match StateDiagram.parse(source) {
 				}
 			}
 		}
-		first = StateDiagram.draw_diagram(diagram, options)
-		second = StateDiagram.draw_diagram(diagram, options)
+		first = StateDraw.draw(diagram, options)
+		second = StateDraw.draw(diagram, options)
 		if first != second {
 			crash "state rendering is not deterministic"
 		}

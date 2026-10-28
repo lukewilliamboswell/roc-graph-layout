@@ -1,7 +1,5 @@
 import Drawing
-import Flowchart
 import StateDraw
-import StateModel
 import StateParser
 import Theme
 
@@ -16,12 +14,32 @@ import Theme
 ## unsupported rather than approximated. State and transition lists preserve
 ## source order; endpoints use indices into states or composite groups.
 StateDiagram := [].{
-	Kind : StateModel.Kind
-	State : StateModel.State
-	Transition : StateModel.Transition
-	Note : StateModel.Note
-	Diagram : StateModel.Diagram
-	Problem : Flowchart.Problem
+
+	## State-specific marks. Initial and final marks are scoped to their
+	## composite; they are separate states even though both spell `[*]`.
+	Kind : [Normal, Initial, Final, Choice, Fork, Join]
+
+	Direction : [Down, Up, Right, Left]
+	Container : [Root, Group(U64)]
+
+	## A zero-based state index or a zero-based composite group index.
+	Endpoint : [Node(U64), Group(U64)]
+
+	## A state's display name, description rows, shape and assigned styles.
+	State : { id : Str, label : Str, descriptions : List(Str), kind : Kind, container : Container, classes : List(Str), styles : List(Str) }
+	Transition : { from : Endpoint, to : Endpoint, label : Str }
+	Note : { state : Endpoint, side : [Left, Right], text : Str }
+	Group : { id : Str, title : Str, container : Container, direction : [Inherit, Set(Direction)], classes : List(Str) }
+	ClassDef : { name : Str, styles : List(Str) }
+
+	## States, transitions, composites, style classes and notes remain in
+	## source order. Containers refer to this diagram's `groups` list.
+	Diagram : { direction : Direction, states : List(State), transitions : List(Transition), groups : List(Group), classes : List(ClassDef), notes : List(Note) }
+
+	## Statement and shared drawing problems. `Syntax` includes the text
+	## near an error; `Unsupported` explains a recognised feature that is
+	## not interpreted; `InvalidTheme` identifies a numeric theme property.
+	Problem : [NotAFlowchart, Syntax({ near : Str }), Unsupported(Str), InvalidTheme(Str), TooManyEdges, MissingLinkStyleEdge(Str), UnnamedGroup]
 
 	## Read all independent statement problems in one result.
 	parse : Str -> Try(Diagram, List(Problem))
@@ -34,13 +52,10 @@ StateDiagram := [].{
 		problems = Theme.validate(options)
 		match StateDiagram.parse(source) {
 			Err(syntax) => Err(problems.concat(syntax))
-			Ok(diagram) => if (problems.is_empty()) Ok(StateDiagram.draw_diagram(diagram, options)) else Err(problems)
+			Ok(diagram) => if (problems.is_empty()) Ok(StateDraw.draw(diagram, options)) else Err(problems)
 		}
 	}
 
-	## Draw an already-read state machine with validated theme options.
-	draw_diagram : Diagram, Theme.Options -> Drawing.Picture
-	draw_diagram = StateDraw.draw
 }
 
 expect
@@ -87,7 +102,7 @@ expect
 
 expect
 	match StateDiagram.draw("stateDiagram-v2\nA --> B : a long transition label that needs to wrap into several lines\nB --> A\n", Theme.Options.{ max_label_width: 90, line_height: 1.8 }) {
-		Ok(picture) => Drawing.is_finite(picture) and picture == StateDiagram.draw_diagram(StateDiagram.parse("stateDiagram-v2\nA --> B : a long transition label that needs to wrap into several lines\nB --> A\n")?, Theme.Options.{ max_label_width: 90, line_height: 1.8 })
+		Ok(picture) => Drawing.is_finite(picture) and picture == StateDraw.draw(StateDiagram.parse("stateDiagram-v2\nA --> B : a long transition label that needs to wrap into several lines\nB --> A\n")?, Theme.Options.{ max_label_width: 90, line_height: 1.8 })
 		Err(_) => False
 	}
 
