@@ -112,8 +112,12 @@ Optimized core controls and source revisions remain in benchmarks/measurements;
 the subsequent text calibration does not change the core geometry.
 
 COMPILER REGRESSION
-The floating Oct27 compiler rejects a24-line pure module by inferring duplicate
-error tags: Try(value,[Bad,Bad]) against Try(value,[Bad]). Oct26 accepts it.
-Compiler checkout52c00c23 accepts both the reproducer and the original node
-editor without extra annotations; all313 node-editor tests discovered by that
-compiler pass. This does not require publishing a dependency workaround.
+The floating October 27 compiler rejects a 24-line pure module by inferring
+Try(value,[Bad,Bad]) against Try(value,[Bad]). October 26 accepts it. A local
+compiler checkout at52c00c23 also accepts the reproducer and original node
+editor; all313 node-editor tests discovered by that compiler pass. That branch
+predates the failing checker change, so it is a passing baseline, not a fix.
+Current upstream main bad769be8e reproduces the same error with --no-cache.
+The independently verified report is https://github.com/roc-lang/roc/issues/12677.
+PR12639 is a suspected regression window, not a proven bisect. No dependency
+workaround annotations were retained or published upstream.
