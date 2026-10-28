@@ -682,3 +682,19 @@ expect {
 	m = EntityDraw.measure({ kind: EntityBox, has_comment_column: False, title: "ORDER", annotations: [], sections: [], table: [["int", "id", "PK"], ["int", "customer_id", "FK"], ["string", "status", ""]] }, Theme.Options.{})
 	m.shape_width == 212.015625 and m.width == 224.515625
 }
+
+## Regression: pinned ER zero-many circles keep distinct source/target
+## reference offsets and rotate with the endpoint's outward direction.
+expect {
+	theme = Theme.Options.{}
+	from = EntityDraw.mark({ x: 0, y: 0 }, { x: 100, y: 0 }, From, Cardinality(ZeroMany), theme)
+	to = EntityDraw.mark({ x: 0, y: 0 }, { x: 0, y: -100 }, To, Cardinality(ZeroMany), theme)
+	match (from.get(1), to.get(1)) {
+		(Ok(Shape(a)), Ok(Shape(b))) => a.path == Drawing.ellipse({ x: 27.5, y: 0 }, 6, 6) and b.path == Drawing.ellipse({ x: 0, y: -28 }, 6, 6)
+		_ => False
+	}
+}
+
+## Regression: exactly-one uses two full-height bars rather than a
+## directionless endpoint symbol; their positions are source-aligned.
+expect EntityDraw.mark({ x: 0, y: 0 }, { x: 0, y: 100 }, From, Cardinality(ExactlyOne), Theme.Options.{}) == [EntityDraw.line({ x: 9, y: 9 }, { x: -9, y: 9 }, Drawing.black, 2), EntityDraw.line({ x: 9, y: 15 }, { x: -9, y: 15 }, Drawing.black, 2)]
