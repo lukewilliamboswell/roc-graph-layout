@@ -1,5 +1,42 @@
 # Performance hypotheses to investigate
 
+## Mermaid theme and messy-label baseline (2026-10-28)
+
+Native optimized measurements on macOS arm64 with
+`nightly-2026-10-26-3c0fffe`, using the vendored allocation-counting platform.
+`package-mermaid/measure_diagrams.roc` constructs a chain with extra forward
+dependencies and long node/edge labels before starting measurement. Each row
+below is one fresh process, so timings are indicative rather than a statistical
+comparison. Requested bytes are cumulative allocator traffic, not RSS.
+
+| Path | Nodes | Time | Allocation calls | Requested bytes | Peak extra bytes |
+|---|---:|---:|---:|---:|---:|
+| zero work | 12 | 0.001 ms | 0 | 0 | 0 |
+| parse only | 12 | 2.12 ms | 245 | 104,266 | 26,651 |
+| recorded Mermaid sizing/drawing | 12 | 61.38 ms | 51,030 | 4,409,847 | 137,445 |
+| recorded Mermaid sizing/drawing | 24 | 313.56 ms | 154,459 | 13,343,005 | 301,333 |
+| recorded Mermaid sizing/drawing | 48 | 1,316.80 ms | 519,581 | 45,320,230 | 631,037 |
+| themed sizing/drawing | 12 | 44.66 ms | 51,178 | 4,365,735 | 137,735 |
+| themed sizing/drawing | 24 | 321.50 ms | 159,770 | 13,618,745 | 301,923 |
+| themed sizing/drawing | 48 | 1,884.92 ms | 538,160 | 46,285,978 | 632,227 |
+
+The themed path changes wrapping and line spacing, so it intentionally changes
+geometry and is not a performance optimization. The recorded comparison path
+retains its original defaults. A repeated 12-node recorded-path control in the
+second executable measured 61.56 ms with identical allocator traffic.
+
+The controls narrow the superlinear growth to work after parsing; they do not
+identify a particular layout, text-measurement or drawing phase as its cause.
+No speedup claim is made. Keep these three practical sizes when investigating
+the new path; existing scale ladders in `benchmarks/cases/scale.jsonl` remain
+unchanged. Further phase-level controls are needed before changing a hot loop.
+
+Reproduce with `roc build --opt=speed package-mermaid/measure_diagrams.roc
+--output=/tmp/measure-diagrams`, then run `/tmp/measure-diagrams draw 12`,
+`themed 12`, `parse 12`, or `zero 12`; repeat the drawing paths at 24 and 48.
+These measurements precede the final per-shape padding and rounded-attachment
+corrections and do not measure the public SVG serialization/view-bounds pass.
+
 These are investigation leads, not established root causes. Each hypothesis is
 backed by allocation telemetry from the performance harness and points to code
 whose behavior could explain the observation. Confirm or reject a hypothesis
@@ -675,3 +712,175 @@ For each hypothesis:
 7. Promote the direct diagnostic ladder into `benchmarks/cases/scale.jsonl`
    once its bounded rungs run reliably; then grow it toward the stated scale
    target in later changes.
+
+## Mermaid framing oracle correction (2026-10-28)
+
+The oracle exposed a correctness error in final framing: every path was padded
+by four stroke widths, even when its joins were straight, smooth, or right
+angles. A 4px shadow plus that maximum envelope enlarged normal state views by
+4px and shifted styled flowchart comparisons. The correction computes actual
+miter extents from adjacent segment tangents, with the SVG miter-limit fallback.
+It retains conservative cubic control hulls and includes explicit thick strokes.
+This is a framing correction, not a layout optimization.
+
+Native optimized phase controls (`package-mermaid/measure_framing.roc`, compiler
+2026-10-26-3c0fffe, arm64 macOS; three runs per size, median elapsed):
+
+| Rectangles | Before ms | After ms | Alloc calls (both) | Requested bytes (both) | Peak live bytes (both) |
+|---:|---:|---:|---:|---:|---:|
+| 100 | 1.806 | 2.220 | 403 | 17,552 | 46,760 |
+| 300 | 5.203 | 6.524 | 1,203 | 51,152 | 131,720 |
+| 1,000 | 17.393 | 18.954 | 4,003 | 168,752 | 439,160 |
+
+Zero-work controls at all three sizes exclude parsing, text measurement and
+layout, and confirm those phases cannot explain this observation. Allocator
+traffic and peak live bytes are unchanged; additional tangent arithmetic costs
+CPU time. The hypothesized excessive final envelope was confirmed separately
+from performance. Raw telemetry is in `/tmp/mermaid-framing-{before,after}.json`
+for this session; commands above reproduce the measurements without fixtures.
+
+## SVG vertical glyph bounds (2026-10-28)
+
+The remaining state pixel discrepancy was traced to source font data, not a
+fixture offset: Inter glyph `g` has y_min=-442 at2048units/em, so at14px its
+3.021484375px descent exceeds the rounded logical descent3. The reference
+measures17.021484375px for Checking/Changes; legacy TextMeasure used17.
+`block_svg` unions raw vertical glyph extents with logical metrics in the same
+shaping pass, including all lines when spacing is small. Existing `block` and
+`block_advance` preserve their original observations and allocator traffic.
+
+Native optimized ClassTextBench before/after (compilerOct26, arm64macOS,
+labels generated before measurement, elapsed single observations in ms):
+
+| Labels | Old block before/after | Advance before/after | SVG mode | Calls (all modes) | Requested B (all) | Peak live B (all) |
+|---:|---:|---:|---:|---:|---:|---:|
+|100|28.168/30.739|26.951/30.291|29.571|15,200|2,562,660|5,758|
+|300|81.943/92.871|83.292/88.142|88.922|45,600|7,743,860|10,623|
+|1000|289.265/295.930|277.614/300.652|292.303|152,000|25,878,060|27,423|
+
+Zero controls allocate/request0, at1/1/2µs. SVG mode observes height as well
+as width; elapsed values are not a speedup claim. The one-line benchmark is
+unchanged by the subsequent all-row envelope regression. Raw session data:
+`/tmp/mermaid-vertical-{before,after}.json`. The confirmed cause and the additive
+mode preserve legacy Linux-style glyph-bound expectations. These particular
+vertical measurements were taken with macOS Chrome. After selecting Linux x64
+as the canonical oracle, state callers use the rounded Linux metrics instead;
+the unrounded mode remains a diagnostic control. Class and ER callers include
+horizontal glyph overhangs, and class headers include Skia's synthetic-bold
+stroke in their measured bounds. These are Mermaid text-measurement policies;
+the extracted core geometry and its benchmark controls are unchanged.
+
+The canonical-Linux correction also retains the ordinary text hot path's
+observations and allocator traffic. Optimized `ClassTextBench` controls on
+Oct26, macOS arm64 compare the existing pre-bold SVG-envelope binary with
+commit `410e129`. Each zero/block/advance/svg operation has a warm-up and three
+interleaved before/after samples at 100/300/1000 labels (72 saved samples).
+Every paired observation, allocation-call count, cumulative requested-byte
+count and peak live-byte count is identical. The zero controls allocate and
+request nothing during measurement. These controls isolate the added metrics
+field; they do not measure the additional bold-title work itself.
+
+| Labels | Block median ms before/after | Calls | Requested bytes | Peak live bytes |
+|---:|---:|---:|---:|---:|
+|100|27.529/27.530|15,200|2,562,660|5,758|
+|300|84.683/83.118|45,600|7,743,860|10,623|
+|1000|272.139/269.568|152,000|25,878,060|27,423|
+
+No speedup is claimed. The suspected incidental cost to regular measurement
+was refuted by these controls; the font-bound difference itself is confirmed
+by the independent native Linux-oracle comparison. Raw measurements retain
+both binary hashes in `benchmarks/measurements/mermaid-linux-text-bounds.jsonl`.
+
+## Coordinated flow extraction baseline — 2026-10-28
+
+Investigation status: the geometric phases now live in the core package. This is
+an extraction baseline, before consolidating the flat and coordinated solvers;
+it is not a claim that the inherited coordinated solver meets every scale target.
+
+The native optimized before/after controls use compiler
+`nightly-2026-10-26-3c0fffe`, macOS arm64. The before checkout is `1640711`.
+Both programs receive the same numeric wide/chain topology, node dimensions,
+spacing and endpoint-label dimensions. The before harness adapts those facts to
+the old source-shaped input without invoking its parser. Build the new harness
+with `roc build --opt=speed package/flow_phase_bench.roc`; it exposes zero,
+construction, layering, ordering, placement/routing, endpoint labels, an absent
+label control, and complete raw layout. Preceding phases run outside each
+measurement. There are three interleaved samples per version, phase, shape and
+size, at 100, 300 and 1000 edges: 288 observations retained in
+`benchmarks/measurements/flow-extraction.jsonl`.
+
+The hypothesis that extraction adds allocator traffic was refuted by these
+controls: allocation calls, reallocation calls, cumulative requested bytes and
+result observations match exactly for every measured case. Zero controls report
+zero measured work. Median elapsed time varies in both directions; the complete
+wide layout medians are 12.487/13.239 ms, 104.294/102.614 ms and
+1109.132/1049.562 ms (before/after). These are local observations, not a speedup
+claim.
+
+Complete-layout peak-extra bytes increase slightly while absolute peak live
+bytes fall. These are different measurements, not contradictory results: the
+input already live when measurement starts is smaller at the geometric boundary.
+For 1000-edge wide layout, start live bytes are 368240/88064 and absolute peaks
+are 34658024/34441904; peak-extra bytes are therefore 34289784/34353840.
+For the 1000-edge chain, absolute peaks are 2581158/2365038. Other isolated
+phase peak-extra measurements match. Cumulative requested bytes are allocator
+traffic, not resident memory.
+
+The inherited solver still has superlinear work. Wide raw layout requests
+2584800, 18364568 and 155005316 bytes at the three rungs; endpoint-label packing
+medians are 10.348/9.820, 125.779/124.528 and 1355.129/1371.435 ms. Phase and
+absent-label controls separate this from extraction overhead. No particular
+ownership fallback or ranking heuristic has yet been established as its cause.
+Use this baseline when sharing or optimizing ranking, placement and port data.
+
+Correctness evidence at this checkpoint: 391 native default/reference/sized
+profiles across all five diagram families have byte-identical observed JSON and
+SVG against the saved renderer. The independent oracle comparison passes all
+143 cases with unchanged gates. Subsequent geometric changes must repeat that
+comparison; these observations do not validate future changes automatically.
+
+
+## Shared directed-flow kernels and explicit compaction stack — 2026-10-28
+
+The extraction baseline above is now followed by shared stable adjacency,
+weighted network-simplex refinement, median selection/balancing and prefix
+crossing counts. Coordinated compaction uses explicit continuations rather than
+retaining its node-sized state through native recursion. Port-aware and flat
+adapters retain their different structural contracts and deterministic traversal
+policies.
+
+The native optimized controls repeat the same eight phases, wide/chain inputs,
+100/300/1000-edge rungs and three interleaved samples against `1640711`.
+`benchmarks/measurements/flow-shared-kernels.jsonl` retains all 288 samples.
+The compiler is Oct 26 on macOS arm64. Other compiler processes were active,
+so elapsed measurements are recorded but do not support a throughput claim.
+Every before/after observation agrees; zero and absent-label controls allocate
+and request zero bytes. Construction, ordering and endpoint-label allocator
+traffic is unchanged. Shared ranking and placement account for the additional
+traffic; these controls narrow the change to those phases, without attributing
+it to a particular ownership fallback.
+
+For complete wide layout at 100/300/1000 edges, allocation calls change from
+11227/48189/336391 to 11255/48499/337401, and requested bytes change from
+2584800/18364568/155005316 to 2613747/18580995/157126443. The largest-rung
+increase in cumulative traffic is 1.37%. Absolute peak live bytes remain below
+the old source engine: 535100/4232948/34441888 versus
+556836/4297884/34658024. Placement-only absolute peaks agree at all three
+rungs. Complete chain layout has fewer allocation calls at each rung, slightly
+more requested bytes, and lower absolute peaks. The distinction between peak
+extra bytes and absolute live peaks from the extraction baseline still applies.
+
+This refactor removes duplicated mathematics and native compaction recursion;
+it does not resolve the inherited wide-layout superlinear traffic. Keep the
+phase controls and investigate that separately before increasing scale claims.
+
+
+The public grouped consumer separately completes star and chain graphs at
+100/300/1000 nodes, with zero-work, one-call and prepared-layout controls:
+54 retained samples in `benchmarks/measurements/layered-grouped.jsonl` after
+one warmup each. Every result observes `2*n+1` source-aligned nodes, edges and
+groups; zero controls observe zero. `benchmarks/GroupedBench.roc` is shared by
+the focused optimized runner and the regular benchmark dispatcher. The three
+practical rungs are retained in `benchmarks/cases/scale.jsonl`, with small
+star/chain controls in smoke. These fixtures intentionally include boundary-
+crossing edges; they are not equivalent to flat wide/chain phase fixtures.

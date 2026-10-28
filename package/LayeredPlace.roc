@@ -1,3 +1,4 @@
+import LayeredBalance
 import LayeredRank
 
 ## Internal coordinate assignment steps for the layered family: the
@@ -151,16 +152,24 @@ LayeredPlace :: {}.{
 				if !neighbors.is_empty() {
 					sorted = LayeredPlace.by_position(neighbors, at.pos)
 					d = sorted.len()
-					for m in [(d - 1) // 2, d // 2] {
-						if ($align.get(v) ?? v) == v {
-							u = sorted.get(m) ?? 0
-							u_pos = (at.pos.get(u) ?? 0).to_i64_wrap()
-							if !($flag.get(u) ?? False) and $taken < u_pos {
-								block = $root.get(u) ?? u
-								$align = $align.set(u, v) ?? []
+					if ($align.get(v) ?? v) == v {
+						chosen = LayeredBalance.select_median(
+							d,
+							True,
+							$taken,
+							|index| {
+								u = sorted.get(index) ?? 0
+								{ node: u, position: (at.pos.get(u) ?? 0).to_i64_wrap(), blocked: $flag.get(u) ?? False }
+							},
+						)
+						match chosen {
+							None => {}
+							Some(choice) => {
+								block = $root.get(choice.node) ?? choice.node
+								$align = $align.set(choice.node, v) ?? []
 								$root = $root.set(v, block) ?? []
 								$align = $align.set(v, block) ?? []
-								$taken = u_pos
+								$taken = choice.position
 							}
 						}
 					}

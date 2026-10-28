@@ -1,0 +1,8 @@
+sequenceDiagram
+    A->>B: Before numbering
+    autonumber 3 0.5
+    A->>B: First numbered call
+    autonumber off
+    B-->>A: Hidden number
+    autonumber
+    A->>B: Numbering resumes

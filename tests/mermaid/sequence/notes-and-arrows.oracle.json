@@ -1,0 +1,3340 @@
+{
+	"schema": 11,
+	"key": "80311e1dfd3ba04aca627650773fb18b55405dd3bb88b076101034e5075414f4",
+	"provenance": {
+		"extractor": 11,
+		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
+		"tool_sha256": "64a229f0bbb3d8c7be1e1be6ec0da2a035e2c815e3b527d670ad0b57463c73bd",
+		"measurement_viewport": {
+			"width": 800,
+			"height": 600,
+			"deviceScaleFactor": 1
+		},
+		"browser_context": "fresh page for each source",
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "linux",
+		"architecture": "x64",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "sequenceDiagram\n    actor User as System operator\n    participant API as Very long API participant name that should wrap cleanly\n    participant Worker\n    Note left of User: A note outside the first column\n    User->>API: Start a very long operation with a request label that wraps into several lines\n    API-)Worker: Asynchronous job\n    Worker-->>API: Completed\n    API<<-->>Worker: Synchronize\n    API--xWorker: Cancel obsolete work\n    Worker->>Worker: Persist retry state\n    Note right of Worker: A note outside the last column\n    Note over User,Worker: Shared context across the conversation\n    API-->>User: Result\n",
+	"accepted": true,
+	"diagram_type": "sequence",
+	"model": {
+		"getActors": [
+			[
+				"User",
+				{
+					"name": "User",
+					"description": "System operator",
+					"wrap": false,
+					"links": {},
+					"properties": {},
+					"actorCnt": null,
+					"rectData": null,
+					"type": "actor",
+					"nextActor": "API"
+				}
+			],
+			[
+				"API",
+				{
+					"name": "API",
+					"description": "Very long API participant name that should wrap cleanly",
+					"wrap": false,
+					"prevActor": "User",
+					"links": {},
+					"properties": {},
+					"actorCnt": null,
+					"rectData": null,
+					"type": "participant",
+					"nextActor": "Worker"
+				}
+			],
+			[
+				"Worker",
+				{
+					"name": "Worker",
+					"description": "Worker",
+					"wrap": false,
+					"prevActor": "API",
+					"links": {},
+					"properties": {},
+					"actorCnt": null,
+					"rectData": null,
+					"type": "participant"
+				}
+			]
+		],
+		"getActorKeys": [
+			"User",
+			"API",
+			"Worker"
+		],
+		"getMessages": [
+			{
+				"id": "0",
+				"from": "User",
+				"to": "User",
+				"message": "A note outside the first column",
+				"wrap": false,
+				"type": 2,
+				"placement": 0
+			},
+			{
+				"id": "1",
+				"from": "User",
+				"to": "API",
+				"message": "Start a very long operation with a request label that wraps into several lines",
+				"wrap": false,
+				"type": 0,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "2",
+				"from": "API",
+				"to": "Worker",
+				"message": "Asynchronous job",
+				"wrap": false,
+				"type": 24,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "3",
+				"from": "Worker",
+				"to": "API",
+				"message": "Completed",
+				"wrap": false,
+				"type": 1,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "4",
+				"from": "API",
+				"to": "Worker",
+				"message": "Synchronize",
+				"wrap": false,
+				"type": 34,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "5",
+				"from": "API",
+				"to": "Worker",
+				"message": "Cancel obsolete work",
+				"wrap": false,
+				"type": 4,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "6",
+				"from": "Worker",
+				"to": "Worker",
+				"message": "Persist retry state",
+				"wrap": false,
+				"type": 0,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "7",
+				"from": "Worker",
+				"to": "Worker",
+				"message": "A note outside the last column",
+				"wrap": false,
+				"type": 2,
+				"placement": 1
+			},
+			{
+				"id": "8",
+				"from": "User",
+				"to": "Worker",
+				"message": "Shared context across the conversation",
+				"wrap": false,
+				"type": 2,
+				"placement": 2
+			},
+			{
+				"id": "9",
+				"from": "API",
+				"to": "User",
+				"message": "Result",
+				"wrap": false,
+				"type": 1,
+				"activate": false,
+				"centralConnection": 0
+			}
+		],
+		"getBoxes": [],
+		"getCreatedActors": [],
+		"getDestroyedActors": [],
+		"showSequenceNumbers": false,
+		"getDiagramTitle": "",
+		"getAccTitle": "",
+		"getAccDescription": ""
+	},
+	"measurement_trace": [
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Start a very long operation with a request label that wraps into several lines",
+			"rows": [
+				"Start a very long operation with a request label that wraps into several lines"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 531.84375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Start a very long operation with a request label that wraps into several lines",
+			"rows": [
+				"Start a very long operation with a request label that wraps into several lines"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 567.890625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Asynchronous job",
+			"rows": [
+				"Asynchronous job"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 127.2890625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Asynchronous job",
+			"rows": [
+				"Asynchronous job"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 136.609375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Completed",
+			"rows": [
+				"Completed"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 77.375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Completed",
+			"rows": [
+				"Completed"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 82.5,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Synchronize",
+			"rows": [
+				"Synchronize"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 88.1484375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Synchronize",
+			"rows": [
+				"Synchronize"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 93.921875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Cancel obsolete work",
+			"rows": [
+				"Cancel obsolete work"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 153.96875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Cancel obsolete work",
+			"rows": [
+				"Cancel obsolete work"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 164.1796875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Persist retry state",
+			"rows": [
+				"Persist retry state"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 124.578125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Persist retry state",
+			"rows": [
+				"Persist retry state"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 133.21875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Shared context across the conversation",
+			"rows": [
+				"Shared context across the conversation"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 281.046875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Shared context across the conversation",
+			"rows": [
+				"Shared context across the conversation"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 300.078125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Result",
+			"rows": [
+				"Result"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 45.90625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Result",
+			"rows": [
+				"Result"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 46.640625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "System operator",
+			"rows": [
+				"System operator"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 118.0546875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "System operator",
+			"rows": [
+				"System operator"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 125.046875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Very long API participant name that should wrap cleanly",
+			"rows": [
+				"Very long API participant name that should wrap cleanly"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 394.90625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Very long API participant name that should wrap cleanly",
+			"rows": [
+				"Very long API participant name that should wrap cleanly"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 423.1875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Worker",
+			"rows": [
+				"Worker"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 51.9375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Worker",
+			"rows": [
+				"Worker"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 54.59375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note outside the first column",
+			"rows": [
+				"A note outside the first column"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 214.34375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note outside the first column",
+			"rows": [
+				"A note outside the first column"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 231.640625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note outside the last column",
+			"rows": [
+				"A note outside the last column"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 213.46875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note outside the last column",
+			"rows": [
+				"A note outside the last column"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 228.671875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "A note outside the first column",
+			"rows": [
+				"A note outside the first column"
+			],
+			"box": {
+				"x": -191.8203125,
+				"y": 95.359375,
+				"width": 231.640625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "A note outside the first column",
+			"rows": [
+				"A note outside the first column"
+			],
+			"box": {
+				"x": -191.8203125,
+				"y": 95.359375,
+				"width": 231.640625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "A note outside the last column",
+			"rows": [
+				"A note outside the last column"
+			],
+			"box": {
+				"x": 1094.6640625,
+				"y": 475.359375,
+				"width": 228.671875,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "A note outside the last column",
+			"rows": [
+				"A note outside the last column"
+			],
+			"box": {
+				"x": 1094.6640625,
+				"y": 475.359375,
+				"width": 228.671875,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "Shared context across the conversation",
+			"rows": [
+				"Shared context across the conversation"
+			],
+			"box": {
+				"x": 416.9609375,
+				"y": 525.359375,
+				"width": 300.078125,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "Shared context across the conversation",
+			"rows": [
+				"Shared context across the conversation"
+			],
+			"box": {
+				"x": 416.9609375,
+				"y": 525.359375,
+				"width": 300.078125,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Start a very long operation with a request label that wraps into several lines",
+			"rows": [],
+			"box": {
+				"x": 107.0546875,
+				"y": 145.359375,
+				"width": 567.890625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Asynchronous job",
+			"rows": [],
+			"box": {
+				"x": 814.6953125,
+				"y": 195.359375,
+				"width": 136.609375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Completed",
+			"rows": [],
+			"box": {
+				"x": 847.75,
+				"y": 245.359375,
+				"width": 82.5,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Synchronize",
+			"rows": [],
+			"box": {
+				"x": 839.0390625,
+				"y": 295.359375,
+				"width": 93.921875,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Cancel obsolete work",
+			"rows": [],
+			"box": {
+				"x": 801.015625,
+				"y": 345.359375,
+				"width": 164.1796875,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Persist retry state",
+			"rows": [],
+			"box": {
+				"x": 994.390625,
+				"y": 395.359375,
+				"width": 133.21875,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Result",
+			"rows": [],
+			"box": {
+				"x": 373.6796875,
+				"y": 575.359375,
+				"width": 46.640625,
+				"height": 20.015625
+			}
+		}
+	],
+	"rendering": {
+		"view_box": {
+			"x": -252,
+			"y": -10,
+			"width": 1635.5,
+			"height": 753
+		},
+		"elements": [
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "Worker",
+				"box": {
+					"x": 984.5,
+					"y": 626,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-bottom",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "984.5",
+					"y": "626",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "150",
+					"height": "76",
+					"name": "Worker",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-bottom",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(251, 146, 60); fill: rgb(255, 247, 237);"
+				},
+				"text": "",
+				"box": {
+					"x": 984.5,
+					"y": 626,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 247, 237)",
+					"stroke": "rgb(251, 146, 60)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "1059.5",
+					"y": "664",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "Worker",
+				"box": {
+					"x": 1032.2352294921875,
+					"y": 653.7777099609375,
+					"width": 54.61891555786133,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "1059.5",
+					"dy": "0"
+				},
+				"text": "Worker",
+				"box": {
+					"x": 1032.2352294921875,
+					"y": 653.7777099609375,
+					"width": 54.61891555786133,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "Very long API participant name that should wrap cleanly",
+				"box": {
+					"x": 491.5,
+					"y": 626,
+					"width": 443,
+					"height": 76
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-bottom",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "491.5",
+					"y": "626",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "443",
+					"height": "76",
+					"name": "API",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-bottom",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(45, 212, 191); fill: rgb(240, 253, 250);"
+				},
+				"text": "",
+				"box": {
+					"x": 491.5,
+					"y": 626,
+					"width": 443,
+					"height": 76
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(240, 253, 250)",
+					"stroke": "rgb(45, 212, 191)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "713",
+					"y": "664",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "Very long API participant name that should wrap cleanly",
+				"box": {
+					"x": 501.7658386230469,
+					"y": 653.7777099609375,
+					"width": 423.69403076171875,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "713",
+					"dy": "0"
+				},
+				"text": "Very long API participant name that should wrap cleanly",
+				"box": {
+					"x": 501.7658386230469,
+					"y": 653.7777099609375,
+					"width": 423.69403076171875,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "",
+				"box": {
+					"x": -2.842170943040401e-14,
+					"y": 0,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "Worker",
+				"box": {
+					"x": 984.5,
+					"y": 0,
+					"width": 150,
+					"height": 626
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor2",
+				"class": "actor-line 200",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "actor2",
+					"x1": "1059.5",
+					"y1": "76",
+					"x2": "1059.5",
+					"y2": "626",
+					"class": "actor-line 200",
+					"stroke-width": "0.5px",
+					"stroke": "#999",
+					"name": "Worker",
+					"data-et": "life-line",
+					"data-id": "Worker"
+				},
+				"text": "",
+				"box": {
+					"x": 1059.5,
+					"y": 76,
+					"width": 0,
+					"height": 550
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "root-2",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "root-2",
+					"data-look": "neo",
+					"data-et": "participant",
+					"data-type": "participant",
+					"data-id": "Worker"
+				},
+				"text": "Worker",
+				"box": {
+					"x": 984.5,
+					"y": 0,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-top",
+				"parent_id": "root-2",
+				"parent_class": "",
+				"attributes": {
+					"x": "984.5",
+					"y": "0",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "150",
+					"height": "76",
+					"name": "Worker",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-top",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(251, 146, 60); fill: rgb(255, 247, 237);"
+				},
+				"text": "",
+				"box": {
+					"x": 984.5,
+					"y": 0,
+					"width": 150,
+					"height": 76
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 247, 237)",
+					"stroke": "rgb(251, 146, 60)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "root-2",
+				"parent_class": "",
+				"attributes": {
+					"x": "1059.5",
+					"y": "38",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "Worker",
+				"box": {
+					"x": 1032.2352294921875,
+					"y": 27.77770233154297,
+					"width": 54.61891555786133,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "1059.5",
+					"dy": "0"
+				},
+				"text": "Worker",
+				"box": {
+					"x": 1032.2352294921875,
+					"y": 27.77770233154297,
+					"width": 54.61891555786133,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "Very long API participant name that should wrap cleanly",
+				"box": {
+					"x": 491.5,
+					"y": 0,
+					"width": 443,
+					"height": 626
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor1",
+				"class": "actor-line 200",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "actor1",
+					"x1": "713",
+					"y1": "76",
+					"x2": "713",
+					"y2": "626",
+					"class": "actor-line 200",
+					"stroke-width": "0.5px",
+					"stroke": "#999",
+					"name": "API",
+					"data-et": "life-line",
+					"data-id": "API"
+				},
+				"text": "",
+				"box": {
+					"x": 713,
+					"y": 76,
+					"width": 0,
+					"height": 550
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "root-1",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "root-1",
+					"data-look": "neo",
+					"data-et": "participant",
+					"data-type": "participant",
+					"data-id": "API"
+				},
+				"text": "Very long API participant name that should wrap cleanly",
+				"box": {
+					"x": 491.5,
+					"y": 0,
+					"width": 443,
+					"height": 76
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-top",
+				"parent_id": "root-1",
+				"parent_class": "",
+				"attributes": {
+					"x": "491.5",
+					"y": "0",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "443",
+					"height": "76",
+					"name": "API",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-top",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(45, 212, 191); fill: rgb(240, 253, 250);"
+				},
+				"text": "",
+				"box": {
+					"x": 491.5,
+					"y": 0,
+					"width": 443,
+					"height": 76
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(240, 253, 250)",
+					"stroke": "rgb(45, 212, 191)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "root-1",
+				"parent_class": "",
+				"attributes": {
+					"x": "713",
+					"y": "38",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "Very long API participant name that should wrap cleanly",
+				"box": {
+					"x": 501.7658386230469,
+					"y": 27.77770233154297,
+					"width": 423.69403076171875,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "713",
+					"dy": "0"
+				},
+				"text": "Very long API participant name that should wrap cleanly",
+				"box": {
+					"x": 501.7658386230469,
+					"y": 27.77770233154297,
+					"width": 423.69403076171875,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "",
+				"box": {
+					"x": 74.99999999999997,
+					"y": 76,
+					"width": 0,
+					"height": 550
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor0",
+				"class": "actor-line 200",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "actor0",
+					"x1": "75",
+					"y1": "76",
+					"x2": "75",
+					"y2": "626",
+					"class": "actor-line 200",
+					"stroke-width": "0.5px",
+					"stroke": "#999",
+					"name": "User",
+					"data-et": "life-line",
+					"data-id": "User"
+				},
+				"text": "",
+				"box": {
+					"x": 74.99999999999997,
+					"y": 76,
+					"width": 0,
+					"height": 550
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "",
+				"box": {
+					"x": -2.842170943040401e-14,
+					"y": 0,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"data-et": "note",
+					"data-id": "i0"
+				},
+				"text": "A note outside the first column",
+				"box": {
+					"x": -202.00000000000003,
+					"y": 86,
+					"width": 252,
+					"height": 40
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "note",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "-202",
+					"y": "86",
+					"fill": "#EDF2AE",
+					"stroke": "#666",
+					"width": "252",
+					"height": "40",
+					"class": "note",
+					"data-look": "neo"
+				},
+				"text": "",
+				"box": {
+					"x": -202.00000000000003,
+					"y": 86,
+					"width": 252,
+					"height": 40
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 245, 173)",
+					"stroke": "rgb(250, 204, 21)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "noteText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "-76",
+					"y": "91",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "noteText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "A note outside the first column",
+				"box": {
+					"x": -191.62377929687503,
+					"y": 95.020751953125,
+					"width": 232.01759338378906,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "noteText",
+				"attributes": {
+					"x": "-76"
+				},
+				"text": "A note outside the first column",
+				"box": {
+					"x": -191.62377929687503,
+					"y": 95.020751953125,
+					"width": 232.01759338378906,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"data-et": "note",
+					"data-id": "i7"
+				},
+				"text": "A note outside the last column",
+				"box": {
+					"x": 1084.5,
+					"y": 466,
+					"width": 249,
+					"height": 40
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "note",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "1084.5",
+					"y": "466",
+					"fill": "#EDF2AE",
+					"stroke": "#666",
+					"width": "249",
+					"height": "40",
+					"class": "note",
+					"data-look": "neo"
+				},
+				"text": "",
+				"box": {
+					"x": 1084.5,
+					"y": 466,
+					"width": 249,
+					"height": 40
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 245, 173)",
+					"stroke": "rgb(250, 204, 21)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "noteText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "1209",
+					"y": "471",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "noteText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "A note outside the last column",
+				"box": {
+					"x": 1094.8616943359375,
+					"y": 475.0207824707031,
+					"width": 229.06170654296875,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "noteText",
+				"attributes": {
+					"x": "1209"
+				},
+				"text": "A note outside the last column",
+				"box": {
+					"x": 1094.8616943359375,
+					"y": 475.0207824707031,
+					"width": 229.06170654296875,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"data-et": "note",
+					"data-id": "i8"
+				},
+				"text": "Shared context across the conversation",
+				"box": {
+					"x": 49.99999999999997,
+					"y": 516,
+					"width": 1034.5,
+					"height": 40
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "note",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "50",
+					"y": "516",
+					"fill": "#EDF2AE",
+					"stroke": "#666",
+					"width": "1034.5",
+					"height": "40",
+					"class": "note",
+					"data-look": "neo"
+				},
+				"text": "",
+				"box": {
+					"x": 49.99999999999997,
+					"y": 516,
+					"width": 1034.5,
+					"height": 40
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 245, 173)",
+					"stroke": "rgb(250, 204, 21)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "noteText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "567",
+					"y": "521",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "noteText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Shared context across the conversation",
+				"box": {
+					"x": 417.2113952636719,
+					"y": 525.020751953125,
+					"width": 300.3359069824219,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "noteText",
+				"attributes": {
+					"x": "567"
+				},
+				"text": "Shared context across the conversation",
+				"box": {
+					"x": 417.2113952636719,
+					"y": 525.020751953125,
+					"width": 300.3359069824219,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "actor-man actor-top",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"class": "actor-man actor-top",
+					"name": "User",
+					"data-et": "participant",
+					"data-type": "actor",
+					"data-id": "User",
+					"style": "stroke: rgb(232, 121, 249); fill: rgb(253, 244, 255);"
+				},
+				"text": "System operator",
+				"box": {
+					"x": 12.580105781555147,
+					"y": 0,
+					"width": 124.95074462890625,
+					"height": 70.22230529785156
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(253, 244, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor-man-torso0",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-top",
+				"attributes": {
+					"id": "actor-man-torso0",
+					"x1": "75",
+					"y1": "20.307692307692307",
+					"x2": "75",
+					"y2": "33.84615384615385"
+				},
+				"text": "",
+				"box": {
+					"x": 74.99999999999997,
+					"y": 20.30769157409668,
+					"width": 0,
+					"height": 13.538461685180664
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor-man-arms0",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-top",
+				"attributes": {
+					"id": "actor-man-arms0",
+					"x1": "62.815384615384616",
+					"y1": "25.72307692307692",
+					"x2": "87.18461538461538",
+					"y2": "25.72307692307692"
+				},
+				"text": "",
+				"box": {
+					"x": 62.815383911132784,
+					"y": 25.72307777404785,
+					"width": 24.369232177734375,
+					"height": 0
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-top",
+				"attributes": {
+					"x1": "62.815384615384616",
+					"y1": "44",
+					"x2": "75",
+					"y2": "33.84615384615385"
+				},
+				"text": "",
+				"box": {
+					"x": 62.815383911132784,
+					"y": 33.846153259277344,
+					"width": 12.184616088867188,
+					"height": 10.153846740722656
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-top",
+				"attributes": {
+					"x1": "75",
+					"y1": "33.84615384615385",
+					"x2": "85.83076923076923",
+					"y2": "44"
+				},
+				"text": "",
+				"box": {
+					"x": 74.99999999999997,
+					"y": 33.846153259277344,
+					"width": 10.830772399902344,
+					"height": 10.153846740722656
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "circle",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-top",
+				"attributes": {
+					"cx": "75",
+					"cy": "10.153846153846153",
+					"r": "10.153846153846155",
+					"width": "150",
+					"height": "76"
+				},
+				"text": "",
+				"box": {
+					"x": 64.84615325927732,
+					"y": 0,
+					"width": 20.30769157409668,
+					"height": 20.30769157409668
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-man",
+				"parent_id": "",
+				"parent_class": "actor-man actor-top",
+				"attributes": {
+					"x": "75",
+					"y": "60",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-man",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "System operator",
+				"box": {
+					"x": 12.580105781555147,
+					"y": 49.777706146240234,
+					"width": 124.95074462890625,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-man",
+				"attributes": {
+					"x": "75",
+					"dy": "0"
+				},
+				"text": "System operator",
+				"box": {
+					"x": 12.580105781555147,
+					"y": 49.777706146240234,
+					"width": 124.95074462890625,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "391",
+					"y": "141",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Start a very long operation with a request label that wraps into several lines",
+				"box": {
+					"x": 107.53889465332028,
+					"y": 145.02073669433594,
+					"width": 566.9222412109375,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine0",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "76",
+					"y1": "176",
+					"x2": "706",
+					"y2": "176",
+					"class": "messageLine0",
+					"data-et": "message",
+					"data-id": "i1",
+					"data-from": "User",
+					"data-to": "API",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 75.99999999999997,
+					"y": 176,
+					"width": 630,
+					"height": 0
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "883",
+					"y": "191",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Asynchronous job",
+				"box": {
+					"x": 814.8140869140625,
+					"y": 195.020751953125,
+					"width": 136.80752563476562,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine0",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "714",
+					"y1": "226",
+					"x2": "1052.5",
+					"y2": "226",
+					"class": "messageLine0",
+					"data-et": "message",
+					"data-id": "i2",
+					"data-from": "API",
+					"data-to": "Worker",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-filled-head)",
+					"style": "fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 714,
+					"y": 226,
+					"width": 338.5,
+					"height": 0
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "889",
+					"y": "241",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Completed",
+				"box": {
+					"x": 847.8073120117188,
+					"y": 245.020751953125,
+					"width": 82.79961395263672,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine1",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "1058.5",
+					"y1": "276",
+					"x2": "720",
+					"y2": "276",
+					"class": "messageLine1",
+					"data-et": "message",
+					"data-id": "i3",
+					"data-from": "Worker",
+					"data-to": "API",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "stroke-dasharray: 3, 3; fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 720,
+					"y": 276,
+					"width": 338.5,
+					"height": 0
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "886",
+					"y": "291",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Synchronize",
+				"box": {
+					"x": 839.105224609375,
+					"y": 295.020751953125,
+					"width": 94.66937255859375,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine1",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "720",
+					"y1": "326",
+					"x2": "1052.5",
+					"y2": "326",
+					"class": "messageLine1",
+					"data-et": "message",
+					"data-id": "i4",
+					"data-from": "API",
+					"data-to": "Worker",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-start": "url(#oracle-arrowhead)",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "stroke-dasharray: 3, 3; fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 720,
+					"y": 326,
+					"width": 332.5,
+					"height": 0
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "883",
+					"y": "341",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Cancel obsolete work",
+				"box": {
+					"x": 801.1577758789062,
+					"y": 345.0207824707031,
+					"width": 165.13352966308594,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine1",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "714",
+					"y1": "376",
+					"x2": "1052.5",
+					"y2": "376",
+					"class": "messageLine1",
+					"data-et": "message",
+					"data-id": "i5",
+					"data-from": "API",
+					"data-to": "Worker",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-crosshead)",
+					"style": "stroke-dasharray: 3, 3; fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 714,
+					"y": 376,
+					"width": 338.5,
+					"height": 0
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "1061",
+					"y": "391",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Persist retry state",
+				"box": {
+					"x": 994.4912109375,
+					"y": 395.0207824707031,
+					"width": 133.89849853515625,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "path",
+				"id": "",
+				"class": "messageLine0",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"d": "M 1060.5,426 C 1120.5,416 1120.5,456 1060.5,446",
+					"class": "messageLine0",
+					"data-et": "message",
+					"data-id": "i6",
+					"data-from": "Worker",
+					"data-to": "Worker",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 1060.5,
+					"y": 424.38104248046875,
+					"width": 45,
+					"height": 23.2379150390625
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "397",
+					"y": "571",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Result",
+				"box": {
+					"x": 373.71234130859375,
+					"y": 575.020751953125,
+					"width": 47.468048095703125,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine1",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "712",
+					"y1": "606",
+					"x2": "82",
+					"y2": "606",
+					"class": "messageLine1",
+					"data-et": "message",
+					"data-id": "i9",
+					"data-from": "API",
+					"data-to": "User",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "stroke-dasharray: 3, 3; fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 81.99999999999997,
+					"y": 606,
+					"width": 630,
+					"height": 0
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "actor-man actor-bottom",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"class": "actor-man actor-bottom",
+					"name": "User",
+					"style": "stroke: rgb(232, 121, 249); fill: rgb(253, 244, 255);"
+				},
+				"text": "System operator",
+				"box": {
+					"x": 12.580105781555147,
+					"y": 632,
+					"width": 124.95074462890625,
+					"height": 70.2222900390625
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(253, 244, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor-man-torso2",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-bottom",
+				"attributes": {
+					"id": "actor-man-torso2",
+					"x1": "75",
+					"y1": "652.3076923076923",
+					"x2": "75",
+					"y2": "665.8461538461538"
+				},
+				"text": "",
+				"box": {
+					"x": 74.99999999999997,
+					"y": 652.3076782226562,
+					"width": 0,
+					"height": 13.5384521484375
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor-man-arms2",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-bottom",
+				"attributes": {
+					"id": "actor-man-arms2",
+					"x1": "62.815384615384616",
+					"y1": "657.723076923077",
+					"x2": "87.18461538461538",
+					"y2": "657.723076923077"
+				},
+				"text": "",
+				"box": {
+					"x": 62.815383911132784,
+					"y": 657.7230834960938,
+					"width": 24.369232177734375,
+					"height": 0
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-bottom",
+				"attributes": {
+					"x1": "62.815384615384616",
+					"y1": "676",
+					"x2": "75",
+					"y2": "665.8461538461538"
+				},
+				"text": "",
+				"box": {
+					"x": 62.815383911132784,
+					"y": 665.8461303710938,
+					"width": 12.184616088867188,
+					"height": 10.15386962890625
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-bottom",
+				"attributes": {
+					"x1": "75",
+					"y1": "665.8461538461538",
+					"x2": "85.83076923076923",
+					"y2": "676"
+				},
+				"text": "",
+				"box": {
+					"x": 74.99999999999997,
+					"y": 665.8461303710938,
+					"width": 10.830772399902344,
+					"height": 10.15386962890625
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "circle",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-bottom",
+				"attributes": {
+					"cx": "75",
+					"cy": "642.1538461538462",
+					"r": "10.153846153846155",
+					"width": "150",
+					"height": "76"
+				},
+				"text": "",
+				"box": {
+					"x": 64.84615325927732,
+					"y": 632,
+					"width": 20.30769157409668,
+					"height": 20.30769157409668
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-man",
+				"parent_id": "",
+				"parent_class": "actor-man actor-bottom",
+				"attributes": {
+					"x": "75",
+					"y": "692",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-man",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "System operator",
+				"box": {
+					"x": 12.580105781555147,
+					"y": 681.7777099609375,
+					"width": 124.95074462890625,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-man",
+				"attributes": {
+					"x": "75",
+					"dy": "0"
+				},
+				"text": "System operator",
+				"box": {
+					"x": 12.580105781555147,
+					"y": 681.7777099609375,
+					"width": 124.95074462890625,
+					"height": 20.444595336914062
+				},
+				"origin": {
+					"x": -2.842170943040401e-14,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			}
+		]
+	},
+	"measurements": [
+		{
+			"kind": "sequence-message",
+			"id": "0",
+			"text": "A note outside the first column",
+			"width": 231.640625,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "1",
+			"text": "Start a very long operation with a request label that wraps into several lines",
+			"width": 567.890625,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "2",
+			"text": "Asynchronous job",
+			"width": 136.609375,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "3",
+			"text": "Completed",
+			"width": 82.5,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "4",
+			"text": "Synchronize",
+			"width": 93.921875,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "5",
+			"text": "Cancel obsolete work",
+			"width": 164.1796875,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "6",
+			"text": "Persist retry state",
+			"width": 133.21875,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "7",
+			"text": "A note outside the last column",
+			"width": 228.671875,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "8",
+			"text": "Shared context across the conversation",
+			"width": 300.078125,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "9",
+			"text": "Result",
+			"width": 46.640625,
+			"height": 20
+		}
+	],
+	"layout": {
+		"view_box": {
+			"x": -252,
+			"y": -10,
+			"width": 1635.5,
+			"height": 753
+		}
+	},
+	"svg_sha256": "837e0d6be5c5f490e3a3d57439c3877193855ebede3d646a48635e13aa904306"
+}

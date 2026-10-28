@@ -1,3 +1,4 @@
+import PrefixCounts
 import LayeredRank
 
 ## Internal layer construction and crossing reduction for the layered
@@ -209,7 +210,7 @@ LayeredOrder :: {}.{
 		lower_count = (shape.starts.get(i + 2) ?? 0) - end
 		# Fenwick tree over lower positions of edges already seen from
 		# strictly earlier upper positions.
-		var $tree = List.repeat(0, lower_count + 1)
+		var $tree = PrefixCounts.create(lower_count)
 		var $seen = 0
 		var $total = 0
 		var $ends = []
@@ -223,21 +224,11 @@ LayeredOrder :: {}.{
 				}
 			}
 			for b in $ends {
-				# Seen edges ending at or left of b.
-				var $j = b + 1
-				var $at_most = 0
-				while $j > 0 {
-					$at_most = $at_most + ($tree.get($j) ?? 0)
-					$j = $j - $j.bitwise_and($j.bitwise_xor($j - 1))
-				}
-				$total = $total + $seen - $at_most
+				at_most = PrefixCounts.before($tree, b + 1).to_u64_wrap()
+				$total = $total + $seen - at_most
 			}
 			for b in $ends {
-				var $j = b + 1
-				while $j <= lower_count {
-					$tree = $tree.set($j, ($tree.get($j) ?? 0) + 1) ?? []
-					$j = $j + $j.bitwise_and($j.bitwise_xor($j - 1))
-				}
+				$tree = PrefixCounts.add($tree, b, 1)
 				$seen = $seen + 1
 			}
 		}

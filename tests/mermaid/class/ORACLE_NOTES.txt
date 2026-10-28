@@ -1,0 +1,99 @@
+Pinned oracle investigation, 2026-10-28 (macOS arm64)
+
+Mermaid12.2.0 / Puppeteer25.16.0 / Chrome156.0.8078.47. Canonical semantics
+come from DB getters, dimensions from the renderer's mutated getData object,
+and output geometry from the root-space SVG recorder. These are independent
+of the native parser and layout. Header/member text boxes are diagnostic;
+only measured leaf-node and central/terminal edge-label sizes are solver input.
+Unknown or unconsumed override IDs are reported in size_problems.
+
+Native text measurement control
+Compiler: Roc2026-10-26-3c0fffe, native optimized (--opt=speed).
+ClassTextBench generates the labels outside Measure.start!, then measures
++captureN() : Receipt. Zero control consumes only label count.
+
+n      mode       elapsed_ms alloc_calls realloc_calls requested_B peak_extra_B
+100    old block    41.890      15200        4500        2562660       3342
+300    old block   126.822      45600       13500        7743860       3407
+1000   old block   641.377     152000       45000       25878060       3407
+100    new block    44.091      15200        4500        2562660       3342
+300    new block   128.975      45600       13500        7743860       3407
+1000   new block   561.843     152000       45000       25878060       3407
+100    advance      44.038      15200        4500        2562660       3342
+300    advance     131.884      45600       13500        7743860       3407
+1000   advance     494.517     152000       45000       25878060       3407
+Zero controls: alloc_calls0/requested0/peak_extra0, 2/3/4 microseconds.
+
+Hypothesis confirmed: selecting advance width adds no shaping pass or allocation
+traffic; old block results and allocator metrics are preserved. Concurrent
+compiler activity makes these single elapsed observations unsuitable for a
+speedup claim. This is an additive semantic measurement mode, not a new layout.
+
+The old ink-extent block is not SVG typographic advance: CardPayment measured
+89.861328125 versus89.453125 advance; +capture() : Receipt132.12109375 versus
+131.703125. The latter pair reconstructs the independent class box width
+200.4296875 exactly. ER UK20.41796875 versus19.828125 reconstructs the prior
+0.58984375 customer-node width discrepancy.
+
+ER empty-comment phantom extent
+Pinned erBox emits empty comment text even when there is no comment column.
+The empty SVG text has zero width but contributes a point half a column-padding
+beyond the painted right border. For ORDER in shop.mmd the painted rectangle
+is212.015625 wide but the actual solver input is224.515625. Both share the
+node's centre; the output getBBox is offset6.25px to the right. Production
+native layout preserves this distinction rather than feeding a painted box
+as solver input. No reference positions/routes are used by inspect_sized.
+
+Class/ER marker geometry
+Neo class markers use source/target-specific SVG reference points. Painted
+route offsets are17.25px for inheritance/aggregation/composition and6px for
+association/dependency; logical geometry stays port-aligned. ER cardinalities
+use quadratic lens shapes,9px half-height bars,6px radius circles, and the
+pinned endpoint-specific27.5/28px zero-many offsets. Existing FlowDrawEdge
+implements the same rounded5px bends and continuous3px dashed paths.
+
+Final pinned native evidence (2026-10-28)
+Native compiler26 dev build:0errors0warnings,2m04s. Nine accepted drawings
+compared at their own view boxes with no scaling/alignment correction. Raw
+unmatched-ink scores (one CSS pixel match radius from shared fixed raster):
+class compartments2.954%, generics0.699%, payments2.317%, relationships3.403%,
+terminal-labels1.019%, dense-terminal-labels0.886%; ER loops1.173%, shop0.173%,
+unquoted-role-statements0.018%. All nine are below the unchanged5% gate.
+Residual height differences reach0.392px from native versus browser glyph
+extents; widths agree to SVG decimal output precision. No broad grammar
+completeness claim follows from these cases.
+
+All original10 accepted/rejected decisions and full canonical semantics match.
+With independently measured node/edge-label dimensions supplied to the same
+production solver, every node box agrees within2.27e-13 and every raw route
+point within5.68e-14; all size_problems lists empty. Reference positions,
+routes, normalization and rescaling are never supplied to native layout.
+
+The new dense-terminal-labels fixture records four common1..*/0..1 edges on
+one short Hub class. Before the rectangle-strip phase it mismatched30.286%,
+with missing28px layer space and clipped terminal ink. The source-derived
+ELK greedy first-fit phase places source labels in14px rows0/14/28/0. Actual
+cell centres are preserved through drawing; named-side reflection is refused
+when another route/node/label blocks it. The final331.719x306 SVG matches
+reference331.71875x306 and raw mismatch is0.886%. Permanent expects cover
+node centres, all four source label centres, and actual canvas bounds.
+
+Crowded phase native optimized benchmark (ClassMarginBench)
+Frozen ClassMarginBefore is authoring-only, never imported by drawing. Input
+ordering/ports are prepared outside the measured window. Star counts4/16/64
+exercise the changed margin phase; no-label controls test the early skip.
+count mode     elapsed_us alloc realloc requested_B peak_extra_B
+4     before     12        21      4       5000        1504
+4     after      17        88     10      12640        2760
+4     control     7         0      0          0           0
+16    before     25        81      8      21480        5344
+16    after      93       403     55      57640       10920
+16    control     9         0      0          0           0
+64    before    422       321     14     107848       23648
+64    after    1405      2804    345     365232       48808
+64    control    14         0      0          0           0
+This is added source-required overlap work, not a performance improvement.
+The overlap graph is dense for short hubs, so greedy first-fit may require
+quadratic comparisons, as in the pinned source. Source parsing bounds edges
+at500. Lists stay flat/indexed and merge sorting avoids the compiler builtin's
+quadratic ordered-input path. No-label graphs allocate nothing in this phase.

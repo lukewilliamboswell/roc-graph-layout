@@ -12,6 +12,7 @@
 //
 // Options: --force recomputes even when the key matches.
 import fs from 'node:fs/promises';
+import { openBrowserSession, BROWSER_PLATFORM, BROWSER_ARCHITECTURE } from './browser.mjs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
@@ -21,10 +22,11 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 
 // Bump when the shape or meaning of a record changes.
-const EXTRACTOR_VERSION = 6;
+const EXTRACTOR_VERSION = 11;
 export const FONT_FAMILY = 'Oracle Inter';
 export const FONT_FILE = path.join(here, 'fonts', 'Inter-Regular.ttf');
 const CASE_TIMEOUT_MS = 20000;
+const MEASUREMENT_VIEWPORT = { width: 800, height: 600, deviceScaleFactor: 1 };
 
 // Fixed configuration. HTML labels are off so every label is SVG text whose
 // width is measured by the pinned font, not by HTML line breaking.
@@ -42,18 +44,27 @@ export const CONFIG = {
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const installedVersion = name => require(`${name}/package.json`).version;
 
-async function provenance() {
+export async function provenance() {
 	return {
 		extractor: EXTRACTOR_VERSION,
+		extractor_sha256: sha256(Buffer.from(extractInPage.toString())),
+		tool_sha256: sha256(Buffer.concat([await fs.readFile(fileURLToPath(import.meta.url)), await fs.readFile(new URL('./browser.mjs', import.meta.url))])),
+		measurement_viewport: MEASUREMENT_VIEWPORT,
+		browser_context: 'fresh page for each source',
 		mermaid: installedVersion('mermaid'),
 		// Puppeteer pins the exact browser build it downloads.
 		puppeteer: installedVersion('puppeteer'),
+		browser_revision: await require('puppeteer').default.browserVersion(),
+		// The browser, rather than the native executable's host, defines font
+		// measurements. Local and remote sessions enforce this same target.
+		platform: BROWSER_PLATFORM,
+		architecture: BROWSER_ARCHITECTURE,
 		font_sha256: sha256(await fs.readFile(FONT_FILE)),
 		config: CONFIG,
 	};
 }
 
-const keyOf = (prov, sourceBytes) => sha256(JSON.stringify({ prov, source: sha256(sourceBytes) }));
+export const keyOf = (prov, sourceBytes) => sha256(JSON.stringify({ prov, source: sha256(sourceBytes) }));
 
 // ---------------------------------------------------------------- browser side
 
@@ -79,7 +90,127 @@ async function extractInPage(source) {
 	}
 	result.accepted = true;
 	result.diagram_type = diagram.type;
-	if (diagram.type !== 'flowchart-v2' && diagram.type !== 'flowchart') return result;
+	const plain = (value, depth = 0) => {
+		if (depth > 32) throw new Error('oracle model exceeds supported extraction depth');
+		if (value instanceof Map) return [...value].map(([key, item]) => [key, plain(item, depth + 1)]);
+		if (value instanceof Set) return [...value].map(item => plain(item, depth + 1));
+		if (Array.isArray(value)) return value.map(item => plain(item, depth + 1));
+		if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).filter(([, item]) => typeof item !== 'function').map(([key, item]) => [key, plain(item, depth + 1)]));
+		return value;
+	};
+	if (diagram.type !== 'flowchart-v2' && diagram.type !== 'flowchart') {
+		// Keep the pinned parser's facts, not a model reconstructed from our
+		// implementation. Family normalizers consume these getter snapshots.
+
+		result.model = {};
+		for (const name of ['getActors', 'getActorKeys', 'getMessages', 'getNotes', 'getBoxes', 'getCreatedActors', 'getDestroyedActors', 'showSequenceNumbers', 'getClasses', 'getRelations', 'getNamespaces', 'getEntities', 'getRelationships', 'getStates', 'getRootDoc', 'getRootDocV2', 'getDirection', 'getDiagramTitle', 'getAccTitle', 'getAccDescription']) {
+			if (typeof diagram.db[name] === 'function') result.model[name] = plain(diagram.db[name]());
+		}
+		if (typeof diagram.db.getData === 'function') {
+			// State's parser has already extracted its source document. Do not
+			// extract it a second time or change the reference model here.
+			result.layout_input = plain(diagram.db.getData());
+		}
+		const host = document.getElementById('host');
+		host.replaceChildren();
+		let svgText;
+		let measuredInput;
+		const measurementTrace = [];
+		const originalGetBBox = SVGGraphicsElement.prototype.getBBox;
+		SVGGraphicsElement.prototype.getBBox = function (...args) {
+			const box = originalGetBBox.apply(this, args);
+			if (this.tagName.toLowerCase() === 'text' || (this.tagName.toLowerCase() === 'g' && this.classList.contains('label'))) {
+				measurementTrace.push({ tag: this.tagName.toLowerCase(), id: this.id, class: this.getAttribute('class') ?? '', parent_id: this.parentElement?.id ?? '', text: this.textContent, rows: [...this.querySelectorAll('tspan')].filter(span => !span.querySelector('tspan')).map(span => span.textContent), box: { x: box.x, y: box.y, width: box.width, height: box.height } });
+			}
+			return box;
+		};
+		const prototype = Object.getPrototypeOf(diagram.db);
+		const originalGetData = Object.hasOwn(prototype, 'getData') ? prototype.getData : null;
+		if (typeof originalGetData === 'function') {
+			prototype.getData = function (...args) {
+				const data = originalGetData.apply(this, args);
+				measuredInput = data;
+				return data;
+			};
+		}
+		try { svgText = (await m.render('oracle', source, host)).svg; }
+		catch (error) { result.render_error = String(error?.message ?? error).slice(0, 2000); return result; }
+		finally {
+			if (typeof originalGetData === 'function') prototype.getData = originalGetData;
+			SVGGraphicsElement.prototype.getBBox = originalGetBBox;
+		}
+		// Retain the exact production object while Mermaid measures and lays
+		// it out. Its input labelBBox/labelData survives even for invisible
+		// group captions; final group width/height remain outputs, not inputs.
+		if (measuredInput) result.measured_input = plain(measuredInput);
+		result.measurement_trace = measurementTrace;
+		host.innerHTML = svgText;
+		const svg = host.querySelector('svg');
+		const inverse = svg.getScreenCTM().inverse();
+		const boxOf = element => {
+			const b = element.getBBox();
+			const matrix = inverse.multiply(element.getScreenCTM());
+			const corners = [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]].map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
+			const x = Math.min(...corners.map(p => p.x)), y = Math.min(...corners.map(p => p.y));
+			return { x, y, width: Math.max(...corners.map(p => p.x)) - x, height: Math.max(...corners.map(p => p.y)) - y };
+		};
+		const vb = svg.viewBox.baseVal;
+		const view_box = { x: vb.x, y: vb.y, width: vb.width, height: vb.height };
+		const elements = [...svg.querySelectorAll('g,rect,path,line,polyline,polygon,circle,ellipse,text,tspan')].filter(element => !element.closest('defs')).map(element => {
+			const style = getComputedStyle(element);
+			const matrix = inverse.multiply(element.getScreenCTM());
+			const origin = new DOMPoint(0, 0).matrixTransform(matrix);
+			return {
+				tag: element.tagName.toLowerCase(),
+				id: element.id,
+				class: element.getAttribute('class') ?? '',
+				parent_id: element.parentElement?.id ?? '',
+				parent_class: element.parentElement?.getAttribute('class') ?? '',
+				attributes: Object.fromEntries([...element.attributes].map(a => [a.name, a.value])),
+				text: element.textContent,
+				box: boxOf(element),
+				origin: { x: origin.x, y: origin.y },
+				style: Object.fromEntries(['fill', 'stroke', 'stroke-width', 'font-family', 'font-size', 'font-weight', 'font-style', 'text-decoration', 'text-anchor'].map(key => [key, style.getPropertyValue(key)])),
+			};
+		});
+		result.rendering = { view_box, elements };
+		// Some layout inputs are never painted (state note-group titles), or
+		// are decoded only after measurement (sequence entity placeholders).
+		// Measure the original text with the reference font; never infer an
+		// input dimension from a final container or a decoded visible label.
+		const measureUnwrapped = (value, size, lineHeight) => {
+			const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+			text.setAttribute('font-family', '"Oracle Inter"');
+			text.setAttribute('font-size', String(size));
+			text.setAttribute('font-weight', 'normal');
+			text.setAttribute('visibility', 'hidden');
+			const rows = String(value ?? '').replace(/<br\s*\/?>/gi, '\n').split('\n');
+			for (const [index, row] of rows.entries()) {
+				const span = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+				span.setAttribute('x', '0');
+				span.setAttribute('y', String(index * size * lineHeight));
+				span.textContent = row;
+				text.appendChild(span);
+			}
+			const probe = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+			probe.setAttribute('width', '4000');
+			probe.setAttribute('height', '4000');
+			probe.style.cssText = 'position:absolute;left:-100000px;top:0';
+			probe.appendChild(text);
+			document.body.appendChild(probe);
+			const b = text.getBBox();
+			const measured = { width: b.width, height: b.height };
+			probe.remove();
+			return measured;
+		};
+		result.measurements = [
+			...(result.model.getMessages ?? []).filter(message => typeof message.message === 'string').map(message => ({ kind: 'sequence-message', id: String(message.id), text: message.message, ...measureUnwrapped(message.message, 16, 1.25) })),
+		];
+		result.layout = { view_box };
+		result.svg_sha256 = null;
+		result.svg = svgText;
+		return result;
+	}
 
 	const db = diagram.db;
 	const textOf = value => (value === undefined || value === null ? null : String(value));
@@ -156,12 +287,22 @@ async function extractInPage(source) {
 	const host = document.getElementById('host');
 	host.replaceChildren();
 	let svgText;
+	let measuredInput;
+	const prototype = Object.getPrototypeOf(diagram.db);
+	const holder = Object.hasOwn(prototype, 'getData') ? prototype : diagram.db;
+	const originalGetData = holder.getData;
+	holder.getData = function (...args) {
+		const data = originalGetData.apply(this, args);
+		measuredInput = data;
+		return data;
+	};
 	try {
 		svgText = (await m.render('oracle', source, host)).svg;
 	} catch (error) {
 		result.render_error = String(error && error.message ? error.message : error).slice(0, 2000);
 		return result;
-	}
+	} finally { holder.getData = originalGetData; }
+	if (measuredInput) result.measured_input = plain(measuredInput);
 	host.innerHTML = svgText;
 	const svg = host.querySelector('svg');
 	const toRoot = svg.getScreenCTM().inverse();
@@ -251,16 +392,13 @@ async function extractInPage(source) {
 // ------------------------------------------------------------------ node side
 
 export async function openBrowser() {
-	const puppeteer = require('puppeteer');
-	// The page only loads the pinned local Mermaid bundle and the pinned font;
-	// every network request is refused below. The sandbox is disabled because
-	// common Linux hosts block the unprivileged namespaces Chrome needs.
-	const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--font-render-hinting=none'] });
+	const browser = await openBrowserSession();
 	const font = (await fs.readFile(FONT_FILE)).toString('base64');
 	const mermaidJs = require.resolve('mermaid/dist/mermaid.min.js');
 
 	async function freshPage() {
 		const page = await browser.newPage();
+		await page.setViewport(MEASUREMENT_VIEWPORT);
 		await page.setRequestInterception(true);
 		page.on('request', request => (request.url().startsWith('data:') ? request.continue() : request.abort()));
 		await page.setContent(
@@ -276,23 +414,24 @@ export async function openBrowser() {
 		return page;
 	}
 
-	let page = await freshPage();
 	return {
 		version: await browser.version(),
 		async extract(source) {
+			// Mermaid memoizes text measurements. A fresh page keeps traces and
+			// all production observations independent of earlier case order.
+			const page = await freshPage();
 			const run = page.evaluate(extractInPage, source);
 			let timer;
 			const timeout = new Promise(resolve => {
 				timer = setTimeout(() => resolve({ accepted: null, error: 'oracle timeout' }), CASE_TIMEOUT_MS);
 			});
-			const out = await Promise.race([run.catch(error => ({ accepted: null, error: `oracle failure: ${error.message}` })), timeout]);
-			clearTimeout(timer);
-			// A timeout or page crash leaves the page in an unknown state.
-			if (out.accepted === null) {
+			try {
+				return await Promise.race([run.catch(error => ({ accepted: null, error: `oracle failure: ${error.message}` })), timeout]);
+			} finally {
+				clearTimeout(timer);
 				await page.close().catch(() => {});
-				page = await freshPage();
 			}
-			return out;
+
 		},
 		close: () => browser.close(),
 	};

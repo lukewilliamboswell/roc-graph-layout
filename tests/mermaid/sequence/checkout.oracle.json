@@ -1,0 +1,4819 @@
+{
+	"schema": 11,
+	"key": "f8850a85c8a52e6b764c5f84acd7b689d2fa6c6ae7589ffbcf550856d76df25c",
+	"provenance": {
+		"extractor": 11,
+		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
+		"tool_sha256": "64a229f0bbb3d8c7be1e1be6ec0da2a035e2c815e3b527d670ad0b57463c73bd",
+		"measurement_viewport": {
+			"width": 800,
+			"height": 600,
+			"deviceScaleFactor": 1
+		},
+		"browser_context": "fresh page for each source",
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "linux",
+		"architecture": "x64",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "sequenceDiagram\n    title Checkout with payment retry\n    autonumber\n    actor Customer\n    participant Shop as Checkout service\n    participant Pay as Payment provider\n    Customer->>Shop: Place an order\n    activate Shop\n    Note over Shop,Pay: All requests carry an idempotency key\n    loop Until accepted or retries exhausted\n        Shop->>+Pay: Authorize the card payment\n        alt Approved\n            Pay-->>-Shop: Authorization reference\n            Shop->>Shop: Persist the order and reserve stock\n        else Temporary failure\n            Pay-->>Shop: Please retry later\n        end\n    end\n    Shop-->>Customer: Order confirmation\n    deactivate Shop\n",
+	"accepted": true,
+	"diagram_type": "sequence",
+	"model": {
+		"getActors": [
+			[
+				"Customer",
+				{
+					"name": "Customer",
+					"description": "Customer",
+					"wrap": false,
+					"links": {},
+					"properties": {},
+					"actorCnt": null,
+					"rectData": null,
+					"type": "actor",
+					"nextActor": "Shop"
+				}
+			],
+			[
+				"Shop",
+				{
+					"name": "Shop",
+					"description": "Checkout service",
+					"wrap": false,
+					"prevActor": "Customer",
+					"links": {},
+					"properties": {},
+					"actorCnt": null,
+					"rectData": null,
+					"type": "participant",
+					"nextActor": "Pay"
+				}
+			],
+			[
+				"Pay",
+				{
+					"name": "Pay",
+					"description": "Payment provider",
+					"wrap": false,
+					"prevActor": "Shop",
+					"links": {},
+					"properties": {},
+					"actorCnt": null,
+					"rectData": null,
+					"type": "participant"
+				}
+			]
+		],
+		"getActorKeys": [
+			"Customer",
+			"Shop",
+			"Pay"
+		],
+		"getMessages": [
+			{
+				"id": "0",
+				"message": {
+					"visible": true
+				},
+				"wrap": false,
+				"type": 26
+			},
+			{
+				"id": "1",
+				"from": "Customer",
+				"to": "Shop",
+				"message": "Place an order",
+				"wrap": false,
+				"type": 0,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "2",
+				"from": "Shop",
+				"message": "",
+				"wrap": false,
+				"type": 17,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "3",
+				"from": "Shop",
+				"to": "Pay",
+				"message": "All requests carry an idempotency key",
+				"wrap": false,
+				"type": 2,
+				"placement": 2
+			},
+			{
+				"id": "4",
+				"message": "Until accepted or retries exhausted",
+				"wrap": false,
+				"type": 10,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "5",
+				"from": "Shop",
+				"to": "Pay",
+				"message": "Authorize the card payment",
+				"wrap": false,
+				"type": 0,
+				"activate": true,
+				"centralConnection": 0
+			},
+			{
+				"id": "6",
+				"from": "Pay",
+				"message": "",
+				"wrap": false,
+				"type": 17,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "7",
+				"message": "Approved",
+				"wrap": false,
+				"type": 12,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "8",
+				"from": "Pay",
+				"to": "Shop",
+				"message": "Authorization reference",
+				"wrap": false,
+				"type": 1,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "9",
+				"from": "Pay",
+				"message": "",
+				"wrap": false,
+				"type": 18,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "10",
+				"from": "Shop",
+				"to": "Shop",
+				"message": "Persist the order and reserve stock",
+				"wrap": false,
+				"type": 0,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "11",
+				"message": "Temporary failure",
+				"wrap": false,
+				"type": 13,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "12",
+				"from": "Pay",
+				"to": "Shop",
+				"message": "Please retry later",
+				"wrap": false,
+				"type": 1,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "13",
+				"message": "",
+				"wrap": false,
+				"type": 14,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "14",
+				"message": "",
+				"wrap": false,
+				"type": 11,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "15",
+				"from": "Shop",
+				"to": "Customer",
+				"message": "Order confirmation",
+				"wrap": false,
+				"type": 1,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "16",
+				"from": "Shop",
+				"message": "",
+				"wrap": false,
+				"type": 18,
+				"activate": false,
+				"centralConnection": 0
+			}
+		],
+		"getBoxes": [],
+		"getCreatedActors": [],
+		"getDestroyedActors": [],
+		"showSequenceNumbers": false,
+		"getDiagramTitle": "Checkout with payment retry",
+		"getAccTitle": "",
+		"getAccDescription": ""
+	},
+	"measurement_trace": [
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Place an order",
+			"rows": [
+				"Place an order"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 104.734375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Place an order",
+			"rows": [
+				"Place an order"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 109.484375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "All requests carry an idempotency key",
+			"rows": [
+				"All requests carry an idempotency key"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 270.34375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "All requests carry an idempotency key",
+			"rows": [
+				"All requests carry an idempotency key"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 289.7109375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Authorize the card payment",
+			"rows": [
+				"Authorize the card payment"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 196.21875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Authorize the card payment",
+			"rows": [
+				"Authorize the card payment"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 209.859375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Authorization reference",
+			"rows": [
+				"Authorization reference"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 165.53125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Authorization reference",
+			"rows": [
+				"Authorization reference"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 178.203125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Persist the order and reserve stock",
+			"rows": [
+				"Persist the order and reserve stock"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 249.109375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Persist the order and reserve stock",
+			"rows": [
+				"Persist the order and reserve stock"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 265.140625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Please retry later",
+			"rows": [
+				"Please retry later"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 121.609375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Please retry later",
+			"rows": [
+				"Please retry later"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 128.21875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Order confirmation",
+			"rows": [
+				"Order confirmation"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 132.5,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Order confirmation",
+			"rows": [
+				"Order confirmation"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 143.0625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Customer",
+			"rows": [
+				"Customer"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 70.0234375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Customer",
+			"rows": [
+				"Customer"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 73.640625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Checkout service",
+			"rows": [
+				"Checkout service"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 122.8203125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Checkout service",
+			"rows": [
+				"Checkout service"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 132.21875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Payment provider",
+			"rows": [
+				"Payment provider"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 126.0625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "Payment provider",
+			"rows": [
+				"Payment provider"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 133.34375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "All requests carry an idempotency key",
+			"rows": [
+				"All requests carry an idempotency key"
+			],
+			"box": {
+				"x": 283.1484375,
+				"y": 145.359375,
+				"width": 289.7109375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "All requests carry an idempotency key",
+			"rows": [
+				"All requests carry an idempotency key"
+			],
+			"box": {
+				"x": 283.1484375,
+				"y": 145.359375,
+				"width": 289.7109375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until ",
+			"rows": [
+				"[Until "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 36.453125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until ",
+			"rows": [
+				"[Until "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 40.1875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "accepted ",
+			"rows": [
+				"accepted "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 64.9375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "accepted ",
+			"rows": [
+				"accepted "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 70.59375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until",
+			"rows": [
+				"[Until"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 36.453125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until",
+			"rows": [
+				"[Until"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 40.1875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "or ",
+			"rows": [
+				"or "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 14.8984375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "or ",
+			"rows": [
+				"or "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 15.625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted",
+			"rows": [
+				"[Until accepted"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 105.84375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted",
+			"rows": [
+				"[Until accepted"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 115.28125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "retries ",
+			"rows": [
+				"retries "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 44.453125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "retries ",
+			"rows": [
+				"retries "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 48.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted or",
+			"rows": [
+				"[Until accepted or"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 125.1796875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted or",
+			"rows": [
+				"[Until accepted or"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 135.390625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "exhausted] ",
+			"rows": [
+				"exhausted] "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 78.28125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "exhausted] ",
+			"rows": [
+				"exhausted] "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 84.09375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted or retries",
+			"rows": [
+				"[Until accepted or retries"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 173.40625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted or retries",
+			"rows": [
+				"[Until accepted or retries"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 188.046875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted or retries exhausted]",
+			"rows": [
+				"[Until accepted or retries exhausted]"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 256.140625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Until accepted or retries exhausted]",
+			"rows": [
+				"[Until accepted or retries exhausted]"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 276.640625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Approved] ",
+			"rows": [
+				"[Approved] "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 77.390625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Approved] ",
+			"rows": [
+				"[Approved] "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 85.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Approved]",
+			"rows": [
+				"[Approved]"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 77.390625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Approved]",
+			"rows": [
+				"[Approved]"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 85.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Temporary ",
+			"rows": [
+				"[Temporary "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 80.03125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Temporary ",
+			"rows": [
+				"[Temporary "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 87.9296875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "failure] ",
+			"rows": [
+				"failure] "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 48.03125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "failure] ",
+			"rows": [
+				"failure] "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 52.609375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Temporary",
+			"rows": [
+				"[Temporary"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 80.03125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Temporary",
+			"rows": [
+				"[Temporary"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 87.9296875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Temporary failure]",
+			"rows": [
+				"[Temporary failure]"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 132.5,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "[Temporary failure]",
+			"rows": [
+				"[Temporary failure]"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 145.03125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "labelText",
+			"parent_id": "",
+			"text": "alt",
+			"rows": [],
+			"box": {
+				"x": 166.8359375,
+				"y": 289.359375,
+				"width": 18.328125,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "loopText",
+			"parent_id": "",
+			"text": "[Approved]",
+			"rows": [
+				"[Approved]"
+			],
+			"box": {
+				"x": 349.171875,
+				"y": 283,
+				"width": 85.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "sectionTitle",
+			"parent_id": "",
+			"text": "[Temporary failure]",
+			"rows": [],
+			"box": {
+				"x": 294.234375,
+				"y": 463,
+				"width": 145.03125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "loopText",
+			"parent_id": "",
+			"text": "[Approved]",
+			"rows": [
+				"[Approved]"
+			],
+			"box": {
+				"x": 349.171875,
+				"y": 283,
+				"width": 85.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "labelText",
+			"parent_id": "",
+			"text": "loop",
+			"rows": [],
+			"box": {
+				"x": 149.5703125,
+				"y": 194.359375,
+				"width": 32.859375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "loopText",
+			"parent_id": "",
+			"text": "[Until accepted or retries exhausted]",
+			"rows": [
+				"[Until accepted or retries exhausted]"
+			],
+			"box": {
+				"x": 253.4296875,
+				"y": 188,
+				"width": 276.640625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Place an order",
+			"rows": [],
+			"box": {
+				"x": 124.2578125,
+				"y": 95.359375,
+				"width": 109.484375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Authorize the card payment",
+			"rows": [],
+			"box": {
+				"x": 320.0703125,
+				"y": 240.359375,
+				"width": 209.859375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Authorization reference",
+			"rows": [],
+			"box": {
+				"x": 341.8984375,
+				"y": 335.359375,
+				"width": 178.203125,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Persist the order and reserve stock",
+			"rows": [],
+			"box": {
+				"x": 160.5390625,
+				"y": 385.359375,
+				"width": 265.140625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Please retry later",
+			"rows": [],
+			"box": {
+				"x": 368.890625,
+				"y": 510.359375,
+				"width": 128.21875,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "Order confirmation",
+			"rows": [],
+			"box": {
+				"x": 111.46875,
+				"y": 580.359375,
+				"width": 143.0625,
+				"height": 20.015625
+			}
+		}
+	],
+	"rendering": {
+		"view_box": {
+			"x": -50,
+			"y": -50,
+			"width": 744.5,
+			"height": 798
+		},
+		"elements": [
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "Payment provider",
+				"box": {
+					"x": 491.5,
+					"y": 631,
+					"width": 153,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-bottom",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "491.5",
+					"y": "631",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "153",
+					"height": "76",
+					"name": "Pay",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-bottom",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(251, 146, 60); fill: rgb(255, 247, 237);"
+				},
+				"text": "",
+				"box": {
+					"x": 491.5,
+					"y": 631,
+					"width": 153,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 247, 237)",
+					"stroke": "rgb(251, 146, 60)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "568",
+					"y": "669",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "Payment provider",
+				"box": {
+					"x": 501.328125,
+					"y": 659,
+					"width": 133.34375,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "568",
+					"dy": "0"
+				},
+				"text": "Payment provider",
+				"box": {
+					"x": 501.328125,
+					"y": 659,
+					"width": 133.34375,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "Checkout service",
+				"box": {
+					"x": 212,
+					"y": 631,
+					"width": 152,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-bottom",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "212",
+					"y": "631",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "152",
+					"height": "76",
+					"name": "Shop",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-bottom",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(45, 212, 191); fill: rgb(240, 253, 250);"
+				},
+				"text": "",
+				"box": {
+					"x": 212,
+					"y": 631,
+					"width": 152,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(240, 253, 250)",
+					"stroke": "rgb(45, 212, 191)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "288",
+					"y": "669",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "Checkout service",
+				"box": {
+					"x": 221.890625,
+					"y": 659,
+					"width": 132.21875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "288",
+					"dy": "0"
+				},
+				"text": "Checkout service",
+				"box": {
+					"x": 221.890625,
+					"y": 659,
+					"width": 132.21875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "",
+				"box": {
+					"x": 0,
+					"y": 0,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "Payment provider",
+				"box": {
+					"x": 491.5,
+					"y": 0,
+					"width": 153,
+					"height": 631
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor2",
+				"class": "actor-line 200",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "actor2",
+					"x1": "568",
+					"y1": "76",
+					"x2": "568",
+					"y2": "631",
+					"class": "actor-line 200",
+					"stroke-width": "0.5px",
+					"stroke": "#999",
+					"name": "Pay",
+					"data-et": "life-line",
+					"data-id": "Pay"
+				},
+				"text": "",
+				"box": {
+					"x": 568,
+					"y": 76,
+					"width": 0,
+					"height": 555
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "root-2",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "root-2",
+					"data-look": "neo",
+					"data-et": "participant",
+					"data-type": "participant",
+					"data-id": "Pay"
+				},
+				"text": "Payment provider",
+				"box": {
+					"x": 491.5,
+					"y": 0,
+					"width": 153,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-top",
+				"parent_id": "root-2",
+				"parent_class": "",
+				"attributes": {
+					"x": "491.5",
+					"y": "0",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "153",
+					"height": "76",
+					"name": "Pay",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-top",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(251, 146, 60); fill: rgb(255, 247, 237);"
+				},
+				"text": "",
+				"box": {
+					"x": 491.5,
+					"y": 0,
+					"width": 153,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 247, 237)",
+					"stroke": "rgb(251, 146, 60)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "root-2",
+				"parent_class": "",
+				"attributes": {
+					"x": "568",
+					"y": "38",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "Payment provider",
+				"box": {
+					"x": 501.328125,
+					"y": 28,
+					"width": 133.34375,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "568",
+					"dy": "0"
+				},
+				"text": "Payment provider",
+				"box": {
+					"x": 501.328125,
+					"y": 28,
+					"width": 133.34375,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "Checkout service",
+				"box": {
+					"x": 212,
+					"y": 0,
+					"width": 152,
+					"height": 631
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor1",
+				"class": "actor-line 200",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "actor1",
+					"x1": "288",
+					"y1": "76",
+					"x2": "288",
+					"y2": "631",
+					"class": "actor-line 200",
+					"stroke-width": "0.5px",
+					"stroke": "#999",
+					"name": "Shop",
+					"data-et": "life-line",
+					"data-id": "Shop"
+				},
+				"text": "",
+				"box": {
+					"x": 288,
+					"y": 76,
+					"width": 0,
+					"height": 555
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "root-1",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "root-1",
+					"data-look": "neo",
+					"data-et": "participant",
+					"data-type": "participant",
+					"data-id": "Shop"
+				},
+				"text": "Checkout service",
+				"box": {
+					"x": 212,
+					"y": 0,
+					"width": 152,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-top",
+				"parent_id": "root-1",
+				"parent_class": "",
+				"attributes": {
+					"x": "212",
+					"y": "0",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "152",
+					"height": "76",
+					"name": "Shop",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-top",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(45, 212, 191); fill: rgb(240, 253, 250);"
+				},
+				"text": "",
+				"box": {
+					"x": 212,
+					"y": 0,
+					"width": 152,
+					"height": 76
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(240, 253, 250)",
+					"stroke": "rgb(45, 212, 191)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "root-1",
+				"parent_class": "",
+				"attributes": {
+					"x": "288",
+					"y": "38",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "Checkout service",
+				"box": {
+					"x": 221.890625,
+					"y": 28,
+					"width": 132.21875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "288",
+					"dy": "0"
+				},
+				"text": "Checkout service",
+				"box": {
+					"x": 221.890625,
+					"y": 28,
+					"width": 132.21875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "",
+				"box": {
+					"x": 75,
+					"y": 76,
+					"width": 0,
+					"height": 555
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor0",
+				"class": "actor-line 200",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "actor0",
+					"x1": "75",
+					"y1": "76",
+					"x2": "75",
+					"y2": "631",
+					"class": "actor-line 200",
+					"stroke-width": "0.5px",
+					"stroke": "#999",
+					"name": "Customer",
+					"data-et": "life-line",
+					"data-id": "Customer"
+				},
+				"text": "",
+				"box": {
+					"x": 75,
+					"y": 76,
+					"width": 0,
+					"height": 555
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "",
+				"box": {
+					"x": 0,
+					"y": 0,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "",
+				"box": {
+					"x": 283,
+					"y": 128,
+					"width": 10,
+					"height": 483
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "activation0",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "283",
+					"y": "128",
+					"fill": "#EDF2AE",
+					"stroke": "#666",
+					"width": "10",
+					"height": "483",
+					"class": "activation0",
+					"data-look": "neo",
+					"style": "stroke: rgb(45, 212, 191); fill: rgb(240, 253, 250);"
+				},
+				"text": "",
+				"box": {
+					"x": 283,
+					"y": 128,
+					"width": 10,
+					"height": 483
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(240, 253, 250)",
+					"stroke": "rgb(45, 212, 191)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"data-et": "note",
+					"data-id": "i3"
+				},
+				"text": "All requests carry an idempotency key",
+				"box": {
+					"x": 263,
+					"y": 136,
+					"width": 330,
+					"height": 40
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "note",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "263",
+					"y": "136",
+					"fill": "#EDF2AE",
+					"stroke": "#666",
+					"width": "330",
+					"height": "40",
+					"class": "note",
+					"data-look": "neo"
+				},
+				"text": "",
+				"box": {
+					"x": 263,
+					"y": 136,
+					"width": 330,
+					"height": 40
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 245, 173)",
+					"stroke": "rgb(250, 204, 21)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "noteText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "428",
+					"y": "141",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "noteText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "All requests carry an idempotency key",
+				"box": {
+					"x": 283.1484375,
+					"y": 145.359375,
+					"width": 289.7109375,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "noteText",
+				"attributes": {
+					"x": "428"
+				},
+				"text": "All requests carry an idempotency key",
+				"box": {
+					"x": 283.1484375,
+					"y": 145.359375,
+					"width": 289.7109375,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "",
+				"box": {
+					"x": 563,
+					"y": 273,
+					"width": 10,
+					"height": 93
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "activation0",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "563",
+					"y": "273",
+					"fill": "#EDF2AE",
+					"stroke": "#666",
+					"width": "10",
+					"height": "93",
+					"class": "activation0",
+					"data-look": "neo",
+					"style": "stroke: rgb(251, 146, 60); fill: rgb(255, 247, 237);"
+				},
+				"text": "",
+				"box": {
+					"x": 563,
+					"y": 273,
+					"width": 10,
+					"height": 93
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 247, 237)",
+					"stroke": "rgb(251, 146, 60)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"data-et": "control-structure",
+					"data-id": "i13"
+				},
+				"text": "alt[Approved][Temporary failure]",
+				"box": {
+					"x": 150.5,
+					"y": 281,
+					"width": 432.5,
+					"height": 270
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "150.5",
+					"y1": "281",
+					"x2": "583",
+					"y2": "281",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 150.5,
+					"y": 281,
+					"width": 432.5,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "583",
+					"y1": "281",
+					"x2": "583",
+					"y2": "551",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 583,
+					"y": 281,
+					"width": 0,
+					"height": 270
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "150.5",
+					"y1": "551",
+					"x2": "583",
+					"y2": "551",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 150.5,
+					"y": 551,
+					"width": 432.5,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "150.5",
+					"y1": "281",
+					"x2": "150.5",
+					"y2": "551",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 150.5,
+					"y": 281,
+					"width": 0,
+					"height": 270
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "150.5",
+					"y1": "461",
+					"x2": "583",
+					"y2": "461",
+					"class": "loopLine",
+					"style": "stroke-dasharray: 3, 3;"
+				},
+				"text": "",
+				"box": {
+					"x": 150.5,
+					"y": 461,
+					"width": 432.5,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "polygon",
+				"id": "",
+				"class": "labelBox",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"points": "150.5,281 200.5,281 200.5,309 192.1,316 150.5,316",
+					"class": "labelBox"
+				},
+				"text": "",
+				"box": {
+					"x": 150.5,
+					"y": 281,
+					"width": 50,
+					"height": 35
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "labelText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "176",
+					"y": "301",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "labelText",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "alt",
+				"box": {
+					"x": 166.8359375,
+					"y": 289.359375,
+					"width": 18.328125,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "loopText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "391.75",
+					"y": "299",
+					"text-anchor": "middle",
+					"class": "loopText",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "[Approved]",
+				"box": {
+					"x": 349.171875,
+					"y": 283,
+					"width": 85.15625,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "loopText",
+				"attributes": {
+					"x": "391.75"
+				},
+				"text": "[Approved]",
+				"box": {
+					"x": 349.171875,
+					"y": 283,
+					"width": 85.15625,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "sectionTitle",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "366.75",
+					"y": "479",
+					"text-anchor": "middle",
+					"class": "sectionTitle",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "[Temporary failure]",
+				"box": {
+					"x": 294.234375,
+					"y": 463,
+					"width": 145.03125,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"data-et": "control-structure",
+					"data-id": "i14"
+				},
+				"text": "loop[Until accepted or retries exhausted]",
+				"box": {
+					"x": 140.5,
+					"y": 186,
+					"width": 452.5,
+					"height": 375
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "140.5",
+					"y1": "186",
+					"x2": "593",
+					"y2": "186",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 140.5,
+					"y": 186,
+					"width": 452.5,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "593",
+					"y1": "186",
+					"x2": "593",
+					"y2": "561",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 593,
+					"y": 186,
+					"width": 0,
+					"height": 375
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "140.5",
+					"y1": "561",
+					"x2": "593",
+					"y2": "561",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 140.5,
+					"y": 561,
+					"width": 452.5,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "loopLine",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x1": "140.5",
+					"y1": "186",
+					"x2": "140.5",
+					"y2": "561",
+					"class": "loopLine"
+				},
+				"text": "",
+				"box": {
+					"x": 140.5,
+					"y": 186,
+					"width": 0,
+					"height": 375
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "polygon",
+				"id": "",
+				"class": "labelBox",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"points": "140.5,186 190.5,186 190.5,214 182.1,221 140.5,221",
+					"class": "labelBox"
+				},
+				"text": "",
+				"box": {
+					"x": 140.5,
+					"y": 186,
+					"width": 50,
+					"height": 35
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "labelText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "166",
+					"y": "206",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "labelText",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "loop",
+				"box": {
+					"x": 149.5703125,
+					"y": 194.359375,
+					"width": 32.859375,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "loopText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "391.75",
+					"y": "204",
+					"text-anchor": "middle",
+					"class": "loopText",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "[Until accepted or retries exhausted]",
+				"box": {
+					"x": 253.4296875,
+					"y": 188,
+					"width": 276.640625,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "loopText",
+				"attributes": {
+					"x": "391.75"
+				},
+				"text": "[Until accepted or retries exhausted]",
+				"box": {
+					"x": 253.4296875,
+					"y": 188,
+					"width": 276.640625,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "actor-man actor-top",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"class": "actor-man actor-top",
+					"name": "Customer",
+					"data-et": "participant",
+					"data-type": "actor",
+					"data-id": "Customer",
+					"style": "stroke: rgb(232, 121, 249); fill: rgb(253, 244, 255);"
+				},
+				"text": "Customer",
+				"box": {
+					"x": 38.1796875,
+					"y": 0,
+					"width": 73.640625,
+					"height": 70
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(253, 244, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor-man-torso0",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-top",
+				"attributes": {
+					"id": "actor-man-torso0",
+					"x1": "75",
+					"y1": "20.307692307692307",
+					"x2": "75",
+					"y2": "33.84615384615385"
+				},
+				"text": "",
+				"box": {
+					"x": 75,
+					"y": 20.30769157409668,
+					"width": 0,
+					"height": 13.538461685180664
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor-man-arms0",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-top",
+				"attributes": {
+					"id": "actor-man-arms0",
+					"x1": "62.815384615384616",
+					"y1": "25.72307692307692",
+					"x2": "87.18461538461538",
+					"y2": "25.72307692307692"
+				},
+				"text": "",
+				"box": {
+					"x": 62.81538391113281,
+					"y": 25.72307777404785,
+					"width": 24.369232177734375,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-top",
+				"attributes": {
+					"x1": "62.815384615384616",
+					"y1": "44",
+					"x2": "75",
+					"y2": "33.84615384615385"
+				},
+				"text": "",
+				"box": {
+					"x": 62.81538391113281,
+					"y": 33.846153259277344,
+					"width": 12.184616088867188,
+					"height": 10.153846740722656
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-top",
+				"attributes": {
+					"x1": "75",
+					"y1": "33.84615384615385",
+					"x2": "85.83076923076923",
+					"y2": "44"
+				},
+				"text": "",
+				"box": {
+					"x": 75,
+					"y": 33.846153259277344,
+					"width": 10.830772399902344,
+					"height": 10.153846740722656
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "circle",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-top",
+				"attributes": {
+					"cx": "75",
+					"cy": "10.153846153846153",
+					"r": "10.153846153846155",
+					"width": "150",
+					"height": "76"
+				},
+				"text": "",
+				"box": {
+					"x": 64.84615325927734,
+					"y": 0,
+					"width": 20.30769157409668,
+					"height": 20.30769157409668
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-man",
+				"parent_id": "",
+				"parent_class": "actor-man actor-top",
+				"attributes": {
+					"x": "75",
+					"y": "60",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-man",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "Customer",
+				"box": {
+					"x": 38.1796875,
+					"y": 50,
+					"width": 73.640625,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-man",
+				"attributes": {
+					"x": "75",
+					"dy": "0"
+				},
+				"text": "Customer",
+				"box": {
+					"x": 38.1796875,
+					"y": 50,
+					"width": 73.640625,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "179",
+					"y": "91",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Place an order",
+				"box": {
+					"x": 124.2578125,
+					"y": 95.359375,
+					"width": 109.484375,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine0",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "82",
+					"y1": "126",
+					"x2": "281",
+					"y2": "126",
+					"class": "messageLine0",
+					"data-et": "message",
+					"data-id": "i1",
+					"data-from": "Customer",
+					"data-to": "Shop",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 82,
+					"y": 126,
+					"width": 199,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "75",
+					"y1": "126",
+					"x2": "75",
+					"y2": "126",
+					"stroke-width": "0",
+					"marker-start": "url(#oracle-sequencenumber)"
+				},
+				"text": "",
+				"box": {
+					"x": 75,
+					"y": 126,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "sequenceNumber",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "75",
+					"y": "130",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"text-anchor": "middle",
+					"class": "sequenceNumber"
+				},
+				"text": "1",
+				"box": {
+					"x": 71.65625,
+					"y": 119,
+					"width": 7,
+					"height": 14
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "425",
+					"y": "236",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Authorize the card payment",
+				"box": {
+					"x": 320.0703125,
+					"y": 240.359375,
+					"width": 209.859375,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine0",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "299",
+					"y1": "271",
+					"x2": "557",
+					"y2": "271",
+					"class": "messageLine0",
+					"data-et": "message",
+					"data-id": "i5",
+					"data-from": "Shop",
+					"data-to": "Pay",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 299,
+					"y": 271,
+					"width": 258,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "284",
+					"y1": "271",
+					"x2": "284",
+					"y2": "271",
+					"stroke-width": "0",
+					"marker-start": "url(#oracle-sequencenumber)"
+				},
+				"text": "",
+				"box": {
+					"x": 284,
+					"y": 271,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "sequenceNumber",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "284",
+					"y": "275",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"text-anchor": "middle",
+					"class": "sequenceNumber"
+				},
+				"text": "2",
+				"box": {
+					"x": 280.65625,
+					"y": 264,
+					"width": 7,
+					"height": 14
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "431",
+					"y": "331",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Authorization reference",
+				"box": {
+					"x": 341.8984375,
+					"y": 335.359375,
+					"width": 178.203125,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine1",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "569",
+					"y1": "366",
+					"x2": "299",
+					"y2": "366",
+					"class": "messageLine1",
+					"data-et": "message",
+					"data-id": "i8",
+					"data-from": "Pay",
+					"data-to": "Shop",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "stroke-dasharray: 3, 3; fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 299,
+					"y": 366,
+					"width": 270,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "572",
+					"y1": "366",
+					"x2": "572",
+					"y2": "366",
+					"stroke-width": "0",
+					"marker-start": "url(#oracle-sequencenumber)"
+				},
+				"text": "",
+				"box": {
+					"x": 572,
+					"y": 366,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "sequenceNumber",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "572",
+					"y": "370",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"text-anchor": "middle",
+					"class": "sequenceNumber"
+				},
+				"text": "3",
+				"box": {
+					"x": 568.65625,
+					"y": 359,
+					"width": 7,
+					"height": 14
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "293",
+					"y": "381",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Persist the order and reserve stock",
+				"box": {
+					"x": 160.5390625,
+					"y": 385.359375,
+					"width": 265.140625,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "path",
+				"id": "",
+				"class": "messageLine0",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"d": "M 293,416 C 353,406 353,446 293,436",
+					"class": "messageLine0",
+					"data-et": "message",
+					"data-id": "i10",
+					"data-from": "Shop",
+					"data-to": "Shop",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"x1": "299",
+					"style": "fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 293,
+					"y": 414.38104248046875,
+					"width": 45,
+					"height": 23.2379150390625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "284",
+					"y1": "416",
+					"x2": "284",
+					"y2": "416",
+					"stroke-width": "0",
+					"marker-start": "url(#oracle-sequencenumber)"
+				},
+				"text": "",
+				"box": {
+					"x": 284,
+					"y": 416,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "sequenceNumber",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "284",
+					"y": "420",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"text-anchor": "middle",
+					"class": "sequenceNumber"
+				},
+				"text": "4",
+				"box": {
+					"x": 280.65625,
+					"y": 409,
+					"width": 7,
+					"height": 14
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "433",
+					"y": "506",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Please retry later",
+				"box": {
+					"x": 368.890625,
+					"y": 510.359375,
+					"width": 128.21875,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine1",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "573",
+					"y1": "541",
+					"x2": "299",
+					"y2": "541",
+					"class": "messageLine1",
+					"data-et": "message",
+					"data-id": "i12",
+					"data-from": "Pay",
+					"data-to": "Shop",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "stroke-dasharray: 3, 3; fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 299,
+					"y": 541,
+					"width": 274,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "568",
+					"y1": "541",
+					"x2": "568",
+					"y2": "541",
+					"stroke-width": "0",
+					"marker-start": "url(#oracle-sequencenumber)"
+				},
+				"text": "",
+				"box": {
+					"x": 568,
+					"y": 541,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "sequenceNumber",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "568",
+					"y": "545",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"text-anchor": "middle",
+					"class": "sequenceNumber"
+				},
+				"text": "5",
+				"box": {
+					"x": 564.65625,
+					"y": 534,
+					"width": 7,
+					"height": 14
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "183",
+					"y": "576",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "Order confirmation",
+				"box": {
+					"x": 111.46875,
+					"y": 580.359375,
+					"width": 143.0625,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine1",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "289",
+					"y1": "611",
+					"x2": "82",
+					"y2": "611",
+					"class": "messageLine1",
+					"data-et": "message",
+					"data-id": "i15",
+					"data-from": "Shop",
+					"data-to": "Customer",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "stroke-dasharray: 3, 3; fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 82,
+					"y": 611,
+					"width": 207,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "292",
+					"y1": "611",
+					"x2": "292",
+					"y2": "611",
+					"stroke-width": "0",
+					"marker-start": "url(#oracle-sequencenumber)"
+				},
+				"text": "",
+				"box": {
+					"x": 292,
+					"y": 611,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "sequenceNumber",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "292",
+					"y": "615",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"text-anchor": "middle",
+					"class": "sequenceNumber"
+				},
+				"text": "6",
+				"box": {
+					"x": 288.65625,
+					"y": 604,
+					"width": 7,
+					"height": 14
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "sans-serif",
+					"font-size": "12px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "actor-man actor-bottom",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"class": "actor-man actor-bottom",
+					"name": "Customer",
+					"style": "stroke: rgb(232, 121, 249); fill: rgb(253, 244, 255);"
+				},
+				"text": "Customer",
+				"box": {
+					"x": 38.1796875,
+					"y": 637,
+					"width": 73.640625,
+					"height": 70
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(253, 244, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor-man-torso2",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-bottom",
+				"attributes": {
+					"id": "actor-man-torso2",
+					"x1": "75",
+					"y1": "657.3076923076923",
+					"x2": "75",
+					"y2": "670.8461538461538"
+				},
+				"text": "",
+				"box": {
+					"x": 75,
+					"y": 657.3076782226562,
+					"width": 0,
+					"height": 13.5384521484375
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor-man-arms2",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-bottom",
+				"attributes": {
+					"id": "actor-man-arms2",
+					"x1": "62.815384615384616",
+					"y1": "662.723076923077",
+					"x2": "87.18461538461538",
+					"y2": "662.723076923077"
+				},
+				"text": "",
+				"box": {
+					"x": 62.81538391113281,
+					"y": 662.7230834960938,
+					"width": 24.369232177734375,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-bottom",
+				"attributes": {
+					"x1": "62.815384615384616",
+					"y1": "681",
+					"x2": "75",
+					"y2": "670.8461538461538"
+				},
+				"text": "",
+				"box": {
+					"x": 62.81538391113281,
+					"y": 670.8461303710938,
+					"width": 12.184616088867188,
+					"height": 10.15386962890625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-bottom",
+				"attributes": {
+					"x1": "75",
+					"y1": "670.8461538461538",
+					"x2": "85.83076923076923",
+					"y2": "681"
+				},
+				"text": "",
+				"box": {
+					"x": 75,
+					"y": 670.8461303710938,
+					"width": 10.830772399902344,
+					"height": 10.15386962890625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "circle",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor-man actor-bottom",
+				"attributes": {
+					"cx": "75",
+					"cy": "647.1538461538462",
+					"r": "10.153846153846155",
+					"width": "150",
+					"height": "76"
+				},
+				"text": "",
+				"box": {
+					"x": 64.84615325927734,
+					"y": 637,
+					"width": 20.30769157409668,
+					"height": 20.30769157409668
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-man",
+				"parent_id": "",
+				"parent_class": "actor-man actor-bottom",
+				"attributes": {
+					"x": "75",
+					"y": "697",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-man",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "Customer",
+				"box": {
+					"x": 38.1796875,
+					"y": 687,
+					"width": 73.640625,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-man",
+				"attributes": {
+					"x": "75",
+					"dy": "0"
+				},
+				"text": "Customer",
+				"box": {
+					"x": 38.1796875,
+					"y": 687,
+					"width": 73.640625,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "222.25",
+					"y": "-25"
+				},
+				"text": "Checkout with payment retry",
+				"box": {
+					"x": 222.25,
+					"y": -39,
+					"width": 191.5859375,
+					"height": 17
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			}
+		]
+	},
+	"measurements": [
+		{
+			"kind": "sequence-message",
+			"id": "1",
+			"text": "Place an order",
+			"width": 109.484375,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "2",
+			"text": "",
+			"width": 0,
+			"height": 0
+		},
+		{
+			"kind": "sequence-message",
+			"id": "3",
+			"text": "All requests carry an idempotency key",
+			"width": 289.7109375,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "4",
+			"text": "Until accepted or retries exhausted",
+			"width": 264.96875,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "5",
+			"text": "Authorize the card payment",
+			"width": 209.859375,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "6",
+			"text": "",
+			"width": 0,
+			"height": 0
+		},
+		{
+			"kind": "sequence-message",
+			"id": "7",
+			"text": "Approved",
+			"width": 73.484375,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "8",
+			"text": "Authorization reference",
+			"width": 178.203125,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "9",
+			"text": "",
+			"width": 0,
+			"height": 0
+		},
+		{
+			"kind": "sequence-message",
+			"id": "10",
+			"text": "Persist the order and reserve stock",
+			"width": 265.140625,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "11",
+			"text": "Temporary failure",
+			"width": 133.546875,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "12",
+			"text": "Please retry later",
+			"width": 128.21875,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "13",
+			"text": "",
+			"width": 0,
+			"height": 0
+		},
+		{
+			"kind": "sequence-message",
+			"id": "14",
+			"text": "",
+			"width": 0,
+			"height": 0
+		},
+		{
+			"kind": "sequence-message",
+			"id": "15",
+			"text": "Order confirmation",
+			"width": 143.0625,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "16",
+			"text": "",
+			"width": 0,
+			"height": 0
+		}
+	],
+	"layout": {
+		"view_box": {
+			"x": -50,
+			"y": -50,
+			"width": 744.5,
+			"height": 798
+		}
+	},
+	"svg_sha256": "89e179f425687cb3ea5718b9ffc6dc898547247c1aa3402600c47b93fbabe4ce"
+}

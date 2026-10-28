@@ -99,8 +99,8 @@ Release := [].{
 	examples_archive = |version| "${Release.examples_root(version)}.zip"
 
 	## Whether `entry` may appear in the examples archive whose top-level
-	## directory is `root`: the README, the case specification, or a Roc file
-	## of one example directory, `examples/<dir>/<file>.roc`.
+	## directory is `root`: the README, the case specification, or a Roc or
+	## Mermaid source file directly inside one example directory.
 	valid_examples_entry : Str, Str -> Bool
 	valid_examples_entry = |root, entry|
 		if entry == "${root}/README.md" or entry == "${root}/spec.json" {
@@ -108,7 +108,8 @@ Release := [].{
 		} else if entry.starts_with("${root}/examples/") {
 			match Str.split_on(entry.drop_prefix("${root}/examples/"), "/") {
 				[directory, ""] => Text.is_plain(directory, "_-")
-				[directory, file] => Text.is_plain(directory, "_-") and file.ends_with(".roc") and Text.is_plain(file.drop_suffix(".roc"), "_-")
+				[directory, file] => Text.is_plain(directory, "_-") and ((file.ends_with(".roc") and Text.is_plain(file.drop_suffix(".roc"), "_-"))
+					or (file.ends_with(".mmd") and Text.is_plain(file.drop_suffix(".mmd"), "_-")))
 				[""] => Bool.True
 				_ => Bool.False
 			}
@@ -220,6 +221,8 @@ expect Release.valid_examples_entry(root, "${root}/README.md") and Release.valid
 expect Release.valid_examples_entry(root, "${root}/examples/org_chart/main.roc") and Release.valid_examples_entry(root, "${root}/examples/svg/Svg.roc")
 expect Release.valid_examples_entry(root, "${root}/examples/svg/") and Release.valid_examples_entry(root, "${root}/examples/")
 expect !Release.valid_examples_entry(root, "${root}/examples/org_chart/output.svg")
+expect Release.valid_examples_entry(root, "${root}/examples/mermaid_sequence/chart.mmd")
+expect !Release.valid_examples_entry(root, "${root}/examples/mermaid_sequence/../chart.mmd") and !Release.valid_examples_entry(root, "${root}/examples/mermaid_sequence/chart.mmd.exe")
 expect !Release.valid_examples_entry(root, "${root}/examples/../escape/main.roc") and !Release.valid_examples_entry(root, "${root}/examples/a/b/main.roc")
 expect !Release.valid_examples_entry(root, "/etc/passwd") and !Release.valid_examples_entry(root, "other/examples/svg/Svg.roc")
 expect Release.find_docs_archive("0.2.0", ["Abc123.tar.zst", "roc-graph-layout-docs-0.2.0.zip"]) == Zip("roc-graph-layout-docs-0.2.0.zip")

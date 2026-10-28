@@ -1,7 +1,7 @@
 import Flowchart
 import FlowGeometry
 import FlowLayoutAdjust
-import FlowLayoutElk
+import FlowCore
 
 ## Where every part of a flowchart goes, given how much room each part
 ## needs. The arrangement follows Mermaid's default flowchart layout: nodes
@@ -20,7 +20,7 @@ FlowLayout :: {}.{
 	## or unusable size counts as zero.
 	layout : Flowchart.Diagram, FlowGeometry.Sizes -> FlowGeometry.Geometry
 	layout = |diagram, sizes| {
-		raw = FlowLayoutElk.layout_raw(diagram, sizes)
+		raw = FlowCore.layout(diagram, sizes)
 		adjusted = FlowLayoutAdjust.adjust(diagram, sizes, raw)
 		# A label's background reaches 2 past its text on every side.
 		label_sizes = diagram.edges.map_with_index(

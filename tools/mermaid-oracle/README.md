@@ -27,6 +27,35 @@ roc test package-mermaid/OracleFlowchart.roc
 A case named `unsupported-*` must be accepted by Mermaid and reported as
 `Unsupported` by the Roc reader; every other case must agree exactly.
 
+## Canonical browser environment
+
+Oracle measurements and pixel comparisons use pinned Chrome on Linux x64.
+Chrome on macOS uses different glyph bounds for the same font, so it cannot
+serve as an interchangeable reference for deterministic native geometry.
+Reference generation and raster comparisons share the same browser session
+adapter and verify the actual browser revision and Linux user agent.
+
+On Linux x64 the tools launch the installed pinned browser. Other hosts can
+set `MERMAID_ORACLE_BROWSER_URL` to a localhost debugging URL for that Linux
+browser. Each tool owns an isolated browser context; closing a tool does not
+stop a shared remote browser. The native Roc probe still executes on its host,
+so this does not substitute a renderer for the native implementation.
+
+For example, from the repository root on macOS:
+
+```sh
+docker build --platform linux/amd64 -t roc-mermaid-oracle tools/mermaid-oracle
+docker run --platform linux/amd64 --rm -d --name roc-mermaid-oracle -p 127.0.0.1:19222:9222 roc-mermaid-oracle
+export MERMAID_ORACLE_BROWSER_URL=http://127.0.0.1:19222
+node tools/mermaid-oracle/oracle.mjs check tests/mermaid/flowchart
+# Run the validation commands below with the same environment variable.
+docker stop roc-mermaid-oracle
+```
+
+The container installs the browser revision from the committed Puppeteer lockfile.
+Its debugging port is published on localhost only.
+
+
 ## Differential fuzzing
 
 `package-mermaid/fuzz_flowchart_parse.roc` takes raw bytes as the source
@@ -145,3 +174,80 @@ which.
 The sandbox is disabled when launching Chrome because common Linux hosts
 block the unprivileged namespaces it needs; the page loads only the local
 Mermaid bundle and font, and every network request is refused.
+
+## Closing the loop for every family
+
+`oracle_dump.roc` is a native authoring tool, excluded from the public package
+exports. Its inspectors observe the production parser and layout phases;
+`Mermaid.svg_with` supplies the public end-to-end SVG.
+
+```sh
+roc build package-mermaid/oracle_dump.roc --output=/tmp/mermaid-oracle-dump
+node --test tools/mermaid-oracle/validate.test.mjs
+node tools/mermaid-oracle/validate.mjs /tmp/mermaid-oracle-dump /tmp/mermaid-oracle-results
+```
+
+The report separates exact source semantics, native measurement and placement,
+placement with oracle-measured input sizes, and public SVG pixel differences.
+The sized control replaces only node and layout-label dimensions: it never
+copies reference positions, routes, or output container bounds. Pixel scores
+use the pinned font/browser, one CSS pixel of spatial tolerance, and no image
+rescaling. Strict and best-translation scores remain visible separately.
+Missing/stale records, crashes, unsupported accepted sources outside the explicit
+scope list, semantic differences, invalid geometry and unconsumed size overrides
+fail. Every family must include an accepted rendered comparison. Oracle-sized
+node and group boxes must agree within one CSS pixel. Flowchart layers, ranks
+and ordering must agree, with no additional crossings. New-family public SVGs
+must have at most 5% unmatched ink and view dimensions within one CSS pixel;
+these limits are fixed independently of the current results. Raw flowchart
+pixels remain visible separately because the documented text-preservation
+extensions and host font measurements can change end-to-end geometry.
+
+Use `--families=sequence,entity,class,state` to narrow an investigation and
+`--report-only` to collect every failure without a failing process exit. The
+latter must never be used as a CI acceptance gate. Reports include every
+attempted source and all failures rather than silently skipping unsupported
+or unrendered diagrams.
+
+Theme defaults now target the pinned renderer. Typography retains role-specific
+sizes (for example, sequence actors are 16px at the shared 14px base).
+`wrapping: FamilyDefault` follows each diagram role; `Wrap` explicitly uses
+`max_label_width`, and `NoWrap` disables wrapping. `corners` similarly separates
+family defaults from explicit rounded or square nodes. An empty `node_palette`
+selects the family's reference palette; a one-entry list selects flat actor,
+table or state-composite colors. Sequence-specific colors are supplied through
+`message_colors`; transition/relationship backings use
+`transition_label_background`.
+
+Reference records must be refreshed intentionally. A refresh on another host
+can expose differences in glyph bounds and system fallback fonts even with
+Inter and Chrome pinned. Do not regenerate numerical expectations or widen
+thresholds solely to make such a refresh green; use the sized control and
+inspect the drift first. The older generated flowchart sizing expectations
+retain their original reference observations while this cross-host audit runs.
+
+CI generates fresh references independently on the Linux runner before checking
+freshness and comparing native results. This is a live oracle gate, not a
+comparison against implementation-generated golden images. Committed records
+retain their host provenance for inspection and local reproducibility. The CI
+artifact contains the complete JSON report, both SVGs and image differences,
+and is uploaded on failure too.
+
+The recorder creates a fresh browser page for each source. Mermaid memoizes
+text measurements; reusing a page made diagnostic traces depend on earlier
+cases even when the final SVG was unchanged. Reordering and independently
+re-recording flow, sequence, class and state samples is checked byte for byte.
+
+Raster cells are padded to integer dimensions while the SVG view-box extent
+is expanded by that same padding, preserving exactly one CSS pixel per SVG
+unit. Content is clipped to its original extent. The comparator asserts the
+root transformation has unit scale; it never rounds only the viewport and
+silently rescales the image. A fractional-view-box integration test guards it.
+The report retains the native binary hash and comparison-tool hashes.
+
+`validate.integration.test.mjs` exercises missing/stale/zero coverage, native
+read/profile failures, serialized null geometry, unconsumed dimensions and
+missing rendered text. Its dishonest renderers can supply the exact oracle
+SVG, demonstrating that model/geometry checks are independent of image scores.
+Run it with `ORACLE_DUMP=/tmp/mermaid-oracle-dump node --test
+ tools/mermaid-oracle/validate.integration.test.mjs` after building the probe.

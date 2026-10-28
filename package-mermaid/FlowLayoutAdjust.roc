@@ -1,7 +1,6 @@
 import Flowchart
 import FlowGeometry
-import FlowLayoutElk
-import FlowLayoutGraph
+import FlowCore
 
 ## What Mermaid does to the layout engine's result before drawing it:
 ## subgraph frames are pulled in to their content, empty subgraphs and tiny
@@ -53,15 +52,51 @@ FlowLayoutAdjust :: {}.{
 
 	## Apply Mermaid's adjustments. The result is index-aligned with the
 	## diagram, in the engine's coordinates.
-	adjust : Flowchart.Diagram, FlowGeometry.Sizes, FlowLayoutElk.Raw -> { nodes : List(Rect), groups : List(Rect), edges : List({ points : List(Point), label : [None, Some(Point)] }) }
+	adjust : Flowchart.Diagram, FlowGeometry.Sizes, FlowCore.Raw -> { nodes : List(Rect), groups : List(Rect), edges : List({ points : List(Point), label : [None, Some(Point)] }) }
 	adjust = |diagram, sizes, raw| {
+		input = {
+			nodes: diagram.nodes.map(|node| { shape: node.shape, container: node.container }),
+			groups: diagram.groups.map_with_index(
+				|group, index| {
+					title = sizes.group_titles.get(index) ?? { lines: [], width: 0, height: 0 }
+					{ container: group.container, title_width: FlowLayoutAdjust.finite(title.width) + FlowLayoutAdjust.title_padding }
+				},
+			),
+			edges: diagram.edges.map_with_index(
+				|edge, index| {
+					label = match sizes.edge_labels.get(index) ?? None {
+						Some(block) => if edge.label.is_empty() {
+							None
+						} else {
+							FlowLayoutAdjust.label_size(block.width, block.height)
+						}
+						None => None
+					}
+					{ from: FlowLayoutAdjust.end_of(edge.from), to: FlowLayoutAdjust.end_of(edge.to), start_offset: FlowLayoutAdjust.marker_offset(edge.start), end_offset: FlowLayoutAdjust.marker_offset(edge.end), label }
+				},
+			),
+		}
+		FlowLayoutAdjust.adjust_boxes(input, raw)
+	}
+
+	Input : {
+		nodes : List({ shape : Flowchart.Shape, container : [Root, Group(U64)] }),
+		groups : List({ container : [Root, Group(U64)], title_width : F64 }),
+		edges : List({ from : End, to : End, start_offset : F64, end_offset : F64, label : [None, Some(Size)] }),
+	}
+	label_size : F64, F64 -> [None, Some(Size)]
+	label_size = |width, height| if FlowLayoutAdjust.finite(width) > 0 and FlowLayoutAdjust.finite(height) > 0 {
+		Some({ width: FlowLayoutAdjust.finite(width) + 4, height: FlowLayoutAdjust.finite(height) + 4 })
+	} else {
+		None
+	}
+
+	## Shared paint adjustments consume shapes, measured label rectangles and
+	## endpoint offsets. Class/ER callers need no fabricated flowchart model.
+	adjust_boxes : Input, FlowCore.Raw -> { nodes : List(Rect), groups : List(Rect), edges : List({ points : List(Point), label : [None, Some(Point)] }) }
+	adjust_boxes = |diagram, raw| {
 		group_count = diagram.groups.len()
-		titles = FlowLayoutAdjust.upto(group_count).map(
-			|g| {
-				block = sizes.group_titles.get(g) ?? { lines: [], width: 0, height: 0 }
-				FlowLayoutAdjust.finite(block.width) + FlowLayoutAdjust.title_padding
-			},
-		)
+		titles = diagram.groups.map(|group| group.title_width)
 		parents = diagram.groups.map(
 			|group|
 				match group.container {
@@ -76,7 +111,7 @@ FlowLayoutAdjust :: {}.{
 					Root => FlowLayoutAdjust.root
 				},
 		)
-		ends = diagram.edges.map(|edge| (FlowLayoutAdjust.end_of(edge.from), FlowLayoutAdjust.end_of(edge.to)))
+		ends = diagram.edges.map(|edge| (edge.from, edge.to))
 		frames = FlowLayoutAdjust.even_frames(raw, parents, node_parents, ends, titles)
 		aligned = FlowLayoutAdjust.align_degenerate(raw.nodes, frames, raw.edges, ends, titles)
 		nodes = aligned.nodes
@@ -124,7 +159,7 @@ FlowLayoutAdjust :: {}.{
 			}
 		shape_of = |end|
 			match end {
-				Node(i) => Some((diagram.nodes.get(i) ?? { id: "", label: "", shape: Rectangle, container: Root, classes: [], styles: [] }).shape)
+				Node(i) => Some((diagram.nodes.get(i) ?? { shape: Rectangle, container: Root }).shape)
 				Group(_) => None
 			}
 		clipped = raw.edges.map_with_index(
@@ -132,11 +167,11 @@ FlowLayoutAdjust :: {}.{
 				(from, to) = ends.get(e) ?? (Node(0), Node(0))
 				edge = diagram.edges.get(e)
 				start_marker = match edge {
-					Ok(d) => FlowLayoutAdjust.marker_offset(d.start)
+					Ok(d) => d.start_offset
 					Err(_) => 0
 				}
 				end_marker = match edge {
-					Ok(d) => FlowLayoutAdjust.marker_offset(d.end)
+					Ok(d) => d.end_offset
 					Err(_) => 0
 				}
 				points = FlowLayoutAdjust.clip(geometry.points, { bounds: bounds_of(from), shape: shape_of(from) }, { bounds: bounds_of(to), shape: shape_of(to) })
@@ -146,19 +181,7 @@ FlowLayoutAdjust :: {}.{
 				}
 			},
 		)
-		label_sizes = diagram.edges.map_with_index(
-			|edge, e|
-				match sizes.edge_labels.get(e) ?? None {
-					Some(block) =>
-						if edge.label != "" and FlowLayoutAdjust.finite(block.width) > 0 and FlowLayoutAdjust.finite(block.height) > 0 {
-							# The label box Mermaid measures: its text and two pixels around it.
-							Some({ width: FlowLayoutAdjust.finite(block.width) + 4, height: FlowLayoutAdjust.finite(block.height) + 4 })
-						} else {
-							None
-						}
-					None => None
-				},
-		)
+		label_sizes = diagram.edges.map(|edge| edge.label)
 		straightened = FlowLayoutAdjust.straighten(clipped, label_sizes)
 		separated = FlowLayoutAdjust.separate_labels(straightened, ends, label_sizes)
 		{ nodes, groups: drawn, edges: separated }
@@ -196,17 +219,44 @@ FlowLayoutAdjust :: {}.{
 		$out
 	}
 
+	## Stable counting order of bounded hierarchy depths, deepest first.
+	## Depth is at most the number of groups; construction never comparison
+	## sorts a hot list or depends on sort pivot/ownership behavior.
+	depth_order : List(U64) -> List(U64)
+	depth_order = |depths| {
+		maximum = depths.fold(0, |acc, depth| acc.max(depth))
+		var $counts = List.repeat(0.U64, maximum + 1)
+		for depth in depths {
+			$counts = $counts.set(depth, ($counts.get(depth) ?? 0) + 1) ?? []
+		}
+		var $starts = List.repeat(0.U64, maximum + 1)
+		var $next = 0.U64
+		for step in 0..<(maximum + 1) {
+			depth = maximum - step
+			$starts = $starts.set(depth, $next) ?? []
+			$next = $next + ($counts.get(depth) ?? 0)
+		}
+		var $order = List.repeat(0.U64, depths.len())
+		for i in 0..<depths.len() {
+			depth = depths.get(i) ?? 0
+			at = $starts.get(depth) ?? 0
+			$order = $order.set(at, i) ?? []
+			$starts = $starts.set(depth, at + 1) ?? []
+		}
+		$order
+	}
+
 	## Pull each subgraph's frame in to its content: its members, the routes
 	## of edges inside it, and where edges meet it, plus padding; never past
 	## the engine's frame, never above its top, and at least as wide as its
 	## title. Inner subgraphs first.
-	even_frames : FlowLayoutElk.Raw, List(U64), List(U64), List((End, End)), List(F64) -> List(Rect)
+	even_frames : FlowCore.Raw, List(U64), List(U64), List((End, End)), List(F64) -> List(Rect)
 	even_frames = |raw, parents, node_parents, ends, titles| {
 		group_count = parents.len()
 		depth = |g| FlowLayoutAdjust.ancestors(Group(g), parents, node_parents).len()
 		# Deepest first; the merge sort keeps declaration order among equals.
 		depths = FlowLayoutAdjust.upto(group_count).map(depth)
-		order = FlowLayoutGraph.sort_by(FlowLayoutAdjust.upto(group_count), |a, b| (depths.get(b) ?? 0).to_i64_wrap() - (depths.get(a) ?? 0).to_i64_wrap())
+		order = FlowLayoutAdjust.depth_order(depths)
 		end_chains = ends.map(|(from, to)| (FlowLayoutAdjust.ancestors(from, parents, node_parents), FlowLayoutAdjust.ancestors(to, parents, node_parents)))
 		var $frames = raw.groups
 		for g in order {

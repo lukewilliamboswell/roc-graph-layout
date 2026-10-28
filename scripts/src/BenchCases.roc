@@ -25,7 +25,7 @@ BenchCases := [].{
 
 	## The layout families the benchmark executable implements.
 	families : List(Str)
-	families = ["tree_tidy", "tree_radial", "layered", "circular", "force", "stress", "radial", "constrained", "overlap", "pack", "compound", "route", "metrics_crossings", "metrics_bends"]
+	families = ["tree_tidy", "tree_radial", "layered", "layered_grouped", "circular", "force", "stress", "radial", "constrained", "overlap", "pack", "compound", "route", "metrics_crossings", "metrics_bends"]
 
 	## Read and check every case in `text`, the contents of the file at
 	## `path`. The first problem found is the error, naming its line.

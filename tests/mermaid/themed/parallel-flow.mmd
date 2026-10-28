@@ -1,0 +1,6 @@
+flowchart TD
+    A[Source] -->|Primary dependency| B[Destination]
+    A -->|Secondary dependency| B
+    B -->|Retry| A
+    A --> A
+    Isolated[Disconnected node]

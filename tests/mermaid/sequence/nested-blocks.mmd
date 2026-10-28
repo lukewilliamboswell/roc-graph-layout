@@ -1,0 +1,15 @@
+sequenceDiagram
+    autonumber
+    par First operation
+        A->>B: Request
+        opt Cached
+            B-->>A: Cached response
+        end
+    and Second operation
+        A->>C: Other request
+        critical Reserve resource
+            C->>C: Acquire lock
+        option Resource unavailable
+            C-->>A: Retry
+        end
+    end

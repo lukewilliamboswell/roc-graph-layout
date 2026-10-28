@@ -21,6 +21,8 @@ FlowDraw :: {}.{
 	## lies beneath, since the drawing has no transparency.
 	Theme : {
 		font_size : F64,
+		line_height : F64,
+		corner_radius : F64,
 		background : Drawing.Color,
 		node_fill : Drawing.Color,
 		node_stroke : Drawing.Color,
@@ -42,6 +44,8 @@ FlowDraw :: {}.{
 	mermaid : Theme
 	mermaid = {
 		font_size: 14,
+		line_height: 1.1,
+		corner_radius: 12,
 		background: Drawing.white,
 		node_fill: Drawing.white,
 		node_stroke: Drawing.rgb(0x28253D),
@@ -96,7 +100,7 @@ FlowDraw :: {}.{
 						Ok(block) => block.lines
 						Err(_) => []
 					}
-					$items = $items.concat(FlowDraw.lines(title, rect.x + rect.width / 2, rect.y, theme.font_size, paint.text))
+					$items = $items.concat(FlowDraw.lines_with(title, rect.x + rect.width / 2, rect.y, theme.font_size, paint.text, theme.line_height))
 				}
 				_ => {}
 			}
@@ -127,7 +131,7 @@ FlowDraw :: {}.{
 									}
 									_ => {}
 								}
-							Text(_) => {}
+							Text(_) | StyledText(_) => {}
 						}
 					}
 					$items = $items.concat(drawn)
@@ -339,12 +343,15 @@ FlowDraw :: {}.{
 	## Mermaid spaces label rows: 1.1 em apart, the first baseline 1 em
 	## below the top.
 	lines : List(Str), F64, F64, F64, Drawing.Color -> List(Drawing.Item)
-	lines = |rows, x, top, size, color| {
+	lines = |rows, x, top, size, color| FlowDraw.lines_with(rows, x, top, size, color, 1.1)
+
+	lines_with : List(Str), F64, F64, F64, Drawing.Color, F64 -> List(Drawing.Item)
+	lines_with = |rows, x, top, size, color, line_height| {
 		var $out = []
 		for k in 0..<rows.len() {
 			row = rows.get(k) ?? ""
 			if row != "" {
-				$out = $out.append(Text({ text: row, origin: { x, y: top + size + k.to_f64() * size * 1.1 }, size, align: Center, color }))
+				$out = $out.append(Text({ text: row, origin: { x, y: top + size + k.to_f64() * size * line_height }, size, align: Center, color }))
 			}
 		}
 		$out
@@ -354,6 +361,9 @@ FlowDraw :: {}.{
 	## text) plus 1.1 em for each further row.
 	block_height : U64, F64 -> F64
 	block_height = |rows, size| size * 17 / 14 + (rows.max(1) - 1).to_f64() * size * 1.1
+
+	height_with : U64, F64, F64 -> F64
+	height_with = |rows, size, line_height| size * 17 / 14 + (rows.max(1) - 1).to_f64() * size * line_height
 
 	## Every node's shadow and body (outline and label), in node order.
 	node_layers : Flowchart.Diagram, FlowGeometry.Sizes, FlowGeometry.Geometry, List(GroupPaint), Theme -> { shadows : List(Drawing.Item), bodies : List(Drawing.Item) }
@@ -388,7 +398,12 @@ FlowDraw :: {}.{
 	node_items : Flowchart.Diagram, Flowchart.Node, Drawing.Rect, List(Str), Drawing.Color, Theme -> { shadow : List(Drawing.Item), body : List(Drawing.Item) }
 	node_items = |diagram, node, rect, rows, beneath, theme| {
 		o = FlowDrawStyle.resolve(diagram.classes, node.classes, node.styles, True)
-		outline = FlowDrawShape.outline(node.shape, rect)
+		base_outline = FlowDrawShape.outline(node.shape, rect)
+		outline = if node.shape == Rounded {
+			{ ..base_outline, paths: [Drawing.rounded_rectangle(rect, theme.corner_radius)] }
+		} else {
+			base_outline
+		}
 		paint = FlowDraw.paint_of(o, theme.node_fill, theme.node_stroke, theme.node_stroke_width)
 		color = match o.color {
 			Paint(c) => c
@@ -396,7 +411,7 @@ FlowDraw :: {}.{
 		}
 		cx = rect.x + rect.width / 2 + outline.label_offset.x
 		cy = rect.y + rect.height / 2 + outline.label_offset.y
-		top = cy - FlowDraw.block_height(rows.len(), theme.font_size) / 2
+		top = cy - FlowDraw.height_with(rows.len(), theme.font_size, theme.line_height) / 2
 		# Only the outermost path's shadow can fall outside the node, on
 		# edges; the shadows of paths inside it (a double circle's inner
 		# ring) fall on the node's own fill and are painted with it.
@@ -413,7 +428,7 @@ FlowDraw :: {}.{
 			body: outer
 				.fold([], |acc, path| acc.concat(painted(path)))
 				.concat(FlowDraw.shadowed(theme, inner, paint, beneath))
-				.concat(FlowDraw.lines(rows, cx, top, theme.font_size, color)),
+				.concat(FlowDraw.lines_with(rows, cx, top, theme.font_size, color, theme.line_height)),
 		}
 	}
 
@@ -425,7 +440,7 @@ FlowDraw :: {}.{
 		if block.lines.all(|row| row == "") {
 			[]
 		} else {
-			height = FlowDraw.block_height(block.lines.len(), theme.font_size)
+			height = FlowDraw.height_with(block.lines.len(), theme.font_size, theme.line_height)
 			top = at.y - height / 2
 			box = { x: at.x - block.width / 2 - 2, y: top - 2, width: block.width + 4, height: height + 4 }
 			color = match o.color {
@@ -441,7 +456,7 @@ FlowDraw :: {}.{
 			)
 			FlowDraw.shape(Drawing.rectangle(box), { fill: Fill(background), stroke: NoStroke })
 				.concat(show_through)
-				.concat(FlowDraw.lines(block.lines, at.x, top, theme.font_size, color))
+				.concat(FlowDraw.lines_with(block.lines, at.x, top, theme.font_size, color, theme.line_height))
 		}
 	}
 
@@ -539,7 +554,7 @@ expect {
 	is_text = |item|
 		match item {
 			Shape(_) => False
-			Text(_) => True
+			Text(_) | StyledText(_) => True
 		}
 	picture.items.len() == 1 and picture.items.all(is_text)
 }
@@ -585,7 +600,7 @@ expect {
 						(Fill(c), _) => if (c == shadow_color) "shadow" else "node"
 						_ => "other"
 					}
-				Text(_) => "text"
+				Text(_) | StyledText(_) => "text"
 			},
 	)
 	kinds == ["shadow", "shadow", "edge", "node", "text", "node", "text"]

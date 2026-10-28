@@ -1,0 +1,40 @@
+{
+	"schema": 11,
+	"key": "577bdef4b035ab19c89721061a56274f4624e437690d82a42244652edf07e469",
+	"provenance": {
+		"extractor": 11,
+		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
+		"tool_sha256": "64a229f0bbb3d8c7be1e1be6ec0da2a035e2c815e3b527d670ad0b57463c73bd",
+		"measurement_viewport": {
+			"width": 800,
+			"height": 600,
+			"deviceScaleFactor": 1
+		},
+		"browser_context": "fresh page for each source",
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "linux",
+		"architecture": "x64",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "erDiagram\n    direction LR\n    CUSTOMER[Customer account] {\n        int id PK\n        string email UK \"account email\"\n        string? name\n    }\n    ORDER {\n        int id PK\n        int customer_id FK\n        string status\n    }\n    LINE_ITEM {\n        int order_id PK, FK\n        int product_id PK, FK\n        int quantity\n    }\n    PRODUCT {\n        int id PK\n        string? name\n        decimal price\n    }\n    CUSTOMER ||--o{ ORDER : places\n    ORDER ||--|{ LINE_ITEM : contains\n    PRODUCT ||..o{ LINE_ITEM : references\n",
+	"accepted": false,
+	"error": "Parse error on line 3:\n...  CUSTOMER[Customer account] {        i\n-----------------------^\nExpecting 'SQE', got 'UNICODE_TEXT'"
+}

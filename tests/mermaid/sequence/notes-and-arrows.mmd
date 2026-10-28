@@ -1,0 +1,14 @@
+sequenceDiagram
+    actor User as System operator
+    participant API as Very long API participant name that should wrap cleanly
+    participant Worker
+    Note left of User: A note outside the first column
+    User->>API: Start a very long operation with a request label that wraps into several lines
+    API-)Worker: Asynchronous job
+    Worker-->>API: Completed
+    API<<-->>Worker: Synchronize
+    API--xWorker: Cancel obsolete work
+    Worker->>Worker: Persist retry state
+    Note right of Worker: A note outside the last column
+    Note over User,Worker: Shared context across the conversation
+    API-->>User: Result

@@ -1,0 +1,14 @@
+erDiagram
+    direction TB
+    ACCOUNT {
+        int id PK
+        int parent_id FK
+        string description "A longer label that should wrap without overlapping its neighbours"
+    }
+    AUDIT {
+        int id PK
+    }
+    ISOLATED
+    ACCOUNT |o..o{ ACCOUNT : "parent of"
+    ACCOUNT ||--|{ AUDIT : writes
+    ACCOUNT ||..o{ AUDIT : "inspected by"

@@ -1,0 +1,15 @@
+classDiagram
+ class Empty
+ class Fields {
+  +String name
+ }
+ class Methods {
+  +run()
+ }
+ class Both {
+  +String name
+  +run()
+ }
+ Empty -- Fields
+ Fields -- Methods
+ Methods -- Both

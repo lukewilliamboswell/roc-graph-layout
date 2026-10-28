@@ -1,0 +1,5631 @@
+{
+	"schema": 11,
+	"key": "5c8f44863d6db2c8e9503a71a67faa290e68b32ca926e7d419eb6fd28d610bdd",
+	"provenance": {
+		"extractor": 11,
+		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
+		"tool_sha256": "64a229f0bbb3d8c7be1e1be6ec0da2a035e2c815e3b527d670ad0b57463c73bd",
+		"measurement_viewport": {
+			"width": 800,
+			"height": 600,
+			"deviceScaleFactor": 1
+		},
+		"browser_context": "fresh page for each source",
+		"mermaid": "12.2.0",
+		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "linux",
+		"architecture": "x64",
+		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+		"config": {
+			"startOnLoad": false,
+			"securityLevel": "strict",
+			"deterministicIds": true,
+			"deterministicIDSeed": "oracle",
+			"htmlLabels": false,
+			"fontFamily": "\"Oracle Inter\"",
+			"themeVariables": {
+				"fontFamily": "\"Oracle Inter\""
+			},
+			"flowchart": {
+				"htmlLabels": false
+			}
+		},
+		"browser": "Chrome/156.0.8078.47"
+	},
+	"utf8": true,
+	"source": "sequenceDiagram\n    participant A as wrap: A participant whose descriptive name needs several lines\n    participant B as nowrap: A participant kept on one line\n    A->>B: wrap: A long operation label whose words must wrap into the available message width without changing the text\n    Note right of B: wrap: A note with enough descriptive text to wrap into a narrow note box\n    B-->>A: nowrap: An explicit one line response\n",
+	"accepted": true,
+	"diagram_type": "sequence",
+	"model": {
+		"getActors": [
+			[
+				"A",
+				{
+					"name": "A",
+					"description": "A participant whose descriptive name needs several lines",
+					"wrap": true,
+					"links": {},
+					"properties": {},
+					"actorCnt": null,
+					"rectData": null,
+					"type": "participant",
+					"nextActor": "B"
+				}
+			],
+			[
+				"B",
+				{
+					"name": "B",
+					"description": "A participant kept on one line",
+					"wrap": false,
+					"prevActor": "A",
+					"links": {},
+					"properties": {},
+					"actorCnt": null,
+					"rectData": null,
+					"type": "participant"
+				}
+			]
+		],
+		"getActorKeys": [
+			"A",
+			"B"
+		],
+		"getMessages": [
+			{
+				"id": "0",
+				"from": "A",
+				"to": "B",
+				"message": "A long operation label whose words must wrap into the available message width without changing the text",
+				"wrap": true,
+				"type": 0,
+				"activate": false,
+				"centralConnection": 0
+			},
+			{
+				"id": "1",
+				"from": "B",
+				"to": "B",
+				"message": "A note with enough descriptive text to wrap into a narrow note box",
+				"wrap": true,
+				"type": 2,
+				"placement": 1
+			},
+			{
+				"id": "2",
+				"from": "B",
+				"to": "A",
+				"message": "An explicit one line response",
+				"wrap": false,
+				"type": 1,
+				"activate": false,
+				"centralConnection": 0
+			}
+		],
+		"getBoxes": [],
+		"getCreatedActors": [],
+		"getDestroyedActors": [],
+		"showSequenceNumbers": false,
+		"getDiagramTitle": "",
+		"getAccTitle": "",
+		"getAccDescription": ""
+	},
+	"measurement_trace": [
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A ",
+			"rows": [
+				"A "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 11,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A ",
+			"rows": [
+				"A "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 11.046875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "long ",
+			"rows": [
+				"long "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 30.25,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "long ",
+			"rows": [
+				"long "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 32.734375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A",
+			"rows": [
+				"A"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 11,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A",
+			"rows": [
+				"A"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 11.046875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "operation ",
+			"rows": [
+				"operation "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 66.71875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "operation ",
+			"rows": [
+				"operation "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 71.890625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long",
+			"rows": [
+				"A long"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 44.484375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long",
+			"rows": [
+				"A long"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 48.28125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label ",
+			"rows": [
+				"label "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 33.8125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label ",
+			"rows": [
+				"label "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 35.859375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation",
+			"rows": [
+				"A long operation"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 115.65625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation",
+			"rows": [
+				"A long operation"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 124.65625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "whose ",
+			"rows": [
+				"whose "
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 47.3515625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "whose ",
+			"rows": [
+				"whose "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 49.921875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label",
+			"rows": [
+				"label"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 33.8125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label",
+			"rows": [
+				"label"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 35.859375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words ",
+			"rows": [
+				"words "
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 43.6875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words ",
+			"rows": [
+				"words "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 46.40625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label whose",
+			"rows": [
+				"label whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 84.6015625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label whose",
+			"rows": [
+				"label whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 90.28125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must ",
+			"rows": [
+				"must "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 35.2265625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must ",
+			"rows": [
+				"must "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 37.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words",
+			"rows": [
+				"words"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 43.6875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words",
+			"rows": [
+				"words"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 46.40625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap ",
+			"rows": [
+				"wrap "
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 35.78125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap ",
+			"rows": [
+				"wrap "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 37.90625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words must",
+			"rows": [
+				"words must"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 83.3515625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words must",
+			"rows": [
+				"words must"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 88.0625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into ",
+			"rows": [
+				"into "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 25.8984375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into ",
+			"rows": [
+				"into "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 28,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words must wrap",
+			"rows": [
+				"words must wrap"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 122.0234375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words must wrap",
+			"rows": [
+				"words must wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 130.453125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "the ",
+			"rows": [
+				"the "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 22.34375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "the ",
+			"rows": [
+				"the "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 24.03125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into",
+			"rows": [
+				"into"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 25.8984375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into",
+			"rows": [
+				"into"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 28,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "available ",
+			"rows": [
+				"available "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 63.2578125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "available ",
+			"rows": [
+				"available "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 66.390625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into the",
+			"rows": [
+				"into the"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 52.5859375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into the",
+			"rows": [
+				"into the"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 56.53125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message ",
+			"rows": [
+				"message "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 65.0234375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message ",
+			"rows": [
+				"message "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 68.359375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into the available",
+			"rows": [
+				"into the available"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 120.1875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into the available",
+			"rows": [
+				"into the available"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 127.40625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width ",
+			"rows": [
+				"width "
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 38.359375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width ",
+			"rows": [
+				"width "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 41.703125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message",
+			"rows": [
+				"message"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 65.0234375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message",
+			"rows": [
+				"message"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 68.359375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without ",
+			"rows": [
+				"without "
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 52.25,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without ",
+			"rows": [
+				"without "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 55.953125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message width",
+			"rows": [
+				"message width"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 106.71875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message width",
+			"rows": [
+				"message width"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 114.5625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "changing ",
+			"rows": [
+				"changing "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 64.953125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "changing ",
+			"rows": [
+				"changing "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 70,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without",
+			"rows": [
+				"without"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 52.25,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without",
+			"rows": [
+				"without"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 55.953125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without changing",
+			"rows": [
+				"without changing"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 121.09375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without changing",
+			"rows": [
+				"without changing"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 130.453125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "text ",
+			"rows": [
+				"text "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 26.34375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "text ",
+			"rows": [
+				"text "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 28.328125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "the",
+			"rows": [
+				"the"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 22.34375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "the",
+			"rows": [
+				"the"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 24.03125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation",
+			"rows": [
+				"A long operation"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 115.65625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label whose",
+			"rows": [
+				"label whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 84.6015625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words must wrap",
+			"rows": [
+				"words must wrap"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 122.0234375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into the available",
+			"rows": [
+				"into the available"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 120.1875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message width",
+			"rows": [
+				"message width"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 106.71875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without changing",
+			"rows": [
+				"without changing"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 121.09375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "the text",
+			"rows": [
+				"the text"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 53.03125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation",
+			"rows": [
+				"A long operation"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 124.65625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "label whose",
+			"rows": [
+				"label whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 90.28125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "words must wrap",
+			"rows": [
+				"words must wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 130.453125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "into the available",
+			"rows": [
+				"into the available"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 127.40625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "message width",
+			"rows": [
+				"message width"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 114.5625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "without changing",
+			"rows": [
+				"without changing"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 130.453125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "the text",
+			"rows": [
+				"the text"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 56.859375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "An explicit one line response",
+			"rows": [
+				"An explicit one line response"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 203.78125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "An explicit one line response",
+			"rows": [
+				"An explicit one line response"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 217.046875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "participant ",
+			"rows": [
+				"participant "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 74.375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "participant ",
+			"rows": [
+				"participant "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 80.96875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A participant",
+			"rows": [
+				"A participant"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 88.609375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A participant",
+			"rows": [
+				"A participant"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 96.5,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive ",
+			"rows": [
+				"descriptive "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 76.578125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive ",
+			"rows": [
+				"descriptive "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 83.6875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "whose",
+			"rows": [
+				"whose"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 47.3515625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "whose",
+			"rows": [
+				"whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 49.921875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "name ",
+			"rows": [
+				"name "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 40.125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "name ",
+			"rows": [
+				"name "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 41.78125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive",
+			"rows": [
+				"descriptive"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 76.578125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive",
+			"rows": [
+				"descriptive"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 83.6875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs ",
+			"rows": [
+				"needs "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 43.59375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs ",
+			"rows": [
+				"needs "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 46.359375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive name",
+			"rows": [
+				"descriptive name"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 121.046875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive name",
+			"rows": [
+				"descriptive name"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 129.96875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "several ",
+			"rows": [
+				"several "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 51.578125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "several ",
+			"rows": [
+				"several "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 54.359375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs",
+			"rows": [
+				"needs"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 43.59375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs",
+			"rows": [
+				"needs"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 46.359375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "lines ",
+			"rows": [
+				"lines "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 32.90625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "lines ",
+			"rows": [
+				"lines "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 34.984375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs several",
+			"rows": [
+				"needs several"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 99.625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs several",
+			"rows": [
+				"needs several"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 105.203125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A participant",
+			"rows": [
+				"A participant"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 88.609375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "whose",
+			"rows": [
+				"whose"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 47.3515625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive name",
+			"rows": [
+				"descriptive name"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 121.046875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs several",
+			"rows": [
+				"needs several"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 99.625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "lines",
+			"rows": [
+				"lines"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 32.90625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A participant",
+			"rows": [
+				"A participant"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 96.5,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "whose",
+			"rows": [
+				"whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 49.921875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive name",
+			"rows": [
+				"descriptive name"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 129.96875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "needs several",
+			"rows": [
+				"needs several"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 105.203125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "lines",
+			"rows": [
+				"lines"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 34.984375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A participant kept on one line",
+			"rows": [
+				"A participant kept on one line"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 205.578125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A participant kept on one line",
+			"rows": [
+				"A participant kept on one line"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 221.234375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label",
+			"rows": [
+				"A long operation label"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 153.90625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label",
+			"rows": [
+				"A long operation label"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 165.015625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label whose",
+			"rows": [
+				"A long operation label whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 204.6953125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label whose",
+			"rows": [
+				"A long operation label whose"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 219.4375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label whose words",
+			"rows": [
+				"A long operation label whose words"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 251.71875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label whose words",
+			"rows": [
+				"A long operation label whose words"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 270.34375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must",
+			"rows": [
+				"must"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 35.2265625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must",
+			"rows": [
+				"must"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 37.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap",
+			"rows": [
+				"must wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 73.8984375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap",
+			"rows": [
+				"must wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 79.5625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into",
+			"rows": [
+				"must wrap into"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 104.140625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into",
+			"rows": [
+				"must wrap into"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 112.0625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the",
+			"rows": [
+				"must wrap into the"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 130.828125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the",
+			"rows": [
+				"must wrap into the"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 140.578125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the available",
+			"rows": [
+				"must wrap into the available"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 198.4296875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the available",
+			"rows": [
+				"must wrap into the available"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 211.46875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the available message",
+			"rows": [
+				"must wrap into the available message"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 267.796875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the available message",
+			"rows": [
+				"must wrap into the available message"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 284.328125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width",
+			"rows": [
+				"width"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 38.359375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width",
+			"rows": [
+				"width"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 41.703125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without",
+			"rows": [
+				"width without"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 94.046875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without",
+			"rows": [
+				"width without"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 102.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without changing",
+			"rows": [
+				"width without changing"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 162.890625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without changing",
+			"rows": [
+				"width without changing"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 176.640625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without changing the",
+			"rows": [
+				"width without changing the"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 189.671875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without changing the",
+			"rows": [
+				"width without changing the"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 205.171875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label whose words",
+			"rows": [
+				"A long operation label whose words"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 251.71875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the available message",
+			"rows": [
+				"must wrap into the available message"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 267.796875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without changing the text",
+			"rows": [
+				"width without changing the text"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 220.359375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A long operation label whose words",
+			"rows": [
+				"A long operation label whose words"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 270.34375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "must wrap into the available message",
+			"rows": [
+				"must wrap into the available message"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 284.328125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "width without changing the text",
+			"rows": [
+				"width without changing the text"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 238,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "note ",
+			"rows": [
+				"note "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 31.2421875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "note ",
+			"rows": [
+				"note "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 33.453125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "with ",
+			"rows": [
+				"with "
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 29.453125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "with ",
+			"rows": [
+				"with "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 31.671875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note",
+			"rows": [
+				"A note"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 45.4765625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note",
+			"rows": [
+				"A note"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 49,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "enough ",
+			"rows": [
+				"enough "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 53.390625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "enough ",
+			"rows": [
+				"enough "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 57.109375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note with",
+			"rows": [
+				"A note with"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 78.28125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note with",
+			"rows": [
+				"A note with"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 85.15625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note with enough",
+			"rows": [
+				"A note with enough"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 136.109375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note with enough",
+			"rows": [
+				"A note with enough"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 146.765625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to ",
+			"rows": [
+				"to "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 13.4453125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to ",
+			"rows": [
+				"to "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 14.671875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive text",
+			"rows": [
+				"descriptive text"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 107.265625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive text",
+			"rows": [
+				"descriptive text"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 116.515625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive text to",
+			"rows": [
+				"descriptive text to"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 124.6015625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive text to",
+			"rows": [
+				"descriptive text to"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 135.6875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap",
+			"rows": [
+				"wrap"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 35.78125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap",
+			"rows": [
+				"wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 37.90625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "a ",
+			"rows": [
+				"a "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 9,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "a ",
+			"rows": [
+				"a "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 8.984375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into",
+			"rows": [
+				"wrap into"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 66.0234375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into",
+			"rows": [
+				"wrap into"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 70.40625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "narrow ",
+			"rows": [
+				"narrow "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 49.3515625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "narrow ",
+			"rows": [
+				"narrow "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 52.875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into a",
+			"rows": [
+				"wrap into a"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 79.3671875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into a",
+			"rows": [
+				"wrap into a"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 83.890625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into a narrow",
+			"rows": [
+				"wrap into a narrow"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 133.0625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into a narrow",
+			"rows": [
+				"wrap into a narrow"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 141.25,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "box ",
+			"rows": [
+				"box "
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 25.796875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "box ",
+			"rows": [
+				"box "
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 28.03125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "note",
+			"rows": [
+				"note"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 31.2421875,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "note",
+			"rows": [
+				"note"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 33.453125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note with enough",
+			"rows": [
+				"A note with enough"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 136.109375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive text to",
+			"rows": [
+				"descriptive text to"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 124.6015625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into a narrow",
+			"rows": [
+				"wrap into a narrow"
+			],
+			"box": {
+				"x": -1,
+				"y": -14,
+				"width": 133.0625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "note box",
+			"rows": [
+				"note box"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 61.390625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "A note with enough",
+			"rows": [
+				"A note with enough"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 146.765625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "descriptive text to",
+			"rows": [
+				"descriptive text to"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 135.6875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "wrap into a narrow",
+			"rows": [
+				"wrap into a narrow"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 141.25,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "note box",
+			"rows": [
+				"note box"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 65.984375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "enough",
+			"rows": [
+				"enough"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 53.390625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "enough",
+			"rows": [
+				"enough"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 57.109375,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to",
+			"rows": [
+				"to"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 13.4453125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to",
+			"rows": [
+				"to"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 14.671875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to wrap",
+			"rows": [
+				"to wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 52.5703125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to wrap",
+			"rows": [
+				"to wrap"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 57.078125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to wrap into",
+			"rows": [
+				"to wrap into"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 82.8125,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to wrap into",
+			"rows": [
+				"to wrap into"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 89.578125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to wrap into a",
+			"rows": [
+				"to wrap into a"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 96.15625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "to wrap into a",
+			"rows": [
+				"to wrap into a"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 103.0625,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "narrow",
+			"rows": [
+				"narrow"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 49.3515625,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "narrow",
+			"rows": [
+				"narrow"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 52.875,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "narrow note",
+			"rows": [
+				"narrow note"
+			],
+			"box": {
+				"x": 0,
+				"y": -14,
+				"width": 84.59375,
+				"height": 17
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "",
+			"parent_id": "",
+			"text": "narrow note",
+			"rows": [
+				"narrow note"
+			],
+			"box": {
+				"x": 0,
+				"y": -16,
+				"width": 90.828125,
+				"height": 20
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "A note with",
+			"rows": [
+				"A note with"
+			],
+			"box": {
+				"x": 419.421875,
+				"y": 265.359375,
+				"width": 85.15625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "enough",
+			"rows": [
+				"enough"
+			],
+			"box": {
+				"x": 433.4453125,
+				"y": 285.359375,
+				"width": 57.109375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "descriptive text",
+			"rows": [
+				"descriptive text"
+			],
+			"box": {
+				"x": 403.7421875,
+				"y": 305.359375,
+				"width": 116.515625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "to wrap into a",
+			"rows": [
+				"to wrap into a"
+			],
+			"box": {
+				"x": 410.46875,
+				"y": 325.359375,
+				"width": 103.0625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "narrow note box",
+			"rows": [
+				"narrow note box"
+			],
+			"box": {
+				"x": 400.453125,
+				"y": 345.359375,
+				"width": 123.3515625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "A note with",
+			"rows": [
+				"A note with"
+			],
+			"box": {
+				"x": 419.421875,
+				"y": 265.359375,
+				"width": 85.15625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "enough",
+			"rows": [
+				"enough"
+			],
+			"box": {
+				"x": 433.4453125,
+				"y": 285.359375,
+				"width": 57.109375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "descriptive text",
+			"rows": [
+				"descriptive text"
+			],
+			"box": {
+				"x": 403.7421875,
+				"y": 305.359375,
+				"width": 116.515625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "to wrap into a",
+			"rows": [
+				"to wrap into a"
+			],
+			"box": {
+				"x": 410.46875,
+				"y": 325.359375,
+				"width": 103.0625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "noteText",
+			"parent_id": "",
+			"text": "narrow note box",
+			"rows": [
+				"narrow note box"
+			],
+			"box": {
+				"x": 400.453125,
+				"y": 345.359375,
+				"width": 123.3515625,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "A long operation label whose words",
+			"rows": [],
+			"box": {
+				"x": 80.828125,
+				"y": 175.359375,
+				"width": 270.34375,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "must wrap into the available message",
+			"rows": [],
+			"box": {
+				"x": 73.8359375,
+				"y": 195.359375,
+				"width": 284.328125,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "width without changing the text",
+			"rows": [],
+			"box": {
+				"x": 97,
+				"y": 215.359375,
+				"width": 238,
+				"height": 20.015625
+			}
+		},
+		{
+			"tag": "text",
+			"id": "",
+			"class": "messageText",
+			"parent_id": "oracle",
+			"text": "An explicit one line response",
+			"rows": [],
+			"box": {
+				"x": 113.4765625,
+				"y": 395.359375,
+				"width": 217.046875,
+				"height": 20.015625
+			}
+		}
+	],
+	"rendering": {
+		"view_box": {
+			"x": -50,
+			"y": -10,
+			"width": 637,
+			"height": 653
+		},
+		"elements": [
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "A participant kept on one line",
+				"box": {
+					"x": 241.5,
+					"y": 446,
+					"width": 241,
+					"height": 156
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-bottom",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "241.5",
+					"y": "446",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "241",
+					"height": "156",
+					"name": "B",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-bottom",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(45, 212, 191); fill: rgb(240, 253, 250);"
+				},
+				"text": "",
+				"box": {
+					"x": 241.5,
+					"y": 446,
+					"width": 241,
+					"height": 156
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(240, 253, 250)",
+					"stroke": "rgb(45, 212, 191)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "362",
+					"y": "524",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "A participant kept on one line",
+				"box": {
+					"x": 251.3828125,
+					"y": 514,
+					"width": 221.234375,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "362",
+					"dy": "0"
+				},
+				"text": "A participant kept on one line",
+				"box": {
+					"x": 251.3828125,
+					"y": 514,
+					"width": 221.234375,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "A participantwhosedescriptive nameneeds severallines",
+				"box": {
+					"x": 0,
+					"y": 446,
+					"width": 150,
+					"height": 156
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-bottom",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "0",
+					"y": "446",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "150",
+					"height": "156",
+					"name": "A",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-bottom",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(232, 121, 249); fill: rgb(253, 244, 255);"
+				},
+				"text": "",
+				"box": {
+					"x": 0,
+					"y": 446,
+					"width": 150,
+					"height": 156
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(253, 244, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "75",
+					"y": "524",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "A participant",
+				"box": {
+					"x": 26.75,
+					"y": 482,
+					"width": 96.5,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "75",
+					"dy": "-32"
+				},
+				"text": "A participant",
+				"box": {
+					"x": 26.75,
+					"y": 482,
+					"width": 96.5,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "75",
+					"y": "524",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "whose",
+				"box": {
+					"x": 50.0390625,
+					"y": 498,
+					"width": 49.921875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "75",
+					"dy": "-16"
+				},
+				"text": "whose",
+				"box": {
+					"x": 50.0390625,
+					"y": 498,
+					"width": 49.921875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "75",
+					"y": "524",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "descriptive name",
+				"box": {
+					"x": 10.015625,
+					"y": 514,
+					"width": 129.96875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "75",
+					"dy": "0"
+				},
+				"text": "descriptive name",
+				"box": {
+					"x": 10.015625,
+					"y": 514,
+					"width": 129.96875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "75",
+					"y": "524",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "needs several",
+				"box": {
+					"x": 22.3984375,
+					"y": 530,
+					"width": 105.203125,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "75",
+					"dy": "16"
+				},
+				"text": "needs several",
+				"box": {
+					"x": 22.3984375,
+					"y": 530,
+					"width": 105.203125,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "75",
+					"y": "524",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "lines",
+				"box": {
+					"x": 57.5078125,
+					"y": 546,
+					"width": 34.984375,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "75",
+					"dy": "32"
+				},
+				"text": "lines",
+				"box": {
+					"x": 57.5078125,
+					"y": 546,
+					"width": 34.984375,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "A participant kept on one line",
+				"box": {
+					"x": 241.5,
+					"y": 0,
+					"width": 241,
+					"height": 446
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor1",
+				"class": "actor-line 200",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "actor1",
+					"x1": "362",
+					"y1": "156",
+					"x2": "362",
+					"y2": "446",
+					"class": "actor-line 200",
+					"stroke-width": "0.5px",
+					"stroke": "#999",
+					"name": "B",
+					"data-et": "life-line",
+					"data-id": "B"
+				},
+				"text": "",
+				"box": {
+					"x": 362,
+					"y": 156,
+					"width": 0,
+					"height": 290
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "root-1",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "root-1",
+					"data-look": "neo",
+					"data-et": "participant",
+					"data-type": "participant",
+					"data-id": "B"
+				},
+				"text": "A participant kept on one line",
+				"box": {
+					"x": 241.5,
+					"y": 0,
+					"width": 241,
+					"height": 156
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-top",
+				"parent_id": "root-1",
+				"parent_class": "",
+				"attributes": {
+					"x": "241.5",
+					"y": "0",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "241",
+					"height": "156",
+					"name": "B",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-top",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(45, 212, 191); fill: rgb(240, 253, 250);"
+				},
+				"text": "",
+				"box": {
+					"x": 241.5,
+					"y": 0,
+					"width": 241,
+					"height": 156
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(240, 253, 250)",
+					"stroke": "rgb(45, 212, 191)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "root-1",
+				"parent_class": "",
+				"attributes": {
+					"x": "362",
+					"y": "78",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "A participant kept on one line",
+				"box": {
+					"x": 251.3828125,
+					"y": 68,
+					"width": 221.234375,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "362",
+					"dy": "0"
+				},
+				"text": "A participant kept on one line",
+				"box": {
+					"x": 251.3828125,
+					"y": 68,
+					"width": 221.234375,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "A participantwhosedescriptive nameneeds severallines",
+				"box": {
+					"x": 0,
+					"y": 0,
+					"width": 150,
+					"height": 446
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "actor0",
+				"class": "actor-line 200",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "actor0",
+					"x1": "75",
+					"y1": "156",
+					"x2": "75",
+					"y2": "446",
+					"class": "actor-line 200",
+					"stroke-width": "0.5px",
+					"stroke": "#999",
+					"name": "A",
+					"data-et": "life-line",
+					"data-id": "A"
+				},
+				"text": "",
+				"box": {
+					"x": 75,
+					"y": 156,
+					"width": 0,
+					"height": 290
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "root-0",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"id": "root-0",
+					"data-look": "neo",
+					"data-et": "participant",
+					"data-type": "participant",
+					"data-id": "A"
+				},
+				"text": "A participantwhosedescriptive nameneeds severallines",
+				"box": {
+					"x": 0,
+					"y": 0,
+					"width": 150,
+					"height": 156
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "actor actor-top",
+				"parent_id": "root-0",
+				"parent_class": "",
+				"attributes": {
+					"x": "0",
+					"y": "0",
+					"fill": "#eaeaea",
+					"stroke": "#666",
+					"width": "150",
+					"height": "156",
+					"name": "A",
+					"rx": "6",
+					"ry": "6",
+					"class": "actor actor-top",
+					"data-look": "neo",
+					"filter": "url(#oracle-drop-shadow)",
+					"style": "stroke: rgb(232, 121, 249); fill: rgb(253, 244, 255);"
+				},
+				"text": "",
+				"box": {
+					"x": 0,
+					"y": 0,
+					"width": 150,
+					"height": 156
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(253, 244, 255)",
+					"stroke": "rgb(232, 121, 249)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "root-0",
+				"parent_class": "",
+				"attributes": {
+					"x": "75",
+					"y": "78",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "A participant",
+				"box": {
+					"x": 26.75,
+					"y": 36,
+					"width": 96.5,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "75",
+					"dy": "-32"
+				},
+				"text": "A participant",
+				"box": {
+					"x": 26.75,
+					"y": 36,
+					"width": 96.5,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "root-0",
+				"parent_class": "",
+				"attributes": {
+					"x": "75",
+					"y": "78",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "whose",
+				"box": {
+					"x": 50.0390625,
+					"y": 52,
+					"width": 49.921875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "75",
+					"dy": "-16"
+				},
+				"text": "whose",
+				"box": {
+					"x": 50.0390625,
+					"y": 52,
+					"width": 49.921875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "root-0",
+				"parent_class": "",
+				"attributes": {
+					"x": "75",
+					"y": "78",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "descriptive name",
+				"box": {
+					"x": 10.015625,
+					"y": 68,
+					"width": 129.96875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "75",
+					"dy": "0"
+				},
+				"text": "descriptive name",
+				"box": {
+					"x": 10.015625,
+					"y": 68,
+					"width": 129.96875,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "root-0",
+				"parent_class": "",
+				"attributes": {
+					"x": "75",
+					"y": "78",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "needs several",
+				"box": {
+					"x": 22.3984375,
+					"y": 84,
+					"width": 105.203125,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "75",
+					"dy": "16"
+				},
+				"text": "needs several",
+				"box": {
+					"x": 22.3984375,
+					"y": 84,
+					"width": 105.203125,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "actor actor-box",
+				"parent_id": "root-0",
+				"parent_class": "",
+				"attributes": {
+					"x": "75",
+					"y": "78",
+					"dominant-baseline": "central",
+					"alignment-baseline": "central",
+					"class": "actor actor-box",
+					"style": "text-anchor: middle; font-size: 16px; font-weight: 400; font-family: \"Oracle Inter\";"
+				},
+				"text": "lines",
+				"box": {
+					"x": 57.5078125,
+					"y": 100,
+					"width": 34.984375,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 255, 255)",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "actor actor-box",
+				"attributes": {
+					"x": "75",
+					"dy": "32"
+				},
+				"text": "lines",
+				"box": {
+					"x": 57.5078125,
+					"y": 100,
+					"width": 34.984375,
+					"height": 20
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "2px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {},
+				"text": "",
+				"box": {
+					"x": 0,
+					"y": 0,
+					"width": 0,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "g",
+				"id": "",
+				"class": "",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"data-et": "note",
+					"data-id": "i1"
+				},
+				"text": "A note withenoughdescriptive textto wrap into anarrow note box",
+				"box": {
+					"x": 387,
+					"y": 256,
+					"width": 150,
+					"height": 120
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "rect",
+				"id": "",
+				"class": "note",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "387",
+					"y": "256",
+					"fill": "#EDF2AE",
+					"stroke": "#666",
+					"width": "150",
+					"height": "120",
+					"class": "note",
+					"data-look": "neo"
+				},
+				"text": "",
+				"box": {
+					"x": 387,
+					"y": 256,
+					"width": 150,
+					"height": 120
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(255, 245, 173)",
+					"stroke": "rgb(250, 204, 21)",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "noteText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "462",
+					"y": "261",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "noteText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "A note with",
+				"box": {
+					"x": 419.421875,
+					"y": 265.359375,
+					"width": 85.15625,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "noteText",
+				"attributes": {
+					"x": "462"
+				},
+				"text": "A note with",
+				"box": {
+					"x": 419.421875,
+					"y": 265.359375,
+					"width": 85.15625,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "noteText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "462",
+					"y": "281",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "noteText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "enough",
+				"box": {
+					"x": 433.4453125,
+					"y": 285.359375,
+					"width": 57.109375,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "noteText",
+				"attributes": {
+					"x": "462"
+				},
+				"text": "enough",
+				"box": {
+					"x": 433.4453125,
+					"y": 285.359375,
+					"width": 57.109375,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "noteText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "462",
+					"y": "301",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "noteText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "descriptive text",
+				"box": {
+					"x": 403.7421875,
+					"y": 305.359375,
+					"width": 116.515625,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "noteText",
+				"attributes": {
+					"x": "462"
+				},
+				"text": "descriptive text",
+				"box": {
+					"x": 403.7421875,
+					"y": 305.359375,
+					"width": 116.515625,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "noteText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "462",
+					"y": "321",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "noteText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "to wrap into a",
+				"box": {
+					"x": 410.46875,
+					"y": 325.359375,
+					"width": 103.0625,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "noteText",
+				"attributes": {
+					"x": "462"
+				},
+				"text": "to wrap into a",
+				"box": {
+					"x": 410.46875,
+					"y": 325.359375,
+					"width": 103.0625,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "noteText",
+				"parent_id": "",
+				"parent_class": "",
+				"attributes": {
+					"x": "462",
+					"y": "341",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "noteText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "narrow note box",
+				"box": {
+					"x": 400.453125,
+					"y": 345.359375,
+					"width": 123.3515625,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "tspan",
+				"id": "",
+				"class": "",
+				"parent_id": "",
+				"parent_class": "noteText",
+				"attributes": {
+					"x": "462"
+				},
+				"text": "narrow note box",
+				"box": {
+					"x": 400.453125,
+					"y": 345.359375,
+					"width": 123.3515625,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "216",
+					"y": "171",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "A long operation label whose words",
+				"box": {
+					"x": 80.828125,
+					"y": 175.359375,
+					"width": 270.34375,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "216",
+					"y": "191",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "must wrap into the available message",
+				"box": {
+					"x": 73.8359375,
+					"y": 195.359375,
+					"width": 284.328125,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "216",
+					"y": "211",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "width without changing the text",
+				"box": {
+					"x": 97,
+					"y": 215.359375,
+					"width": 238,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine0",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "76",
+					"y1": "246",
+					"x2": "355",
+					"y2": "246",
+					"class": "messageLine0",
+					"data-et": "message",
+					"data-id": "i0",
+					"data-from": "A",
+					"data-to": "B",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 76,
+					"y": 246,
+					"width": 279,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			},
+			{
+				"tag": "text",
+				"id": "",
+				"class": "messageText",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x": "222",
+					"y": "391",
+					"text-anchor": "middle",
+					"dominant-baseline": "middle",
+					"alignment-baseline": "middle",
+					"class": "messageText",
+					"dy": "1em",
+					"style": "font-family: \"Oracle Inter\"; font-size: 16px; font-weight: 400;"
+				},
+				"text": "An explicit one line response",
+				"box": {
+					"x": 113.4765625,
+					"y": 395.359375,
+					"width": 217.046875,
+					"height": 20.015625
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "rgb(40, 37, 61)",
+					"stroke": "none",
+					"stroke-width": "1px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "16px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "middle"
+				}
+			},
+			{
+				"tag": "line",
+				"id": "",
+				"class": "messageLine1",
+				"parent_id": "oracle",
+				"parent_class": "",
+				"attributes": {
+					"x1": "361",
+					"y1": "426",
+					"x2": "82",
+					"y2": "426",
+					"class": "messageLine1",
+					"data-et": "message",
+					"data-id": "i2",
+					"data-from": "B",
+					"data-to": "A",
+					"stroke-width": "2",
+					"stroke": "none",
+					"marker-end": "url(#oracle-arrowhead)",
+					"style": "stroke-dasharray: 3, 3; fill: none;"
+				},
+				"text": "",
+				"box": {
+					"x": 82,
+					"y": 426,
+					"width": 279,
+					"height": 0
+				},
+				"origin": {
+					"x": 0,
+					"y": 0
+				},
+				"style": {
+					"fill": "none",
+					"stroke": "rgb(40, 37, 61)",
+					"stroke-width": "1.5px",
+					"font-family": "\"Oracle Inter\"",
+					"font-size": "14px",
+					"font-weight": "400",
+					"font-style": "normal",
+					"text-decoration": "none",
+					"text-anchor": "start"
+				}
+			}
+		]
+	},
+	"measurements": [
+		{
+			"kind": "sequence-message",
+			"id": "0",
+			"text": "A long operation label whose words must wrap into the available message width without changing the text",
+			"width": 801.65625,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "1",
+			"text": "A note with enough descriptive text to wrap into a narrow note box",
+			"width": 503.1796875,
+			"height": 20
+		},
+		{
+			"kind": "sequence-message",
+			"id": "2",
+			"text": "An explicit one line response",
+			"width": 217.046875,
+			"height": 20
+		}
+	],
+	"layout": {
+		"view_box": {
+			"x": -50,
+			"y": -10,
+			"width": 637,
+			"height": 653
+		}
+	},
+	"svg_sha256": "33390931d732bd3ed51b43fd5f252b2f2a465b035327a7c4a459b20ebdd12d14"
+}

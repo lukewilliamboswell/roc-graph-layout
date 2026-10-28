@@ -1,3 +1,4 @@
+import { openBrowserSession } from './browser.mjs';
 // Mermaid's flowchart rendering beside the Roc pipeline's (sizing, layout and
 // drawing), for judging layout by eye. Authoring only.
 //
@@ -57,8 +58,7 @@ async function main() {
 	execFileSync(tool, [FONT_FAMILY, ...cases.flatMap(c => [c.source, c.roc])], { stdio: ['ignore', 'inherit', 'inherit'] });
 
 	let mermaid = null;
-	const puppeteer = require('puppeteer');
-	const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--font-render-hinting=none'] });
+	const browser = await openBrowserSession();
 	const page = await browser.newPage();
 	await page.setRequestInterception(true);
 	page.on('request', r => (r.url().startsWith('data:') ? r.continue() : r.abort()));

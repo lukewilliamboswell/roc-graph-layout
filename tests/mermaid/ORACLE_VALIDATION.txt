@@ -1,0 +1,133 @@
+Mermaid independent oracle validation — 2026-10-28
+
+Result: 143 cases, 0 failures. This is the actual native comparison, not unit expectations alone.
+
+Reference: Mermaid12.2.0, Puppeteer25.16.0, Chrome156.0.8078.47, Inter Regular.
+Canonical browser: Linux x64 (pinned container, browser-server.mjs).
+Native host: macOS arm64. Package compiler: nightly-2026-10-26-3c0fffe.
+Script compiler: nightly-2026-10-23-18478ff.
+Extractor schema11; every source gets a fresh browser page.
+Native binary SHA256: e972060a8623521f2c6d5c9639b378ba9302d67350ce84b42d87e9a394b97ad8
+Full provenance, comparator hashes and per-case scores: validation-report.json.
+
+RAW PUBLIC SVG PIXEL DIFFERENCES
+(Unmatched ink, RGB tolerance40, spatial tolerance1 CSS pixel, device scale2;
+exactly1 CSS pixel per SVG unit, no rescaling or best-shift normalization.)
+
+Family       Cases  Rendered  Mean %   Worst %
+flowchart     116        92     2.41     44.95
+sequence        7         7     0.95      2.32
+entity          5         3     1.74      2.99
+class           6         6     0.92      1.49
+state           9         9     1.33      2.06
+
+ACCEPTANCE CRITERIA
+Exact canonical parser semantics and expected acceptance/rejection for every case.
+Inspector/public API acceptance agree; new-family rendered text tokens agree.
+Finite, source-aligned geometry; no ignored or unconsumed measurement overrides.
+Oracle-sized node/group boxes within1 CSS pixel; no reference positions/routes injected.
+New-family raw SVG mismatch <=5%, canvas width/height within1 CSS pixel.
+Flowchart isolated layout: identical layers/ranks/order; no additional crossings.
+
+Flow controls: 92; layer/rank/order agreement100%; crossings 8/8 (native/oracle).
+All isolated node/group boxes pass the1px gate. Largest centred flow node residual <0.49px.
+
+EXPLICIT SCOPE AND REMAINING DIFFERENCES
+Five accepted flowchart cases are explicitly unsupported and must report Unsupported.
+Two ellipse cases are accepted by Mermaid’s parser but its own renderer throws
+"No such shape: ellipse". They remain visible in the report; native semantics,
+public rendering and finite geometry are checked, without claiming oracle image parity.
+
+Raw flowchart images have remaining outliers; no claim of universal pixel parity.
+The multiline measurement fixture exposes different handling of empty label rows
+and node/text bounds. Entity-reference fixtures retain the documented text-preservation
+differences. Host glyph bounds/fallbacks also affect measurement and antialiasing.
+These raw scores are reported separately from the strict known-size geometry gate.
+See the case-level rendered_text and measurement/layout fields rather than treating
+a raw pixel score as an isolated layout score.
+
+The seven sequence defaults have exact view boxes/participant boxes/routes.
+Wrapped sequence initial measurement stages retain native metrics where no stable
+reference role is available; the default end-to-end result is independently compared.
+The sized control must not be described as replacing every intermediate measurement.
+
+COVERAGE AND REGRESSIONS
+New families:7 sequence,5 ER (including2 oracle rejections),6 class,9 state.
+Includes alias rejection/tokenization, generics/static/abstract members, crowded
+four-port multiplicities, scoped markers, notes, composite palettes, declaration
+order, wrapped captions, entity escapes, activations and numbering.
+This is coverage of documented syntax, not the complete Mermaid grammar.
+
+GUARD TESTS
+Missing/stale records, empty coverage, bad native reads/profiles, serialized null
+geometry, unconsumed dimensions and missing text fail the actual CLI. Dishonest
+renderers can supply the exact reference SVG and still fail independent gates.
+Repeated renders and reordered independent recordings are byte-identical.
+A fractional-view-box test asserts a unit SVG-to-CSS transform.
+
+REPRODUCE
+npm ci --prefix tools/mermaid-oracle
+# On other hosts, start the pinned Linux browser and set
+# MERMAID_ORACLE_BROWSER_URL as documented in tools/mermaid-oracle/README.md.
+roc build package-mermaid/oracle_dump.roc --output=/tmp/mermaid-oracle-dump
+node --test tools/mermaid-oracle/validate.test.mjs
+ORACLE_DUMP=/tmp/mermaid-oracle-dump node --test tools/mermaid-oracle/validate.integration.test.mjs
+node tools/mermaid-oracle/validate.mjs /tmp/mermaid-oracle-dump /tmp/mermaid-oracle-results
+
+CI force-records independent references for its own font environment, applies
+these gates, and uploads compiler version, both SVGs, differences and full JSON.
+Local artifacts for this run: /tmp/mermaid-refactor-linux-final-validation.
+
+REFACTOR AND CANONICAL LINUX VERIFICATION
+The core refactor from1640711 to4fafb97 preserves all391 native JSON/SVG
+profiles byte for byte on BOTH macOS and Linux. refactor-comparison.json records
+the exact source revisions, native hashes and separate platform results. The
+six Linux oracle failures were already present before the refactor.
+
+The user selected pinned Linux as the canonical browser. Commit410e129 then
+intentionally corrects Mermaid's default text bounds: horizontal glyph
+overhangs for class/ER/state, rounded Linux vertical metrics for states, and
+synthetic-bold title bounds plus Mermaid's compartment centering for classes.
+Core geometry is unchanged. Browser transport and provenance changed; Mermaid
+configuration, extraction observations and acceptance gates did not. The
+committed Docker recipe builds and verifies Chrome156.0.8078.47 on Linux x64.
+All refreshed records pass the freshness check; generated Roc goldens are
+unchanged. The final native binary passes all143 independent cases, including
+all six previous Linux failures, with no reference positions/routes injected.
+
+Final affected checks:510 Mermaid package tests,529 native-probe expectations,
+10 boundary/comparison tests,2 real-CLI/metrology integration tests, and the
+existing ER/class/state fuzz expectations pass. The three affected native
+examples regenerate the committed SVGs. Both packages check on compiler
+checkout52c00c23. No SQLite/Datastar workaround annotations were retained.
+
+The complete unchanged canonical scripts/check.roc command exits0 on410e129
+with RocOct26, toolingRocOct23 and Zig0.16 from Blueprint.roc. It passes421core
+tests,510Mermaid tests, generated oracle expectations, all17native examples,
+every native fuzz smoke target (200runs each), benchmark smoke, release bundles
+and served examples, generated docs/site, reproducible documentation archives,
+and gitdiff--check. These are smoke runs, not a coverage-guided fuzz campaign.
+Log: /tmp/mermaid-refactor-linux-final-repository-check.log.
+Optimized core controls and source revisions remain in benchmarks/measurements;
+the subsequent text calibration does not change the core geometry.
+
+COMPILER REGRESSION
+The floating October 27 compiler rejects a 24-line pure module by inferring
+Try(value,[Bad,Bad]) against Try(value,[Bad]). October 26 accepts it. A local
+compiler checkout at52c00c23 also accepts the reproducer and original node
+editor; all313 node-editor tests discovered by that compiler pass. That branch
+predates the failing checker change, so it is a passing baseline, not a fix.
+Current upstream main bad769be8e reproduces the same error with --no-cache.
+The independently verified report is https://github.com/roc-lang/roc/issues/12677.
+PR12639 is a suspected regression window, not a proven bisect. No dependency
+workaround annotations were retained or published upstream.
+
+TEMPORARY NODE-EDITOR EXCLUSIONS — 2026-10-29
+At the user's request, the default repository and release checks explicitly
+skip the node-editor service type-check and native smoke run. CI also skips
+the node-editor browser-test job. TODOs track restoration after issue12677 and
+the remaining, unconfirmed Datastar inference errors are resolved.
+RUN_NODE_EDITOR_CHECKS=1 opts into the service and smoke checks locally; the
+repository variable of the same name opts into all node-editor checks in CI.
+The Mermaid independent oracle, core/package tests, all17 runnable examples,
+fuzz/benchmark smoke, release bundles and documentation checks remain enabled.

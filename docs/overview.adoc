@@ -32,3 +32,60 @@ all coordinates are positive.
 
 For repeated solves of unchanged input and preparation settings, the prepared
 APIs let you retain reusable work. Prepare again when the graph changes.
+
+== Draw Mermaid text
+
+The separate Mermaid package reads text, measures labels in Inter, computes
+geometry and returns a picture or standalone SVG. The layout package remains
+usable on its own with caller-supplied node sizes.
+
+[cols="1,2",options="header"]
+|===
+|Declaration |Supported content
+|`flowchart` or `graph` |Nodes, groups, labelled connections, cycles, directions and style classes.
+|`sequenceDiagram` |Participants and actors, messages and replies, notes, activations and nested interaction blocks.
+|`erDiagram` |Entities, attribute rows, keys and comments, identifying and non-identifying relationships, and cardinalities.
+|`classDiagram` |Classes, attributes, methods, annotations, multiplicities and distinct relationship markers.
+|`stateDiagram` or `stateDiagram-v2` |States, initial/final markers, transitions, composite states, choice/fork/join markers and notes.
+|===
+
+`Mermaid.svg(source)` selects the diagram family from its declaration.
+`Mermaid.draw(source)` returns the same drawing as paths and text for a custom
+vector renderer. Each family also exposes `parse` for inspecting its
+source-ordered model. Unknown or unsupported syntax returns problems rather
+than a partially interpreted drawing. The family API documentation lists
+its supported syntax and limitations; this is not full Mermaid compatibility.
+
+== Choose appearance without repeating defaults
+
+Import `mermaid.Mermaid` and `mermaid.Theme`, then supply only the properties
+you want to change:
+
+[source,roc]
+----
+options = Mermaid.Options.{
+    theme: Theme.Options.{ font_size: 16, max_label_width: 180 },
+}
+svg = Mermaid.svg_with(source, options)
+----
+
+The defaults follow pinned Mermaid 12.2.0: white flowchart/state nodes,
+coloured actor/table palettes, dark outlines and subtle shadows. The shared
+14px font base preserves family proportions, including 16px sequence messages.
+Colours, outlines, padding, corner radius and shadows can be overridden.
+`wrapping: FamilyDefault` follows the diagram role; `Wrap` uses
+`max_label_width`, and `NoWrap` keeps explicit source line breaks only.
+`corners` likewise selects family defaults, rounded or square nodes. An empty
+`node_palette` uses the family palette; a one-entry list selects flat colours.
+Sequence line/note/control colours use `message_colors`; transition and
+relationship backings use `transition_label_background`. Flowchart label
+backings use `label_background` and `label_background_opacity`.
+
+Sizing happens before placement with the selected typography. Source styles
+are interpreted where supported; raw declarations remain in the parsed model,
+including reference renderer quirks documented by each family. Arbitrary CSS
+and alternate font families are not interpreted.
+
+Invalid numeric theme properties are reported together. Display SVG with
+Inter available so visible text matches the measured advances. The package
+provides `Mermaid.font_licence` for distributions that include the font data.

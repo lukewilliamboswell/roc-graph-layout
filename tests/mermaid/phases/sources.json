@@ -1,0 +1,71 @@
+[
+  "flowchart BT\nsubgraph s [Long title]\nA --> B\nend\nB --> D\n",
+  "flowchart LR\n    a --> a\n    a -->|retry| a\n    a --> b\n",
+  "flowchart LR\n    a --> b\n    a --> c\n    a --> d\n    b --> e\n    c --> e\n    d --> e\n",
+  "flowchart LR\n    a --> b\n    a --> c\n    d --> b\n    d --> c\n    e --> b\n",
+  "flowchart LR\n    a --> b\n    subgraph g [G]\n        c\n    end\n    subgraph h [H]\n        d\n    end\n",
+  "flowchart LR\n    a --> b --> c\n    a --> c\n    c --> a\n",
+  "flowchart LR\n    a --> b --> c\n    a --> c\n    d --> b\n    d --> e --> c\n",
+  "flowchart LR\n    a --> b --> c --> d\n    a --> d\n    d --> b\n    a -->|go| c\n",
+  "flowchart LR\n    a --> d\n    b --> c\n    a --> c\n    b --> d\n",
+  "flowchart LR\n    a -->|go| b\n",
+  "flowchart LR\n    r --> z\n    r --> y\n    r --> x\n    q --> y\n",
+  "flowchart LR\na --> b\nb --> a\na --> b\na --> a\nsubgraph g [Group]\nc --> d\nend\nisolated",
+  "flowchart LR\nsubgraph s [Long title]\nA --> B\nend\nB --> D\n",
+  "flowchart RL\nsubgraph s [Long title]\nA --> B\nend\nB --> D\n",
+  "flowchart TD\n    a --> e\n    subgraph e [E]\n    end\n",
+  "flowchart TD\n    subgraph g [G]\n        subgraph h [H]\n            direction LR\n            a\n        end\n        subgraph k [K]\n            b\n        end\n    end\n    b --> c\n",
+  "flowchart TD\n    subgraph s [S]\n        direction LR\n        a --> b\n    end\n    subgraph t [T]\n        direction LR\n        c --> d\n    end\n    s --> t\n    d --> e\n",
+  "flowchart TD\nsubgraph s [Long title]\nA --> B\nend\nB --> D\n",
+  "flowchart TD\nsubgraph services [A long group title that needs to wrap without colliding with the nodes inside]\nA[First service with a particularly long explanatory label]\nB[Second service<br>With an explicit break]\nC[Third service]\nA -->|A long relationship label explaining why this transition happens| B\nA --> C\nB --> A\nend\nC --> D([Completed])\n",
+  {
+    "key": "fuzz-regression-ordering-small",
+    "source": "flowchart RL\n  n0c0 --> n0c0\n  n1c0 -->|go| n0c0\n  n4c0 --> s2c0\n  n5c0 -->|go| n7c0\n  n4c0 --> n7c0\n",
+    "bytes": [
+      3,
+      0,
+      1,
+      148,
+      253,
+      252
+    ],
+    "copies": 1
+  },
+  {
+    "key": "fuzz-regression-ordering-sweeps",
+    "source": "flowchart LR\n  n5c0 --- n0c0\n  n5c0 --- n0c0\n  n6c0 --> n5c0 --> n6c0\n  n2c0{{Check}} -.-> n0c0([Done])\n",
+    "bytes": [
+      117,
+      69,
+      46,
+      2
+    ],
+    "copies": 1
+  },
+  {
+    "key": "fuzz-regression-loops-many",
+    "source": "flowchart LR\n  n2c0 --> n2c0\n  n2c0 -->|retry| n2c0\n  n2c0 --> n0c0\n  n5c0 --> n5c0\n  n5c0 -->|retry| n5c0\n  n5c0 --> n5c0\n  n5c0 --> n4c0\n  n1c0 --> n1c0\n  n1c0 --> n4c0\n  n5c0 --> n5c0\n  n5c0 -->|retry| n5c0\n  n5c0 --> n5c0\n  n5c0 --> n7c0\n  n6c0 --> n6c0\n  n6c0 -->|retry| n6c0\n  n6c0 --> n1c0\n",
+    "bytes": [
+      165,
+      66,
+      165,
+      33,
+      189,
+      78
+    ],
+    "copies": 1
+  },
+  {
+    "key": "fuzz-regression-loops-sweeps",
+    "source": "flowchart RL\n  n3c0 --> n3c0\n  n3c0 --> n0c0\n  n3c0 --> n3c0\n  n3c0 -->|retry| n3c0\n  n3c0 --> n1c0\n  n3c0 --> n3c0\n  n3c0 --> n0c0\n  n6c0 --> n6c0\n  n6c0 -->|retry| n6c0\n  n6c0 --> n7c0\n  n5c0 --> n5c0\n  n5c0 -->|retry| n5c0\n  n5c0 --> n5c0\n  n5c0 --> n1c0\n",
+    "bytes": [
+      75,
+      3,
+      75,
+      3,
+      126,
+      141
+    ],
+    "copies": 1
+  }
+]

@@ -21,6 +21,7 @@ import layout.StressLayout
 import layout.Tree
 import fixtures.Embedded
 import Generators
+import GroupedBench
 
 arg_at = |args, index, fallback| args.get(index) ?? fallback
 
@@ -55,6 +56,8 @@ run_case! = |family, operation, source, fixture, n, seed| {
 			Err(problems) => List.len(problems)
 		}
 		Measure.finish!(observation)
+	} else if family == "layered_grouped" {
+		GroupedBench.run!(graph, operation, seed)
 	} else if family == "layered" {
 		input = { ..Layered.default_input, graph }
 		if operation == "prepared_layout" {

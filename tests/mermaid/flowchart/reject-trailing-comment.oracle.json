@@ -1,10 +1,21 @@
 {
-	"schema": 6,
-	"key": "18e7c48e166239d607d374109ab3692ccfba273cc40ffd137d40e35736dd8d4f",
+	"schema": 11,
+	"key": "fc472e317beb85b811f29148a694375bf53686134c2efddb051b578c19874bec",
 	"provenance": {
-		"extractor": 6,
+		"extractor": 11,
+		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
+		"tool_sha256": "64a229f0bbb3d8c7be1e1be6ec0da2a035e2c815e3b527d670ad0b57463c73bd",
+		"measurement_viewport": {
+			"width": 800,
+			"height": 600,
+			"deviceScaleFactor": 1
+		},
+		"browser_context": "fresh page for each source",
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
+		"browser_revision": "156.0.8078.47",
+		"platform": "linux",
+		"architecture": "x64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
