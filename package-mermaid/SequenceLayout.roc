@@ -724,9 +724,19 @@ SequenceLayout :: {}.{
 			40
 		}
 		height = footer_y + header_height + 10 + 20 - 10 + 1 + 30 + extra_title
-		view = if n == 0 and diagram.events.is_empty() and diagram.title.is_empty() {
+		base_view = if n == 0 and diagram.events.is_empty() and diagram.title.is_empty() {
 			SequenceLayout.zero_rect
 		} else { x: $min_x - 50, y: -10 - extra_title, width: $max_x - $min_x + 100, height }
+		# Captions and titles can exceed the pinned fixed-size legend when a
+		# caller selects a much larger font. Reserve actual glyph bounds too.
+		view = $labels.fold(
+			base_view,
+			|bounds, label| {
+				x = bounds.x.min(label.box.x)
+				y = bounds.y.min(label.box.y)
+				{ x, y, width: (bounds.x + bounds.width).max(label.box.x + label.box.width) - x, height: (bounds.y + bounds.height).max(label.box.y + label.box.height) - y }
+			},
+		)
 		{ centers: $centers, widths, rows: $rows, header_height, width: view.width, height: view.height, margin: 0, footer_y, view, headers: $headers, footers, notes: $notes, message_points: $points, frames: $frames, activations: $activations, labels: $labels, numbers: $numbers }
 	}
 }

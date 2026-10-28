@@ -339,3 +339,13 @@ expect {
 		Ok(d) => SequenceDraw.contains(SequenceDraw.draw(d, Theme.Options.{}), Theme.Options.{})
 	}
 }
+
+## fuzz regression: a large-font critical legend must remain inside the view.
+expect
+	match SequenceParse.parse("sequenceDiagram\ncritical Reserve resource\nC->>C: Acquire lock\nend\n") {
+		Err(_) => False
+		Ok(diagram) => {
+			theme = Theme.Options.{ font_size: 128, max_label_width: 800 }
+			SequenceDraw.contains(SequenceDraw.draw(diagram, theme), theme)
+		}
+	}
