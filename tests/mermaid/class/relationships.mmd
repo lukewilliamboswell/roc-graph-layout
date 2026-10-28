@@ -1,0 +1,17 @@
+classDiagram
+    direction LR
+    class Service["Payment service"] {
+        <<service>>
+        -String token
+        +authorize(amount) bool
+    }
+    class List~T~
+    class Isolated
+    Base <|-- Service
+    Interface <|.. Service
+    Service "1" *-- "many" Record : owns
+    Record o-- List~T~ : groups
+    Service ..> Record : requests
+    Service <--> List~T~ : exchanges
+    Record .. List~T~ : observes
+    Service --> Service : retry

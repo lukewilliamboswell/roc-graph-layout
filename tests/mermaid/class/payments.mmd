@@ -1,0 +1,25 @@
+classDiagram
+    direction TB
+    class Payment {
+        <<interface>>
+        +String reference
+        +authorize() bool
+        +capture() Receipt
+    }
+    class CardPayment {
+        -String token
+        +authorize() bool
+        +capture() Receipt
+    }
+    class BankTransfer {
+        -String account
+        +authorize() bool
+        +capture() Receipt
+    }
+    class Customer {
+        +String email
+        +pay(amount) Receipt
+    }
+    Payment <|.. CardPayment
+    Payment <|.. BankTransfer
+    Customer "1" --> "many" Payment : makes
