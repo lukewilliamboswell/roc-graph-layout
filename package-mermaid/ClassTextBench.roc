@@ -14,7 +14,23 @@ main! = |args| {
 	observation = if operation == "zero" {
 		labels.len()
 	} else {
-		width = labels.fold(0.0, |sum, label| sum + (if (operation == "advance") TextMeasure.block_advance(label, style).width else TextMeasure.block(label, style).width))
+		width = labels.fold(
+			0.0,
+			|sum, label| {
+				measured = if operation == "svg" {
+					TextMeasure.block_svg(label, style, True)
+				} else if operation == "advance" {
+					TextMeasure.block_advance(label, style)
+				} else {
+					TextMeasure.block(label, style)
+				}
+				sum + measured.width + if operation == "svg" {
+					measured.height
+				} else {
+					0
+				}
+			},
+		)
 		width.to_u64_try() ?? 0
 	}
 	measurement = Measure.finish!(observation)

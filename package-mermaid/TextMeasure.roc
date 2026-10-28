@@ -57,7 +57,18 @@ TextMeasure :: {}.{
 	block_advance = |text, style| TextMeasure.block_width(text, style, True)
 
 	block_width : Str, Style, Bool -> FlowGeometry.TextBlock
-	block_width = |text, style, use_advance| {
+	block_width = |text, style, use_advance| TextMeasure.block_bounds(text, style, use_advance, False)
+
+	## SVG text bounds union logical line metrics with unrounded glyph ink.
+	## For example Inter's g descends 3.021484375px at 14px, beyond its
+	## rounded logical descent of 3px. Select advance width when the caller
+	## needs the layout label's typographic width rather than its ink overhang.
+	## The legacy block operations retain their original metrics unchanged.
+	block_svg : Str, Style, Bool -> FlowGeometry.TextBlock
+	block_svg = |text, style, use_advance| TextMeasure.block_bounds(text, style, use_advance, True)
+
+	block_bounds : Str, Style, Bool, Bool -> FlowGeometry.TextBlock
+	block_bounds = |text, style, use_advance, vertical_ink| {
 		metrics = TextMeasure.metrics_of(style)
 		bytes = text.to_utf8()
 		escaped = bytes.contains('<')
@@ -76,12 +87,29 @@ TextMeasure :: {}.{
 		var $high = 0.0
 		var $top = 0.0
 		var $bottom = 0.0
+		var $ink_top = 0.0
+		var $ink_bottom = 0.0
 		var $index = $rows.len() - $rows.len()
 		var $lines = List.with_capacity($rows.len())
 		for row in $rows {
 			$lines = $lines.append(Str.join_with(row.map(|word| Str.from_utf8_lossy(word)), " "))
 			if !row.is_empty() {
-				extent = TextMeasure.line_extent(metrics, row)
+				extent = TextMeasure.line_extent_bounds(metrics, row, vertical_ink)
+				if vertical_ink {
+					baseline = $index.to_f64() * style.line_height * style.size
+					top = baseline - extent.ink_ascent
+					bottom = baseline + extent.ink_descent
+					$ink_top = if !$found {
+						top
+					} else {
+						$ink_top.min(top)
+					}
+					$ink_bottom = if !$found {
+						bottom
+					} else {
+						$ink_bottom.max(bottom)
+					}
+				}
 				shift = match style.align {
 					Middle => -extent.advance / 2.0
 					Start => 0.0
@@ -91,14 +119,22 @@ TextMeasure :: {}.{
 				if !$found {
 					$low = left
 					$high = right
-					$top = extent.ascent
+					$top = if vertical_ink {
+						extent.ink_ascent
+					} else {
+						extent.ascent
+					}
 					$first = $index
 					$found = True
 				} else {
 					$low = $low.min(left)
 					$high = $high.max(right)
 				}
-				$bottom = extent.descent
+				$bottom = if vertical_ink {
+					extent.ink_descent
+				} else {
+					extent.descent
+				}
 				$last = $index
 			}
 			$index = $index + 1
@@ -107,7 +143,11 @@ TextMeasure :: {}.{
 			{ lines: $lines, width: 0.0, height: 0.0 }
 		} else {
 			step = style.line_height * style.size
-			height = ($last - $first).to_f64() * step + $top + $bottom
+			height = if vertical_ink {
+				$ink_bottom - $ink_top
+			} else {
+				($last - $first).to_f64() * step + $top + $bottom
+			}
 			{ lines: $lines, width: TextMeasure.finite($high - $low), height: TextMeasure.finite(height) }
 		}
 	}
@@ -373,10 +413,13 @@ TextMeasure :: {}.{
 	## Glyphs of one run after substitution: their advances and the kerning
 	## between neighbours in 1/65536 px steps, their outline extents, and the
 	## byte offset of the first character each draws.
-	Shaped : { advances : List(F64), pairs : List(F64), ink : List([Ink({ left : F64, right : F64 }), NoInk]), clusters : List(U64) }
+	Shaped : { advances : List(F64), pairs : List(F64), ink : List([Ink({ left : F64, right : F64 }), NoInk]), clusters : List(U64), ink_ascent : F64, ink_descent : F64 }
 
 	shape : Metrics, List(U8) -> Shaped
-	shape = |metrics, bytes| {
+	shape = |metrics, bytes| TextMeasure.shape_bounds(metrics, bytes, False)
+
+	shape_bounds : Metrics, List(U8), Bool -> Shaped
+	shape_bounds = |metrics, bytes, vertical_ink| {
 		font = metrics.font
 		var $scalars = []
 		var $i = 0
@@ -389,6 +432,8 @@ TextMeasure :: {}.{
 		var $advances = List.with_capacity(count)
 		var $pairs = List.with_capacity(count)
 		var $ink = List.with_capacity(count)
+		var $ink_ascent = 0.0
+		var $ink_descent = 0.0
 		var $k = 0
 		while $k < count {
 			glyph = run.glyphs.get($k) ?? 0
@@ -404,11 +449,22 @@ TextMeasure :: {}.{
 				$ink = $ink.append(fallback.ink)
 			} else {
 				$advances = $advances.append(TextMeasure.floor(own.to_f64() * metrics.scale))
-				$ink = $ink.append(TextMeasure.glyph_ink(metrics, Font.extents(font, glyph)))
+				extents = Font.extents(font, glyph)
+				$ink = $ink.append(TextMeasure.glyph_ink(metrics, extents))
+				if vertical_ink {
+					match extents {
+						Extents(box) => {
+							pixels = metrics.size / Font.units_per_em(font).to_f64()
+							$ink_ascent = $ink_ascent.max(box.y_max.to_f64() * pixels)
+							$ink_descent = $ink_descent.max(0 - box.y_min.to_f64() * pixels)
+						}
+						_ => {}
+					}
+				}
 			}
 			$k = $k + 1
 		}
-		{ advances: $advances, pairs: $pairs, ink: $ink, clusters: run.clusters }
+		{ advances: $advances, pairs: $pairs, ink: $ink, clusters: run.clusters, ink_ascent: $ink_ascent, ink_descent: $ink_descent }
 	}
 
 	# A glyph's outline extent in pixels from its origin, rounded out to whole
@@ -493,14 +549,24 @@ TextMeasure :: {}.{
 	## rounded width.
 	line_extent : Metrics, List(List(U8)) -> { advance : F64, left : F64, right : F64, ascent : F64, descent : F64 }
 	line_extent = |metrics, row| {
+		measured = TextMeasure.line_extent_bounds(metrics, row, False)
+		{ advance: measured.advance, left: measured.left, right: measured.right, ascent: measured.ascent, descent: measured.descent }
+	}
+
+	line_extent_bounds : Metrics, List(List(U8)), Bool -> { advance : F64, left : F64, right : F64, ascent : F64, descent : F64, ink_ascent : F64, ink_descent : F64 }
+	line_extent_bounds = |metrics, row, vertical_ink| {
 		emoji = row.any(|word| TextMeasure.has_emoji_fallback(metrics.font, word))
 		var $start = 0.0
 		var $left = 0.0
 		var $right = 0.0
 		var $index = 0
+		var $ink_ascent = 0.0
+		var $ink_descent = 0.0
 		for word in row {
 			run = if ($index > 0) [' '].concat(word) else word
-			shaped = TextMeasure.shape(metrics, run)
+			shaped = TextMeasure.shape_bounds(metrics, run, vertical_ink)
+			$ink_ascent = $ink_ascent.max(shaped.ink_ascent)
+			$ink_descent = $ink_descent.max(shaped.ink_descent)
 			var $pen = 0.0
 			var $k = 0
 			for advance in shaped.advances {
@@ -519,6 +585,20 @@ TextMeasure :: {}.{
 			$index = $index + 1
 		}
 		{
+			ink_ascent: $ink_ascent.max(
+				if emoji {
+					metrics.ascent.max(metrics.emoji_ascent)
+				} else {
+					metrics.ascent
+				},
+			),
+			ink_descent: $ink_descent.max(
+				if emoji {
+					metrics.descent.max(metrics.emoji_descent)
+				} else {
+					metrics.descent
+				},
+			),
 			advance: $start,
 			left: $left,
 			right: $right.max($start),
@@ -597,4 +677,19 @@ expect {
 	original = TextMeasure.block("A long paragraph with several words", style)
 	advance = TextMeasure.block_advance("A long paragraph with several words", style)
 	original.lines == advance.lines and original.height == advance.height
+}
+
+expect {
+	style = { font: TextMeasure.inter, size: 14, line_height: 1.1, wrap: NoWrap, align: Start }
+	TextMeasure.block_svg("Checking", style, True).height == 17.021484375
+		and TextMeasure.block_svg("Changes", style, True).height == 17.021484375
+		and TextMeasure.block_svg("submit", style, True).width == 44.484375
+		and TextMeasure.block_svg("submit", style, True).height == 17
+		and TextMeasure.block("Checking", style).height == 17
+		and TextMeasure.block_advance("Checking", style).height == 17
+}
+
+expect {
+	style = { font: TextMeasure.inter, size: 14, line_height: 0.0001, wrap: NoWrap, align: Start }
+	(TextMeasure.block_svg("g\np", style, True).height - 17.021484375).abs() < 0.000001
 }

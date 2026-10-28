@@ -738,3 +738,29 @@ traffic and peak live bytes are unchanged; additional tangent arithmetic costs
 CPU time. The hypothesized excessive final envelope was confirmed separately
 from performance. Raw telemetry is in `/tmp/mermaid-framing-{before,after}.json`
 for this session; commands above reproduce the measurements without fixtures.
+
+## SVG vertical glyph bounds (2026-10-28)
+
+The remaining state pixel discrepancy was traced to source font data, not a
+fixture offset: Inter glyph `g` has y_min=-442 at2048units/em, so at14px its
+3.021484375px descent exceeds the rounded logical descent3. The reference
+measures17.021484375px for Checking/Changes; legacy TextMeasure used17.
+`block_svg` unions raw vertical glyph extents with logical metrics in the same
+shaping pass, including all lines when spacing is small. Existing `block` and
+`block_advance` preserve their original observations and allocator traffic.
+
+Native optimized ClassTextBench before/after (compilerOct26, arm64macOS,
+labels generated before measurement, elapsed single observations in ms):
+
+| Labels | Old block before/after | Advance before/after | SVG mode | Calls (all modes) | Requested B (all) | Peak live B (all) |
+|---:|---:|---:|---:|---:|---:|---:|
+|100|28.168/30.739|26.951/30.291|29.571|15,200|2,562,660|5,758|
+|300|81.943/92.871|83.292/88.142|88.922|45,600|7,743,860|10,623|
+|1000|289.265/295.930|277.614/300.652|292.303|152,000|25,878,060|27,423|
+
+Zero controls allocate/request0, at1/1/2µs. SVG mode observes height as well
+as width; elapsed values are not a speedup claim. The one-line benchmark is
+unchanged by the subsequent all-row envelope regression. Raw session data:
+`/tmp/mermaid-vertical-{before,after}.json`. The confirmed cause and the additive
+mode preserve legacy Linux-style glyph-bound expectations while state callers
+can select the actual SVG glyph envelope.
