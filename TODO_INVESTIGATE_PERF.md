@@ -836,9 +836,9 @@ it to a particular ownership fallback.
 
 For complete wide layout at 100/300/1000 edges, allocation calls change from
 11227/48189/336391 to 11255/48499/337401, and requested bytes change from
-2584800/18364568/155005316 to 2613763/18581011/157126459. The largest-rung
+2584800/18364568/155005316 to 2613747/18580995/157126443. The largest-rung
 increase in cumulative traffic is 1.37%. Absolute peak live bytes remain below
-the old source engine: 535116/4232964/34441904 versus
+the old source engine: 535100/4232948/34441888 versus
 556836/4297884/34658024. Placement-only absolute peaks agree at all three
 rungs. Complete chain layout has fewer allocation calls at each rung, slightly
 more requested bytes, and lower absolute peaks. The distinction between peak

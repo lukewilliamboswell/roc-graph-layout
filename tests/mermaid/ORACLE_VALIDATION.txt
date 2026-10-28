@@ -6,7 +6,7 @@ Reference: Mermaid12.2.0, Puppeteer25.16.0, Chrome156.0.8078.47, Inter Regular.
 Host: macOS arm64. Package compiler: nightly-2026-10-26-3c0fffe.
 Script compiler: nightly-2026-10-23-18478ff.
 Extractor schema10; every source gets a fresh browser page.
-Native binary SHA256: 1f74022ab169a579b1e4ddc894695cd912be1db77bf4e30cf20145b51fd406e0
+Native binary SHA256: 39623dfa27f729adbaa1271659603117ec24b9886523d43eed12b9787a290561
 Full provenance, comparator hashes and per-case scores: validation-report.json.
 
 RAW PUBLIC SVG PIXEL DIFFERENCES
@@ -73,9 +73,9 @@ node tools/mermaid-oracle/validate.mjs /tmp/mermaid-oracle-dump /tmp/mermaid-ora
 
 CI force-records independent references for its own font environment, applies
 these gates, and uploads compiler version, both SVGs, differences and full JSON.
-Local artifacts for this run: /tmp/mermaid-oracle-cold-verified-results.
+Local artifacts for this run: /tmp/mermaid-refactor-publish-validation.
 
-FINAL REPOSITORY VERIFICATION
+PREVIOUS REPOSITORY VERIFICATION (before the core extraction)
 The complete scripts/check.roc run exited0 using the compiler pair above.
 It passed geometry375tests, Mermaid/package and differential expectations,
 fuzz contract tests and native smoke, all16native examples, node-editor smoke,
@@ -86,3 +86,15 @@ integration tests2/2 passed. The integration worktree is clean; the original
 checkout's existing edits were preserved.
 Logs for this session: /tmp/mermaid-oracle-all-repository-check.log,
 /tmp/mermaid-oracle-cold-verified.log, /tmp/mermaid-oracle-cold-guards.log.
+
+REFACTOR VERIFICATION
+The committed grouped-layout refactor preserves all391 saved native JSON/SVG
+profiles byte for byte, and its final-source binary passes all143 independent
+oracle cases with unchanged gates. The new public grouped example and all17
+native examples pass, as does the node-editor native smoke. All core/Mermaid
+native fuzz smoke targets complete200runs each. Generated docs keep private
+solver phases out of the public surface. The canonical repository check is
+being repeated with Zig0.16 from Blueprint.roc after the shell selected0.17
+for its benchmark-host build. These checks use the Oct26 package compiler;
+Oct27 checks the core and Mermaid packages successfully but fails in the
+existing node-editor Datastar/SQLite generic code. This is not a green-CI claim.
