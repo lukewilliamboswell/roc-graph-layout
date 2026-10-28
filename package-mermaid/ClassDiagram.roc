@@ -132,15 +132,18 @@ ClassDiagram :: {}.{
 		match ClassDiagram.parse(source) {
 			Err(found) => Err(problems.concat(found))
 			Ok(diagram) => if problems.is_empty() {
-				Ok(ClassDiagram.draw_diagram(diagram, theme))
+				Ok(ClassDiagramInternals.draw(diagram, theme))
 			} else {
 				Err(problems)
 			}
 		}
 	}
 
-	draw_diagram : Diagram, Theme.Options -> Drawing.Picture
-	draw_diagram = |diagram, theme| EntityDraw.draw(
+}
+
+ClassDiagramInternals :: {}.{
+	draw : ClassDiagram.Diagram, Theme.Options -> Drawing.Picture
+	draw = |diagram, theme| EntityDraw.draw(
 		diagram.classes.map(
 			|c| {
 				title = Str.join_with(c.annotations.concat([c.label]), "\n")
@@ -163,9 +166,7 @@ ClassDiagram :: {}.{
 		diagram.direction,
 		theme,
 	)
-}
 
-ClassDiagramInternals :: {}.{
 	declaration : Str -> [Some({ id : Str, label : Str, open : Bool }), None]
 	declaration = |line| {
 		raw = EntityText.trim(Str.from_utf8_lossy(line.to_utf8().drop_first(6)))
@@ -312,8 +313,8 @@ expect {
 		Err(_) => False
 		Ok(d) => d.classes.len() == 3 and d.relationships.len() == 4 and [Down, Up, Left, Right].all(
 			|direction| {
-				p = ClassDiagram.draw_diagram({ ..d, direction }, Theme.Options.{ max_label_width: 80 })
-				Drawing.is_finite(p) and p == ClassDiagram.draw_diagram({ ..d, direction }, Theme.Options.{ max_label_width: 80 })
+				p = ClassDiagramInternals.draw({ ..d, direction }, Theme.Options.{ max_label_width: 80 })
+				Drawing.is_finite(p) and p == ClassDiagramInternals.draw({ ..d, direction }, Theme.Options.{ max_label_width: 80 })
 			},
 		)
 	}

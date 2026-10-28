@@ -5,7 +5,8 @@ import Flowchart
 import Theme
 
 ## Read and draw Mermaid `erDiagram` database models. Entity headers,
-## attribute rows, keys and comments are retained. Relationship ends show
+## attribute rows, nullable types, keys and comments are retained. Square-bracket
+## entity aliases change the displayed header while references retain the ID. Relationship ends show
 ## exactly-one, optional-one, one-or-more or zero-or-more cardinalities;
 ## non-identifying (`..`) relationships use dashed lines.
 ##
@@ -69,7 +70,7 @@ EntityRelationship :: {}.{
 								$problems = $problems.append(Syntax({ near: line }))
 							}
 						}
-					} else if line.contains("--") or line.contains("..") {
+					} else if EntityText.split(line, "--") != Missing or EntityText.split(line, "..") != Missing {
 						match EntityRelationshipInternals.relationship(line) {
 							Err(_) => {
 								$problems = $problems.append(Syntax({ near: line }))
@@ -77,22 +78,22 @@ EntityRelationship :: {}.{
 							Ok(parsed) => {
 								from = EntityRelationshipInternals.ensure($entities, parsed.from)
 								to = EntityRelationshipInternals.ensure(from.entities, parsed.to)
-								$entities = to.entities
+								$entities = EntityRelationshipInternals.rename(EntityRelationshipInternals.rename(to.entities, from.index, parsed.from_label), to.index, parsed.to_label)
 								$relationships = $relationships.append({ from: from.index, to: to.index, from_cardinality: parsed.from_cardinality, to_cardinality: parsed.to_cardinality, identifying: parsed.identifying, label: parsed.label })
 							}
 						}
 					} else {
-						match words {
-							[id] if EntityText.identifier(id) => {
-								found = EntityRelationshipInternals.ensure($entities, EntityText.unquote(id))
-								$entities = found.entities
+						open = line.ends_with("{")
+						reference = if (open) EntityText.trim(Str.from_utf8_lossy(line.to_utf8().drop_last(1))) else line
+						match EntityRelationshipInternals.reference(reference) {
+							Some(ref) => {
+								found = EntityRelationshipInternals.ensure($entities, ref.id)
+								$entities = EntityRelationshipInternals.rename(found.entities, found.index, ref.label)
+								if open {
+									$open = Some(found.index)
+								}
 							}
-							[id, "{"] if EntityText.identifier(id) => {
-								found = EntityRelationshipInternals.ensure($entities, EntityText.unquote(id))
-								$entities = found.entities
-								$open = Some(found.index)
-							}
-							_ => {
+							None => {
 								$problems = $problems.append(Unsupported("ER statement: ${line}"))
 							}
 						}
@@ -119,17 +120,18 @@ EntityRelationship :: {}.{
 		match EntityRelationship.parse(source) {
 			Err(found) => Err(problems.concat(found))
 			Ok(diagram) => if problems.is_empty() {
-				Ok(EntityRelationship.draw_diagram(diagram, theme))
+				Ok(EntityRelationshipInternals.draw(diagram, theme))
 			} else {
 				Err(problems)
 			}
 		}
 	}
 
-	## Draw an already parsed diagram with a validated theme. Entity and
-	## relationship order follows the source, including parallel relationships.
-	draw_diagram : Diagram, Theme.Options -> Drawing.Picture
-	draw_diagram = |diagram, theme| EntityDraw.draw(
+}
+
+EntityRelationshipInternals :: {}.{
+	draw : EntityRelationship.Diagram, Theme.Options -> Drawing.Picture
+	draw = |diagram, theme| EntityDraw.draw(
 		diagram.entities.map(
 			|e| {
 				title: e.label,
@@ -148,9 +150,43 @@ EntityRelationship :: {}.{
 		diagram.direction,
 		theme,
 	)
-}
 
-EntityRelationshipInternals :: {}.{
+	Reference : { id : Str, label : [Some(Str), None] }
+	reference : Str -> [Some(Reference), None]
+	reference = |raw| {
+		text = EntityText.trim(raw)
+		if EntityText.identifier(text) {
+			return Some({ id: EntityText.unquote(text), label: None })
+		}
+		match EntityText.split(text, "[") {
+			Missing => None
+			Found(id_raw, label_raw) => {
+				id = EntityText.trim(id_raw)
+				label = EntityText.trim(label_raw)
+				if EntityText.identifier(id) and label.ends_with("]") {
+					display = EntityText.unquote(Str.from_utf8_lossy(label.to_utf8().drop_last(1)))
+					if display.is_empty() {
+						None
+					} else {
+						Some({ id: EntityText.unquote(id), label: Some(display) })
+					}
+				} else {
+					None
+				}
+			}
+		}
+	}
+
+	rename : List(EntityRelationship.Entity), U64, [Some(Str), None] -> List(EntityRelationship.Entity)
+	rename = |entities, index, label| match label {
+		None => entities
+		Some(display) => {
+			entity = entities.get(index) ?? { id: "", label: "", attributes: [] }
+			# index is returned by ensure for this exact list.
+			entities.set(index, { ..entity, label: display }) ?? []
+		}
+	}
+
 	ensure : List(EntityRelationship.Entity), Str -> { entities : List(EntityRelationship.Entity), index : U64 }
 	ensure = |entities, id| {
 		var $found = None
@@ -165,12 +201,21 @@ EntityRelationshipInternals :: {}.{
 		}
 	}
 
+	attribute_word : Str, Bool -> Bool
+	attribute_word = |word, type_word| {
+		bytes = word.to_utf8()
+		body = if (type_word and bytes.last() == Ok('?')) bytes.drop_last(1) else if (!type_word and bytes.first() == Ok('*')) bytes.drop_first(1) else bytes
+		first = body.first() ?? 0
+		alpha = |c| (c >= 'A' and c <= 'Z') or (c >= 'a' and c <= 'z') or c >= 128
+		!body.is_empty() and alpha(first) and body.all(|c| alpha(c) or (c >= '0' and c <= '9') or c == '_' or c == '-' or c == '[' or c == ']' or c == '(' or c == ')')
+	}
+
 	attribute : List(Str) -> Try(EntityRelationship.Attribute, [Invalid])
 	attribute = |words| match words {
 		[kind, name, .. as rest] => {
 			var $keys = []
 			var $comment = ""
-			var $valid = EntityText.identifier(name) and !kind.is_empty()
+			var $valid = EntityRelationshipInternals.attribute_word(name, False) and EntityRelationshipInternals.attribute_word(kind, True)
 			for token in rest {
 				if token.starts_with("\"") and token.ends_with("\"") {
 					$comment = EntityText.unquote(token)
@@ -195,12 +240,12 @@ EntityRelationshipInternals :: {}.{
 		_ => Err(Invalid)
 	}
 
-	relationship : Str -> Try({ from : Str, to : Str, from_cardinality : EntityRelationship.Cardinality, to_cardinality : EntityRelationship.Cardinality, identifying : Bool, label : Str }, [Invalid])
+	relationship : Str -> Try({ from : Str, to : Str, from_label : [Some(Str), None], to_label : [Some(Str), None], from_cardinality : EntityRelationship.Cardinality, to_cardinality : EntityRelationship.Cardinality, identifying : Bool, label : Str }, [Invalid])
 	relationship = |line| {
 		match EntityText.split(line, ":") {
 			Missing => Err(Invalid)
 			Found(head, label) => {
-				identifying = head.contains("--")
+				identifying = EntityText.split(head, "--") != Missing
 				match EntityText.split(head, if (identifying) "--" else "..") {
 					Missing => Err(Invalid)
 					Found(left, right) => {
@@ -213,8 +258,13 @@ EntityRelationshipInternals :: {}.{
 						to = EntityText.trim(Str.from_utf8_lossy(r.drop_first(2)))
 						a = Str.from_utf8_lossy(l.take_last(2))
 						b = Str.from_utf8_lossy(r.take_first(2))
-						if !EntityText.identifier(from) or !EntityText.identifier(to) {
-							return Err(Invalid)
+						from_ref = match EntityRelationshipInternals.reference(from) {
+							Some(ref) => ref
+							None => return Err(Invalid)
+						}
+						to_ref = match EntityRelationshipInternals.reference(to) {
+							Some(ref) => ref
+							None => return Err(Invalid)
 						}
 						from_cardinality = match a {
 							"||" => ExactlyOne
@@ -230,7 +280,7 @@ EntityRelationshipInternals :: {}.{
 							"o{" => ZeroMany
 							_ => return Err(Invalid)
 						}
-						Ok({ from: EntityText.unquote(from), to: EntityText.unquote(to), from_cardinality, to_cardinality, identifying, label: EntityText.unquote(label) })
+						Ok({ from: from_ref.id, to: to_ref.id, from_label: from_ref.label, to_label: to_ref.label, from_cardinality, to_cardinality, identifying, label: EntityText.unquote(label) })
 					}
 				}
 			}
@@ -263,8 +313,8 @@ expect {
 		Err(_) => False
 		Ok(d) => d.entities.len() == 3 and d.relationships.len() == 3 and [Down, Up, Left, Right].all(
 			|direction| {
-				p = EntityRelationship.draw_diagram({ ..d, direction }, Theme.Options.{ max_label_width: 80 })
-				Drawing.is_finite(p) and p == EntityRelationship.draw_diagram({ ..d, direction }, Theme.Options.{ max_label_width: 80 })
+				p = EntityRelationshipInternals.draw({ ..d, direction }, Theme.Options.{ max_label_width: 80 })
+				Drawing.is_finite(p) and p == EntityRelationshipInternals.draw({ ..d, direction }, Theme.Options.{ max_label_width: 80 })
 			},
 		)
 	}
@@ -280,5 +330,35 @@ expect match EntityRelationship.parse("erDiagram\n A }o..o| B : \"a: b\"\n") {
 		Ok(r) => r.from_cardinality == ZeroMany and r.to_cardinality == ZeroOne and !r.identifying and r.label == "a: b"
 		Err(_) => False
 	}
+	Err(_) => False
+}
+
+## Entity aliases change visible headers without changing source references.
+expect match EntityRelationship.parse("erDiagram\n CUSTOMER[Customer account] {\n string? display_name\n int account_id PK, FK \"account reference\"\n }\n CUSTOMER ||--o{ ORDER[\"Purchase order\"] : places\n CUSTOMER\n") {
+	Ok(d) => match (d.entities.get(0), d.entities.get(1)) {
+		(Ok(customer), Ok(order)) => customer.id == "CUSTOMER" and customer.label == "Customer account" and order.id == "ORDER" and order.label == "Purchase order" and match customer.attributes.get(1) {
+			Ok(attribute) => attribute.keys == ["PK", "FK"] and attribute.comment == "account reference"
+			Err(_) => False
+		}
+		_ => False
+	}
+	Err(_) => False
+}
+
+expect match EntityRelationship.parse("erDiagram\n A[\"Name: one--two\"] ||--o{ B : \"uses: records\"\n A { string? name }\n") {
+	Ok(d) => match d.entities.first() {
+		Ok(entity) => entity.label == "Name: one--two" and (entity.attributes.first() ?? { type: "", name: "", keys: [], comment: "" }).type == "string?"
+		Err(_) => False
+	}
+	Err(_) => False
+}
+
+expect match EntityRelationship.draw("erDiagram\n A[Customer account]\n A ||--o{ B[\"Purchase order\"] : places\n", Theme.Options.{}) {
+	Ok(picture) => Drawing.is_finite(picture) and picture.items.any(
+		|item| match item {
+			Text(label) => label.text == "Customer account"
+			_ => False
+		},
+	)
 	Err(_) => False
 }

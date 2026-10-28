@@ -59,9 +59,27 @@ EntityText :: {}.{
 	}
 
 	split : Str, Str -> [Found(Str, Str), Missing]
-	split = |text, separator| match text.split_on(separator) {
-		[] | [_] => Missing
-		[first, .. as rest] => Found(first, Str.join_with(rest, separator))
+	split = |text, separator| {
+		bytes = text.to_utf8()
+		needle = separator.to_utf8()
+		if needle.is_empty() {
+			return Missing
+		}
+		var $quoted = False
+		var $escaped = False
+		var $i = 0
+		while $i + needle.len() <= bytes.len() {
+			if !$quoted and bytes.sublist({ start: $i, len: needle.len() }) == needle {
+				return Found(Str.from_utf8_lossy(bytes.take_first($i)), Str.from_utf8_lossy(bytes.drop_first($i + needle.len())))
+			}
+			c = bytes.get($i) ?? 0
+			if c == '"' and !$escaped {
+				$quoted = !$quoted
+			}
+			$escaped = c == '\\' and !$escaped
+			$i = $i + 1
+		}
+		Missing
 	}
 
 	## Line/semicolon statements, excluding comments outside quoted labels.
@@ -146,3 +164,6 @@ EntityText :: {}.{
 
 expect EntityText.statements("erDiagram\n A ||--o{ B : \"owns; items\" %% ignored\n") == ["erDiagram", "A ||--o{ B : \"owns; items\""]
 expect EntityText.tokens("string name PK,FK \"display name\"") == ["string", "name", "PK,FK", "\"display name\""]
+
+expect EntityText.split("\"a:b\" : value", ":") == Found("\"a:b\" ", " value")
+expect EntityText.blocks("erDiagram; A { string? name \"label {text}\" }") == ["erDiagram", "A {", "string? name \"label {text}\"", "}"]

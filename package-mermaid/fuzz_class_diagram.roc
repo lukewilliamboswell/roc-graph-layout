@@ -31,18 +31,15 @@ test = |bytes| {
 				crash "relationship source alignment is invalid"
 			}
 			theme = Theme.Options.{}
-			picture = ClassDiagram.draw_diagram(diagram, theme)
+			picture = match ClassDiagram.draw(source, theme) {
+				Ok(p) => p
+				Err(_) => crash "successfully parsed diagram did not draw"
+			}
 			if !Drawing.is_finite(picture) {
 				crash "non-finite picture"
 			}
-			if picture != ClassDiagram.draw_diagram(diagram, theme) {
+			if Ok(picture) != ClassDiagram.draw(source, theme) {
 				crash "drawing is not deterministic"
-			}
-			match ClassDiagram.draw(source, theme) {
-				Err(_) => crash "successfully parsed diagram did not draw"
-				Ok(other) => if other != picture {
-					crash "one-call drawing differs"
-				}
 			}
 			svg = Svg.document(picture, "Inter")
 			if !svg.starts_with("<svg ") or !svg.ends_with("</svg>\n") {

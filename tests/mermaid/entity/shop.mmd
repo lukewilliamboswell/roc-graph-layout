@@ -1,9 +1,9 @@
 erDiagram
     direction LR
-    CUSTOMER {
+    CUSTOMER[Customer account] {
         int id PK
         string email UK "account email"
-        string name
+        string? name
     }
     ORDER {
         int id PK
@@ -11,13 +11,13 @@ erDiagram
         string status
     }
     LINE_ITEM {
-        int order_id PK,FK
-        int product_id PK,FK
+        int order_id PK, FK
+        int product_id PK, FK
         int quantity
     }
     PRODUCT {
         int id PK
-        string name
+        string? name
         decimal price
     }
     CUSTOMER ||--o{ ORDER : places
