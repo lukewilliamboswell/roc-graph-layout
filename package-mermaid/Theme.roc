@@ -27,33 +27,36 @@ Theme :: {}.{
 	}
 
 	## All independent invalid numeric properties, in a stable order. A valid
-	## theme never needs to be silently clamped by a renderer.
+	## theme never needs to be silently clamped by a renderer. Sizes are
+	## bounded to keep downstream geometry finite: text up to 1024 pixels,
+	## line spacing up to 8 em, wrapping and padding up to 16384 pixels,
+	## and outlines and corner radii up to 1024 pixels.
 	validate : Options -> List(Flowchart.Problem)
 	validate = |options| {
 		var $problems = []
 		for field in [
-			("font_size", options.font_size, True),
-			("line_height", options.line_height, True),
-			("max_label_width", options.max_label_width, True),
-			("padding", options.padding, False),
-			("line_width", options.line_width, False),
-			("corner_radius", options.corner_radius, False),
+			("font_size", options.font_size, True, 1024),
+			("line_height", options.line_height, True, 8),
+			("max_label_width", options.max_label_width, True, 16384),
+			("padding", options.padding, False, 16384),
+			("line_width", options.line_width, False, 1024),
+			("corner_radius", options.corner_radius, False, 1024),
 		] {
-			if !F64.is_finite(field.1) or field.1 < 0 or (field.2 and field.1 == 0) {
-				$problems = $problems.append(Unsupported("invalid theme property: ${field.0}"))
+			if !F64.is_finite(field.1) or field.1 < 0 or field.1 > field.3 or (field.2 and field.1 == 0) {
+				$problems = $problems.append(InvalidTheme(field.0))
 			}
 		}
 		match options.shadow {
 			NoShadow => {}
 			Shadow(s) => {
-				if !F64.is_finite(s.dx) {
-					$problems = $problems.append(Unsupported("invalid theme property: shadow.dx"))
+				if !F64.is_finite(s.dx) or s.dx.abs() > 16384 {
+					$problems = $problems.append(InvalidTheme("shadow.dx"))
 				}
-				if !F64.is_finite(s.dy) {
-					$problems = $problems.append(Unsupported("invalid theme property: shadow.dy"))
+				if !F64.is_finite(s.dy) or s.dy.abs() > 16384 {
+					$problems = $problems.append(InvalidTheme("shadow.dy"))
 				}
 				if !F64.is_finite(s.opacity) or s.opacity < 0 or s.opacity > 1 {
-					$problems = $problems.append(Unsupported("invalid theme property: shadow.opacity"))
+					$problems = $problems.append(InvalidTheme("shadow.opacity"))
 				}
 			}
 		}

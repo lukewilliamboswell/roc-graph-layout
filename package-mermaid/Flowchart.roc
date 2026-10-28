@@ -86,6 +86,7 @@ Flowchart := [].{
 		NotAFlowchart,
 		Syntax({ near : Str }),
 		Unsupported(Str),
+		InvalidTheme(Str),
 		TooManyEdges,
 		MissingLinkStyleEdge(Str),
 		UnnamedGroup,
