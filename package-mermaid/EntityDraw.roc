@@ -7,6 +7,7 @@ import font.Font
 import layout.Geom
 import Flowchart
 import FlowGeometry
+import FlowDraw
 import FlowLayout
 import EntityLayout
 import OracleJson
@@ -25,6 +26,12 @@ EntityDraw :: {}.{
 	radius = |theme| match theme.corners {
 		Rounded => theme.corner_radius
 		FamilyDefault | Square => 0
+	}
+
+	node_colors : U64, Theme.Options -> { fill : Drawing.Color, stroke : Drawing.Color }
+	node_colors = |index, theme| {
+		palette = if (theme.node_palette.is_empty()) FlowDraw.mermaid.group_colors else theme.node_palette
+		palette.get(index % palette.len()) ?? { fill: theme.node_fill, stroke: theme.node_stroke }
 	}
 
 	measure_text : Str, Theme.Options -> Block
@@ -92,7 +99,13 @@ EntityDraw :: {}.{
 			member_width = sections.fold(0.0, |width, section| section.fold(width, |value, row| value.max(row.width)))
 			width = title_width.max(member_width + title_width / 2) + theme.padding * 24 / 15
 			title_height = annotations.fold(title.height, |height, annotation| height + annotation.height) + theme.padding * 24 / 15
-			height = sections.fold(title_height, |h, section| h + section.fold(0.0, |n, row| n + row.height) + (if (section.is_empty()) 0 else (section.len() - 1).to_f64() * theme.font_size * 3 / 14) + theme.padding * 12 / 15 * (if (node.sections.all(List.is_empty)) 1.5 else 2))
+			height = sections.fold_with_index(
+				title_height,
+				|h, section, index| {
+					extra = if (index == 1 and (sections.first() ?? []).is_empty() and !section.is_empty()) theme.padding * 6 / 15 else 0
+					h + section.fold(0.0, |n, row| n + row.height) + (if (section.is_empty()) 0 else (section.len() - 1).to_f64() * theme.font_size * 3 / 14) + theme.padding * 12 / 15 * (if (node.sections.all(List.is_empty)) 1.5 else 2) + extra
+				},
+			)
 			{ title, annotations, sections, table: [], column_widths: [], row_heights: [], title_height, width: width.max(1), height: height.max(1) }
 		}
 	}
@@ -271,7 +284,7 @@ EntityDraw :: {}.{
 						match (measured.get(i), result.layout.positions.get(i)) {
 							(Ok(m), Ok(p)) => {
 								rect = { x: p.x - m.width / 2 + shadow.dx, y: p.y - m.height / 2 + shadow.dy, width: m.width, height: m.height }
-								$items = $items.append(Shape({ path: Drawing.rounded_rectangle(rect, EntityDraw.radius(theme)), paint: { fill: Fill(color), stroke: NoStroke } }))
+								$items = $items.append(Shape({ path: Drawing.rounded_rectangle(rect, EntityDraw.radius(theme)), paint: { fill: Fill(color), stroke: Stroke({ color, width: theme.line_width }) } }))
 							}
 							_ => {}
 						}
@@ -309,11 +322,12 @@ EntityDraw :: {}.{
 		for i in 0..<nodes.len() {
 			match (measured.get(i), result.layout.positions.get(i)) {
 				(Ok(m), Ok(p)) => {
+					palette = EntityDraw.node_colors(i, theme)
 					x = p.x - m.width / 2
 					y = p.y - m.height / 2
 					title_h = m.title_height
-					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: m.height }, EntityDraw.radius(theme)), paint: EntityDraw.paint(theme.background, theme.node_stroke, theme.line_width) }))
-					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: title_h }, EntityDraw.radius(theme)), paint: { fill: Fill(theme.node_fill), stroke: NoStroke } }))
+					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: m.height }, EntityDraw.radius(theme)), paint: EntityDraw.paint(palette.fill, palette.stroke, theme.line_width) }))
+					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: title_h }, EntityDraw.radius(theme)), paint: { fill: Fill(palette.fill), stroke: NoStroke } }))
 					node = nodes.get(i) ?? { kind: ClassBox, title: "", annotations: [], sections: [], table: [] }
 					annotation_height = m.annotations.fold(0.0, |height, annotation| height + annotation.height)
 					var $title_top = y + (m.title_height - m.title.height - annotation_height) / 2
@@ -326,9 +340,10 @@ EntityDraw :: {}.{
 					for section_index in 0..<m.sections.len() {
 						section = m.sections.get(section_index) ?? []
 						raw_section = node.sections.get(section_index) ?? []
-						$items = $items.append(EntityDraw.line({ x, y: $top }, { x: x + m.width, y: $top }, theme.node_stroke, theme.line_width))
+						$items = $items.append(EntityDraw.line({ x, y: $top }, { x: x + m.width, y: $top }, palette.stroke, theme.line_width))
 						section_padding = theme.padding * 12 / 15 * (if (node.sections.all(List.is_empty)) 0.75 else 1)
-						$top = $top + section_padding
+						extra = if (section_index == 1 and (m.sections.first() ?? []).is_empty() and !section.is_empty()) theme.padding * 6 / 15 else 0
+						$top = $top + section_padding + extra
 						for row_index in 0..<section.len() {
 							row = section.get(row_index) ?? { lines: [], width: 0, height: 0, baseline: 0, step: 0, font_size: 0 }
 							raw = raw_section.get(row_index) ?? ""
@@ -347,20 +362,20 @@ EntityDraw :: {}.{
 						for row_index in 0..<m.table.len() {
 							row = m.table.get(row_index) ?? []
 							row_height = m.row_heights.get(row_index) ?? 0
-							$items = $items.append(EntityDraw.line({ x, y: $top }, { x: x + m.width, y: $top }, theme.node_stroke, theme.line_width))
+							$items = $items.append(EntityDraw.line({ x, y: $top }, { x: x + m.width, y: $top }, palette.stroke, theme.line_width))
 							var $left = x
 							for column in 0..<row.len() {
 								cell = row.get(column) ?? { lines: [], width: 0, height: 0, baseline: 0, step: 0, font_size: 0 }
 								$items = $items.concat(EntityDraw.text(cell, { x: $left + theme.padding * 24 / 155 / 30, y: $top + (row_height - cell.height) / 2 }, Start, theme, theme.node_text))
 								if column > 0 {
-									$items = $items.append(EntityDraw.line({ x: $left, y: y + title_h }, { x: $left, y: y + m.height }, theme.node_stroke, theme.line_width))
+									$items = $items.append(EntityDraw.line({ x: $left, y: y + title_h }, { x: $left, y: y + m.height }, palette.stroke, theme.line_width))
 								}
 								$left = $left + (m.column_widths.get(column) ?? 0)
 							}
 							$top = $top + row_height
 						}
 					}
-					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: m.height }, EntityDraw.radius(theme)), paint: { fill: NoFill, stroke: Stroke({ color: theme.node_stroke, width: theme.line_width }) } }))
+					$items = $items.append(Shape({ path: Drawing.rounded_rectangle({ x, y, width: m.width, height: m.height }, EntityDraw.radius(theme)), paint: { fill: NoFill, stroke: Stroke({ color: palette.stroke, width: theme.line_width }) } }))
 				}
 				_ => {}
 			}
@@ -378,8 +393,8 @@ EntityDraw :: {}.{
 	## The placer routes against the node boxes. Match the two terminal
 	## points to the rounded borders actually painted by the table renderer.
 	clip_points : List(Drawing.Point), Edge, List(Measured), List(Drawing.Point), F64 -> List(Drawing.Point)
-	clip_points = |points, edge, boxes, centers, radius| {
-		if points.len() < 2 or radius <= 0 {
+	clip_points = |points, edge, boxes, centers, corner| {
+		if points.len() < 2 or corner <= 0 {
 			return points
 		}
 		match (boxes.get(edge.from), centers.get(edge.from), boxes.get(edge.to), centers.get(edge.to)) {
@@ -388,8 +403,8 @@ EntityDraw :: {}.{
 				to_rect = { x: q.x - b.width / 2, y: q.y - b.height / 2, width: b.width, height: b.height }
 				first = points.first() ?? p
 				last = points.last() ?? q
-				from = FlowTheme.rounded_point(from_rect, radius, first, points.get(1) ?? first)
-				to = FlowTheme.rounded_point(to_rect, radius, last, points.get(points.len() - 2) ?? last)
+				from = FlowTheme.rounded_point(from_rect, corner, first, points.get(1) ?? first)
+				to = FlowTheme.rounded_point(to_rect, corner, last, points.get(points.len() - 2) ?? last)
 				# len >= 2 proves both endpoint indices are in bounds.
 				last_index = points.len() - 1
 				(points.set(0, from) ?? []).set(last_index, to) ?? []
@@ -528,4 +543,14 @@ expect {
 			and clipped.last() == Ok(last)
 		Err(_) => False
 	}
+}
+
+## Oracle-derived classic compartment heights: a bare class retains both
+## empty member compartments; a methods-only class retains the extra lead-in
+## after its empty attributes compartment.
+expect {
+	theme = Theme.Options.{}
+	empty = EntityDraw.measure({ kind: ClassBox, title: "Empty", annotations: [], table: [], sections: [[], []] }, theme)
+	methods = EntityDraw.measure({ kind: ClassBox, title: "Methods", annotations: [], table: [], sections: [[], ["+run()"]] }, theme)
+	empty.height == 77 and methods.height == 112
 }

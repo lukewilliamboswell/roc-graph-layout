@@ -139,3 +139,12 @@ EntityLayout :: {}.{
 }
 
 expect EntityLayout.sort([{ low: 3, high: 4, index: 0 }, { low: 1, high: 2, index: 1 }, { low: 1, high: 2, index: 2 }]).map(|i| i.index) == [1, 2, 0]
+
+## Oracle-derived terminal-label gap: source label14+spacing4 and target
+## label14+marker clearance12+spacing4 add48 next to the endpoint layers.
+expect {
+	geometry = { nodes: [{ x: 0, y: 0, width: 30, height: 77 }, { x: 0, y: 117, width: 30, height: 77 }], edges: [{ points: [{ x: 15, y: 77 }, { x: 15, y: 117 }], label: None }], groups: [], bounds: { x: 0, y: 0, width: 30, height: 194 } }
+	terminals = [{ node: 0, point: { x: 15, y: 77 }, next: { x: 15, y: 117 }, extent: 18 }, { node: 1, point: { x: 15, y: 117 }, next: { x: 15, y: 77 }, extent: 30 }]
+	result = EntityLayout.reserve(geometry, terminals, True)
+	(result.nodes.get(1) ?? { x: 0, y: 0, width: 0, height: 0 }).y == 165 and (result.edges.first() ?? { points: [], label: None }).points == [{ x: 15, y: 77 }, { x: 15, y: 165 }]
+}

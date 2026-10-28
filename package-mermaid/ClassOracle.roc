@@ -4,7 +4,6 @@ import ClassRender
 import Drawing
 import EntityDraw
 import EntityOracle
-import Mermaid
 import OracleJson
 import Theme
 
@@ -17,7 +16,7 @@ ClassOracle :: {}.{
 	inspect = |source, theme| ClassOracle.inspect_sized(source, theme, [])
 
 	inspect_sized : Str, Theme.Options, List(OracleJson.Size) -> Str
-	inspect_sized = |source, theme, overrides| match (ClassDiagram.parse(source), Mermaid.draw_with(source, Mermaid.Options.{ theme })) {
+	inspect_sized = |source, theme, overrides| match (ClassDiagram.parse(source), ClassDiagram.draw(source, theme)) {
 		(Ok(diagram), Ok(default_picture)) => {
 			picture = if (overrides.is_empty()) default_picture else EntityDraw.draw_sized(ClassRender.nodes(diagram.classes), ClassRender.edges(diagram.relationships), diagram.direction, theme, diagram.classes.map(|c| c.id), overrides)
 			ids = diagram.classes.map(|c| c.id)

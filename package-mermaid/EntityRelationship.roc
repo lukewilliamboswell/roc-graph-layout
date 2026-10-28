@@ -13,6 +13,12 @@ import Theme
 ##
 ## `direction TB`, `BT`, `LR` and `RL` choose the reading direction.
 ## Unsupported statements are reported rather than silently discarded.
+## The default is Mermaid's square, unwrapped table/class appearance, with
+## source-ordered palette colours. `Theme.Options.node_palette` replaces the
+## palette; a one-entry list gives every box the same fill and outline.
+## Explicit `wrapping: Wrap` and `corners: Rounded` opt into those changes;
+## `max_label_width` and `corner_radius` then set their pixel values.
+
 EntityRelationship :: {}.{
 	Attribute : { type : Str, name : Str, keys : List(Str), comment : Str }
 	Entity : { id : Str, label : Str, attributes : List(Attribute) }

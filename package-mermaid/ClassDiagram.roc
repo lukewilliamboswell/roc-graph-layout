@@ -18,6 +18,12 @@ import Theme
 ## Supports class declarations, member blocks, `Class : member`, annotations,
 ## generic names (`List~T~`) and reading directions. Namespaces, interactions
 ## and style directives are reported as unsupported rather than approximated.
+## The default is Mermaid's square, unwrapped table/class appearance, with
+## source-ordered palette colours. `Theme.Options.node_palette` replaces the
+## palette; a one-entry list gives every box the same fill and outline.
+## Explicit `wrapping: Wrap` and `corners: Rounded` opt into those changes;
+## `max_label_width` and `corner_radius` then set their pixel values.
+
 ClassDiagram :: {}.{
 	Class : { id : Str, label : Str, generic_type : Str, fields : List(Str), methods : List(Str), annotations : List(Str) }
 	RelationshipKind : [Inheritance, Realization, Composition, Aggregation, Association, Dependency, Link, DottedLink]
@@ -353,4 +359,14 @@ expect {
 			)
 		Err(_) => False
 	}
+}
+
+## Oracle-derived identity: a generic class is keyed by its base name and
+## retains the first declared type parameter across later references.
+expect match ClassDiagram.parse("classDiagram\nclass List~T~\nclass List~U~\nStore --> List~T~ : returns\n") {
+	Ok(diagram) => diagram.classes.len() == 2 and match diagram.classes.first() {
+		Ok(item) => item.id == "List" and item.label == "List" and item.generic_type == "T"
+		Err(_) => False
+	}
+	Err(_) => False
 }

@@ -2,7 +2,6 @@ import Drawing
 import EntityDraw
 import EntityRelationship
 import EntityRender
-import Mermaid
 import OracleJson
 import TextMeasure
 import Theme
@@ -11,13 +10,13 @@ import font.Font
 ## Internal native facts for comparison with an independently recorded browser.
 EntityOracle :: {}.{
 	reference_theme : Theme.Options
-	reference_theme = Theme.Options.{ node_fill: Drawing.white, node_stroke: Drawing.rgb(0x28253D), node_text: Drawing.rgb(0x28253D), line: Drawing.black, line_width: 2, label_background: Drawing.rgb(0xE5E5E5), label_text: Drawing.rgb(0x28253D), line_height: 1.1, max_label_width: 16384, padding: 15, corners: Square, wrapping: NoWrap, shadow: NoShadow }
+	reference_theme = Theme.Options.{ node_fill: Drawing.white, node_stroke: Drawing.rgb(0x28253D), node_text: Drawing.rgb(0x28253D), line: Drawing.black, line_width: 2, label_background: Drawing.rgb(0xE5E5E5), label_text: Drawing.rgb(0x28253D), line_height: 1.1, max_label_width: 16384, padding: 15, corners: Square, wrapping: NoWrap }
 
 	inspect : Str, Theme.Options -> Str
 	inspect = |source, theme| EntityOracle.inspect_sized(source, theme, [])
 
 	inspect_sized : Str, Theme.Options, List(OracleJson.Size) -> Str
-	inspect_sized = |source, theme, overrides| match (EntityRelationship.parse(source), Mermaid.draw_with(source, Mermaid.Options.{ theme })) {
+	inspect_sized = |source, theme, overrides| match (EntityRelationship.parse(source), EntityRelationship.draw(source, theme)) {
 		(Ok(diagram), Ok(default_picture)) => {
 			picture = if (overrides.is_empty()) default_picture else EntityDraw.draw_sized(EntityRender.nodes(diagram.entities), EntityRender.edges(diagram.relationships), diagram.direction, theme, diagram.entities.map(|e| e.id), overrides)
 			ids = diagram.entities.map(|e| e.id)
