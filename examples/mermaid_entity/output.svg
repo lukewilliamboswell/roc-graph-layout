@@ -1,104 +1,104 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="4 4 1036.969 342" width="1036.969" height="342">
-<path d="M4 4L1040.969 4L1040.969 346L4 346Z" fill="#ffffff"/>
-<path d="M16 16L309.594 16L309.594 159L16 159Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
-<path d="M443.219 16L655.234 16L655.234 159L443.219 159Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
-<path d="M822.891 107.5L1024.469 107.5L1024.469 250.5L822.891 250.5Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
-<path d="M473.672 199L655.234 199L655.234 342L473.672 342Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
-<path d="M305.594 83.5L432.969 83.5" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M314.594 74.5L314.594 92.5" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M320.594 74.5L320.594 92.5" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M450.969 83.5C438.969 95.5 426.969 95.5 414.969 83.5C426.969 71.5 438.969 71.5 450.969 83.5" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M410.969 83.5C410.969 86.814 408.282 89.5 404.969 89.5C401.655 89.5 398.969 86.814 398.969 83.5C398.969 80.186 401.655 77.5 404.969 77.5C408.282 77.5 410.969 80.186 410.969 83.5Z" fill="#ffffff" stroke="#000000" stroke-width="2"/>
-<path d="M657.484 83.5L785.57 83.5C790.284 83.5 792.641 85.857 792.641 90.571L792.641 147.429C792.641 152.143 794.998 154.5 799.712 154.5L812.641 154.5" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M666.484 74.5L666.484 92.5" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M672.484 74.5L672.484 92.5" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M830.641 154.5C818.641 166.5 806.641 166.5 794.641 154.5C806.641 142.5 818.641 142.5 830.641 154.5" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M788.641 163.5L788.641 145.5" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M657.484 266.5L660.484 266.5M663.484 266.5L666.484 266.5M669.484 266.5L672.484 266.5M675.484 266.5L678.484 266.5M681.484 266.5L684.484 266.5M687.484 266.5L690.484 266.5M693.484 266.5L696.484 266.5M699.484 266.5L702.484 266.5M705.484 266.5L708.484 266.5M711.484 266.5L714.484 266.5M717.484 266.5L720.484 266.5M723.484 266.5L726.484 266.5M729.484 266.5L732.484 266.5M735.484 266.5L738.484 266.5M741.484 266.5L744.484 266.5M747.484 266.5L750.484 266.5M753.484 266.5L756.484 266.5M759.484 266.5L762.484 266.5M765.484 266.5L768.484 266.5M771.484 266.5L774.484 266.5M777.484 266.5L780.484 266.5M783.484 266.5L785.57 266.5L786.426 266.472L786.484 266.466M789.383 265.765L789.878 265.506L790.403 265.147L790.873 264.732L791.287 264.263L791.599 263.807M792.541 260.983L792.613 260.285L792.641 259.429L792.641 257.987M792.641 254.987L792.641 251.987M792.641 248.987L792.641 245.987M792.641 242.987L792.641 239.987M792.641 236.987L792.641 233.987M792.641 230.987L792.641 227.987M792.641 224.987L792.641 221.987M792.641 218.987L792.641 215.987M792.641 212.987L792.641 209.987M792.641 206.987L792.641 203.987M792.743 200.992L792.751 200.914L792.889 200.168L793.083 199.477L793.331 198.842L793.635 198.262L793.697 198.172M795.921 196.223L795.983 196.191L796.618 195.942L797.309 195.749L798.054 195.61L798.823 195.531M801.822 195.5L804.822 195.5M807.822 195.5L810.822 195.5" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M666.484 257.5L666.484 275.5" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M672.484 257.5L672.484 275.5" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M830.641 195.5C818.641 207.5 806.641 207.5 794.641 195.5C806.641 183.5 818.641 183.5 830.641 195.5" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M790.641 195.5C790.641 198.814 787.954 201.5 784.641 201.5C781.327 201.5 778.641 198.814 778.641 195.5C778.641 192.186 781.327 189.5 784.641 189.5C787.954 189.5 790.641 192.186 790.641 195.5Z" fill="#ffffff" stroke="#000000" stroke-width="2"/>
-<path d="M348.594 72.5L389.969 72.5C391.626 72.5 392.969 73.843 392.969 75.5L392.969 90.5C392.969 92.157 391.626 93.5 389.969 93.5L348.594 93.5C346.937 93.5 345.594 92.157 345.594 90.5L345.594 75.5C345.594 73.843 346.937 72.5 348.594 72.5Z" fill="#ffffff"/>
-<text x="369.281" y="88.5" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">places</text>
-<path d="M707.945 72.5L762.18 72.5C763.837 72.5 765.18 73.843 765.18 75.5L765.18 90.5C765.18 92.157 763.837 93.5 762.18 93.5L707.945 93.5C706.288 93.5 704.945 92.157 704.945 90.5L704.945 75.5C704.945 73.843 706.288 72.5 707.945 72.5Z" fill="#ffffff"/>
-<text x="735.063" y="88.5" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">contains</text>
-<path d="M700.484 255.5L769.641 255.5C771.297 255.5 772.641 256.843 772.641 258.5L772.641 273.5C772.641 275.157 771.297 276.5 769.641 276.5L700.484 276.5C698.828 276.5 697.484 275.157 697.484 273.5L697.484 258.5C697.484 256.843 698.828 255.5 700.484 255.5Z" fill="#ffffff"/>
-<text x="735.063" y="271.5" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">references</text>
-<path d="M12 12L305.594 12L305.594 155L12 155Z" fill="#fdf4ff" stroke="#e879f9" stroke-width="2"/>
-<path d="M12 12L305.594 12L305.594 47.75L12 47.75Z" fill="#fdf4ff"/>
-<text x="158.797" y="35.375" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">Customer account</text>
-<path d="M12 47.75L305.594 47.75" fill="none" stroke="#e879f9" stroke-width="2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="4 4 1039.136 342" width="1039.136" height="342">
+<path d="M4 4L1043.136 4L1043.136 346L4 346Z" fill="#ffffff"/>
+<path d="M16 16L310.184 16L310.184 159L16 159Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
+<path d="M443.809 16L656.406 16L656.406 159L443.809 159Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
+<path d="M824.063 107.5L1026.636 107.5L1026.636 250.5L824.063 250.5Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
+<path d="M474.262 199L656.406 199L656.406 342L474.262 342Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
+<path d="M306.184 83.5L433.559 83.5" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M315.184 74.5L315.184 92.5" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M321.184 74.5L321.184 92.5" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M451.559 83.5C439.559 95.5 427.559 95.5 415.559 83.5C427.559 71.5 439.559 71.5 451.559 83.5" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M411.559 83.5C411.559 86.814 408.872 89.5 405.559 89.5C402.245 89.5 399.559 86.814 399.559 83.5C399.559 80.186 402.245 77.5 405.559 77.5C408.872 77.5 411.559 80.186 411.559 83.5Z" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<path d="M658.656 83.5L786.741 83.5C791.455 83.5 793.813 85.857 793.813 90.571L793.813 147.429C793.813 152.143 796.17 154.5 800.884 154.5L813.813 154.5" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M667.656 74.5L667.656 92.5" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M673.656 74.5L673.656 92.5" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M831.813 154.5C819.813 166.5 807.813 166.5 795.813 154.5C807.813 142.5 819.813 142.5 831.813 154.5" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M789.813 163.5L789.813 145.5" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M658.656 266.5L661.656 266.5M664.656 266.5L667.656 266.5M670.656 266.5L673.656 266.5M676.656 266.5L679.656 266.5M682.656 266.5L685.656 266.5M688.656 266.5L691.656 266.5M694.656 266.5L697.656 266.5M700.656 266.5L703.656 266.5M706.656 266.5L709.656 266.5M712.656 266.5L715.656 266.5M718.656 266.5L721.656 266.5M724.656 266.5L727.656 266.5M730.656 266.5L733.656 266.5M736.656 266.5L739.656 266.5M742.656 266.5L745.656 266.5M748.656 266.5L751.656 266.5M754.656 266.5L757.656 266.5M760.656 266.5L763.656 266.5M766.656 266.5L769.656 266.5M772.656 266.5L775.656 266.5M778.656 266.5L781.656 266.5M784.656 266.5L786.741 266.5L787.598 266.472L787.655 266.466M790.555 265.765L791.05 265.506L791.575 265.147L792.045 264.732L792.459 264.263L792.771 263.807M793.713 260.983L793.785 260.285L793.813 259.429L793.813 257.987M793.813 254.987L793.813 251.987M793.813 248.987L793.813 245.987M793.813 242.987L793.813 239.987M793.813 236.987L793.813 233.987M793.813 230.987L793.813 227.987M793.813 224.987L793.813 221.987M793.813 218.987L793.813 215.987M793.813 212.987L793.813 209.987M793.813 206.987L793.813 203.987M793.915 200.992L793.923 200.914L794.061 200.168L794.254 199.477L794.503 198.842L794.807 198.262L794.868 198.172M797.093 196.223L797.155 196.191L797.79 195.942L798.481 195.749L799.226 195.61L799.994 195.531M802.994 195.5L805.994 195.5M808.994 195.5L811.994 195.5" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M667.656 257.5L667.656 275.5" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M673.656 257.5L673.656 275.5" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M831.813 195.5C819.813 207.5 807.813 207.5 795.813 195.5C807.813 183.5 819.813 183.5 831.813 195.5" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M791.813 195.5C791.813 198.814 789.126 201.5 785.813 201.5C782.499 201.5 779.813 198.814 779.813 195.5C779.813 192.186 782.499 189.5 785.813 189.5C789.126 189.5 791.813 192.186 791.813 195.5Z" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<path d="M349.184 72.5L390.559 72.5C392.215 72.5 393.559 73.843 393.559 75.5L393.559 90.5C393.559 92.157 392.215 93.5 390.559 93.5L349.184 93.5C347.527 93.5 346.184 92.157 346.184 90.5L346.184 75.5C346.184 73.843 347.527 72.5 349.184 72.5Z" fill="#ffffff"/>
+<text x="369.871" y="88.5" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">places</text>
+<path d="M709.117 72.5L763.352 72.5C765.008 72.5 766.352 73.843 766.352 75.5L766.352 90.5C766.352 92.157 765.008 93.5 763.352 93.5L709.117 93.5C707.46 93.5 706.117 92.157 706.117 90.5L706.117 75.5C706.117 73.843 707.46 72.5 709.117 72.5Z" fill="#ffffff"/>
+<text x="736.234" y="88.5" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">contains</text>
+<path d="M701.656 255.5L770.813 255.5C772.469 255.5 773.813 256.843 773.813 258.5L773.813 273.5C773.813 275.157 772.469 276.5 770.813 276.5L701.656 276.5C699.999 276.5 698.656 275.157 698.656 273.5L698.656 258.5C698.656 256.843 699.999 255.5 701.656 255.5Z" fill="#ffffff"/>
+<text x="736.234" y="271.5" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">references</text>
+<path d="M12 12L306.184 12L306.184 155L12 155Z" fill="#fdf4ff" stroke="#e879f9" stroke-width="2"/>
+<path d="M12 12L306.184 12L306.184 47.75L12 47.75Z" fill="#fdf4ff"/>
+<text x="159.092" y="35.375" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">Customer account</text>
+<path d="M12 47.75L306.184 47.75" fill="none" stroke="#e879f9" stroke-width="2"/>
 <text x="24.5" y="71.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">int</text>
 <text x="94.297" y="71.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">id</text>
 <text x="155.859" y="71.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">PK</text>
-<text x="200.688" y="71.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d"></text>
-<path d="M12 83.5L305.594 83.5" fill="none" stroke="#e879f9" stroke-width="2"/>
+<text x="201.277" y="71.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d"></text>
+<path d="M12 83.5L306.184 83.5" fill="none" stroke="#e879f9" stroke-width="2"/>
 <text x="24.5" y="106.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d">string</text>
 <text x="94.297" y="106.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d">email</text>
 <text x="155.859" y="106.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d">UK</text>
-<text x="200.688" y="106.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d">account email</text>
-<path d="M12 119.25L305.594 119.25" fill="none" stroke="#e879f9" stroke-width="2"/>
+<text x="201.277" y="106.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d">account email</text>
+<path d="M12 119.25L306.184 119.25" fill="none" stroke="#e879f9" stroke-width="2"/>
 <text x="24.5" y="142.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">string?</text>
 <text x="94.297" y="142.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">name</text>
 <text x="155.859" y="142.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d"></text>
-<text x="200.688" y="142.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d"></text>
+<text x="201.277" y="142.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d"></text>
 <path d="M81.797 47.75L81.797 155" fill="none" stroke="#e879f9" stroke-width="2"/>
 <path d="M143.359 47.75L143.359 155" fill="none" stroke="#e879f9" stroke-width="2"/>
-<path d="M188.188 47.75L188.188 155" fill="none" stroke="#e879f9" stroke-width="2"/>
-<path d="M12 12L305.594 12L305.594 155L12 155Z" fill="none" stroke="#e879f9" stroke-width="2"/>
-<path d="M439.219 12L651.234 12L651.234 155L439.219 155Z" fill="#f0fdfa" stroke="#2dd4bf" stroke-width="2"/>
-<path d="M439.219 12L651.234 12L651.234 47.75L439.219 47.75Z" fill="#f0fdfa"/>
-<text x="545.227" y="35.375" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">ORDER</text>
-<path d="M439.219 47.75L651.234 47.75" fill="none" stroke="#2dd4bf" stroke-width="2"/>
-<text x="451.719" y="71.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">int</text>
-<text x="514.344" y="71.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">id</text>
-<text x="620.375" y="71.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">PK</text>
-<path d="M439.219 83.5L651.234 83.5" fill="none" stroke="#2dd4bf" stroke-width="2"/>
-<text x="451.719" y="106.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d">int</text>
-<text x="514.344" y="106.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d">customer_id</text>
-<text x="620.375" y="106.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d">FK</text>
-<path d="M439.219 119.25L651.234 119.25" fill="none" stroke="#2dd4bf" stroke-width="2"/>
-<text x="451.719" y="142.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">string</text>
-<text x="514.344" y="142.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">status</text>
-<text x="620.375" y="142.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d"></text>
-<path d="M501.844 47.75L501.844 155" fill="none" stroke="#2dd4bf" stroke-width="2"/>
-<path d="M607.875 47.75L607.875 155" fill="none" stroke="#2dd4bf" stroke-width="2"/>
-<path d="M439.219 12L651.234 12L651.234 155L439.219 155Z" fill="none" stroke="#2dd4bf" stroke-width="2"/>
-<path d="M818.891 103.5L1020.469 103.5L1020.469 246.5L818.891 246.5Z" fill="#fff7ed" stroke="#fb923c" stroke-width="2"/>
-<path d="M818.891 103.5L1020.469 103.5L1020.469 139.25L818.891 139.25Z" fill="#fff7ed"/>
-<text x="919.68" y="126.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">LINE_ITEM</text>
-<path d="M818.891 139.25L1020.469 139.25" fill="none" stroke="#fb923c" stroke-width="2"/>
-<text x="831.391" y="162.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">int</text>
-<text x="872.641" y="162.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">order_id</text>
-<text x="967.906" y="162.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">PK,FK</text>
-<path d="M818.891 175L1020.469 175" fill="none" stroke="#fb923c" stroke-width="2"/>
-<text x="831.391" y="198.375" font-family="Inter, sans-serif" font-size="14" fill="#28253d">int</text>
-<text x="872.641" y="198.375" font-family="Inter, sans-serif" font-size="14" fill="#28253d">product_id</text>
-<text x="967.906" y="198.375" font-family="Inter, sans-serif" font-size="14" fill="#28253d">PK,FK</text>
-<path d="M818.891 210.75L1020.469 210.75" fill="none" stroke="#fb923c" stroke-width="2"/>
-<text x="831.391" y="234.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">int</text>
-<text x="872.641" y="234.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">quantity</text>
-<text x="967.906" y="234.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d"></text>
-<path d="M860.141 139.25L860.141 246.5" fill="none" stroke="#fb923c" stroke-width="2"/>
-<path d="M955.406 139.25L955.406 246.5" fill="none" stroke="#fb923c" stroke-width="2"/>
-<path d="M818.891 103.5L1020.469 103.5L1020.469 246.5L818.891 246.5Z" fill="none" stroke="#fb923c" stroke-width="2"/>
-<path d="M469.672 195L651.234 195L651.234 338L469.672 338Z" fill="#ecfeff" stroke="#22d3ee" stroke-width="2"/>
-<path d="M469.672 195L651.234 195L651.234 230.75L469.672 230.75Z" fill="#ecfeff"/>
-<text x="560.453" y="218.375" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">PRODUCT</text>
-<path d="M469.672 230.75L651.234 230.75" fill="none" stroke="#22d3ee" stroke-width="2"/>
-<text x="482.172" y="254.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">int</text>
-<text x="558.813" y="254.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">id</text>
-<text x="620.375" y="254.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">PK</text>
-<path d="M469.672 266.5L651.234 266.5" fill="none" stroke="#22d3ee" stroke-width="2"/>
-<text x="482.172" y="289.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d">string?</text>
-<text x="558.813" y="289.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d">name</text>
-<text x="620.375" y="289.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d"></text>
-<path d="M469.672 302.25L651.234 302.25" fill="none" stroke="#22d3ee" stroke-width="2"/>
-<text x="482.172" y="325.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">decimal</text>
-<text x="558.813" y="325.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">price</text>
-<text x="620.375" y="325.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d"></text>
-<path d="M546.313 230.75L546.313 338" fill="none" stroke="#22d3ee" stroke-width="2"/>
-<path d="M607.875 230.75L607.875 338" fill="none" stroke="#22d3ee" stroke-width="2"/>
-<path d="M469.672 195L651.234 195L651.234 338L469.672 338Z" fill="none" stroke="#22d3ee" stroke-width="2"/>
+<path d="M188.777 47.75L188.777 155" fill="none" stroke="#e879f9" stroke-width="2"/>
+<path d="M12 12L306.184 12L306.184 155L12 155Z" fill="none" stroke="#e879f9" stroke-width="2"/>
+<path d="M439.809 12L652.406 12L652.406 155L439.809 155Z" fill="#f0fdfa" stroke="#2dd4bf" stroke-width="2"/>
+<path d="M439.809 12L652.406 12L652.406 47.75L439.809 47.75Z" fill="#f0fdfa"/>
+<text x="546.107" y="35.375" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">ORDER</text>
+<path d="M439.809 47.75L652.406 47.75" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+<text x="452.309" y="71.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">int</text>
+<text x="514.934" y="71.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">id</text>
+<text x="620.965" y="71.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">PK</text>
+<path d="M439.809 83.5L652.406 83.5" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+<text x="452.309" y="106.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d">int</text>
+<text x="514.934" y="106.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d">customer_id</text>
+<text x="620.965" y="106.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d">FK</text>
+<path d="M439.809 119.25L652.406 119.25" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+<text x="452.309" y="142.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">string</text>
+<text x="514.934" y="142.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">status</text>
+<text x="620.965" y="142.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d"></text>
+<path d="M502.434 47.75L502.434 155" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+<path d="M608.465 47.75L608.465 155" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+<path d="M439.809 12L652.406 12L652.406 155L439.809 155Z" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+<path d="M820.063 103.5L1022.636 103.5L1022.636 246.5L820.063 246.5Z" fill="#fff7ed" stroke="#fb923c" stroke-width="2"/>
+<path d="M820.063 103.5L1022.636 103.5L1022.636 139.25L820.063 139.25Z" fill="#fff7ed"/>
+<text x="921.349" y="126.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">LINE_ITEM</text>
+<path d="M820.063 139.25L1022.636 139.25" fill="none" stroke="#fb923c" stroke-width="2"/>
+<text x="832.563" y="162.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">int</text>
+<text x="874.225" y="162.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">order_id</text>
+<text x="969.49" y="162.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">PK,FK</text>
+<path d="M820.063 175L1022.636 175" fill="none" stroke="#fb923c" stroke-width="2"/>
+<text x="832.563" y="198.375" font-family="Inter, sans-serif" font-size="14" fill="#28253d">int</text>
+<text x="874.225" y="198.375" font-family="Inter, sans-serif" font-size="14" fill="#28253d">product_id</text>
+<text x="969.49" y="198.375" font-family="Inter, sans-serif" font-size="14" fill="#28253d">PK,FK</text>
+<path d="M820.063 210.75L1022.636 210.75" fill="none" stroke="#fb923c" stroke-width="2"/>
+<text x="832.563" y="234.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">int</text>
+<text x="874.225" y="234.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">quantity</text>
+<text x="969.49" y="234.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d"></text>
+<path d="M861.725 139.25L861.725 246.5" fill="none" stroke="#fb923c" stroke-width="2"/>
+<path d="M956.99 139.25L956.99 246.5" fill="none" stroke="#fb923c" stroke-width="2"/>
+<path d="M820.063 103.5L1022.636 103.5L1022.636 246.5L820.063 246.5Z" fill="none" stroke="#fb923c" stroke-width="2"/>
+<path d="M470.262 195L652.406 195L652.406 338L470.262 338Z" fill="#ecfeff" stroke="#22d3ee" stroke-width="2"/>
+<path d="M470.262 195L652.406 195L652.406 230.75L470.262 230.75Z" fill="#ecfeff"/>
+<text x="561.334" y="218.375" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">PRODUCT</text>
+<path d="M470.262 230.75L652.406 230.75" fill="none" stroke="#22d3ee" stroke-width="2"/>
+<text x="482.762" y="254.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">int</text>
+<text x="559.402" y="254.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">id</text>
+<text x="620.965" y="254.125" font-family="Inter, sans-serif" font-size="14" fill="#28253d">PK</text>
+<path d="M470.262 266.5L652.406 266.5" fill="none" stroke="#22d3ee" stroke-width="2"/>
+<text x="482.762" y="289.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d">string?</text>
+<text x="559.402" y="289.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d">name</text>
+<text x="620.965" y="289.875" font-family="Inter, sans-serif" font-size="14" fill="#28253d"></text>
+<path d="M470.262 302.25L652.406 302.25" fill="none" stroke="#22d3ee" stroke-width="2"/>
+<text x="482.762" y="325.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">decimal</text>
+<text x="559.402" y="325.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d">price</text>
+<text x="620.965" y="325.625" font-family="Inter, sans-serif" font-size="14" fill="#28253d"></text>
+<path d="M546.902 230.75L546.902 338" fill="none" stroke="#22d3ee" stroke-width="2"/>
+<path d="M608.465 230.75L608.465 338" fill="none" stroke="#22d3ee" stroke-width="2"/>
+<path d="M470.262 195L652.406 195L652.406 338L470.262 338Z" fill="none" stroke="#22d3ee" stroke-width="2"/>
 </svg>

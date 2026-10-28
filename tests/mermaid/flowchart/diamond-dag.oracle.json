@@ -1,10 +1,10 @@
 {
-	"schema": 10,
-	"key": "0d607e1c96e38ffebdac530be98700f332f9a8777072f5cdd4c8e162f16388d7",
+	"schema": 11,
+	"key": "3f9aa894bb833ac3bf3883ffeb491356c49d5f9bbee6644ac43f8cfe9b993ea6",
 	"provenance": {
-		"extractor": 10,
+		"extractor": 11,
 		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
-		"tool_sha256": "96ee409ebad6eb661687da17d8923ea8d757074a4c24647d9b4b33822435aba9",
+		"tool_sha256": "64a229f0bbb3d8c7be1e1be6ec0da2a035e2c815e3b527d670ad0b57463c73bd",
 		"measurement_viewport": {
 			"width": 800,
 			"height": 600,
@@ -14,8 +14,8 @@
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",
-		"platform": "darwin",
-		"architecture": "arm64",
+		"platform": "linux",
+		"architecture": "x64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
@@ -1568,7 +1568,7 @@
 				"label": {
 					"x": 179.1640625,
 					"y": 24.000000953674316,
-					"width": 9.671875,
+					"width": 10,
 					"height": 17
 				},
 				"text": {
@@ -1578,7 +1578,7 @@
 					"box": {
 						"x": -4.8359375,
 						"y": 9.5367431640625e-7,
-						"width": 9.671875,
+						"width": 10,
 						"height": 17
 					}
 				}

@@ -1,3 +1,4 @@
+import { openBrowserSession } from './browser.mjs';
 // Pixel comparison of two SVG drawings in the pinned browser with the pinned
 // font, shared by `visual.mjs` (drawing stage) and `e2e.mjs` (whole
 // pipeline). Authoring only; never part of a Roc package.
@@ -17,8 +18,7 @@ const FAMILIES = [FONT_FAMILY, 'Inter'];
 
 // Launches a browser with one page set up for `compare`.
 export async function openRaster() {
-	const puppeteer = require('puppeteer');
-	const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--font-render-hinting=none'] });
+	const browser = await openBrowserSession();
 	const page = await browser.newPage();
 	await page.setRequestInterception(true);
 	page.on('request', request => (request.url().startsWith('data:') ? request.continue() : request.abort()));

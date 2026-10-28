@@ -1,10 +1,10 @@
 {
-	"schema": 10,
-	"key": "292b042ddddfb795f7ce834056c7c051b8a6e235d6ae52a9317bb0857ad2e0ec",
+	"schema": 11,
+	"key": "0ac38ad988237d6ef0bec95d640cad6e65e0355b63534696f3f5beae4a6fc3a1",
 	"provenance": {
-		"extractor": 10,
+		"extractor": 11,
 		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
-		"tool_sha256": "96ee409ebad6eb661687da17d8923ea8d757074a4c24647d9b4b33822435aba9",
+		"tool_sha256": "64a229f0bbb3d8c7be1e1be6ec0da2a035e2c815e3b527d670ad0b57463c73bd",
 		"measurement_viewport": {
 			"width": 800,
 			"height": 600,
@@ -14,8 +14,8 @@
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",
-		"platform": "darwin",
-		"architecture": "arm64",
+		"platform": "linux",
+		"architecture": "x64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,

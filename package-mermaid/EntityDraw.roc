@@ -41,22 +41,27 @@ EntityDraw :: {}.{
 	measure_text = |text, theme| EntityDraw.measure_text_at(text, theme, theme.font_size)
 
 	measure_text_at : Str, Theme.Options, F64 -> Block
-	measure_text_at = |text, theme, font_size| {
-		measured = TextMeasure.block_advance(
-			text,
-			{
-				font: TextMeasure.inter,
-				size: font_size,
-				line_height: theme.line_height,
-				wrap: (
-					match theme.wrapping {
-						Wrap => Width(theme.max_label_width)
-						FamilyDefault | NoWrap => NoWrap
-					}
-				),
-				align: Start,
-			},
-		)
+	measure_text_at = |text, theme, font_size| EntityDraw.measure_text_weight(text, theme, font_size, False)
+
+	measure_text_weight : Str, Theme.Options, F64, Bool -> Block
+	measure_text_weight = |text, theme, font_size, bold| {
+		style = {
+			font: TextMeasure.inter,
+			size: font_size,
+			line_height: theme.line_height,
+			wrap: (
+				match theme.wrapping {
+					Wrap => Width(theme.max_label_width)
+					FamilyDefault | NoWrap => NoWrap
+				}
+			),
+			align: Start,
+		}
+		measured = if bold {
+			TextMeasure.block_bold(text, style)
+		} else {
+			TextMeasure.block(text, style)
+		}
 		metrics = Font.metrics(TextMeasure.inter)
 		scale = font_size / Font.units_per_em(TextMeasure.inter).to_f64()
 		# Reserve real font ascent/descent independently of the requested
@@ -76,7 +81,7 @@ EntityDraw :: {}.{
 
 	measure : Node, Theme.Options -> Measured
 	measure = |node, theme| {
-		title = EntityDraw.measure_text(node.title, theme)
+		title = EntityDraw.measure_text_weight(node.title, theme, theme.font_size, node.kind == ClassBox)
 		annotations = node.annotations.map(|label| EntityDraw.measure_text(label, theme))
 		sections = node.sections.map(|section| section.map(|row| EntityDraw.measure_text(if (node.kind == ClassBox) ClassMember.parse(row, row.contains("(")).text else row, theme)))
 		table = node.table.map(|row| row.map(|cell| EntityDraw.measure_text(cell, theme)))
@@ -102,8 +107,17 @@ EntityDraw :: {}.{
 			member_width = sections.fold(0.0, |width, section| section.fold(width, |value, row| value.max(row.width)))
 			width = title_width.max(member_width + title_width / 2) + theme.padding * 24 / 15
 			title_height = annotations.fold(title.height, |height, annotation| height + annotation.height) + theme.padding * 24 / 15
+			# Mermaid centres each text block on its own first-line height.
+			# With no annotation, a taller bold title therefore extends the
+			# shared content bounds above the regular member rows as well.
+			regular_title = EntityDraw.measure_text(node.title, theme)
+			header_overhang = if annotations.is_empty() and sections.any(|section| !section.is_empty()) {
+				(title.height - regular_title.height).max(0) / 2
+			} else {
+				0
+			}
 			height = sections.fold_with_index(
-				title_height,
+				title_height + header_overhang,
 				|h, section, index| {
 					extra = if (index == 1 and (sections.first() ?? []).is_empty() and !section.is_empty()) theme.padding * 6 / 15 else 0
 					h + section.fold(0.0, |n, row| n + row.height) + (if (section.is_empty()) 0 else (section.len() - 1).to_f64() * theme.font_size * 3 / 14) + theme.padding * 12 / 15 * (if (node.sections.all(List.is_empty)) 1.5 else 2) + extra
@@ -751,7 +765,7 @@ expect {
 	theme = Theme.Options.{}
 	empty = EntityDraw.measure({ kind: ClassBox, has_comment_column: False, title: "Empty", annotations: [], table: [], sections: [[], []] }, theme)
 	methods = EntityDraw.measure({ kind: ClassBox, has_comment_column: False, title: "Methods", annotations: [], table: [], sections: [[], ["+run()"]] }, theme)
-	empty.height == 77 and methods.height == 112
+	empty.height == 78 and methods.height == 112
 }
 
 ## Regression: actual terminal label dimensions determine the endpoint-relative
@@ -765,15 +779,15 @@ expect {
 ## Regression: marker margins trim only the painted route, including bends.
 expect EntityDraw.inset_route([{ x: 0, y: 0 }, { x: 0, y: 30 }, { x: 40, y: 30 }], 17.25, 6) == [{ x: 0, y: 17.25 }, { x: 0, y: 30 }, { x: 34, y: 30 }]
 
-## Regression: pinned native typographic widths and role padding contribute
+## Regression: pinned Linux glyph bounds and role padding contribute
 ## to actual production input dimensions, rather than only oracle metadata.
 expect {
 	m = EntityDraw.measure({ kind: ClassBox, has_comment_column: False, title: "CardPayment", annotations: [], sections: [[], ["+capture() Receipt"]], table: [] }, Theme.Options.{})
-	m.width == 200.4296875
+	m.width == 201.0517578125
 }
 expect {
 	m = EntityDraw.measure({ kind: EntityBox, has_comment_column: False, title: "ORDER", annotations: [], sections: [], table: [["int", "id", "PK"], ["int", "customer_id", "FK"], ["string", "status", ""]] }, Theme.Options.{})
-	m.shape_width == 212.015625 and m.width == 224.515625
+	m.shape_width == 212.59765625 and m.width == 225.09765625
 }
 
 ## Regression: pinned ER zero-many circles keep distinct source/target

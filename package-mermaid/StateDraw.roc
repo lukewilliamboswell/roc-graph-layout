@@ -35,15 +35,11 @@ StateDraw :: {}.{
 	}
 
 	measure_block : Str, Theme.Options, [NoWrap, Width(F64)] -> Block
-	measure_block = |text, options, wrap| StateDraw.measure_block_mode(text, options, wrap, True)
-
-	transition_block : Str, Theme.Options -> Block
-	transition_block = |text, options| StateDraw.measure_block_mode(text, options, if (options.wrapping == Wrap) Width(options.max_label_width) else NoWrap, True)
-
-	measure_block_mode : Str, Theme.Options, [NoWrap, Width(F64)], Bool -> Block
-	measure_block_mode = |text, options, wrap, advance| {
+	measure_block = |text, options, wrap| {
 		style = { font: TextMeasure.inter, size: options.font_size, line_height: options.line_height, wrap, align: Middle }
-		measured = TextMeasure.block_svg(text, style, advance)
+		# The canonical Linux SVG bounds include horizontal glyph overhangs
+		# and use the browser-rounded font ascent and descent.
+		measured = TextMeasure.block(text, style)
 		# Browser-rounded metrics are authoritative at ordinary sizes.
 		# Unrounded font extents retain finite tiny text without charging
 		# every ordinary label for an emoji descender it does not contain.
@@ -53,6 +49,9 @@ StateDraw :: {}.{
 		height = if (text == "") 0 else raw_height + (measured.lines.len().max(1) - 1).to_f64() * options.font_size * options.line_height
 		{ ..measured, height: height.max(measured.height) }
 	}
+
+	transition_block : Str, Theme.Options -> Block
+	transition_block = |text, options| StateDraw.measure_block(text, options, if (options.wrapping == Wrap) Width(options.max_label_width) else NoWrap)
 
 	baseline : Theme.Options -> F64
 	baseline = |options| {

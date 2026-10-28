@@ -495,6 +495,6 @@ expect {
 		and picture.items.first()? == Shape({ path: Drawing.rectangle(StateDraw.setup(d, Theme.Options.{}).geometry.nodes.first()?), paint: { fill: Fill(Drawing.black), stroke: Stroke({ color: Drawing.rgb(0x28253D), width: 2 }) } })
 }
 
-## The pinned transition label input uses typographic advance rather than
-## the rounded glyph-outline overhang at the end of "submit".
-expect StateDraw.transition_block("submit", Theme.Options.{}).width == 44.484375
+## The pinned Linux transition label includes the rounded glyph-outline
+## overhang at the end of "submit".
+expect StateDraw.transition_block("submit", Theme.Options.{}).width == 44.89453125

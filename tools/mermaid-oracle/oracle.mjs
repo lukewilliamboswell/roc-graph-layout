@@ -12,6 +12,7 @@
 //
 // Options: --force recomputes even when the key matches.
 import fs from 'node:fs/promises';
+import { openBrowserSession, BROWSER_PLATFORM, BROWSER_ARCHITECTURE } from './browser.mjs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
@@ -21,7 +22,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 
 // Bump when the shape or meaning of a record changes.
-const EXTRACTOR_VERSION = 10;
+const EXTRACTOR_VERSION = 11;
 export const FONT_FAMILY = 'Oracle Inter';
 export const FONT_FILE = path.join(here, 'fonts', 'Inter-Regular.ttf');
 const CASE_TIMEOUT_MS = 20000;
@@ -47,17 +48,17 @@ export async function provenance() {
 	return {
 		extractor: EXTRACTOR_VERSION,
 		extractor_sha256: sha256(Buffer.from(extractInPage.toString())),
-		tool_sha256: sha256(await fs.readFile(fileURLToPath(import.meta.url))),
+		tool_sha256: sha256(Buffer.concat([await fs.readFile(fileURLToPath(import.meta.url)), await fs.readFile(new URL('./browser.mjs', import.meta.url))])),
 		measurement_viewport: MEASUREMENT_VIEWPORT,
 		browser_context: 'fresh page for each source',
 		mermaid: installedVersion('mermaid'),
 		// Puppeteer pins the exact browser build it downloads.
 		puppeteer: installedVersion('puppeteer'),
 		browser_revision: await require('puppeteer').default.browserVersion(),
-		// Glyph ink bounds and fonts missing from Inter are host-dependent.
-		// Never reuse a cache entry across operating systems or architectures.
-		platform: process.platform,
-		architecture: process.arch,
+		// The browser, rather than the native executable's host, defines font
+		// measurements. Local and remote sessions enforce this same target.
+		platform: BROWSER_PLATFORM,
+		architecture: BROWSER_ARCHITECTURE,
 		font_sha256: sha256(await fs.readFile(FONT_FILE)),
 		config: CONFIG,
 	};
@@ -391,15 +392,7 @@ async function extractInPage(source) {
 // ------------------------------------------------------------------ node side
 
 export async function openBrowser() {
-	const puppeteer = require('puppeteer');
-	// The page only loads the pinned local Mermaid bundle and the pinned font;
-	// every network request is refused below. The sandbox is disabled because
-	// common Linux hosts block the unprivileged namespaces Chrome needs.
-	const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--font-render-hinting=none'] });
-	if (!(await browser.version()).endsWith(`/${await puppeteer.default.browserVersion()}`)) {
-		await browser.close();
-		throw new Error('oracle browser does not match Puppeteer\'s pinned revision');
-	}
+	const browser = await openBrowserSession();
 	const font = (await fs.readFile(FONT_FILE)).toString('base64');
 	const mermaidJs = require.resolve('mermaid/dist/mermaid.min.js');
 

@@ -1,3 +1,4 @@
+import { openBrowserSession } from './browser.mjs';
 // Text-measurement probes against the pinned browser and font. Authoring only.
 //
 //   node measure_probe.mjs <file.mmd>      print the rendered SVG of one case
@@ -11,8 +12,7 @@ import { CONFIG, FONT_FAMILY, FONT_FILE } from './oracle.mjs';
 const require = createRequire(import.meta.url);
 
 export async function openPage() {
-	const puppeteer = require('puppeteer');
-	const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--font-render-hinting=none'] });
+	const browser = await openBrowserSession();
 	const font = (await fs.readFile(FONT_FILE)).toString('base64');
 	const page = await browser.newPage();
 	await page.setRequestInterception(true);

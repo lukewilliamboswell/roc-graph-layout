@@ -1,10 +1,10 @@
 {
-	"schema": 10,
-	"key": "f46f344718be6e8ce32849818ae855689a1690d5ceb3ee23235032b0c471e9c3",
+	"schema": 11,
+	"key": "ee2a296073235322decdc27d69ce84dbd1ddbf39c285fa57061e4d6668e2e29c",
 	"provenance": {
-		"extractor": 10,
+		"extractor": 11,
 		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
-		"tool_sha256": "96ee409ebad6eb661687da17d8923ea8d757074a4c24647d9b4b33822435aba9",
+		"tool_sha256": "64a229f0bbb3d8c7be1e1be6ec0da2a035e2c815e3b527d670ad0b57463c73bd",
 		"measurement_viewport": {
 			"width": 800,
 			"height": 600,
@@ -14,8 +14,8 @@
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",
-		"platform": "darwin",
-		"architecture": "arm64",
+		"platform": "linux",
+		"architecture": "x64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
@@ -192,7 +192,7 @@
 				"colorIndex": 0,
 				"domId": "oracle-S",
 				"labelBBox": {
-					"width": 8.984375,
+					"width": 9,
 					"height": 17
 				},
 				"x": 200,
@@ -200,16 +200,16 @@
 				"width": 376,
 				"height": 109,
 				"labelData": {
-					"width": 8.984375,
+					"width": 9,
 					"height": 15,
 					"wrappingWidth": 120
 				},
 				"labels": [
 					{
 						"text": "S",
-						"width": 8.984375,
+						"width": 9,
 						"height": 15,
-						"x": 183.5078125,
+						"x": 183.5,
 						"y": 5
 					}
 				],
@@ -1447,9 +1447,9 @@
 					"height": 109
 				},
 				"label": {
-					"x": 195.5078125,
+					"x": 195.5,
 					"y": 12.000000953674316,
-					"width": 8.984375,
+					"width": 9,
 					"height": 17
 				},
 				"text": {
@@ -1459,7 +1459,7 @@
 					"box": {
 						"x": 0,
 						"y": 9.5367431640625e-7,
-						"width": 8.984375,
+						"width": 9,
 						"height": 17
 					}
 				}
@@ -1508,5 +1508,5 @@
 			}
 		]
 	},
-	"svg_sha256": "46f5a9e235a844407bad40048f0ac4e891fd4cb82c3dba721bb44425e0570e48"
+	"svg_sha256": "ab34036f17b2beeebf983bff793731eba56baaaccb435ac1ad92b04c0736bd16"
 }

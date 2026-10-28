@@ -49,10 +49,10 @@ TextMeasure :: {}.{
 	block : Str, Style -> FlowGeometry.TextBlock
 	block = |text, style| TextMeasure.block_width(text, style, False)
 
-	## The same text layout with typographic advance width, as SVG's class
-	## and entity shape measurement uses before the drawing is scaled. Ink
-	## overhangs do not enlarge the result. Wrapping, shaping, vertical metrics
-	## and output lines share the exact same pass as `block`.
+	## The same text layout with typographic advance width. Ink overhangs do
+	## not enlarge the result. Used for advance-only diagnostics; the canonical
+	## Linux shape measurements use `block`. Wrapping, shaping, vertical metrics
+	## and output lines share the exact same pass.
 	block_advance : Str, Style -> FlowGeometry.TextBlock
 	block_advance = |text, style| TextMeasure.block_width(text, style, True)
 
@@ -68,8 +68,21 @@ TextMeasure :: {}.{
 	block_svg = |text, style, use_advance| TextMeasure.block_bounds(text, style, use_advance, True)
 
 	block_bounds : Str, Style, Bool, Bool -> FlowGeometry.TextBlock
-	block_bounds = |text, style, use_advance, vertical_ink| {
+	block_bounds = |text, style, use_advance, vertical_ink| TextMeasure.block_measured(text, style, TextMeasure.metrics_of(style), use_advance, vertical_ink)
+
+	# Chrome synthesizes bold from the pinned regular face with a stroke.
+	# Skia interpolates its width from size/24 at 9px to size/32 at 36px.
+	# Include that stroke in glyph bounds before rounding to device pixels.
+	block_bold : Str, Style -> FlowGeometry.TextBlock
+	block_bold = |text, style| {
 		metrics = TextMeasure.metrics_of(style)
+		fraction = ((metrics.size - 9) / 27).max(0).min(1)
+		radius = metrics.size * (1.0 / 24.0 + fraction * (1.0 / 32.0 - 1.0 / 24.0)) / 2
+		TextMeasure.block_measured(text, style, { ..metrics, stroke: radius }, False, True)
+	}
+
+	block_measured : Str, Style, Metrics, Bool, Bool -> FlowGeometry.TextBlock
+	block_measured = |text, style, metrics, use_advance, vertical_ink| {
 		bytes = text.to_utf8()
 		escaped = bytes.contains('<')
 		var $rows = []
@@ -158,7 +171,7 @@ TextMeasure :: {}.{
 	# Per-style constants: the shaping plan, fixed-point scale (1/65536 px per
 	# font unit step), and the rounded ascent and descent of the font and of
 	# the emoji fallback font.
-	Metrics : { font : Font, plan : Font.ShapePlan, size : F64, scale : F64, em : F64, ascent : F64, descent : F64, emoji_ascent : F64, emoji_descent : F64 }
+	Metrics : { font : Font, plan : Font.ShapePlan, size : F64, scale : F64, em : F64, ascent : F64, descent : F64, emoji_ascent : F64, emoji_descent : F64, stroke : F64 }
 
 	metrics_of : Style -> Metrics
 	metrics_of = |style| {
@@ -168,6 +181,7 @@ TextMeasure :: {}.{
 		pixels = size / units
 		{
 			font: style.font,
+			stroke: 0,
 			# Characters, not graphemes: a glyph's cluster is its first
 			# character, as a browser splits words between characters.
 			plan: Font.plan(style.font, Font.ShapeOptions.{ clusters: Characters }),
@@ -455,8 +469,10 @@ TextMeasure :: {}.{
 					match extents {
 						Extents(box) => {
 							pixels = metrics.size / Font.units_per_em(font).to_f64()
-							$ink_ascent = $ink_ascent.max(box.y_max.to_f64() * pixels)
-							$ink_descent = $ink_descent.max(0 - box.y_min.to_f64() * pixels)
+							ascent = box.y_max.to_f64() * pixels + metrics.stroke
+							descent = 0 - box.y_min.to_f64() * pixels + metrics.stroke
+							$ink_ascent = $ink_ascent.max(if (metrics.stroke > 0) TextMeasure.ceil(ascent) else ascent)
+							$ink_descent = $ink_descent.max(if (metrics.stroke > 0) TextMeasure.ceil(descent) else descent)
 						}
 						_ => {}
 					}
@@ -476,7 +492,7 @@ TextMeasure :: {}.{
 		match extents {
 			Extents(box) => {
 				pixels = metrics.size / Font.units_per_em(metrics.font).to_f64()
-				Ink({ left: TextMeasure.floor(box.x_min.to_f64() * pixels), right: TextMeasure.ceil(box.x_max.to_f64() * pixels) })
+				Ink({ left: TextMeasure.floor(box.x_min.to_f64() * pixels - metrics.stroke), right: TextMeasure.ceil(box.x_max.to_f64() * pixels + metrics.stroke) })
 			}
 			Empty => NoInk
 			Unknown => NoInk
@@ -629,6 +645,15 @@ close = |a, b| a.lines == b.lines and (a.width - b.width).abs() < 1.0e-9 and (a.
 
 expect Font.dropped(TextMeasure.inter).is_empty()
 
+## Pinned Linux synthetic bold enlarges descenders without adding a line.
+expect {
+	style = { font: TextMeasure.inter, size: 14.0, line_height: 1.1, wrap: NoWrap, align: Start }
+	TextMeasure.block_bold("CardPayment", style).height == 18
+		and TextMeasure.block_bold("Empty", style).height == 18
+		and TextMeasure.block_bold("Methods", style).height == 17
+		and TextMeasure.block("CardPayment", style).height == 17
+}
+
 inter : TextMeasure.Style
 inter = { font: TextMeasure.inter, size: 14.0, line_height: 1.1, wrap: Width(120.0), align: Middle }
 
@@ -662,8 +687,7 @@ expect TextMeasure.block("日本語のラベル", inter).width == 98.0
 ## Oracle regression: CDP identifies Times-Roman for U+FB02 on pinned Chrome.
 expect TextMeasure.block("ﬂ", { font: TextMeasure.inter, size: 16, line_height: 1.1, wrap: NoWrap, align: Start }).width == 8.90625
 
-## Oracle-derived pre-viewBox SVG text advances. The class box's measured
-## width is 131.703125 + 89.453125/2 + 24 = 200.4296875 pixels.
+## Typographic advances stay distinct from the canonical Linux glyph bounds.
 expect {
 	style = { font: TextMeasure.inter, size: 14, line_height: 1.1, wrap: NoWrap, align: Start }
 	TextMeasure.block_advance("+capture() : Receipt", style).width == 131.703125

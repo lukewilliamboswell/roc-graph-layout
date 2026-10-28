@@ -1,0 +1,70 @@
+{
+	"schema": 1,
+	"baseline_source": "16407118ae4d5fee96e9f296a1984179a1998d17",
+	"refactored_source": "4fafb97dd9697838718ae72100fdcdb2f705a318",
+	"comparison": "Exact bytes of recorded native JSON and SVG for every default/reference/sized profile; missing files must also agree.",
+	"platforms": [
+		{
+			"platform": "macOS arm64",
+			"profiles": 391,
+			"files": 748,
+			"differences": [],
+			"baseline_native": {
+				"binary": "mermaid-oracle-dump-clean",
+				"sha256": "1f74022ab169a579b1e4ddc894695cd912be1db77bf4e30cf20145b51fd406e0"
+			},
+			"refactored_native": {
+				"binary": "mermaid-refactor-publish-oracle",
+				"sha256": "39623dfa27f729adbaa1271659603117ec24b9886523d43eed12b9787a290561"
+			},
+			"baseline_oracle_summary": {
+				"cases": 143,
+				"failed": 0,
+				"failures": []
+			},
+			"refactored_oracle_summary": {
+				"cases": 143,
+				"failed": 0,
+				"failures": []
+			}
+		},
+		{
+			"platform": "Linux x86_64",
+			"profiles": 391,
+			"files": 748,
+			"differences": [],
+			"baseline_native": {
+				"binary": "mermaid-oracle-dump",
+				"sha256": "dd955c804e13486bb14a7a3e3106c29efc9c4c65f3e5e029c32b3167cc47d9a9"
+			},
+			"refactored_native": {
+				"binary": "mermaid-oracle-dump",
+				"sha256": "7ad256e9869c24131cba8c71254a6b42b5d79be8464faadfa7c921e52951a00a"
+			},
+			"baseline_oracle_summary": {
+				"cases": 143,
+				"failed": 6,
+				"failures": [
+					"entity-entity-loops-parallel",
+					"entity-entity-shop",
+					"class-class-dense-terminal-labels",
+					"class-class-payments",
+					"class-class-terminal-labels",
+					"state-state-lifecycle"
+				]
+			},
+			"refactored_oracle_summary": {
+				"cases": 143,
+				"failed": 6,
+				"failures": [
+					"entity-entity-loops-parallel",
+					"entity-entity-shop",
+					"class-class-dense-terminal-labels",
+					"class-class-payments",
+					"class-class-terminal-labels",
+					"state-state-lifecycle"
+				]
+			}
+		}
+	]
+}

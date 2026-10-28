@@ -1,53 +1,53 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="4 4 455.852 631" width="455.852" height="631">
-<path d="M4 4L459.852 4L459.852 635L4 635Z" fill="#ffffff"/>
-<path d="M139.561 288L332.795 288L332.795 448L139.561 448Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
-<path d="M16 488L216.43 488L216.43 631L16 631Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
-<path d="M256.43 488L455.852 488L455.852 631L256.43 631Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
-<path d="M130.592 16L341.764 16L341.764 139L130.592 139Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
-<path d="M203.305 461.25L203.305 462.625L203.3 462.792L203.284 462.947L203.257 463.092L203.219 463.227L203.171 463.35L203.112 463.463L203.042 463.565L202.962 463.656L202.87 463.737L202.768 463.807L202.655 463.866L202.532 463.914L202.528 463.915M199.536 464L196.536 464M193.536 464L190.536 464M187.536 464L184.536 464M181.536 464L178.536 464M175.536 464L172.536 464M169.536 464L166.536 464M163.536 464L160.536 464M157.536 464L154.536 464M151.536 464L148.536 464M145.536 464L142.536 464M139.536 464L136.536 464M133.536 464L130.536 464M127.536 464L124.536 464M121.536 464L119.286 464L118.537 464.024M115.622 464.665L115.557 464.691L114.977 464.994L114.452 465.353L113.983 465.768L113.568 466.237L113.35 466.556M112.337 469.353L112.325 469.414L112.242 470.215L112.215 471.071L112.215 472.347M112.215 475.347L112.215 478.347M112.215 481.347L112.215 484" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M203.305 453.25L197.305 461.25L209.305 461.25Z" fill="#ffffff" stroke="#000000" stroke-width="2"/>
-<path d="M261.05 461.25L261.05 462.625L261.056 462.792L261.072 462.947L261.098 463.092L261.136 463.227L261.184 463.35L261.243 463.463L261.313 463.565L261.394 463.656L261.485 463.737L261.587 463.807L261.7 463.866L261.824 463.914L261.827 463.915M264.819 464L267.819 464M270.819 464L273.819 464M276.819 464L279.819 464M282.819 464L285.819 464M288.819 464L291.819 464M294.819 464L297.819 464M300.819 464L303.819 464M306.819 464L309.819 464M312.819 464L315.819 464M318.819 464L321.819 464M324.819 464L327.819 464M330.819 464L333.819 464M336.819 464L339.819 464M342.819 464L345.07 464L345.819 464.024M348.733 464.665L348.798 464.691L349.378 464.994L349.903 465.353L350.373 465.768L350.787 466.237L351.006 466.556M352.019 469.353L352.03 469.414L352.113 470.215L352.141 471.071L352.141 472.347M352.141 475.347L352.141 478.347M352.141 481.347L352.141 484" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M261.05 453.25L255.05 461.25L267.05 461.25Z" fill="#ffffff" stroke="#000000" stroke-width="2"/>
-<path d="M232.178 135L232.178 278" fill="none" stroke="#000000" stroke-width="2"/>
-<path d="M232.178 280L238.178 271L232.178 276L226.178 271Z" fill="#000000"/>
-<path d="M211.178 193L252.225 193C253.881 193 255.225 194.343 255.225 196L255.225 211C255.225 212.657 253.881 214 252.225 214L211.178 214C209.521 214 208.178 212.657 208.178 211L208.178 196C208.178 194.343 209.521 193 211.178 193Z" fill="#ffffff"/>
-<text x="231.701" y="209" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">makes</text>
-<text x="224.936" y="150" font-family="Inter, sans-serif" font-size="11" fill="#28253d" text-anchor="middle">1</text>
-<text x="257.35" y="271" font-family="Inter, sans-serif" font-size="11" fill="#28253d" text-anchor="middle">many</text>
-<path d="M135.561 284L328.795 284L328.795 444L135.561 444Z" fill="#fdf4ff" stroke="#e879f9" stroke-width="2"/>
-<path d="M135.561 284L328.795 284L328.795 342L135.561 342Z" fill="#fdf4ff"/>
-<text x="232.178" y="310" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">«interface»</text>
-<text x="232.178" y="327" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle" font-weight="bold">Payment</text>
-<path d="M135.561 342L328.795 342" fill="none" stroke="#e879f9" stroke-width="2"/>
-<text x="147.561" y="368" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+String reference</text>
-<path d="M135.561 383L328.795 383" fill="none" stroke="#e879f9" stroke-width="2"/>
-<text x="147.561" y="409" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+authorize() : bool</text>
-<text x="147.561" y="429" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+capture() : Receipt</text>
-<path d="M135.561 284L328.795 284L328.795 444L135.561 444Z" fill="none" stroke="#e879f9" stroke-width="2"/>
-<path d="M12 484L212.43 484L212.43 627L12 627Z" fill="#f0fdfa" stroke="#2dd4bf" stroke-width="2"/>
-<path d="M12 484L212.43 484L212.43 525L12 525Z" fill="#f0fdfa"/>
-<text x="112.215" y="510" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle" font-weight="bold">CardPayment</text>
-<path d="M12 525L212.43 525" fill="none" stroke="#2dd4bf" stroke-width="2"/>
-<text x="24" y="551" font-family="Inter, sans-serif" font-size="14" fill="#28253d">-String token</text>
-<path d="M12 566L212.43 566" fill="none" stroke="#2dd4bf" stroke-width="2"/>
-<text x="24" y="592" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+authorize() : bool</text>
-<text x="24" y="612" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+capture() : Receipt</text>
-<path d="M12 484L212.43 484L212.43 627L12 627Z" fill="none" stroke="#2dd4bf" stroke-width="2"/>
-<path d="M252.43 484L451.852 484L451.852 627L252.43 627Z" fill="#fff7ed" stroke="#fb923c" stroke-width="2"/>
-<path d="M252.43 484L451.852 484L451.852 525L252.43 525Z" fill="#fff7ed"/>
-<text x="352.141" y="510" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle" font-weight="bold">BankTransfer</text>
-<path d="M252.43 525L451.852 525" fill="none" stroke="#fb923c" stroke-width="2"/>
-<text x="264.43" y="551" font-family="Inter, sans-serif" font-size="14" fill="#28253d">-String account</text>
-<path d="M252.43 566L451.852 566" fill="none" stroke="#fb923c" stroke-width="2"/>
-<text x="264.43" y="592" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+authorize() : bool</text>
-<text x="264.43" y="612" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+capture() : Receipt</text>
-<path d="M252.43 484L451.852 484L451.852 627L252.43 627Z" fill="none" stroke="#fb923c" stroke-width="2"/>
-<path d="M126.592 12L337.764 12L337.764 135L126.592 135Z" fill="#ecfeff" stroke="#22d3ee" stroke-width="2"/>
-<path d="M126.592 12L337.764 12L337.764 53L126.592 53Z" fill="#ecfeff"/>
-<text x="232.178" y="38" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle" font-weight="bold">Customer</text>
-<path d="M126.592 53L337.764 53" fill="none" stroke="#22d3ee" stroke-width="2"/>
-<text x="138.592" y="79" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+String email</text>
-<path d="M126.592 94L337.764 94" fill="none" stroke="#22d3ee" stroke-width="2"/>
-<text x="138.592" y="120" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+pay(amount) : Receipt</text>
-<path d="M126.592 12L337.764 12L337.764 135L126.592 135Z" fill="none" stroke="#22d3ee" stroke-width="2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="4 4 457.25 633.5" width="457.25" height="633.5">
+<path d="M4 4L461.25 4L461.25 637.5L4 637.5Z" fill="#ffffff"/>
+<path d="M140.012 288L333.665 288L333.665 449L140.012 449Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
+<path d="M16 489L217.052 489L217.052 633.5L16 633.5Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
+<path d="M257.052 489L457.25 489L457.25 632L257.052 632Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
+<path d="M130.863 16L342.813 16L342.813 139L130.863 139Z" fill="#f0f0f0" stroke="#f0f0f0" stroke-width="2"/>
+<path d="M203.896 462.25L203.896 463.625L203.891 463.792L203.875 463.947L203.848 464.092L203.81 464.227L203.762 464.35L203.703 464.463L203.633 464.565L203.553 464.656L203.461 464.737L203.359 464.807L203.246 464.866L203.123 464.914L203.119 464.915M200.127 465L197.127 465M194.127 465L191.127 465M188.127 465L185.127 465M182.127 465L179.127 465M176.127 465L173.127 465M170.127 465L167.127 465M164.127 465L161.127 465M158.127 465L155.127 465M152.127 465L149.127 465M146.127 465L143.127 465M140.127 465L137.127 465M134.127 465L131.127 465M128.127 465L125.127 465M122.127 465L119.597 465L119.128 465.015M116.194 465.563L115.868 465.691L115.288 465.994L114.763 466.353L114.294 466.768L113.879 467.237L113.819 467.325M112.699 470.078L112.636 470.414L112.554 471.215L112.526 472.071L112.526 473.067M112.526 476.067L112.526 479.067M112.526 482.067L112.526 485" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M203.896 454.25L197.896 462.25L209.896 462.25Z" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<path d="M261.78 462.25L261.78 463.625L261.786 463.792L261.802 463.947L261.829 464.092L261.866 464.227L261.915 464.35L261.974 464.463L262.044 464.565L262.124 464.656L262.215 464.737L262.318 464.807L262.43 464.866L262.554 464.914L262.558 464.915M265.549 465L268.549 465M271.549 465L274.549 465M277.549 465L280.549 465M283.549 465L286.549 465M289.549 465L292.549 465M295.549 465L298.549 465M301.549 465L304.549 465M307.549 465L310.549 465M313.549 465L316.549 465M319.549 465L322.549 465M325.549 465L328.549 465M331.549 465L334.549 465M337.549 465L340.549 465M343.549 465L346.08 465L346.549 465.015M349.483 465.563L349.809 465.691L350.389 465.994L350.914 466.353L351.383 466.768L351.797 467.237L351.858 467.325M352.978 470.078L353.04 470.414L353.123 471.215L353.151 472.071L353.151 473.067M353.151 476.067L353.151 479.067M353.151 482.067L353.151 485" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M261.78 454.25L255.78 462.25L267.78 462.25Z" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+<path d="M232.838 135L232.838 278" fill="none" stroke="#000000" stroke-width="2"/>
+<path d="M232.838 280L238.838 271L232.838 276L226.838 271Z" fill="#000000"/>
+<path d="M211.838 193L252.885 193C254.542 193 255.885 194.343 255.885 196L255.885 211C255.885 212.657 254.542 214 252.885 214L211.838 214C210.182 214 208.838 212.657 208.838 211L208.838 196C208.838 194.343 210.182 193 211.838 193Z" fill="#ffffff"/>
+<text x="232.362" y="209" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">makes</text>
+<text x="225.596" y="150" font-family="Inter, sans-serif" font-size="11" fill="#28253d" text-anchor="middle">1</text>
+<text x="258.01" y="271" font-family="Inter, sans-serif" font-size="11" fill="#28253d" text-anchor="middle">many</text>
+<path d="M136.012 284L329.665 284L329.665 445L136.012 445Z" fill="#fdf4ff" stroke="#e879f9" stroke-width="2"/>
+<path d="M136.012 284L329.665 284L329.665 343L136.012 343Z" fill="#fdf4ff"/>
+<text x="232.838" y="310" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle">«interface»</text>
+<text x="232.838" y="327" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle" font-weight="bold">Payment</text>
+<path d="M136.012 343L329.665 343" fill="none" stroke="#e879f9" stroke-width="2"/>
+<text x="148.012" y="369" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+String reference</text>
+<path d="M136.012 384L329.665 384" fill="none" stroke="#e879f9" stroke-width="2"/>
+<text x="148.012" y="410" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+authorize() : bool</text>
+<text x="148.012" y="430" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+capture() : Receipt</text>
+<path d="M136.012 284L329.665 284L329.665 445L136.012 445Z" fill="none" stroke="#e879f9" stroke-width="2"/>
+<path d="M12 485L213.052 485L213.052 629.5L12 629.5Z" fill="#f0fdfa" stroke="#2dd4bf" stroke-width="2"/>
+<path d="M12 485L213.052 485L213.052 527L12 527Z" fill="#f0fdfa"/>
+<text x="112.526" y="511" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle" font-weight="bold">CardPayment</text>
+<path d="M12 527L213.052 527" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+<text x="24" y="553" font-family="Inter, sans-serif" font-size="14" fill="#28253d">-String token</text>
+<path d="M12 568L213.052 568" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+<text x="24" y="594" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+authorize() : bool</text>
+<text x="24" y="614" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+capture() : Receipt</text>
+<path d="M12 485L213.052 485L213.052 629.5L12 629.5Z" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+<path d="M253.052 485L453.25 485L453.25 628L253.052 628Z" fill="#fff7ed" stroke="#fb923c" stroke-width="2"/>
+<path d="M253.052 485L453.25 485L453.25 526L253.052 526Z" fill="#fff7ed"/>
+<text x="353.151" y="511" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle" font-weight="bold">BankTransfer</text>
+<path d="M253.052 526L453.25 526" fill="none" stroke="#fb923c" stroke-width="2"/>
+<text x="265.052" y="552" font-family="Inter, sans-serif" font-size="14" fill="#28253d">-String account</text>
+<path d="M253.052 567L453.25 567" fill="none" stroke="#fb923c" stroke-width="2"/>
+<text x="265.052" y="593" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+authorize() : bool</text>
+<text x="265.052" y="613" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+capture() : Receipt</text>
+<path d="M253.052 485L453.25 485L453.25 628L253.052 628Z" fill="none" stroke="#fb923c" stroke-width="2"/>
+<path d="M126.863 12L338.813 12L338.813 135L126.863 135Z" fill="#ecfeff" stroke="#22d3ee" stroke-width="2"/>
+<path d="M126.863 12L338.813 12L338.813 53L126.863 53Z" fill="#ecfeff"/>
+<text x="232.838" y="38" font-family="Inter, sans-serif" font-size="14" fill="#28253d" text-anchor="middle" font-weight="bold">Customer</text>
+<path d="M126.863 53L338.813 53" fill="none" stroke="#22d3ee" stroke-width="2"/>
+<text x="138.863" y="79" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+String email</text>
+<path d="M126.863 94L338.813 94" fill="none" stroke="#22d3ee" stroke-width="2"/>
+<text x="138.863" y="120" font-family="Inter, sans-serif" font-size="14" fill="#28253d">+pay(amount) : Receipt</text>
+<path d="M126.863 12L338.813 12L338.813 135L126.863 135Z" fill="none" stroke="#22d3ee" stroke-width="2"/>
 </svg>

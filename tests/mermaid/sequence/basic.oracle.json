@@ -1,10 +1,10 @@
 {
-	"schema": 10,
-	"key": "23b15b6dd57ff65680480bb36cee70a52695ed9bf600c682c7728ae4ecfcf815",
+	"schema": 11,
+	"key": "8677b59fdba38ee395bc348532869a0fe3320ba54274ae4bded828bab65c98ba",
 	"provenance": {
-		"extractor": 10,
+		"extractor": 11,
 		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
-		"tool_sha256": "96ee409ebad6eb661687da17d8923ea8d757074a4c24647d9b4b33822435aba9",
+		"tool_sha256": "64a229f0bbb3d8c7be1e1be6ec0da2a035e2c815e3b527d670ad0b57463c73bd",
 		"measurement_viewport": {
 			"width": 800,
 			"height": 600,
@@ -14,8 +14,8 @@
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",
-		"platform": "darwin",
-		"architecture": "arm64",
+		"platform": "linux",
+		"architecture": "x64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
@@ -115,8 +115,8 @@
 			"box": {
 				"x": 0,
 				"y": -14,
-				"width": 36.46875,
-				"height": 18
+				"width": 36.5625,
+				"height": 17
 			}
 		},
 		{
@@ -148,7 +148,7 @@
 				"x": 0,
 				"y": -14,
 				"width": 41.5,
-				"height": 18
+				"height": 17
 			}
 		},
 		{
@@ -179,8 +179,8 @@
 			"box": {
 				"x": 0,
 				"y": -14,
-				"width": 34.6875,
-				"height": 18
+				"width": 34.78125,
+				"height": 17
 			}
 		},
 		{
@@ -211,8 +211,8 @@
 			"box": {
 				"x": 0,
 				"y": -14,
-				"width": 28.46875,
-				"height": 18
+				"width": 28.5703125,
+				"height": 17
 			}
 		},
 		{

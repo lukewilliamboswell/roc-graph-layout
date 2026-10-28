@@ -27,6 +27,35 @@ roc test package-mermaid/OracleFlowchart.roc
 A case named `unsupported-*` must be accepted by Mermaid and reported as
 `Unsupported` by the Roc reader; every other case must agree exactly.
 
+## Canonical browser environment
+
+Oracle measurements and pixel comparisons use pinned Chrome on Linux x64.
+Chrome on macOS uses different glyph bounds for the same font, so it cannot
+serve as an interchangeable reference for deterministic native geometry.
+Reference generation and raster comparisons share the same browser session
+adapter and verify the actual browser revision and Linux user agent.
+
+On Linux x64 the tools launch the installed pinned browser. Other hosts can
+set `MERMAID_ORACLE_BROWSER_URL` to a localhost debugging URL for that Linux
+browser. Each tool owns an isolated browser context; closing a tool does not
+stop a shared remote browser. The native Roc probe still executes on its host,
+so this does not substitute a renderer for the native implementation.
+
+For example, from the repository root on macOS:
+
+```sh
+docker build --platform linux/amd64 -t roc-mermaid-oracle tools/mermaid-oracle
+docker run --platform linux/amd64 --rm -d --name roc-mermaid-oracle -p 127.0.0.1:19222:9222 roc-mermaid-oracle
+export MERMAID_ORACLE_BROWSER_URL=http://127.0.0.1:19222
+node tools/mermaid-oracle/oracle.mjs check tests/mermaid/flowchart
+# Run the validation commands below with the same environment variable.
+docker stop roc-mermaid-oracle
+```
+
+The container installs the browser revision from the committed Puppeteer lockfile.
+Its debugging port is published on localhost only.
+
+
 ## Differential fuzzing
 
 `package-mermaid/fuzz_flowchart_parse.roc` takes raw bytes as the source

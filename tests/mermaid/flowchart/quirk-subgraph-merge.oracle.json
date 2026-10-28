@@ -1,10 +1,10 @@
 {
-	"schema": 10,
-	"key": "cdbad1c3e024bc56dfe2e58909380056a1837e99af5abb7a82a8e177e303b05e",
+	"schema": 11,
+	"key": "d1e4057e367c050b4e2c078b69ae482ff80086e0ea44a154d3138c41f8978102",
 	"provenance": {
-		"extractor": 10,
+		"extractor": 11,
 		"extractor_sha256": "88abb725c1574c2e8b17dcc36f33cae776896300129dbb2c71b08f087fa3060a",
-		"tool_sha256": "96ee409ebad6eb661687da17d8923ea8d757074a4c24647d9b4b33822435aba9",
+		"tool_sha256": "64a229f0bbb3d8c7be1e1be6ec0da2a035e2c815e3b527d670ad0b57463c73bd",
 		"measurement_viewport": {
 			"width": 800,
 			"height": 600,
@@ -14,8 +14,8 @@
 		"mermaid": "12.2.0",
 		"puppeteer": "25.16.0",
 		"browser_revision": "156.0.8078.47",
-		"platform": "darwin",
-		"architecture": "arm64",
+		"platform": "linux",
+		"architecture": "x64",
 		"font_sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
 		"config": {
 			"startOnLoad": false,
@@ -123,7 +123,7 @@
 				"colorIndex": 0,
 				"domId": "oracle-S",
 				"labelBBox": {
-					"width": 8.984375,
+					"width": 9,
 					"height": 17
 				},
 				"x": 213,
@@ -131,16 +131,16 @@
 				"width": 402,
 				"height": 109,
 				"labelData": {
-					"width": 8.984375,
+					"width": 9,
 					"height": 15,
 					"wrappingWidth": 120
 				},
 				"labels": [
 					{
 						"text": "S",
-						"width": 8.984375,
+						"width": 9,
 						"height": 15,
-						"x": 196.5078125,
+						"x": 196.5,
 						"y": 5
 					}
 				],
@@ -1246,9 +1246,9 @@
 					"height": 109
 				},
 				"label": {
-					"x": 208.5078125,
+					"x": 208.5,
 					"y": 12.000000953674316,
-					"width": 8.984375,
+					"width": 9,
 					"height": 17
 				},
 				"text": {
@@ -1258,7 +1258,7 @@
 					"box": {
 						"x": 0,
 						"y": 9.5367431640625e-7,
-						"width": 8.984375,
+						"width": 9,
 						"height": 17
 					}
 				}
@@ -1266,5 +1266,5 @@
 		],
 		"edges": []
 	},
-	"svg_sha256": "92b4bb9480e13074c5b48859da03a233dcdc1c373d130c580d8777c74f1bd99c"
+	"svg_sha256": "356d47dcca22c0433d7163e17fe5a5f0c0aa52b81600c0a9749b781f70cd7829"
 }

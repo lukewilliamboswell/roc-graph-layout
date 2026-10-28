@@ -75,9 +75,9 @@ expect {
 		Err(_) => False
 		Ok(diagram) => {
 			arranged = EntityDraw.arrange(ClassRender.nodes(diagram.classes), ClassRender.edges(diagram.relationships), diagram.direction, Theme.Options.{})
-			arranged.result.layout.positions.get(2) == Ok({ x: 131.234375, y: 50.5 })
-				and arranged.result.layout.positions.get(6) == Ok({ x: 317.90625, y: 50.5 })
-				and arranged.result.layout.positions.get(9) == Ok({ x: 419.25, y: 362.5 })
+			arranged.result.layout.positions.get(2) == Ok({ x: 131.3984375, y: 50.5 })
+				and arranged.result.layout.positions.get(6) == Ok({ x: 318.0703125, y: 50.5 })
+				and arranged.result.layout.positions.get(9) == Ok({ x: 419.4140625, y: 362.5 })
 		}
 	}
 }
@@ -89,12 +89,12 @@ expect {
 		Err(_) => False
 		Ok(diagram) => {
 			arranged = EntityDraw.arrange(ClassRender.nodes(diagram.classes), ClassRender.edges(diagram.relationships), Down, Theme.Options.{})
-			arranged.result.layout.positions.get(1) == Ok({ x: 28.8359375, y: 263.5 })
-				and arranged.result.layout.bounds.width == 331.71875
-				and arranged.result.label_anchors.get(0) == Ok({ x: 141.73359375, y: 100 })
-				and arranged.result.label_anchors.get(2) == Ok({ x: 174.31484375, y: 114 })
-				and arranged.result.label_anchors.get(4) == Ok({ x: 180.56796875, y: 128 })
-				and arranged.result.label_anchors.get(6) == Ok({ x: 186.82109375, y: 100 })
+			arranged.result.layout.positions.get(1) == Ok({ x: 29, y: 263.5 })
+				and arranged.result.layout.bounds.width == 331.8828125
+				and arranged.result.label_anchors.get(0) == Ok({ x: 141.77255859375, y: 100 })
+				and arranged.result.label_anchors.get(2) == Ok({ x: 174.43720703125, y: 114 })
+				and arranged.result.label_anchors.get(4) == Ok({ x: 180.77373046875, y: 128 })
+				and arranged.result.label_anchors.get(6) == Ok({ x: 187.11025390625, y: 100 })
 		}
 	}
 }
