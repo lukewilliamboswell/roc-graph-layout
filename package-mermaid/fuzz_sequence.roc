@@ -27,6 +27,8 @@ verify = |bytes| {
 				Theme.Options.{},
 				Theme.Options.{ font_size: 28, max_label_width: 100, line_height: 1.8 },
 				Theme.Options.{ font_size: 128, max_label_width: 800 },
+				Theme.Options.{ font_size: 64, line_height: 0.1, padding: 0, wrapping: Wrap, max_label_width: 80, corners: Square },
+				Theme.Options.{ wrapping: NoWrap, corners: Rounded, corner_radius: 40 },
 				Theme.Options.{ padding: 0, line_width: 0, corner_radius: 0 },
 				Theme.Options.{ max_label_width: 500 },
 				Theme.Options.{ shadow: Shadow({ dx: -80, dy: 120, opacity: 0.3 }), line_width: 20 },
@@ -43,7 +45,7 @@ verify = |bytes| {
 			if !Drawing.is_finite(picture) {
 				crash "sequence finite output"
 			}
-			if !SequenceDraw.contains(picture, theme) {
+			if !SequenceDraw.contains(DiagramView.finish(picture, theme), theme) {
 				crash "sequence exported bounds"
 			}
 			if picture != SequenceDraw.draw(d, theme) {

@@ -52,14 +52,14 @@ SequenceOracle :: {}.{
 			number_labels = geometry.numbers.map_with_index(
 				|number, i| {
 					block = SequenceLayout.measure(number.text, False, 0, Theme.Options.{ font_size: 12 })
-					OracleJson.object([("id", OracleJson.string("number-${i.to_str()}")), ("text", OracleJson.string(number.text)), ("box", OracleJson.rect({ x: number.center.x - block.width / 2, y: number.center.y + 4 - 12, width: block.width, height: block.height }))])
+					OracleJson.object([("id", OracleJson.string("number-${i.to_str()}")), ("text", OracleJson.string(number.text)), ("box", OracleJson.rect({ x: number.center.x - block.width / 2, y: number.center.y + 4 - 12, width: block.width, height: block.height })), ("measurement", "false")])
 				},
 			)
 			unused = sizes.keep_if(
 				|size| if size.kind == "node" {
 					!diagram.participants.any(|p| p.id == size.id)
 				} else {
-					!geometry.labels.any(|label| label.id == size.id)
+					!geometry.labels.any(|label| label.id == size.id and !label.id.starts_with("participant-footer-") and !label.id.starts_with("block-kind-") and label.role != "title")
 				},
 			)
 			OracleJson.object([
@@ -67,7 +67,38 @@ SequenceOracle :: {}.{
 				("family", OracleJson.string("sequence")),
 				("semantic", SequenceOracle.semantic(diagram)),
 				("size_problems", OracleJson.strings(unused.map(|size| "unconsumed ${size.kind}:${size.id}"))),
-				("geometry", OracleJson.object([("view_box", OracleJson.rect(picture.view)), ("nodes", OracleJson.array(nodes)), ("edges", OracleJson.array($edges)), ("labels", OracleJson.array(labels.concat(number_labels))), ("groups", OracleJson.array(geometry.frames.map(|frame| OracleJson.object([("id", OracleJson.string("block-event-${frame.index.to_str()}")), ("box", OracleJson.rect({ x: frame.left, y: frame.top, width: frame.right - frame.left, height: frame.bottom - frame.top }))]))))])),
+				(
+					"geometry",
+					OracleJson.object([
+						("view_box", OracleJson.rect(picture.view)),
+						("nodes", OracleJson.array(nodes)),
+						("edges", OracleJson.array($edges)),
+						("labels", OracleJson.array(labels.concat(number_labels))),
+						(
+							"groups",
+							OracleJson.array(
+								geometry.frames.map(
+									|frame| OracleJson.object([
+										(
+											"id",
+											OracleJson.string(
+												"block-${
+													diagram.events.take_first(frame.index).keep_if(
+														|event| match event {
+															StartBlock(_) | Branch(_) => True
+															_ => False
+														},
+													).len().to_str()
+												}",
+											),
+										),
+										("box", OracleJson.rect({ x: frame.left, y: frame.top, width: frame.right - frame.left, height: frame.bottom - frame.top })),
+									]),
+								),
+							),
+						),
+					]),
+				),
 			])
 		}
 	}

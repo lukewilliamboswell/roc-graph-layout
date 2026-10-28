@@ -6,18 +6,16 @@ app [main!] {
 
 import pf.Path
 import pf.Stdout
-import mermaid.Sequence
-import mermaid.Svg
-import mermaid.Theme
+import mermaid.Mermaid
 
 ## Render a conversation with a nested retry and approval decision.
 ## Run from the repository root; the example writes a standalone SVG.
 main! = |_args| {
 	source = Path.read_utf8!(Path.utf8("examples/mermaid_sequence/chart.mmd"))?
-	match Sequence.draw(source, Theme.Options.{}) {
+	match Mermaid.svg(source) {
 		Err(problems) => Err(SequenceProblems(problems))
-		Ok(picture) => {
-			Path.write_utf8!(Path.utf8("examples/mermaid_sequence/output.svg"), Svg.document(picture, "Inter, sans-serif"))?
+		Ok(svg) => {
+			Path.write_utf8!(Path.utf8("examples/mermaid_sequence/output.svg"), svg)?
 			Stdout.line!("Drew examples/mermaid_sequence/output.svg")
 		}
 	}

@@ -141,20 +141,25 @@ SequenceLayout :: {}.{
 		widths = actor_labels.map_with_index(
 			|b, i| {
 				p = diagram.participants.get(i) ?? { id: "", label: "", actor: False, wrap: False, source_text: "" }
-				if SequenceStyle.wrap(p.wrap, theme) {
-					(theme.max_label_width + padding * 2).max(minimum_width)
-				} else {
-					(TextMeasure.round(b.width) + padding * 2).max(minimum_width)
+				match sizes.find_first(|size| size.kind == "node" and size.id == p.id) {
+					Ok(size) => size.width
+					Err(_) => if SequenceStyle.wrap(p.wrap, theme) {
+						(theme.max_label_width + padding * 2).max(minimum_width)
+					} else {
+						(TextMeasure.round(b.width) + padding * 2).max(minimum_width)
+					}
 				}
 			},
 		)
-		measured_header = actor_labels.fold(65.0, |height, b| height.max(56 + b.height))
-		node_sizes = sizes.keep_if(|size| size.kind == "node")
-		header_height = if node_sizes.is_empty() {
-			measured_header
-		} else {
-			node_sizes.fold(0.0, |height, size| height.max(size.height))
-		}
+		header_height = actor_labels.map_with_index(
+			|b, i| {
+				participant = diagram.participants.get(i) ?? { id: "", label: "", actor: False, wrap: False, source_text: "" }
+				match sizes.find_first(|size| size.kind == "node" and size.id == participant.id) {
+					Ok(size) => size.height
+					Err(_) => (56 + b.height).max(65)
+				}
+			},
+		).fold(0.0, |height, actual| height.max(actual))
 		var $ids = List.repeat("", diagram.events.len())
 		var $mi = 0.U64
 		var $ni = 0.U64
@@ -541,15 +546,24 @@ SequenceLayout :: {}.{
 					$insert = Some(rect)
 				}
 				StartBlock(b) => {
-					caption = SequenceLayout.measure(
-						if b.text.is_empty() {
-							""
-						} else {
-							"[${b.text}]"
-						},
-						True,
-						($caption_widths.get(i) ?? minimum_width) - padding * 2,
-						theme,
+					caption = SequenceLayout.measured(
+						sizes,
+						$ids.get(i) ?? "",
+						SequenceLayout.measure_source(
+							if b.text.is_empty() {
+								""
+							} else {
+								"[${b.text}]"
+							},
+							if b.source_text.is_empty() {
+								""
+							} else {
+								"[${b.source_text}]"
+							},
+							True,
+							($caption_widths.get(i) ?? minimum_width) - padding * 2,
+							theme,
+						),
 					)
 					$row_label = caption
 					$open = $open.append({ index: i, kind: b.kind, top: start + 10, left: F64.infinity, right: -F64.infinity, bottom: start + 10, branches: [] })
@@ -561,15 +575,24 @@ SequenceLayout :: {}.{
 					$control_index = $control_index + 1
 				}
 				Branch(b) => {
-					caption = SequenceLayout.measure(
-						if b.text.is_empty() {
-							""
-						} else {
-							"[${b.text}]"
-						},
-						True,
-						($caption_widths.get(i) ?? minimum_width) - padding * 2,
-						theme,
+					caption = SequenceLayout.measured(
+						sizes,
+						$ids.get(i) ?? "",
+						SequenceLayout.measure_source(
+							if b.text.is_empty() {
+								""
+							} else {
+								"[${b.text}]"
+							},
+							if b.source_text.is_empty() {
+								""
+							} else {
+								"[${b.source_text}]"
+							},
+							True,
+							($caption_widths.get(i) ?? minimum_width) - padding * 2,
+							theme,
+						),
 					)
 					$row_label = caption
 					if !$open.is_empty() {

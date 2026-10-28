@@ -81,5 +81,25 @@ export function normalizeReference(record) {
  texts.filter(e=>hasClass(e,'sequenceNumber')).forEach((e,i)=>pushRows(`number-${i}`,[e]));
  const title=display(model.getDiagramTitle??'');
  const titleElement=texts.find(e=>!e.class&&display(e.text)===title&&title);if(titleElement)pushRows('title',[titleElement]);
- return {semantic:{participants,events,autonumber,title},geometry:{view_box:record.layout?.view_box??record.rendering?.view_box??null,nodes,edges,labels}};
+ // Four outer lines describe each frame; branch separators have inline
+ // dash styles and are not input measurements or separate frames.
+ const outline=elements.filter(e=>e.tag==='line'&&hasClass(e,'loopLine')&&!attrs(e).style);
+ const frames=[];for(let i=0;i<outline.length;i+=4)frames.push(union(outline.slice(i,i+4).map(e=>e.box)));
+ frames.sort((a,b)=>a.y-b.y);
+ const groups=starts.map(({index},i)=>({id:`block-${index}`,box:frames[i]??null}));
+ // Mermaid measures encoded placeholders before decoding painted text.
+ // A decoded ink box is not the actual layout input for these labels.
+ const encoded=[];
+ participants.forEach((p,i)=>{if(String(rawActors[i][1].description??'').includes('ﬂ°'))encoded.push(`participant-header-${p.id}`)});
+ messages.forEach((m,i)=>{if(String(m.message).includes('ﬂ°'))encoded.push(`message-${i}`)});
+ notes.forEach((m,i)=>{if(String(m.message).includes('ﬂ°'))encoded.push(`note-${i}`)});
+ controls.forEach((m,i)=>{if(String(m.message).includes('ﬂ°'))encoded.push(`block-${i}`)});
+ labels.forEach(label=>{
+  if(!encoded.some(id=>label.id===id||label.id.startsWith(`${id}-row-`)))return;
+  const index=Number(/^message-(\d+)$/.exec(label.id)?.[1]),message=messages[index];
+  const measured=message&&!message.wrap&&(record.measurements??[]).find(m=>m.kind==='sequence-message'&&m.id===String(message.id));
+  if(measured)label.input_box={width:measured.width,height:Math.round(measured.height)};
+  else label.measurement=false;
+ });
+ return {semantic:{participants,events,autonumber,title},geometry:{view_box:record.layout?.view_box??record.rendering?.view_box??null,nodes,edges,labels,groups}};
 }
