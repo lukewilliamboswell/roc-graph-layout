@@ -1,0 +1,12 @@
+stateDiagram-v2
+    direction LR
+    state "An isolated state with a long name that wraps without escaping its box" as Isolated
+    [*] --> A
+    A --> A : retry
+    A --> B : first path
+    A --> B : second path
+    B --> [*]
+    note left of Isolated
+        An explicitly left-hand multi-line note.
+        This remains separate from the graph.
+    end note

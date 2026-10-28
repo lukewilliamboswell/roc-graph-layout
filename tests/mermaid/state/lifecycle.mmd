@@ -1,0 +1,19 @@
+stateDiagram-v2
+    direction LR
+    [*] --> Draft
+    Draft --> Review : submit
+    state "Code review" as Review {
+        direction TB
+        [*] --> Checking
+        state Checking <<choice>>
+        Checking --> Approved : checks pass
+        Checking --> Changes : changes requested
+        Changes --> Checking : push revision
+        Approved --> [*]
+    }
+    Review --> Published : merge
+    Published : entry / notify subscribers
+    Published --> [*]
+    note right of Changes : Keep the review discussion attached to each revision.
+    classDef ready fill:#D1FAE5,stroke:#34D399,color:#065F46
+    class Published,Approved ready
