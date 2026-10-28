@@ -10,9 +10,8 @@ import FlowGeometry
 import FlowDraw
 import FlowDrawEdge
 import FlowLayout
-import FlowLayoutElk
+import FlowCore
 import FlowLayoutAdjust
-import EntityLayout
 import OracleJson
 
 ## Internal measured compartments and semantic relationship ends. Shared by
@@ -204,7 +203,6 @@ EntityDraw :: {}.{
 			),
 			group_titles: [],
 		}
-		vertical = direction == Down or direction == Up
 		var $terminal_sizes = List.repeat({ from: None, to: None }, edges.len())
 		for spec in $labels {
 			match spec.placement {
@@ -233,9 +231,8 @@ EntityDraw :: {}.{
 			}
 		}
 		terminal_sizes = $terminal_sizes
-		ordered = FlowLayoutElk.ordered_traced(diagram, sizes, False)
-		placed = FlowLayoutElk.placed_with_margins(ordered.model, ordered.randoms, |model, g| EntityLayout.margins(model, g, terminal_sizes, vertical))
-		raw = FlowLayoutElk.export(diagram, ordered.setup, placed)
+		arranged = FlowCore.arrange(diagram, sizes, terminal_sizes, [], [])
+		raw = arranged.raw
 		adjusted = FlowLayoutAdjust.adjust(diagram, sizes, raw)
 		label_sizes = sizes.edge_labels.map(
 			|label| match label {
@@ -245,7 +242,7 @@ EntityDraw :: {}.{
 		)
 		geometry = FlowLayout.normalise({ nodes: adjusted.nodes, edges: adjusted.edges, groups: adjusted.groups, bounds: { x: 0, y: 0, width: 0, height: 0 } }, label_sizes, [])
 
-		terminal_placements = EntityLayout.placements(placed, terminal_sizes, vertical)
+		terminal_placements = arranged.ends
 		initial_anchors = $labels.map(
 			|spec| {
 				route = geometry.edges.get(spec.edge) ?? { points: [], label: None }

@@ -1,11 +1,11 @@
-## Layers by network simplex, step for step as Mermaid's layout engine
+## Layers by network simplex, step for step as the layered solver
 ## assigns them: a feasible tree grown by depth-first search from the first
 ## node, cut values computed from the leaves, tree edges exchanged while one
 ## has a negative cut value (up to an iteration limit), then layers moved
 ## to less crowded ones where that costs nothing. Ties are broken by node
 ## and edge order, so the order of `nodes` and of each node's edge lists
 ## decides between equally good layerings.
-FlowLayoutSimplex :: {}.{
+LayeredFlowSimplex :: {}.{
 
 	## Node `i` is `i`. Each edge runs from `source` to `target` and wants to
 	## span at least `delta` layers; `weight` is the cost per layer spanned.
@@ -27,7 +27,7 @@ FlowLayoutSimplex :: {}.{
 		if n == 0 {
 			{ layers: [], order: [] }
 		} else {
-			FlowLayoutSimplex.run(problem)
+			LayeredFlowSimplex.run(problem)
 		}
 	}
 
@@ -105,26 +105,26 @@ FlowLayoutSimplex :: {}.{
 		var $stack = []
 		if remove_subtrees {
 			# Set leaves aside, repeatedly.
-			var $leafs = $s.nodes.keep_if(|v| FlowLayoutSimplex.connected($s, v).len() == 1)
+			var $leafs = $s.nodes.keep_if(|v| LayeredFlowSimplex.connected($s, v).len() == 1)
 			var $head = 0
 			while $head < $leafs.len() {
 				v = $leafs.get($head) ?? 0
 				$head = $head + 1
-				conn = FlowLayoutSimplex.connected($s, v)
+				conn = LayeredFlowSimplex.connected($s, v)
 				if !conn.is_empty() {
 					e = conn.first() ?? 0
 					is_out = !($s.outgoing.get(v) ?? []).is_empty()
-					o = FlowLayoutSimplex.other($s, e, v)
+					o = LayeredFlowSimplex.other($s, e, v)
 					$s = if is_out {
-						{ ..$s, incoming: $s.incoming.set(o, FlowLayoutSimplex.without($s.incoming.get(o) ?? [], e)) ?? [] }
+						{ ..$s, incoming: $s.incoming.set(o, LayeredFlowSimplex.without($s.incoming.get(o) ?? [], e)) ?? [] }
 					} else {
-						{ ..$s, outgoing: $s.outgoing.set(o, FlowLayoutSimplex.without($s.outgoing.get(o) ?? [], e)) ?? [] }
+						{ ..$s, outgoing: $s.outgoing.set(o, LayeredFlowSimplex.without($s.outgoing.get(o) ?? [], e)) ?? [] }
 					}
-					if FlowLayoutSimplex.connected($s, o).len() == 1 {
+					if LayeredFlowSimplex.connected($s, o).len() == 1 {
 						$leafs = $leafs.append(o)
 					}
 					$stack = $stack.append({ node: v, edge: e })
-					$s = { ..$s, nodes: FlowLayoutSimplex.without($s.nodes, v) }
+					$s = { ..$s, nodes: LayeredFlowSimplex.without($s.nodes, v) }
 				}
 			}
 		}
@@ -138,13 +138,13 @@ FlowLayoutSimplex :: {}.{
 			$edge_list = $edge_list.concat($s.outgoing.get(v) ?? [])
 		}
 		$s = { ..$s, edge_list: $edge_list }
-		$s = FlowLayoutSimplex.feasible_tree($s, $sources)
+		$s = LayeredFlowSimplex.feasible_tree($s, $sources)
 		var $iter = 0
-		var $leave = FlowLayoutSimplex.leave_edge($s)
-		while $leave != FlowLayoutSimplex.nil and $iter < problem.iteration_limit {
-			enter = FlowLayoutSimplex.enter_edge($s, $leave)
-			$s = if (enter == FlowLayoutSimplex.nil) $s else FlowLayoutSimplex.exchange($s, $leave, enter)
-			$leave = if (enter == FlowLayoutSimplex.nil) FlowLayoutSimplex.nil else FlowLayoutSimplex.leave_edge($s)
+		var $leave = LayeredFlowSimplex.leave_edge($s)
+		while $leave != LayeredFlowSimplex.nil and $iter < problem.iteration_limit {
+			enter = LayeredFlowSimplex.enter_edge($s, $leave)
+			$s = if (enter == LayeredFlowSimplex.nil) $s else LayeredFlowSimplex.exchange($s, $leave, enter)
+			$leave = if (enter == LayeredFlowSimplex.nil) LayeredFlowSimplex.nil else LayeredFlowSimplex.leave_edge($s)
 			$iter = $iter + 1
 		}
 		if remove_subtrees {
@@ -154,19 +154,19 @@ FlowLayoutSimplex :: {}.{
 				item = $stack.get($k) ?? { node: 0, edge: 0 }
 				v = item.node
 				e = item.edge
-				edge = FlowLayoutSimplex.edge_of($s, e)
-				placed = FlowLayoutSimplex.other($s, e, v)
+				edge = LayeredFlowSimplex.edge_of($s, e)
+				placed = LayeredFlowSimplex.other($s, e, v)
 				$s = if edge.target == v {
-					{ ..$s, outgoing: $s.outgoing.set(placed, ($s.outgoing.get(placed) ?? []).append(e)) ?? [], layer: $s.layer.set(v, FlowLayoutSimplex.lay($s, placed) + edge.delta) ?? [] }
+					{ ..$s, outgoing: $s.outgoing.set(placed, ($s.outgoing.get(placed) ?? []).append(e)) ?? [], layer: $s.layer.set(v, LayeredFlowSimplex.lay($s, placed) + edge.delta) ?? [] }
 				} else {
-					{ ..$s, incoming: $s.incoming.set(placed, ($s.incoming.get(placed) ?? []).append(e)) ?? [], layer: $s.layer.set(v, FlowLayoutSimplex.lay($s, placed) - edge.delta) ?? [] }
+					{ ..$s, incoming: $s.incoming.set(placed, ($s.incoming.get(placed) ?? []).append(e)) ?? [], layer: $s.layer.set(v, LayeredFlowSimplex.lay($s, placed) - edge.delta) ?? [] }
 				}
 				$s = { ..$s, nodes: $s.nodes.append(v) }
 			}
 		}
 		# Normalise and balance.
-		lowest = $s.nodes.fold(FlowLayoutSimplex.big, |m, v| m.min(FlowLayoutSimplex.lay($s, v)))
-		highest = $s.nodes.fold(0 - FlowLayoutSimplex.big, |m, v| m.max(FlowLayoutSimplex.lay($s, v)))
+		lowest = $s.nodes.fold(LayeredFlowSimplex.big, |m, v| m.min(LayeredFlowSimplex.lay($s, v)))
+		highest = $s.nodes.fold(0 - LayeredFlowSimplex.big, |m, v| m.max(LayeredFlowSimplex.lay($s, v)))
 		span = (highest - lowest + 1).max(1).to_u64_wrap()
 		var $filling = List.repeat(0, span)
 		var $layer = $s.layer
@@ -194,10 +194,10 @@ FlowLayoutSimplex :: {}.{
 				if ins == outs {
 					current = $layer.get(v) ?? 0
 					# The node may move within its incident edges' slack.
-					var $min_in = FlowLayoutSimplex.big
-					var $min_out = FlowLayoutSimplex.big
-					for e in FlowLayoutSimplex.connected($s, v) {
-						edge = FlowLayoutSimplex.edge_of($s, e)
+					var $min_in = LayeredFlowSimplex.big
+					var $min_out = LayeredFlowSimplex.big
+					for e in LayeredFlowSimplex.connected($s, v) {
+						edge = LayeredFlowSimplex.edge_of($s, e)
 						span_e = ($layer.get(edge.target) ?? 0) - ($layer.get(edge.source) ?? 0)
 						if edge.target == v and span_e < $min_in {
 							$min_in = span_e
@@ -205,8 +205,8 @@ FlowLayoutSimplex :: {}.{
 							$min_out = span_e
 						}
 					}
-					range_in = if ($min_in == FlowLayoutSimplex.big) -1 else $min_in
-					range_out = if ($min_out == FlowLayoutSimplex.big) -1 else $min_out
+					range_in = if ($min_in == LayeredFlowSimplex.big) -1 else $min_in
+					range_out = if ($min_out == LayeredFlowSimplex.big) -1 else $min_out
 					var $new = current
 					var $i = current - range_in + 1
 					while $i < current + range_out {
@@ -228,7 +228,7 @@ FlowLayoutSimplex :: {}.{
 
 	feasible_tree : State, List(U64) -> State
 	feasible_tree = |s0, sources| {
-		var $s = FlowLayoutSimplex.topological_layers(s0, sources)
+		var $s = LayeredFlowSimplex.topological_layers(s0, sources)
 		if $s.edge_list.is_empty() {
 			$s
 		} else {
@@ -237,17 +237,17 @@ FlowLayoutSimplex :: {}.{
 			var $growing = True
 			while $growing and $guard <= $s.nodes.len() {
 				$s = { ..$s, edge_visited: List.repeat(False, $s.edges.len()) }
-				grown = FlowLayoutSimplex.tight_tree_dfs($s, first)
+				grown = LayeredFlowSimplex.tight_tree_dfs($s, first)
 				$s = grown.state
 				if grown.count >= $s.nodes.len() {
 					$growing = False
 				} else {
-					e = FlowLayoutSimplex.minimal_slack($s)
-					if e == FlowLayoutSimplex.nil {
+					e = LayeredFlowSimplex.minimal_slack($s)
+					if e == LayeredFlowSimplex.nil {
 						$growing = False
 					} else {
-						edge = FlowLayoutSimplex.edge_of($s, e)
-						slack0 = FlowLayoutSimplex.lay($s, edge.target) - FlowLayoutSimplex.lay($s, edge.source) - edge.delta
+						edge = LayeredFlowSimplex.edge_of($s, e)
+						slack0 = LayeredFlowSimplex.lay($s, edge.target) - LayeredFlowSimplex.lay($s, edge.source) - edge.delta
 						slack = if ($s.tree_node.get(edge.target) ?? False) 0 - slack0 else slack0
 						var $layer = $s.layer
 						for v in $s.nodes {
@@ -261,8 +261,8 @@ FlowLayoutSimplex :: {}.{
 				$guard = $guard + 1
 			}
 			$s = { ..$s, edge_visited: List.repeat(False, $s.edges.len()), post_order: 1 }
-			$s = FlowLayoutSimplex.postorder($s, first)
-			FlowLayoutSimplex.cutvalues($s)
+			$s = LayeredFlowSimplex.postorder($s, first)
+			LayeredFlowSimplex.cutvalues($s)
 		}
 	}
 
@@ -279,7 +279,7 @@ FlowLayoutSimplex :: {}.{
 			v = $roots.get($head) ?? 0
 			$head = $head + 1
 			for e in s.outgoing.get(v) ?? [] {
-				edge = FlowLayoutSimplex.edge_of(s, e)
+				edge = LayeredFlowSimplex.edge_of(s, e)
 				t = edge.target
 				$layer = $layer.set(t, ($layer.get(t) ?? 0).max(($layer.get(v) ?? 0) + edge.delta)) ?? []
 				left = ($incident.get(t) ?? 1) - 1
@@ -298,7 +298,7 @@ FlowLayoutSimplex :: {}.{
 	tight_tree_dfs = |s0, start| {
 		var $s = { ..s0, tree_node: s0.tree_node.set(start, True) ?? [] }
 		var $count = 1
-		var $stack = [{ node: start, edges: FlowLayoutSimplex.connected(s0, start), next: 0 }]
+		var $stack = [{ node: start, edges: LayeredFlowSimplex.connected(s0, start), next: 0 }]
 		while !$stack.is_empty() {
 			top = $stack.last() ?? { node: 0, edges: [], next: 0 }
 			if top.next >= top.edges.len() {
@@ -308,11 +308,11 @@ FlowLayoutSimplex :: {}.{
 				e = top.edges.get(top.next) ?? 0
 				if !($s.edge_visited.get(e) ?? True) {
 					$s = { ..$s, edge_visited: $s.edge_visited.set(e, True) ?? [] }
-					o = FlowLayoutSimplex.other($s, e, top.node)
-					edge = FlowLayoutSimplex.edge_of($s, e)
+					o = LayeredFlowSimplex.other($s, e, top.node)
+					edge = LayeredFlowSimplex.edge_of($s, e)
 					descend = if $s.tree_edge.get(e) ?? False {
 						True
-					} else if !($s.tree_node.get(o) ?? False) and edge.delta == FlowLayoutSimplex.lay($s, edge.target) - FlowLayoutSimplex.lay($s, edge.source) {
+					} else if !($s.tree_node.get(o) ?? False) and edge.delta == LayeredFlowSimplex.lay($s, edge.target) - LayeredFlowSimplex.lay($s, edge.source) {
 						$s = { ..$s, tree_edge: $s.tree_edge.set(e, True) ?? [], tree_edges: $s.tree_edges.append(e) }
 						True
 					} else {
@@ -321,7 +321,7 @@ FlowLayoutSimplex :: {}.{
 					if descend {
 						$s = { ..$s, tree_node: $s.tree_node.set(o, True) ?? [] }
 						$count = $count + 1
-						$stack = $stack.append({ node: o, edges: FlowLayoutSimplex.connected($s, o), next: 0 })
+						$stack = $stack.append({ node: o, edges: LayeredFlowSimplex.connected($s, o), next: 0 })
 					}
 				}
 			}
@@ -331,12 +331,12 @@ FlowLayoutSimplex :: {}.{
 
 	minimal_slack : State -> U64
 	minimal_slack = |s| {
-		var $min = FlowLayoutSimplex.big
-		var $best = FlowLayoutSimplex.nil
+		var $min = LayeredFlowSimplex.big
+		var $best = LayeredFlowSimplex.nil
 		for e in s.edge_list {
-			edge = FlowLayoutSimplex.edge_of(s, e)
+			edge = LayeredFlowSimplex.edge_of(s, e)
 			if (s.tree_node.get(edge.source) ?? False) != (s.tree_node.get(edge.target) ?? False) {
-				slack = FlowLayoutSimplex.lay(s, edge.target) - FlowLayoutSimplex.lay(s, edge.source) - edge.delta
+				slack = LayeredFlowSimplex.lay(s, edge.target) - LayeredFlowSimplex.lay(s, edge.source) - edge.delta
 				if slack < $min {
 					$min = slack
 					$best = e
@@ -349,7 +349,7 @@ FlowLayoutSimplex :: {}.{
 	postorder : State, U64 -> State
 	postorder = |s0, start| {
 		var $s = s0
-		var $stack = [{ node: start, edges: FlowLayoutSimplex.connected(s0, start), next: 0, lowest: FlowLayoutSimplex.big }]
+		var $stack = [{ node: start, edges: LayeredFlowSimplex.connected(s0, start), next: 0, lowest: LayeredFlowSimplex.big }]
 		while !$stack.is_empty() {
 			top = $stack.last() ?? { node: 0, edges: [], next: 0, lowest: 0 }
 			if top.next >= top.edges.len() {
@@ -367,8 +367,8 @@ FlowLayoutSimplex :: {}.{
 				e = top.edges.get(top.next) ?? 0
 				if ($s.tree_edge.get(e) ?? False) and !($s.edge_visited.get(e) ?? True) {
 					$s = { ..$s, edge_visited: $s.edge_visited.set(e, True) ?? [] }
-					o = FlowLayoutSimplex.other($s, e, top.node)
-					$stack = $stack.append({ node: o, edges: FlowLayoutSimplex.connected($s, o), next: 0, lowest: FlowLayoutSimplex.big })
+					o = LayeredFlowSimplex.other($s, e, top.node)
+					$stack = $stack.append({ node: o, edges: LayeredFlowSimplex.connected($s, o), next: 0, lowest: LayeredFlowSimplex.big })
 				}
 			}
 		}
@@ -377,7 +377,7 @@ FlowLayoutSimplex :: {}.{
 
 	in_head : State, U64, U64 -> Bool
 	in_head = |s, v, e| {
-		edge = FlowLayoutSimplex.edge_of(s, e)
+		edge = LayeredFlowSimplex.edge_of(s, e)
 		po = |x| s.po.get(x) ?? 0
 		low = |x| s.lowest.get(x) ?? 0
 		pv = po(v)
@@ -394,7 +394,7 @@ FlowLayoutSimplex :: {}.{
 		var $unknown = List.repeat([], s0.layer.len())
 		var $leafs = []
 		for v in $s.nodes {
-			tree = FlowLayoutSimplex.connected($s, v).keep_if(|e| $s.tree_edge.get(e) ?? False)
+			tree = LayeredFlowSimplex.connected($s, v).keep_if(|e| $s.tree_edge.get(e) ?? False)
 			$unknown = $unknown.set(v, tree) ?? []
 			if tree.len() == 1 {
 				$leafs = $leafs.append(v)
@@ -406,11 +406,11 @@ FlowLayoutSimplex :: {}.{
 			var $guard = 0
 			while ($unknown.get($v) ?? []).len() == 1 and $guard <= $s.edges.len() {
 				d = ($unknown.get($v) ?? []).first() ?? 0
-				de = FlowLayoutSimplex.edge_of($s, d)
+				de = LayeredFlowSimplex.edge_of($s, d)
 				var $value = de.weight
-				for e in FlowLayoutSimplex.connected($s, $v) {
+				for e in LayeredFlowSimplex.connected($s, $v) {
 					if e != d {
-						edge = FlowLayoutSimplex.edge_of($s, e)
+						edge = LayeredFlowSimplex.edge_of($s, e)
 						if $s.tree_edge.get(e) ?? False {
 							c = ($cut.get(e) ?? 0) - edge.weight
 							$value = if (de.source == edge.source or de.target == edge.target) $value - c else $value + c
@@ -422,8 +422,8 @@ FlowLayoutSimplex :: {}.{
 					}
 				}
 				$cut = $cut.set(d, $value) ?? []
-				$unknown = $unknown.set(de.source, FlowLayoutSimplex.without($unknown.get(de.source) ?? [], d)) ?? []
-				$unknown = $unknown.set(de.target, FlowLayoutSimplex.without($unknown.get(de.target) ?? [], d)) ?? []
+				$unknown = $unknown.set(de.source, LayeredFlowSimplex.without($unknown.get(de.source) ?? [], d)) ?? []
+				$unknown = $unknown.set(de.target, LayeredFlowSimplex.without($unknown.get(de.target) ?? [], d)) ?? []
 				$v = if (de.source == $v) de.target else de.source
 				$guard = $guard + 1
 			}
@@ -435,17 +435,17 @@ FlowLayoutSimplex :: {}.{
 	leave_edge = |s|
 		match s.tree_edges.find_first(|e| (s.tree_edge.get(e) ?? False) and (s.cut.get(e) ?? 0) < -1e-10) {
 			Ok(e) => e
-			Err(_) => FlowLayoutSimplex.nil
+			Err(_) => LayeredFlowSimplex.nil
 		}
 
 	enter_edge : State, U64 -> U64
 	enter_edge = |s, leave| {
-		var $best = FlowLayoutSimplex.nil
-		var $rep = FlowLayoutSimplex.big
+		var $best = LayeredFlowSimplex.nil
+		var $rep = LayeredFlowSimplex.big
 		for e in s.edge_list {
-			edge = FlowLayoutSimplex.edge_of(s, e)
-			if FlowLayoutSimplex.in_head(s, edge.source, leave) and !FlowLayoutSimplex.in_head(s, edge.target, leave) {
-				slack = FlowLayoutSimplex.lay(s, edge.target) - FlowLayoutSimplex.lay(s, edge.source) - edge.delta
+			edge = LayeredFlowSimplex.edge_of(s, e)
+			if LayeredFlowSimplex.in_head(s, edge.source, leave) and !LayeredFlowSimplex.in_head(s, edge.target, leave) {
+				slack = LayeredFlowSimplex.lay(s, edge.target) - LayeredFlowSimplex.lay(s, edge.source) - edge.delta
 				if slack < $rep {
 					$rep = slack
 					$best = e
@@ -460,32 +460,32 @@ FlowLayoutSimplex :: {}.{
 		s1 = {
 			..s0,
 			tree_edge: (s0.tree_edge.set(leave, False) ?? []).set(enter, True) ?? [],
-			tree_edges: FlowLayoutSimplex.without(s0.tree_edges, leave).append(enter),
+			tree_edges: LayeredFlowSimplex.without(s0.tree_edges, leave).append(enter),
 		}
-		edge = FlowLayoutSimplex.edge_of(s1, enter)
-		delta0 = FlowLayoutSimplex.lay(s1, edge.target) - FlowLayoutSimplex.lay(s1, edge.source) - edge.delta
-		delta = if (FlowLayoutSimplex.in_head(s1, edge.target, leave)) delta0 else 0 - delta0
+		edge = LayeredFlowSimplex.edge_of(s1, enter)
+		delta0 = LayeredFlowSimplex.lay(s1, edge.target) - LayeredFlowSimplex.lay(s1, edge.source) - edge.delta
+		delta = if (LayeredFlowSimplex.in_head(s1, edge.target, leave)) delta0 else 0 - delta0
 		var $layer = s1.layer
 		for v in s1.nodes {
-			if !FlowLayoutSimplex.in_head(s1, v, leave) {
+			if !LayeredFlowSimplex.in_head(s1, v, leave) {
 				$layer = $layer.set(v, ($layer.get(v) ?? 0) + delta) ?? []
 			}
 		}
 		s2 = { ..s1, layer: $layer, post_order: 1, edge_visited: List.repeat(False, s1.edges.len()) }
-		s3 = FlowLayoutSimplex.postorder(s2, s2.nodes.first() ?? 0)
-		FlowLayoutSimplex.cutvalues(s3)
+		s3 = LayeredFlowSimplex.postorder(s2, s2.nodes.first() ?? 0)
+		LayeredFlowSimplex.cutvalues(s3)
 	}
 }
 
 ## A chain gets one layer per node.
 expect {
-	sol = FlowLayoutSimplex.solve({ node_count: 3, edges: [{ source: 0, target: 1, weight: 1, delta: 1 }, { source: 1, target: 2, weight: 1, delta: 1 }], iteration_limit: 100, balance: True, previous: [] })
+	sol = LayeredFlowSimplex.solve({ node_count: 3, edges: [{ source: 0, target: 1, weight: 1, delta: 1 }, { source: 1, target: 2, weight: 1, delta: 1 }], iteration_limit: 100, balance: True, previous: [] })
 	sol.layers == [0, 1, 2]
 }
 
 ## A short edge pulls a node next to its neighbour.
 expect {
 	edges = [{ source: 0, target: 1, weight: 1, delta: 1 }, { source: 1, target: 2, weight: 1, delta: 1 }, { source: 2, target: 3, weight: 1, delta: 1 }, { source: 4, target: 3, weight: 1, delta: 1 }]
-	sol = FlowLayoutSimplex.solve({ node_count: 5, edges, iteration_limit: 100, balance: True, previous: [] })
+	sol = LayeredFlowSimplex.solve({ node_count: 5, edges, iteration_limit: 100, balance: True, previous: [] })
 	sol.layers.get(4) == Ok(2)
 }

@@ -116,6 +116,7 @@ check_package! = |roc| {
 
 check_mermaid_package! = |roc| {
 	Script.section!("Mermaid package")?
+	Script.command("node").run!(["--test", "tools/mermaid-oracle/boundaries.test.mjs"])?
 	roc.run!(["fmt", "--check", "package-mermaid", "tools/mermaid-oracle"])?
 	roc.run!(["check", "package-mermaid/main.roc"])?
 	roc.run!(["test", "package-mermaid/main.roc", "--opt=dev"])?

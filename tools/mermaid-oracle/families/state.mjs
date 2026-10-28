@@ -111,7 +111,7 @@ export function normalizeReference(record) {
         }
     }
     // The recorder captures the actual label measurement handed to ELK.
-    // FlowLayoutImport subtracts two pixels from the glyph box height;
+    // The Mermaid flow adapter subtracts two pixels from the glyph box height;
     // retain the original glyph box here, never a final container frame.
     const measurements = (record.measured_input?.nodes ?? []).filter(node => node.shape === 'noteGroup').map(node => {
         const box = node.labelBBox;

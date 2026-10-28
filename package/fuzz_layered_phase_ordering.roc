@@ -1,32 +1,31 @@
 app [target] {
 	fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst",
-	layout: "../package/main.roc",
 }
 
 import fuzz.Fuzz
-import FlowLayoutFuzz
-import Flowchart
-import FlowGeometry
-import FlowLayoutElk
-import FlowLayoutGraph
-import FlowLayoutImport
+import LayeredFlowFixtures
+import LayeredFlowFuzz
+import LayeredFlowInput
+import LayeredFlow
+import LayeredFlowGraph
+import LayeredFlowImport
 
 ## The ordering phase (crossing minimisation, run per graph laid out on its
 ## own): every layer afterwards holds the same nodes as before, reordered.
 
-Input : FlowLayoutGraph.Model
+Input : LayeredFlowGraph.Model
 
-input : { diagram : Flowchart.Diagram, sizes : FlowGeometry.Sizes } -> Input
-input = |d| FlowLayoutElk.layered(FlowLayoutImport.build(d.diagram, d.sizes).model)
+input : { diagram : LayeredFlowInput.Input, sizes : LayeredFlowInput.Sizes } -> Input
+input = |d| LayeredFlow.layered(LayeredFlowImport.build(d.diagram, d.sizes).model)
 
-phase : Input -> FlowLayoutGraph.Model
-phase = |m| FlowLayoutElk.order(m, False, []).model
+phase : Input -> LayeredFlowGraph.Model
+phase = |m| LayeredFlow.order(m, False, []).model
 
-check : { diagram : Flowchart.Diagram, sizes : FlowGeometry.Sizes }, Input, FlowLayoutGraph.Model -> Try({}, Str)
+check : { diagram : LayeredFlowInput.Input, sizes : LayeredFlowInput.Sizes }, Input, LayeredFlowGraph.Model -> Try({}, Str)
 check = |_, before, after| {
 	for g in 0..<before.graphs.len() {
-		old = FlowLayoutGraph.graph(before, g).layers
-		new = FlowLayoutGraph.graph(after, g).layers
+		old = LayeredFlowGraph.graph(before, g).layers
+		new = LayeredFlowGraph.graph(after, g).layers
 		if old.len() != new.len() {
 			return Err("ordering: the number of layers changed")
 		}
@@ -46,20 +45,20 @@ check = |_, before, after| {
 ## a sweep: allocations per sweep, each side counted by a traced run.
 within : Input, Input, U64, U64 -> Bool
 within = |small_input, large_input, small, large| {
-	sweeps = |m| FlowLayoutElk.order(m, True, []).trace.count_if(|line| line.starts_with("sweep")).max(1)
+	sweeps = |m| LayeredFlow.order(m, True, []).trace.count_if(|line| line.starts_with("sweep")).max(1)
 	small_sweeps = sweeps(small_input)
 	large_sweeps = sweeps(large_input)
-	large * small_sweeps <= FlowLayoutFuzz.allowed_growth * small * large_sweeps + 8192 * large_sweeps
+	large * small_sweeps <= LayeredFlowFuzz.allowed_growth * small * large_sweeps + 8192 * large_sweeps
 }
 
-## Cost: `FlowLayoutFuzz.copies` copies of the statements must not cost
-## more than `FlowLayoutFuzz.allowed_growth` times the allocations of
-## `FlowLayoutFuzz.base_copies` copies (plus a constant), and the phase must
+## Cost: `LayeredFlowFuzz.copies` copies of the statements must not cost
+## more than `LayeredFlowFuzz.allowed_growth` times the allocations of
+## `LayeredFlowFuzz.base_copies` copies (plus a constant), and the phase must
 ## free everything it allocates.
 test! : List(U8) => Fuzz.Outcome
 test! = |bytes| {
 	outcome = test(bytes)
-	match (FlowLayoutFuzz.diagram(bytes, FlowLayoutFuzz.base_copies), FlowLayoutFuzz.diagram(bytes, FlowLayoutFuzz.copies)) {
+	match (LayeredFlowFuzz.diagram(bytes, LayeredFlowFuzz.base_copies), LayeredFlowFuzz.diagram(bytes, LayeredFlowFuzz.copies)) {
 		(Some(small), Some(large)) => {
 			small_input = input(small)
 			large_input = input(large)
@@ -74,7 +73,7 @@ test! = |bytes| {
 				},
 			)
 			if !within(small_input, large_input, small_cost.allocations, large_cost.allocations) {
-				crash "ordering: ${FlowLayoutFuzz.copies.to_str()} copies took ${large_cost.allocations.to_str()} allocations, against ${small_cost.allocations.to_str()} for ${FlowLayoutFuzz.base_copies.to_str()}"
+				crash "ordering: ${LayeredFlowFuzz.copies.to_str()} copies took ${large_cost.allocations.to_str()} allocations, against ${small_cost.allocations.to_str()} for ${LayeredFlowFuzz.base_copies.to_str()}"
 			}
 		}
 		_ => {}
@@ -84,7 +83,7 @@ test! = |bytes| {
 
 test : List(U8) -> Fuzz.Outcome
 test = |bytes|
-	match FlowLayoutFuzz.diagram(bytes, 1) {
+	match LayeredFlowFuzz.diagram(bytes, 1) {
 		None => Fuzz.reject
 		Some(d) => {
 			x = input(d)
@@ -100,10 +99,10 @@ test = |bytes|
 	}
 
 target = Fuzz.target_with!({
-	name: "mermaid-flowchart-layout-ordering",
+	name: "graph-layout-flow-ordering",
 	generator: Fuzz.raw_bytes,
 	test!,
-	show: |bytes| FlowLayoutFuzz.text(bytes, 1),
+	show: |bytes| LayeredFlowFuzz.text(bytes, 1),
 })
 
 expect {
@@ -114,13 +113,17 @@ expect {
 ## fuzz regression: one copy of a small diagram needs no crossing
 ## minimisation; the cost bound compares eight copies against thirty-two.
 expect {
-	_ = test([3, 0, 1, 148, 253, 252])
-	True
+	fixture = LayeredFlowFixtures.get("fuzz-regression-ordering-small")
+	d = { diagram: fixture.diagram, sizes: fixture.sizes }
+	before = input(d)
+	check(d, before, phase(before)) == Ok({})
 }
 
 ## fuzz regression: thirty-two copies need several times the sweeps of
 ## eight; the bound is on the cost of a sweep.
 expect {
-	_ = test([117, 69, 46, 2])
-	True
+	fixture = LayeredFlowFixtures.get("fuzz-regression-ordering-sweeps")
+	d = { diagram: fixture.diagram, sizes: fixture.sizes }
+	before = input(d)
+	check(d, before, phase(before)) == Ok({})
 }

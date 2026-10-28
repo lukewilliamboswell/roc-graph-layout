@@ -11,7 +11,7 @@
 ##
 ## Nodes, ports and edges are kept in flat lists and refer to each other by
 ## index. `nil` stands for "no node", "no port" or "no edge".
-FlowLayoutGraph :: {}.{
+LayeredFlowGraph :: {}.{
 
 	nil : U64
 	nil = 18446744073709551615
@@ -202,23 +202,23 @@ FlowLayoutGraph :: {}.{
 		graph: 0,
 		kind: Normal,
 		origin: Synthetic,
-		nested: FlowLayoutGraph.nil,
-		inner: FlowLayoutGraph.nil,
+		nested: LayeredFlowGraph.nil,
+		inner: LayeredFlowGraph.nil,
 		x: 0,
 		y: 0,
 		width: 0,
 		height: 0,
 		ports: [],
-		layer: FlowLayoutGraph.nil,
+		layer: LayeredFlowGraph.nil,
 		layer_constraint: Free,
 		in_layer: Middle,
 		port_constraints: FreePorts,
 		model_order: None,
 		ext_side: Undefined,
 		border_offset: 0,
-		margin: FlowLayoutGraph.no_box,
-		long_edge_source: FlowLayoutGraph.nil,
-		long_edge_target: FlowLayoutGraph.nil,
+		margin: LayeredFlowGraph.no_box,
+		long_edge_source: LayeredFlowGraph.nil,
+		long_edge_target: LayeredFlowGraph.nil,
 		has_label_dummies: False,
 		labels: [],
 		label_side_up: False,
@@ -227,7 +227,7 @@ FlowLayoutGraph :: {}.{
 
 	blank_port : Port
 	blank_port = {
-		node: FlowLayoutGraph.nil,
+		node: LayeredFlowGraph.nil,
 		side: Undefined,
 		x: 0,
 		y: 0,
@@ -237,41 +237,41 @@ FlowLayoutGraph :: {}.{
 		anchor_y: 0,
 		incoming: [],
 		outgoing: [],
-		dummy: FlowLayoutGraph.nil,
+		dummy: LayeredFlowGraph.nil,
 		inside_connections: False,
 		border_offset: 0,
 		model_order: None,
-		long_edge_target_node: FlowLayoutGraph.nil,
+		long_edge_target_node: LayeredFlowGraph.nil,
 		id: 0,
 	}
 
 	blank_edge : Edge
 	blank_edge = {
-		source: FlowLayoutGraph.nil,
-		target: FlowLayoutGraph.nil,
+		source: LayeredFlowGraph.nil,
+		target: LayeredFlowGraph.nil,
 		reversed: False,
-		origin: FlowLayoutGraph.nil,
+		origin: LayeredFlowGraph.nil,
 		labels: [],
 		bends: [],
 		model_order: None,
 		thickness: 1,
-		original_opposite: FlowLayoutGraph.nil,
-		segment_graph: FlowLayoutGraph.nil,
+		original_opposite: LayeredFlowGraph.nil,
+		segment_graph: LayeredFlowGraph.nil,
 		label_x: 0,
 		label_y: 0,
 	}
 
 	node : Model, U64 -> Node
-	node = |m, n| m.nodes.get(n) ?? FlowLayoutGraph.blank_node
+	node = |m, n| m.nodes.get(n) ?? LayeredFlowGraph.blank_node
 
 	port : Model, U64 -> Port
-	port = |m, p| m.ports.get(p) ?? FlowLayoutGraph.blank_port
+	port = |m, p| m.ports.get(p) ?? LayeredFlowGraph.blank_port
 
 	edge : Model, U64 -> Edge
-	edge = |m, e| m.edges.get(e) ?? FlowLayoutGraph.blank_edge
+	edge = |m, e| m.edges.get(e) ?? LayeredFlowGraph.blank_edge
 
 	graph : Model, U64 -> Graph
-	graph = |m, g| m.graphs.get(g) ?? FlowLayoutGraph.blank_graph
+	graph = |m, g| m.graphs.get(g) ?? LayeredFlowGraph.blank_graph
 
 	blank_spacing : Spacing
 	blank_spacing = {
@@ -291,11 +291,11 @@ FlowLayoutGraph :: {}.{
 
 	blank_graph : Graph
 	blank_graph = {
-		parent: FlowLayoutGraph.nil,
+		parent: LayeredFlowGraph.nil,
 		nodes: [],
 		layers: [],
-		spacing: FlowLayoutGraph.blank_spacing,
-		padding: FlowLayoutGraph.no_box,
+		spacing: LayeredFlowGraph.blank_spacing,
+		padding: LayeredFlowGraph.no_box,
 		width: 0,
 		height: 0,
 		offset_x: 0,
@@ -328,12 +328,12 @@ FlowLayoutGraph :: {}.{
 	add_node : Model, Node -> (Model, U64)
 	add_node = |m, value| {
 		n = m.nodes.len()
-		g = FlowLayoutGraph.graph(m, value.graph)
+		g = LayeredFlowGraph.graph(m, value.graph)
 		# Clear the graph's list in the model first, so `g` holds the only
 		# reference and the append below need not copy it.
-		cleared = FlowLayoutGraph.set_graph(m, value.graph, { ..g, nodes: [] })
+		cleared = LayeredFlowGraph.set_graph(m, value.graph, { ..g, nodes: [] })
 		with_node = { ..cleared, nodes: cleared.nodes.append(value) }
-		(FlowLayoutGraph.set_graph(with_node, value.graph, { ..g, nodes: g.nodes.append(n) }), n)
+		(LayeredFlowGraph.set_graph(with_node, value.graph, { ..g, nodes: g.nodes.append(n) }), n)
 	}
 
 	## Add a node that is not (yet) in any of its graph's lists.
@@ -349,18 +349,18 @@ FlowLayoutGraph :: {}.{
 	add_port : Model, U64, Side -> (Model, U64)
 	add_port = |m, n, side| {
 		p = m.ports.len()
-		owner = FlowLayoutGraph.node(m, n)
-		cleared = FlowLayoutGraph.set_node(m, n, { ..owner, ports: [] })
-		with_port = { ..cleared, ports: cleared.ports.append({ ..FlowLayoutGraph.blank_port, node: n, side }) }
-		(FlowLayoutGraph.set_node(with_port, n, { ..owner, ports: owner.ports.append(p) }), p)
+		owner = LayeredFlowGraph.node(m, n)
+		cleared = LayeredFlowGraph.set_node(m, n, { ..owner, ports: [] })
+		with_port = { ..cleared, ports: cleared.ports.append({ ..LayeredFlowGraph.blank_port, node: n, side }) }
+		(LayeredFlowGraph.set_node(with_port, n, { ..owner, ports: owner.ports.append(p) }), p)
 	}
 
 	## Add an edge from one port to another.
 	add_edge : Model, Edge -> (Model, U64)
 	add_edge = |m, value| {
 		e = m.edges.len()
-		with_edge = { ..m, edges: m.edges.append({ ..value, source: FlowLayoutGraph.nil, target: FlowLayoutGraph.nil }) }
-		(FlowLayoutGraph.set_target(FlowLayoutGraph.set_source(with_edge, e, value.source), e, value.target), e)
+		with_edge = { ..m, edges: m.edges.append({ ..value, source: LayeredFlowGraph.nil, target: LayeredFlowGraph.nil }) }
+		(LayeredFlowGraph.set_target(LayeredFlowGraph.set_source(with_edge, e, value.source), e, value.target), e)
 	}
 
 	without : List(U64), U64 -> List(U64)
@@ -375,89 +375,89 @@ FlowLayoutGraph :: {}.{
 	## new one's.
 	set_source : Model, U64, U64 -> Model
 	set_source = |m, e, p| {
-		value = FlowLayoutGraph.edge(m, e)
-		detached = if value.source == FlowLayoutGraph.nil {
+		value = LayeredFlowGraph.edge(m, e)
+		detached = if value.source == LayeredFlowGraph.nil {
 			m
 		} else {
-			old = FlowLayoutGraph.port(m, value.source)
-			FlowLayoutGraph.set_port(m, value.source, { ..old, outgoing: FlowLayoutGraph.without(old.outgoing, e) })
+			old = LayeredFlowGraph.port(m, value.source)
+			LayeredFlowGraph.set_port(m, value.source, { ..old, outgoing: LayeredFlowGraph.without(old.outgoing, e) })
 		}
-		attached = if p == FlowLayoutGraph.nil {
+		attached = if p == LayeredFlowGraph.nil {
 			detached
 		} else {
-			new = FlowLayoutGraph.port(detached, p)
-			cleared = FlowLayoutGraph.set_port(detached, p, { ..new, outgoing: [] })
-			FlowLayoutGraph.set_port(cleared, p, { ..new, outgoing: new.outgoing.append(e) })
+			new = LayeredFlowGraph.port(detached, p)
+			cleared = LayeredFlowGraph.set_port(detached, p, { ..new, outgoing: [] })
+			LayeredFlowGraph.set_port(cleared, p, { ..new, outgoing: new.outgoing.append(e) })
 		}
-		FlowLayoutGraph.set_edge(attached, e, { ..FlowLayoutGraph.edge(attached, e), source: p })
+		LayeredFlowGraph.set_edge(attached, e, { ..LayeredFlowGraph.edge(attached, e), source: p })
 	}
 
 	set_target : Model, U64, U64 -> Model
 	set_target = |m, e, p| {
-		value = FlowLayoutGraph.edge(m, e)
-		detached = if value.target == FlowLayoutGraph.nil {
+		value = LayeredFlowGraph.edge(m, e)
+		detached = if value.target == LayeredFlowGraph.nil {
 			m
 		} else {
-			old = FlowLayoutGraph.port(m, value.target)
-			FlowLayoutGraph.set_port(m, value.target, { ..old, incoming: FlowLayoutGraph.without(old.incoming, e) })
+			old = LayeredFlowGraph.port(m, value.target)
+			LayeredFlowGraph.set_port(m, value.target, { ..old, incoming: LayeredFlowGraph.without(old.incoming, e) })
 		}
-		attached = if p == FlowLayoutGraph.nil {
+		attached = if p == LayeredFlowGraph.nil {
 			detached
 		} else {
-			new = FlowLayoutGraph.port(detached, p)
-			cleared = FlowLayoutGraph.set_port(detached, p, { ..new, incoming: [] })
-			FlowLayoutGraph.set_port(cleared, p, { ..new, incoming: new.incoming.append(e) })
+			new = LayeredFlowGraph.port(detached, p)
+			cleared = LayeredFlowGraph.set_port(detached, p, { ..new, incoming: [] })
+			LayeredFlowGraph.set_port(cleared, p, { ..new, incoming: new.incoming.append(e) })
 		}
-		FlowLayoutGraph.set_edge(attached, e, { ..FlowLayoutGraph.edge(attached, e), target: p })
+		LayeredFlowGraph.set_edge(attached, e, { ..LayeredFlowGraph.edge(attached, e), target: p })
 	}
 
 	## Turn an edge around, as `LEdge.reverse` does: its source becomes its
 	## target and the other way round, and it is marked reversed.
 	reverse : Model, U64 -> Model
 	reverse = |m, e| {
-		value = FlowLayoutGraph.edge(m, e)
+		value = LayeredFlowGraph.edge(m, e)
 		old_source = value.source
 		old_target = value.target
-		cleared = FlowLayoutGraph.set_target(FlowLayoutGraph.set_source(m, e, FlowLayoutGraph.nil), e, FlowLayoutGraph.nil)
-		moved = FlowLayoutGraph.set_target(FlowLayoutGraph.set_source(cleared, e, old_target), e, old_source)
-		after = FlowLayoutGraph.edge(moved, e)
-		FlowLayoutGraph.set_edge(moved, e, { ..after, reversed: !after.reversed, bends: after.bends.rev() })
+		cleared = LayeredFlowGraph.set_target(LayeredFlowGraph.set_source(m, e, LayeredFlowGraph.nil), e, LayeredFlowGraph.nil)
+		moved = LayeredFlowGraph.set_target(LayeredFlowGraph.set_source(cleared, e, old_target), e, old_source)
+		after = LayeredFlowGraph.edge(moved, e)
+		LayeredFlowGraph.set_edge(moved, e, { ..after, reversed: !after.reversed, bends: after.bends.rev() })
 	}
 
 	## The node at the other end of an edge, or the edge's source or target node.
 	source_node : Model, U64 -> U64
-	source_node = |m, e| FlowLayoutGraph.port(m, FlowLayoutGraph.edge(m, e).source).node
+	source_node = |m, e| LayeredFlowGraph.port(m, LayeredFlowGraph.edge(m, e).source).node
 
 	target_node : Model, U64 -> U64
-	target_node = |m, e| FlowLayoutGraph.port(m, FlowLayoutGraph.edge(m, e).target).node
+	target_node = |m, e| LayeredFlowGraph.port(m, LayeredFlowGraph.edge(m, e).target).node
 
 	## A node's outgoing edges, port by port, as `getOutgoingEdges` iterates them.
 	outgoing : Model, U64 -> List(U64)
-	outgoing = |m, n| FlowLayoutGraph.node(m, n).ports.fold([], |acc, p| acc.concat(FlowLayoutGraph.port(m, p).outgoing))
+	outgoing = |m, n| LayeredFlowGraph.node(m, n).ports.fold([], |acc, p| acc.concat(LayeredFlowGraph.port(m, p).outgoing))
 
 	incoming : Model, U64 -> List(U64)
-	incoming = |m, n| FlowLayoutGraph.node(m, n).ports.fold([], |acc, p| acc.concat(FlowLayoutGraph.port(m, p).incoming))
+	incoming = |m, n| LayeredFlowGraph.node(m, n).ports.fold([], |acc, p| acc.concat(LayeredFlowGraph.port(m, p).incoming))
 
 	## A node's edges, port by port, incoming before outgoing at each port.
 	connected : Model, U64 -> List(U64)
 	connected = |m, n|
-		FlowLayoutGraph.node(m, n).ports.fold(
+		LayeredFlowGraph.node(m, n).ports.fold(
 			[],
 			|acc, p| {
-				value = FlowLayoutGraph.port(m, p)
+				value = LayeredFlowGraph.port(m, p)
 				acc.concat(value.incoming).concat(value.outgoing)
 			},
 		)
 
 	is_self_loop : Model, U64 -> Bool
 	is_self_loop = |m, e| {
-		value = FlowLayoutGraph.edge(m, e)
-		value.source != FlowLayoutGraph.nil and value.target != FlowLayoutGraph.nil and FlowLayoutGraph.port(m, value.source).node == FlowLayoutGraph.port(m, value.target).node
+		value = LayeredFlowGraph.edge(m, e)
+		value.source != LayeredFlowGraph.nil and value.target != LayeredFlowGraph.nil and LayeredFlowGraph.port(m, value.source).node == LayeredFlowGraph.port(m, value.target).node
 	}
 
 	## A node's ports on one side, in port order.
 	ports_on : Model, U64, Side -> List(U64)
-	ports_on = |m, n, side| FlowLayoutGraph.node(m, n).ports.keep_if(|p| FlowLayoutGraph.port(m, p).side == side)
+	ports_on = |m, n, side| LayeredFlowGraph.node(m, n).ports.keep_if(|p| LayeredFlowGraph.port(m, p).side == side)
 
 	floor : F64 -> F64
 	floor = |value| value.div_floor_by(1.0)
@@ -492,21 +492,21 @@ FlowLayoutGraph :: {}.{
 	## Whether `child` lies (at any depth) inside the subgraph node `parent`.
 	is_descendant : Model, U64, U64 -> Bool
 	is_descendant = |m, child, parent| {
-		var $current = FlowLayoutGraph.graph(m, FlowLayoutGraph.node(m, child).graph).parent
+		var $current = LayeredFlowGraph.graph(m, LayeredFlowGraph.node(m, child).graph).parent
 		var $found = False
 		var $steps = 0
-		while $current != FlowLayoutGraph.nil and !$found and $steps < m.nodes.len() + 1 {
+		while $current != LayeredFlowGraph.nil and !$found and $steps < m.nodes.len() + 1 {
 			if $current == parent {
 				$found = True
 			} else {
-				$current = FlowLayoutGraph.graph(m, FlowLayoutGraph.node(m, $current).graph).parent
+				$current = LayeredFlowGraph.graph(m, LayeredFlowGraph.node(m, $current).graph).parent
 			}
 			$steps = $steps + 1
 		}
 		$found
 	}
 
-	## Sort with Mermaid's layout engine's merge sort: insertion sort below
+	## Sort with the layered solver's merge sort: insertion sort below
 	## seven items, halves merged after checking whether they are already in
 	## order. The comparison may carry state, which the sort threads through
 	## in the order the engine makes comparisons, so a comparison that
@@ -517,7 +517,7 @@ FlowLayoutGraph :: {}.{
 		if n < 2 {
 			(items, state)
 		} else {
-			FlowLayoutGraph.merge_sort_range(items, items, 0, n, 0, state, compare)
+			LayeredFlowGraph.merge_sort_range(items, items, 0, n, 0, state, compare)
 		}
 	}
 
@@ -526,7 +526,7 @@ FlowLayoutGraph :: {}.{
 	## array; `temp` is a scratch copy.
 	merge_sort_range : List(a), List(a), U64, U64, I64, s, (s, a, a -> (s, I64)) -> (List(a), s)
 	merge_sort_range = |temp, array, low, high, ofs, state, compare| {
-		res = FlowLayoutGraph.merge_sort_go(temp, array, low, high, ofs, state, compare)
+		res = LayeredFlowGraph.merge_sort_go(temp, array, low, high, ofs, state, compare)
 		(res.array, res.state)
 	}
 
@@ -560,8 +560,8 @@ FlowLayoutGraph :: {}.{
 			temp_low = (low.to_i64_wrap() + ofs).to_u64_wrap()
 			temp_high = (high.to_i64_wrap() + ofs).to_u64_wrap()
 			temp_mid = temp_low + (temp_high - temp_low).shr_zf_wrap(1)
-			first = FlowLayoutGraph.merge_sort_go(array, temp, temp_low, temp_mid, 0 - ofs, state, compare)
-			second = FlowLayoutGraph.merge_sort_go(first.temp, first.array, temp_mid, temp_high, 0 - ofs, first.state, compare)
+			first = LayeredFlowGraph.merge_sort_go(array, temp, temp_low, temp_mid, 0 - ofs, state, compare)
+			second = LayeredFlowGraph.merge_sort_go(first.temp, first.array, temp_mid, temp_high, 0 - ofs, first.state, compare)
 			# `second.array` is the sorted temp; `second.temp` is the array.
 			sorted_temp = second.array
 			var $out = second.temp
@@ -611,16 +611,16 @@ FlowLayoutGraph :: {}.{
 	## Stateless sort with the engine's merge sort.
 	sort_by : List(a), (a, a -> I64) -> List(a)
 	sort_by = |items, compare| {
-		(sorted, _) = FlowLayoutGraph.merge_sort(items, {}, |s, a, b| (s, compare(a, b)))
+		(sorted, _) = LayeredFlowGraph.merge_sort(items, {}, |s, a, b| (s, compare(a, b)))
 		sorted
 	}
 }
 
-expect FlowLayoutGraph.sort_by([5, 3, 9, 1, 7, 2, 8, 6, 4, 0, 11, 10], |a, b| if (a < b) (0 - 1) else if (a > b) 1 else 0) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+expect LayeredFlowGraph.sort_by([5, 3, 9, 1, 7, 2, 8, 6, 4, 0, 11, 10], |a, b| if (a < b) (0 - 1) else if (a > b) 1 else 0) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
 ## Sorting is stable.
 expect {
 	items = [{ k: 2, v: 0 }, { k: 1, v: 1 }, { k: 2, v: 2 }, { k: 1, v: 3 }, { k: 0, v: 4 }, { k: 2, v: 5 }, { k: 1, v: 6 }, { k: 0, v: 7 }, { k: 2, v: 8 }]
-	sorted = FlowLayoutGraph.sort_by(items, |a, b| if (a.k < b.k) (0 - 1) else if (a.k > b.k) 1 else 0)
+	sorted = LayeredFlowGraph.sort_by(items, |a, b| if (a.k < b.k) (0 - 1) else if (a.k > b.k) 1 else 0)
 	sorted.map(|x| x.v) == [4, 7, 1, 3, 6, 0, 2, 5, 8]
 }

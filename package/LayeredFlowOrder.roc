@@ -1,25 +1,25 @@
-import Flowchart
-import FlowLayoutGraph
-import FlowLayoutImport
-import FlowLayoutLayers
-import FlowLayoutRandom
+import LayeredFlowImport
+import LayeredFlowFixtures
+import LayeredFlowGraph
+import LayeredFlowLayers
+import LayeredFlowRandom
 
-## The order of nodes within layers, chosen as Mermaid's layout engine
+## The order of nodes within layers, chosen as the layered solver
 ## chooses it: layer sweeps placing each node at the barycenter of its
 ## neighbours' ports (with a little random jitter to break ties), sweeping
 ## into subgraphs as it passes them, counting crossings after each sweep and
 ## keeping the best of several tries. The first two tries start from the
 ## order the diagram declared; the rest start from a random first layer.
 ## The random numbers are drawn from the same generator, seeded the same
-## way, in the same order, so ties come out as they do in Mermaid.
-FlowLayoutOrder :: {}.{
+## way, in the same order, so ties come out according to the deterministic ordering policy.
+LayeredFlowOrder :: {}.{
 
-	Model : FlowLayoutGraph.Model
+	Model : LayeredFlowGraph.Model
 
 	nil : U64
-	nil = FlowLayoutGraph.nil
+	nil = LayeredFlowGraph.nil
 
-	Random : FlowLayoutRandom.Random
+	Random : LayeredFlowRandom.Random
 
 	Distributor : [NodeRelative, LayerTotal]
 
@@ -80,34 +80,37 @@ FlowLayoutOrder :: {}.{
 
 	## Order every graph's layers. Graphs must have been layered.
 	minimize : Model, Bool -> Model
-	minimize = |m, model_order| FlowLayoutOrder.minimize_traced(m, 0, model_order, False, []).model
+	minimize = |m, model_order| LayeredFlowOrder.minimize_traced(m, 0, model_order, False, []).model
 
 	## Like `minimize`, also returning a record of the work when `tracing`.
 	## `names` names nodes in the record.
 	minimize_traced : Model, U64, Bool, Bool, List(Str) -> { model : Model, trace : List(Str), randoms : List(Random) }
-	minimize_traced = |m, root, model_order, tracing, names| {
-		root_graph = FlowLayoutGraph.graph(m, root)
+	minimize_traced = |m, root, model_order, tracing, names| LayeredFlowOrder.minimize_seeded(m, root, model_order, tracing, names, 1)
+
+	minimize_seeded : Model, U64, Bool, Bool, List(Str), I64 -> { model : Model, trace : List(Str), randoms : List(Random) }
+	minimize_seeded = |m, root, model_order, tracing, names, seed_arg| {
+		root_graph = LayeredFlowGraph.graph(m, root)
 		empty = root_graph.layers.all(|l| l.is_empty())
 		if empty {
-			{ model: m, trace: [], randoms: List.repeat(FlowLayoutRandom.from_seed(1), m.graphs.len()) }
+			{ model: m, trace: [], randoms: List.repeat(LayeredFlowRandom.from_seed(1), m.graphs.len()) }
 		} else {
-			FlowLayoutOrder.run(m, root, model_order, tracing, names)
+			LayeredFlowOrder.run(m, root, model_order, tracing, names, seed_arg)
 		}
 	}
 
 	note : State, Str -> State
 	note = |s, text| if (s.tracing) { ..s, trace: s.trace.append(text) } else s
 
-	run : Model, U64, Bool, Bool, List(Str) -> { model : Model, trace : List(Str), randoms : List(Random) }
-	run = |m, root, model_order, tracing, names| {
+	run : Model, U64, Bool, Bool, List(Str), I64 -> { model : Model, trace : List(Str), randoms : List(Random) }
+	run = |m, root, model_order, tracing, names, seed_arg| {
 		port_count = m.ports.len()
 		node_count = m.nodes.len()
-		root_random = FlowLayoutRandom.from_seed(1)
-		(r1, seed) = FlowLayoutRandom.next_long(root_random)
+		root_random = LayeredFlowRandom.from_seed(seed_arg)
+		(r1, seed) = LayeredFlowRandom.next_long(root_random)
 		var $s = {
 			model: m,
 			holders: [],
-			holder_of: List.repeat(FlowLayoutOrder.nil, m.graphs.len()),
+			holder_of: List.repeat(LayeredFlowOrder.nil, m.graphs.len()),
 			minimizer_random: r1,
 			random_seed: seed,
 			changed: [],
@@ -135,18 +138,18 @@ FlowLayoutOrder :: {}.{
 		while $i < $graphs.len() {
 			g = $graphs.get($i) ?? 0
 			$i = $i + 1
-			order = FlowLayoutGraph.graph($s.model, g).layers
-			random0 = if (g == root) $s.minimizer_random else FlowLayoutRandom.from_seed(1)
-			(random1, relative) = FlowLayoutRandom.next_bool(random0)
-			$s = FlowLayoutOrder.note($s, "rand 1 ${if (relative) "1" else "0"}")
-			children = order.fold([], |acc, layer| acc.concat(layer.keep_if(|n| FlowLayoutGraph.node($s.model, n).nested != FlowLayoutOrder.nil).map(|n| FlowLayoutGraph.node($s.model, n).nested)))
-			parent = if (g == root) FlowLayoutOrder.nil else FlowLayoutGraph.graph($s.model, g).parent
+			order = LayeredFlowGraph.graph($s.model, g).layers
+			random0 = if (g == root) $s.minimizer_random else LayeredFlowRandom.from_seed(1)
+			(random1, relative) = LayeredFlowRandom.next_bool(random0)
+			$s = LayeredFlowOrder.note($s, "rand 1 ${if (relative) "1" else "0"}")
+			children = order.fold([], |acc, layer| acc.concat(layer.keep_if(|n| LayeredFlowGraph.node($s.model, n).nested != LayeredFlowOrder.nil).map(|n| LayeredFlowGraph.node($s.model, n).nested)))
+			parent = if (g == root) LayeredFlowOrder.nil else LayeredFlowGraph.graph($s.model, g).parent
 			holder = {
 				graph: g,
 				parent,
-				bottom_up: g == root or FlowLayoutOrder.bottom_up($s.model, g, order),
+				bottom_up: g == root or LayeredFlowOrder.bottom_up($s.model, g, order),
 				children,
-				external_ports: FlowLayoutGraph.graph($s.model, g).external_ports,
+				external_ports: LayeredFlowGraph.graph($s.model, g).external_ports,
 				distributor: if (relative) NodeRelative else LayerTotal,
 				order,
 				currently_best: None,
@@ -170,24 +173,24 @@ FlowLayoutOrder :: {}.{
 			}
 		}
 		for g in $sweep_on {
-			h = FlowLayoutOrder.holder($s, g)
+			h = LayeredFlowOrder.holder($s, g)
 			if !h.order.is_empty() {
-				$s = FlowLayoutOrder.compare_randomized($s, g)
-				if h.parent != FlowLayoutOrder.nil {
-					$s = FlowLayoutOrder.port_order_on_parent($s, g)
+				$s = LayeredFlowOrder.compare_randomized($s, g)
+				if h.parent != LayeredFlowOrder.nil {
+					$s = LayeredFlowOrder.port_order_on_parent($s, g)
 				}
 			}
 		}
 		final = $s
-		randoms = List.repeat(0, m.graphs.len()).map_with_index(|_, g| FlowLayoutOrder.graph_random(final, g))
-		{ model: FlowLayoutOrder.transfer(final), trace: final.trace, randoms }
+		randoms = List.repeat(0, m.graphs.len()).map_with_index(|_, g| LayeredFlowOrder.graph_random(final, g))
+		{ model: LayeredFlowOrder.transfer(final), trace: final.trace, randoms }
 	}
 
 	holder : State, U64 -> Holder
 	holder = |s, g|
 		s.holders.get(s.holder_of.get(g) ?? 0) ?? {
 			graph: g,
-			parent: FlowLayoutOrder.nil,
+			parent: LayeredFlowOrder.nil,
 			bottom_up: True,
 			children: [],
 			external_ports: False,
@@ -195,12 +198,12 @@ FlowLayoutOrder :: {}.{
 			order: [],
 			currently_best: None,
 			best: None,
-			random: FlowLayoutRandom.from_seed(1),
+			random: LayeredFlowRandom.from_seed(1),
 		}
 
 	set_holder : State, U64, Holder -> State
 	set_holder = |s, g, h| {
-		k = s.holder_of.get(g) ?? FlowLayoutOrder.nil
+		k = s.holder_of.get(g) ?? LayeredFlowOrder.nil
 		if (k < s.holders.len()) { ..s, holders: s.holders.set(k, h) ?? [] } else s
 	}
 
@@ -208,13 +211,13 @@ FlowLayoutOrder :: {}.{
 	## "bottom up" decision) rather than swept into from the parent.
 	bottom_up : Model, U64, List(List(U64)) -> Bool
 	bottom_up = |m, g, order| {
-		parent = FlowLayoutGraph.graph(m, g).parent
-		if parent == FlowLayoutOrder.nil {
+		parent = LayeredFlowGraph.graph(m, g).parent
+		if parent == LayeredFlowOrder.nil {
 			True
 		} else {
-			pnode = FlowLayoutGraph.node(m, parent)
-			east = pnode.ports.count_if(|p| FlowLayoutGraph.port(m, p).side == East)
-			west = pnode.ports.count_if(|p| FlowLayoutGraph.port(m, p).side == West)
+			pnode = LayeredFlowGraph.node(m, parent)
+			east = pnode.ports.count_if(|p| LayeredFlowGraph.port(m, p).side == East)
+			west = pnode.ports.count_if(|p| LayeredFlowGraph.port(m, p).side == West)
 			if pnode.port_constraints == FixedOrder or pnode.port_constraints == FixedPos or (east < 2 and west < 2) {
 				True
 			} else {
@@ -229,15 +232,15 @@ FlowLayoutOrder :: {}.{
 				put = |table, x| table.drop_if(|y| y.node == x.node).append(x)
 				var $to_random = 0.I64
 				var $to_hier = 0
-				has_connected = |n, side| FlowLayoutGraph.ports_on(m, n, side).any(|p| FlowLayoutGraph.degree(FlowLayoutGraph.port(m, p)) > 0)
+				has_connected = |n, side| LayeredFlowGraph.ports_on(m, n, side).any(|p| LayeredFlowGraph.degree(LayeredFlowGraph.port(m, p)) > 0)
 				for layer in order {
 					for n in layer {
-						node = FlowLayoutGraph.node(m, n)
+						node = LayeredFlowGraph.node(m, n)
 						var $cur = get($info, n)
 						if node.kind == ExternalPort {
 							$cur = { ..$cur, hier: 1 }
 							origin_side = match node.origin {
-								PortDummy(p) => FlowLayoutGraph.port(m, p).side
+								PortDummy(p) => LayeredFlowGraph.port(m, p).side
 								_ => Undefined
 							}
 							if origin_side == East {
@@ -249,10 +252,10 @@ FlowLayoutOrder :: {}.{
 							$to_random = $to_random + $cur.edges
 						}
 						$info = put($info, $cur)
-						for e in FlowLayoutGraph.outgoing(m, n) {
+						for e in LayeredFlowGraph.outgoing(m, n) {
 							$to_random = $to_random + $cur.random
 							$to_hier = $to_hier + $cur.hier
-							t = FlowLayoutGraph.target_node(m, e)
+							t = LayeredFlowGraph.target_node(m, e)
 							ti = get($info, t)
 							$info = put($info, { ..ti, hier: ti.hier + $cur.hier, random: ti.random + $cur.random, edges: ti.edges + $cur.edges + 1 })
 						}
@@ -271,10 +274,10 @@ FlowLayoutOrder :: {}.{
 
 	snapshot : State, U64 -> Snapshot
 	snapshot = |s, g| {
-		h = FlowLayoutOrder.holder(s, g)
+		h = LayeredFlowOrder.holder(s, g)
 		{
 			layers: h.order,
-			ports: h.order.fold([], |acc, layer| acc.concat(layer.map(|n| { node: n, ports: FlowLayoutGraph.node(s.model, n).ports }))),
+			ports: h.order.fold([], |acc, layer| acc.concat(layer.map(|n| { node: n, ports: LayeredFlowGraph.node(s.model, n).ports }))),
 		}
 	}
 
@@ -282,8 +285,8 @@ FlowLayoutOrder :: {}.{
 	set_currently_best = |s0| {
 		var $s = s0
 		for g in s0.changed {
-			snap = FlowLayoutOrder.snapshot($s, g)
-			$s = FlowLayoutOrder.set_holder($s, g, { ..FlowLayoutOrder.holder($s, g), currently_best: Some(snap) })
+			snap = LayeredFlowOrder.snapshot($s, g)
+			$s = LayeredFlowOrder.set_holder($s, g, { ..LayeredFlowOrder.holder($s, g), currently_best: Some(snap) })
 		}
 		$s
 	}
@@ -292,8 +295,8 @@ FlowLayoutOrder :: {}.{
 	save_best = |s0| {
 		var $s = s0
 		for g in s0.changed {
-			h = FlowLayoutOrder.holder($s, g)
-			$s = FlowLayoutOrder.set_holder($s, g, { ..h, best: h.currently_best })
+			h = LayeredFlowOrder.holder($s, g)
+			$s = LayeredFlowOrder.set_holder($s, g, { ..h, best: h.currently_best })
 		}
 		$s
 	}
@@ -303,18 +306,18 @@ FlowLayoutOrder :: {}.{
 
 	compare_randomized : State, U64 -> State
 	compare_randomized = |s0, g| {
-		var $s = { ..s0, minimizer_random: FlowLayoutRandom.from_seed(s0.random_seed), changed: [] }
+		var $s = { ..s0, minimizer_random: LayeredFlowRandom.from_seed(s0.random_seed), changed: [] }
 		# Only the drawing considers the diagram's order.
 		$s = if (g == $s.root and $s.model_order) { ..$s, first_try: True } else $s
 		var $best = 2147483647
 		var $i = 0
 		var $done = False
 		while $i < 7 and !$done {
-			(s1, crossings) = FlowLayoutOrder.minimize_with_counter($s, g)
+			(s1, crossings) = LayeredFlowOrder.minimize_with_counter($s, g)
 			$s = s1
 			if crossings < $best {
 				$best = crossings
-				$s = FlowLayoutOrder.save_best($s)
+				$s = LayeredFlowOrder.save_best($s)
 				if $best == 0 {
 					$done = True
 				}
@@ -326,39 +329,39 @@ FlowLayoutOrder :: {}.{
 
 	minimize_with_counter : State, U64 -> (State, I64)
 	minimize_with_counter = |s0, g| {
-		(r1, forward0) = FlowLayoutRandom.next_bool(s0.minimizer_random)
-		var $s = FlowLayoutOrder.note({ ..s0, minimizer_random: r1 }, "rand 1 ${if (forward0) "1" else "0"}")
-		(s_init, initial) = FlowLayoutOrder.count_current($s, g)
+		(r1, forward0) = LayeredFlowRandom.next_bool(s0.minimizer_random)
+		var $s = LayeredFlowOrder.note({ ..s0, minimizer_random: r1 }, "rand 1 ${if (forward0) "1" else "0"}")
+		(s_init, initial) = LayeredFlowOrder.count_current($s, g)
 		$s = s_init
 		if initial == 0 and $s.first_try {
-			(FlowLayoutOrder.note($s, "try -> 0"), 0)
+			(LayeredFlowOrder.note($s, "try -> 0"), 0)
 		} else {
 			var $forward = forward0
 			# The engine's "first try" and "second try" flags share one key, so
 			# only the first try keeps the declared order; the second already
 			# starts at random.
 			if !$s.first_try or !$s.model_order or g != $s.root {
-				$s = FlowLayoutOrder.set_first_layer_order($s, g, $forward)
+				$s = LayeredFlowOrder.set_first_layer_order($s, g, $forward)
 			} else {
 				$forward = True
 			}
-			$s = FlowLayoutOrder.sweep($s, g, $forward, True)
+			$s = LayeredFlowOrder.sweep($s, g, $forward, True)
 			$s = { ..$s, first_try: False }
-			(s_c, c0) = FlowLayoutOrder.count_current($s, g)
+			(s_c, c0) = LayeredFlowOrder.count_current($s, g)
 			$s = s_c
 			var $crossings = c0
 			var $old = $crossings
 			var $result = None
 			var $guard = 0
 			while $result == None and $guard < 1000 {
-				$s = FlowLayoutOrder.set_currently_best($s)
+				$s = LayeredFlowOrder.set_currently_best($s)
 				if $crossings == 0 {
 					$result = Some(0)
 				} else {
 					$forward = !$forward
 					$old = $crossings
-					$s = FlowLayoutOrder.sweep($s, g, $forward, False)
-					(s_n, cn) = FlowLayoutOrder.count_current($s, g)
+					$s = LayeredFlowOrder.sweep($s, g, $forward, False)
+					(s_n, cn) = LayeredFlowOrder.count_current($s, g)
 					$s = s_n
 					$crossings = cn
 					if !($old > $crossings) {
@@ -371,24 +374,24 @@ FlowLayoutOrder :: {}.{
 				Some(v) => v
 				None => $old
 			}
-			(FlowLayoutOrder.note($s, "try -> ${value.to_str()}"), value)
+			(LayeredFlowOrder.note($s, "try -> ${value.to_str()}"), value)
 		}
 	}
 
 	## Crossings in a graph and the subgraphs swept into from it.
 	count_current : State, U64 -> (State, I64)
 	count_current = |s0, g| {
-		h = FlowLayoutOrder.holder(s0, g)
+		h = LayeredFlowOrder.holder(s0, g)
 		var $s = s0
-		var $total = FlowLayoutOrder.count_all(s0, h.order)
+		var $total = LayeredFlowOrder.count_all(s0, h.order)
 		for c in h.children {
-			if !FlowLayoutOrder.holder($s, c).bottom_up {
-				(s1, v) = FlowLayoutOrder.count_current($s, c)
+			if !LayeredFlowOrder.holder($s, c).bottom_up {
+				(s1, v) = LayeredFlowOrder.count_current($s, c)
 				$s = s1
 				$total = $total + v
 			}
 		}
-		(FlowLayoutOrder.note($s, "count ${$total.to_str()}"), $total)
+		(LayeredFlowOrder.note($s, "count ${$total.to_str()}"), $total)
 	}
 
 	describe_order : State, U64, Bool, Bool -> State
@@ -396,8 +399,8 @@ FlowLayoutOrder :: {}.{
 		if !s.tracing {
 			s
 		} else {
-			h = FlowLayoutOrder.holder(s, g)
-			graph_name = if (h.parent == FlowLayoutOrder.nil) "root" else s.names.get(h.parent) ?? "?"
+			h = LayeredFlowOrder.holder(s, g)
+			graph_name = if (h.parent == LayeredFlowOrder.nil) "root" else s.names.get(h.parent) ?? "?"
 			head = "sweep ${graph_name} forward=${if (forward) "true" else "false"} first=${if (first_sweep) "true" else "false"}"
 			lines = h.order.map_with_index(|layer, i| "   L${i.to_str()}: ${Str.join_with(layer.map(|n| s.names.get(n) ?? "?"), " ")}")
 			{ ..s, trace: s.trace.append(head).concat(lines) }
@@ -408,30 +411,30 @@ FlowLayoutOrder :: {}.{
 	sweep : State, U64, Bool, Bool -> State
 	sweep = |s0, g, forward, first_sweep| {
 		var $s = s0
-		len = FlowLayoutOrder.holder($s, g).order.len()
+		len = LayeredFlowOrder.holder($s, g).order.len()
 		first = if (forward) 0 else len - 1
-		$s = FlowLayoutOrder.distribute_while_sweeping($s, g, first, forward)
-		$s = FlowLayoutOrder.sweep_in_hierarchical($s, g, first, forward, first_sweep)
+		$s = LayeredFlowOrder.distribute_while_sweeping($s, g, first, forward)
+		$s = LayeredFlowOrder.sweep_in_hierarchical($s, g, first, forward, first_sweep)
 		var $i = if (forward) 1 else len.to_i64_wrap() - 2
 		while (if (forward) $i < len.to_i64_wrap() else $i >= 0) {
 			li = $i.to_u64_wrap()
 			randomize_first = first_sweep and !(g == $s.root and $s.model_order and $s.first_try)
-			$s = FlowLayoutOrder.minimize_layer($s, g, li, forward, randomize_first)
-			$s = FlowLayoutOrder.distribute_while_sweeping($s, g, li, forward)
-			$s = FlowLayoutOrder.sweep_in_hierarchical($s, g, li, forward, first_sweep)
+			$s = LayeredFlowOrder.minimize_layer($s, g, li, forward, randomize_first)
+			$s = LayeredFlowOrder.distribute_while_sweeping($s, g, li, forward)
+			$s = LayeredFlowOrder.sweep_in_hierarchical($s, g, li, forward, first_sweep)
 			$i = if (forward) $i + 1 else $i - 1
 		}
-		FlowLayoutOrder.describe_order(FlowLayoutOrder.mark_changed($s, g), g, forward, first_sweep)
+		LayeredFlowOrder.describe_order(LayeredFlowOrder.mark_changed($s, g), g, forward, first_sweep)
 	}
 
 	sweep_in_hierarchical : State, U64, U64, Bool, Bool -> State
 	sweep_in_hierarchical = |s0, g, l, forward, first_sweep| {
 		var $s = s0
-		layer = (FlowLayoutOrder.holder($s, g).order.get(l)) ?? []
+		layer = (LayeredFlowOrder.holder($s, g).order.get(l)) ?? []
 		for n in layer {
-			nested = FlowLayoutGraph.node($s.model, n).nested
-			if nested != FlowLayoutOrder.nil and !FlowLayoutOrder.holder($s, nested).bottom_up {
-				$s = FlowLayoutOrder.sweep_in_node($s, n, nested, forward, first_sweep)
+			nested = LayeredFlowGraph.node($s.model, n).nested
+			if nested != LayeredFlowOrder.nil and !LayeredFlowOrder.holder($s, nested).bottom_up {
+				$s = LayeredFlowOrder.sweep_in_node($s, n, nested, forward, first_sweep)
 			}
 		}
 		$s
@@ -440,37 +443,37 @@ FlowLayoutOrder :: {}.{
 	sweep_in_node : State, U64, U64, Bool, Bool -> State
 	sweep_in_node = |s0, n, nested, forward, first_sweep| {
 		var $s = s0
-		h = FlowLayoutOrder.holder($s, nested)
+		h = LayeredFlowOrder.holder($s, nested)
 		len = h.order.len()
 		if len == 0 {
 			$s
 		} else {
 			start = if (forward) 0 else len - 1
 			start_layer = h.order.get(start) ?? []
-			first_node = start_layer.first() ?? FlowLayoutOrder.nil
-			if FlowLayoutGraph.node($s.model, first_node).kind == ExternalPort {
+			first_node = start_layer.first() ?? LayeredFlowOrder.nil
+			if LayeredFlowGraph.node($s.model, first_node).kind == ExternalPort {
 				side = if (forward) West else East
-				sorted = FlowLayoutOrder.dummies_by_port_positions($s.model, n, side)
-				$s = FlowLayoutOrder.set_holder($s, nested, { ..h, order: h.order.set(start, sorted) ?? h.order })
+				sorted = LayeredFlowOrder.dummies_by_port_positions($s.model, n, side)
+				$s = LayeredFlowOrder.set_holder($s, nested, { ..h, order: h.order.set(start, sorted) ?? h.order })
 			} else {
-				$s = FlowLayoutOrder.set_first_layer_order($s, nested, forward)
+				$s = LayeredFlowOrder.set_first_layer_order($s, nested, forward)
 			}
-			$s = FlowLayoutOrder.sweep($s, nested, forward, first_sweep)
-			FlowLayoutOrder.ports_by_dummy_positions($s, FlowLayoutOrder.holder($s, nested).order, n, forward)
+			$s = LayeredFlowOrder.sweep($s, nested, forward, first_sweep)
+			LayeredFlowOrder.ports_by_dummy_positions($s, LayeredFlowOrder.holder($s, nested).order, n, forward)
 		}
 	}
 
 	## The hierarchical port dummies inside a subgraph, in the order of the
 	## subgraph's ports on one side (east and north top down, west and south
 	## bottom up).
-	dummies_by_port_positions : Model, U64, FlowLayoutGraph.Side -> List(U64)
+	dummies_by_port_positions : Model, U64, LayeredFlowGraph.Side -> List(U64)
 	dummies_by_port_positions = |m, n, side| {
-		on_side = FlowLayoutGraph.ports_on(m, n, side)
+		on_side = LayeredFlowGraph.ports_on(m, n, side)
 		ordered = match side {
 			East | North => on_side
 			_ => on_side.rev()
 		}
-		ordered.keep_if(|p| FlowLayoutGraph.port(m, p).inside_connections).map(|p| FlowLayoutGraph.port(m, p).dummy)
+		ordered.keep_if(|p| LayeredFlowGraph.port(m, p).inside_connections).map(|p| LayeredFlowGraph.port(m, p).dummy)
 	}
 
 	## Order a subgraph's ports on one side like the dummies standing in for
@@ -480,20 +483,20 @@ FlowLayoutOrder :: {}.{
 		end = if (right_most) order.len() - 1 else 0
 		last_layer = order.get(end) ?? []
 		start = if (right_most) 0 else last_layer.len().to_i64_wrap() - 1
-		first = last_layer.get(start.to_u64_wrap()) ?? FlowLayoutOrder.nil
-		if FlowLayoutGraph.node(s.model, first).kind != ExternalPort {
+		first = last_layer.get(start.to_u64_wrap()) ?? LayeredFlowOrder.nil
+		if LayeredFlowGraph.node(s.model, first).kind != ExternalPort {
 			s
 		} else {
-			pnode = FlowLayoutGraph.node(s.model, parent)
+			pnode = LayeredFlowGraph.node(s.model, parent)
 			side = if (right_most) East else West
 			var $j = start
 			var $ports = pnode.ports
 			for i in 0..<pnode.ports.len() {
 				p = pnode.ports.get(i) ?? 0
-				port = FlowLayoutGraph.port(s.model, p)
+				port = LayeredFlowGraph.port(s.model, p)
 				if port.side == side and port.inside_connections {
-					d = last_layer.get($j.to_u64_wrap()) ?? FlowLayoutOrder.nil
-					origin = match FlowLayoutGraph.node(s.model, d).origin {
+					d = last_layer.get($j.to_u64_wrap()) ?? LayeredFlowOrder.nil
+					origin = match LayeredFlowGraph.node(s.model, d).origin {
 						PortDummy(q) => q
 						_ => p
 					}
@@ -501,7 +504,7 @@ FlowLayoutOrder :: {}.{
 					$j = if (right_most) $j + 1 else $j - 1
 				}
 			}
-			{ ..s, model: FlowLayoutGraph.set_node(s.model, parent, { ..pnode, ports: $ports }) }
+			{ ..s, model: LayeredFlowGraph.set_node(s.model, parent, { ..pnode, ports: $ports }) }
 		}
 	}
 
@@ -509,16 +512,16 @@ FlowLayoutOrder :: {}.{
 	## order its dummies ended up in, on both sides, and keeps it.
 	port_order_on_parent : State, U64 -> State
 	port_order_on_parent = |s0, g| {
-		h = FlowLayoutOrder.holder(s0, g)
+		h = LayeredFlowOrder.holder(s0, g)
 		if !h.external_ports {
 			s0
 		} else {
 			match h.best {
 				Some(best) => {
-					s1 = FlowLayoutOrder.ports_by_dummy_positions(s0, best.layers, h.parent, True)
-					s2 = FlowLayoutOrder.ports_by_dummy_positions(s1, best.layers, h.parent, False)
-					pnode = FlowLayoutGraph.node(s2.model, h.parent)
-					{ ..s2, model: FlowLayoutGraph.set_node(s2.model, h.parent, { ..pnode, port_constraints: FixedOrder }) }
+					s1 = LayeredFlowOrder.ports_by_dummy_positions(s0, best.layers, h.parent, True)
+					s2 = LayeredFlowOrder.ports_by_dummy_positions(s1, best.layers, h.parent, False)
+					pnode = LayeredFlowGraph.node(s2.model, h.parent)
+					{ ..s2, model: LayeredFlowGraph.set_node(s2.model, h.parent, { ..pnode, port_constraints: FixedOrder }) }
 				}
 				None => s0
 			}
@@ -529,38 +532,38 @@ FlowLayoutOrder :: {}.{
 
 	set_first_layer_order : State, U64, Bool -> State
 	set_first_layer_order = |s0, g, forward| {
-		h = FlowLayoutOrder.holder(s0, g)
+		h = LayeredFlowOrder.holder(s0, g)
 		len = h.order.len()
 		start = if (forward) 0 else (if (len == 0) 0 else len - 1)
 		nodes = h.order.get(start) ?? []
 		# Random barycenters, drawn with the graph's own generator.
 		var $s = s0
-		var $random = FlowLayoutOrder.graph_random(s0, g)
+		var $random = LayeredFlowOrder.graph_random(s0, g)
 		for n in nodes {
-			(r, d) = FlowLayoutRandom.next_double($random)
+			(r, d) = LayeredFlowRandom.next_double($random)
 			$random = r
-			$s = FlowLayoutOrder.note($s, "rand 26")
+			$s = LayeredFlowOrder.note($s, "rand 26")
 			$s = { ..$s, bary: $s.bary.set(n, Some(d)) ?? $s.bary, summed: $s.summed.set(n, d) ?? $s.summed, degree: $s.degree.set(n, 1) ?? $s.degree }
 		}
-		$s = FlowLayoutOrder.set_graph_random($s, g, $random)
-		sorted = FlowLayoutOrder.sort_by_bary($s, nodes)
-		h2 = FlowLayoutOrder.holder($s, g)
-		FlowLayoutOrder.set_holder($s, g, { ..h2, order: h2.order.set(start, sorted) ?? h2.order })
+		$s = LayeredFlowOrder.set_graph_random($s, g, $random)
+		sorted = LayeredFlowOrder.sort_by_bary($s, nodes)
+		h2 = LayeredFlowOrder.holder($s, g)
+		LayeredFlowOrder.set_holder($s, g, { ..h2, order: h2.order.set(start, sorted) ?? h2.order })
 	}
 
 	set_graph_random : State, U64, Random -> State
 	set_graph_random = |s, g, random| {
-		s1 = FlowLayoutOrder.set_holder(s, g, { ..FlowLayoutOrder.holder(s, g), random })
+		s1 = LayeredFlowOrder.set_holder(s, g, { ..LayeredFlowOrder.holder(s, g), random })
 		# The drawing's generator is the minimizer's.
 		if (g == s1.root) { ..s1, minimizer_random: random } else s1
 	}
 
 	graph_random : State, U64 -> Random
-	graph_random = |s, g| if (g == s.root) s.minimizer_random else FlowLayoutOrder.holder(s, g).random
+	graph_random = |s, g| if (g == s.root) s.minimizer_random else LayeredFlowOrder.holder(s, g).random
 
 	sort_by_bary : State, List(U64) -> List(U64)
 	sort_by_bary = |s, nodes|
-		FlowLayoutGraph.sort_by(
+		LayeredFlowGraph.sort_by(
 			nodes,
 			|a, b|
 				match (s.bary.get(a) ?? None, s.bary.get(b) ?? None) {
@@ -574,17 +577,17 @@ FlowLayoutOrder :: {}.{
 	## One layer of a sweep: barycenters from the fixed neighbouring layer.
 	minimize_layer : State, U64, U64, Bool, Bool -> State
 	minimize_layer = |s0, g, l, forward, first_sweep| {
-		h = FlowLayoutOrder.holder(s0, g)
+		h = LayeredFlowOrder.holder(s0, g)
 		fixed_index = if (forward) l - 1 else l + 1
-		s1 = FlowLayoutOrder.calculate_port_ranks(s0, h.distributor, h.order.get(fixed_index) ?? [], forward)
+		s1 = LayeredFlowOrder.calculate_port_ranks(s0, h.distributor, h.order.get(fixed_index) ?? [], forward)
 		nodes = h.order.get(l) ?? []
-		first_node = nodes.first() ?? FlowLayoutOrder.nil
-		pre_ordered = !first_sweep or FlowLayoutGraph.node(s1.model, first_node).kind == ExternalPort
-		s2 = FlowLayoutOrder.calculate_barycenters(s1, g, nodes, forward)
-		s3 = FlowLayoutOrder.fill_unknown(s2, g, nodes, pre_ordered)
-		sorted = if (nodes.len() > 1) FlowLayoutOrder.sort_by_bary(s3, nodes) else nodes
-		h3 = FlowLayoutOrder.holder(s3, g)
-		FlowLayoutOrder.set_holder(s3, g, { ..h3, order: h3.order.set(l, sorted) ?? h3.order })
+		first_node = nodes.first() ?? LayeredFlowOrder.nil
+		pre_ordered = !first_sweep or LayeredFlowGraph.node(s1.model, first_node).kind == ExternalPort
+		s2 = LayeredFlowOrder.calculate_barycenters(s1, g, nodes, forward)
+		s3 = LayeredFlowOrder.fill_unknown(s2, g, nodes, pre_ordered)
+		sorted = if (nodes.len() > 1) LayeredFlowOrder.sort_by_bary(s3, nodes) else nodes
+		h3 = LayeredFlowOrder.holder(s3, g)
+		LayeredFlowOrder.set_holder(s3, g, { ..h3, order: h3.order.set(l, sorted) ?? h3.order })
 	}
 
 	calculate_barycenters : State, U64, List(U64), Bool -> State
@@ -594,7 +597,7 @@ FlowLayoutOrder :: {}.{
 			$s = { ..$s, visited: $s.visited.set(n, False) ?? $s.visited }
 		}
 		for n in nodes {
-			$s = FlowLayoutOrder.calculate_barycenter($s, g, n, forward)
+			$s = LayeredFlowOrder.calculate_barycenter($s, g, n, forward)
 		}
 		$s
 	}
@@ -603,11 +606,11 @@ FlowLayoutOrder :: {}.{
 	## edges sweeping forward, targets of its outgoing edges sweeping back.
 	fixed_ports : Model, U64, Bool -> List(U64)
 	fixed_ports = |m, p, forward| {
-		port = FlowLayoutGraph.port(m, p)
+		port = LayeredFlowGraph.port(m, p)
 		if forward {
-			port.incoming.map(|e| FlowLayoutGraph.edge(m, e).source)
+			port.incoming.map(|e| LayeredFlowGraph.edge(m, e).source)
 		} else {
-			port.outgoing.map(|e| FlowLayoutGraph.edge(m, e).target)
+			port.outgoing.map(|e| LayeredFlowGraph.edge(m, e).target)
 		}
 	}
 
@@ -619,13 +622,13 @@ FlowLayoutOrder :: {}.{
 			var $s = { ..s0, visited: s0.visited.set(n, True) ?? s0.visited }
 			var $degree = 0
 			var $summed = 0.0
-			layer = FlowLayoutGraph.node($s.model, n).layer
-			for p in FlowLayoutGraph.node($s.model, n).ports {
-				for fp in FlowLayoutOrder.fixed_ports($s.model, p, forward) {
-					fixed_node = FlowLayoutGraph.port($s.model, fp).node
-					if FlowLayoutGraph.node($s.model, fixed_node).layer == layer {
+			layer = LayeredFlowGraph.node($s.model, n).layer
+			for p in LayeredFlowGraph.node($s.model, n).ports {
+				for fp in LayeredFlowOrder.fixed_ports($s.model, p, forward) {
+					fixed_node = LayeredFlowGraph.port($s.model, fp).node
+					if LayeredFlowGraph.node($s.model, fixed_node).layer == layer {
 						if fixed_node != n {
-							$s = FlowLayoutOrder.calculate_barycenter($s, g, fixed_node, forward)
+							$s = LayeredFlowOrder.calculate_barycenter($s, g, fixed_node, forward)
 							$degree = $degree + ($s.degree.get(fixed_node) ?? 0)
 							$summed = $summed + ($s.summed.get(fixed_node) ?? 0)
 						}
@@ -636,8 +639,8 @@ FlowLayoutOrder :: {}.{
 				}
 			}
 			if $degree > 0 {
-				(r, f) = FlowLayoutRandom.next_float(FlowLayoutOrder.graph_random($s, g))
-				$s = FlowLayoutOrder.set_graph_random($s, g, r)
+				(r, f) = LayeredFlowRandom.next_float(LayeredFlowOrder.graph_random($s, g))
+				$s = LayeredFlowOrder.set_graph_random($s, g, r)
 				$summed = $summed + (f * 0.07000000029802322 - 0.03500000014901161)
 				$s = { ..$s, bary: $s.bary.set(n, Some($summed / $degree.to_f64())) ?? $s.bary }
 			} else {
@@ -688,8 +691,8 @@ FlowLayoutOrder :: {}.{
 			) + 2
 			for n in nodes {
 				if ($s.bary.get(n) ?? None) == None {
-					(r, f) = FlowLayoutRandom.next_float(FlowLayoutOrder.graph_random($s, g))
-					$s = FlowLayoutOrder.set_graph_random($s, g, r)
+					(r, f) = LayeredFlowRandom.next_float(LayeredFlowOrder.graph_random($s, g))
+					$s = LayeredFlowOrder.set_graph_random($s, g, r)
 					v = f * max_bary - 1
 					$s = { ..$s, bary: $s.bary.set(n, Some(v)) ?? $s.bary, summed: $s.summed.set(n, v) ?? $s.summed, degree: $s.degree.set(n, 1) ?? $s.degree }
 				}
@@ -707,9 +710,9 @@ FlowLayoutOrder :: {}.{
 		var $s = s0
 		var $consumed = 0.0
 		for n in layer {
-			ports = FlowLayoutGraph.node($s.model, n).ports
+			ports = LayeredFlowGraph.node($s.model, n).ports
 			if outputs {
-				outs = ports.keep_if(|p| !FlowLayoutGraph.port($s.model, p).outgoing.is_empty())
+				outs = ports.keep_if(|p| !LayeredFlowGraph.port($s.model, p).outgoing.is_empty())
 				match distributor {
 					NodeRelative => {
 						incr = 1.0 / (outs.len().to_f64() + 1)
@@ -730,15 +733,15 @@ FlowLayoutOrder :: {}.{
 					}
 				}
 			} else {
-				ins = ports.keep_if(|p| !FlowLayoutGraph.port($s.model, p).incoming.is_empty())
-				north = ins.count_if(|p| FlowLayoutGraph.port($s.model, p).side == North)
+				ins = ports.keep_if(|p| !LayeredFlowGraph.port($s.model, p).incoming.is_empty())
+				north = ins.count_if(|p| LayeredFlowGraph.port($s.model, p).side == North)
 				match distributor {
 					NodeRelative => {
 						incr = 1.0 / (ins.len().to_f64() + 1)
 						var $north_pos = $consumed + north.to_f64() * incr
 						var $rest_pos = $consumed + 1 - incr
 						for p in ins {
-							if FlowLayoutGraph.port($s.model, p).side == North {
+							if LayeredFlowGraph.port($s.model, p).side == North {
 								$s = { ..$s, port_ranks: $s.port_ranks.set(p, $north_pos) ?? $s.port_ranks }
 								$north_pos = $north_pos - incr
 							} else {
@@ -752,7 +755,7 @@ FlowLayoutOrder :: {}.{
 						var $north_pos = $consumed + north.to_f64()
 						var $rest_pos = $consumed + ins.len().to_f64()
 						for p in ins {
-							if FlowLayoutGraph.port($s.model, p).side == North {
+							if LayeredFlowGraph.port($s.model, p).side == North {
 								$s = { ..$s, port_ranks: $s.port_ranks.set(p, $north_pos) ?? $s.port_ranks }
 								$north_pos = $north_pos - 1
 							} else {
@@ -770,7 +773,7 @@ FlowLayoutOrder :: {}.{
 
 	distribute_while_sweeping : State, U64, U64, Bool -> State
 	distribute_while_sweeping = |s0, g, l, forward| {
-		h = FlowLayoutOrder.holder(s0, g)
+		h = LayeredFlowOrder.holder(s0, g)
 		free_layer = h.order.get(l) ?? []
 		var $s = s0
 		for k in 0..<free_layer.len() {
@@ -781,35 +784,35 @@ FlowLayoutOrder :: {}.{
 		not_first = if (forward) l != 0 else l + 1 != h.order.len()
 		if not_first {
 			fixed_layer = h.order.get(if (forward) l - 1 else l + 1) ?? []
-			$s = FlowLayoutOrder.calculate_port_ranks($s, h.distributor, fixed_layer, forward)
+			$s = LayeredFlowOrder.calculate_port_ranks($s, h.distributor, fixed_layer, forward)
 			for n in free_layer {
-				$s = FlowLayoutOrder.distribute_ports($s, n, side)
+				$s = LayeredFlowOrder.distribute_ports($s, n, side)
 			}
-			$s = FlowLayoutOrder.calculate_port_ranks($s, h.distributor, free_layer, !forward)
+			$s = LayeredFlowOrder.calculate_port_ranks($s, h.distributor, free_layer, !forward)
 			for n in fixed_layer {
-				if FlowLayoutGraph.node($s.model, n).nested == FlowLayoutOrder.nil {
-					$s = FlowLayoutOrder.distribute_ports($s, n, FlowLayoutGraph.opposed(side))
+				if LayeredFlowGraph.node($s.model, n).nested == LayeredFlowOrder.nil {
+					$s = LayeredFlowOrder.distribute_ports($s, n, LayeredFlowGraph.opposed(side))
 				}
 			}
 			$s
 		} else {
 			for n in free_layer {
-				$s = FlowLayoutOrder.distribute_ports($s, n, side)
+				$s = LayeredFlowOrder.distribute_ports($s, n, side)
 			}
 			$s
 		}
 	}
 
-	distribute_ports : State, U64, FlowLayoutGraph.Side -> State
+	distribute_ports : State, U64, LayeredFlowGraph.Side -> State
 	distribute_ports = |s0, n, side| {
-		node = FlowLayoutGraph.node(s0.model, n)
+		node = LayeredFlowGraph.node(s0.model, n)
 		if node.port_constraints == FixedOrder or node.port_constraints == FixedPos {
 			s0
 		} else {
-			s1 = FlowLayoutOrder.port_barycenters(s0, n, FlowLayoutGraph.ports_on(s0.model, n, side))
-			s2 = FlowLayoutOrder.port_barycenters(s1, n, FlowLayoutGraph.ports_on(s1.model, n, South))
-			s3 = FlowLayoutOrder.port_barycenters(s2, n, FlowLayoutGraph.ports_on(s2.model, n, North))
-			FlowLayoutOrder.sort_ports(s3, n)
+			s1 = LayeredFlowOrder.port_barycenters(s0, n, LayeredFlowGraph.ports_on(s0.model, n, side))
+			s2 = LayeredFlowOrder.port_barycenters(s1, n, LayeredFlowGraph.ports_on(s1.model, n, South))
+			s3 = LayeredFlowOrder.port_barycenters(s2, n, LayeredFlowGraph.ports_on(s2.model, n, North))
+			LayeredFlowOrder.sort_ports(s3, n)
 		}
 	}
 
@@ -819,15 +822,15 @@ FlowLayoutOrder :: {}.{
 		var $min = 0.0
 		var $max = 0.0
 		var $in_layer = []
-		layer = FlowLayoutGraph.node(s0.model, n).layer
+		layer = LayeredFlowGraph.node(s0.model, n).layer
 		for p in ports {
-			port = FlowLayoutGraph.port($s.model, p)
+			port = LayeredFlowGraph.port($s.model, p)
 			var $sum = 0.0
 			var $is_in_layer = False
 			for e in port.outgoing {
 				if !$is_in_layer {
-					t = FlowLayoutGraph.edge($s.model, e).target
-					if FlowLayoutGraph.node($s.model, FlowLayoutGraph.port($s.model, t).node).layer == layer {
+					t = LayeredFlowGraph.edge($s.model, e).target
+					if LayeredFlowGraph.node($s.model, LayeredFlowGraph.port($s.model, t).node).layer == layer {
 						$is_in_layer = True
 					} else {
 						$sum = $sum + ($s.port_ranks.get(t) ?? 0)
@@ -836,8 +839,8 @@ FlowLayoutOrder :: {}.{
 			}
 			for e in port.incoming {
 				if !$is_in_layer {
-					src = FlowLayoutGraph.edge($s.model, e).source
-					if FlowLayoutGraph.node($s.model, FlowLayoutGraph.port($s.model, src).node).layer == layer {
+					src = LayeredFlowGraph.edge($s.model, e).source
+					if LayeredFlowGraph.node($s.model, LayeredFlowGraph.port($s.model, src).node).layer == layer {
 						$is_in_layer = True
 					} else {
 						$sum = $sum - ($s.port_ranks.get(src) ?? 0)
@@ -847,7 +850,7 @@ FlowLayoutOrder :: {}.{
 			if $is_in_layer {
 				$in_layer = $in_layer.append(p)
 			} else {
-				deg = FlowLayoutGraph.degree(port)
+				deg = LayeredFlowGraph.degree(port)
 				if deg > 0 {
 					b = $sum / deg.to_f64()
 					$s = { ..$s, port_bary: $s.port_bary.set(p, b) ?? $s.port_bary }
@@ -862,16 +865,16 @@ FlowLayoutOrder :: {}.{
 			# Ports with edges within the layer go to the end facing their
 			# other ends.
 			node_index = ($s.node_pos.get(n) ?? 0) + 1
-			layer_nodes = FlowLayoutGraph.graph($s.model, FlowLayoutGraph.node($s.model, n).graph).layers.get(layer) ?? []
+			layer_nodes = LayeredFlowGraph.graph($s.model, LayeredFlowGraph.node($s.model, n).graph).layers.get(layer) ?? []
 			layer_size = layer_nodes.len() + 1
 			for p in $in_layer {
-				port = FlowLayoutGraph.port($s.model, p)
-				ends = port.incoming.map(|e| FlowLayoutGraph.edge($s.model, e).source).concat(port.outgoing.map(|e| FlowLayoutGraph.edge($s.model, e).target))
+				port = LayeredFlowGraph.port($s.model, p)
+				ends = port.incoming.map(|e| LayeredFlowGraph.edge($s.model, e).source).concat(port.outgoing.map(|e| LayeredFlowGraph.edge($s.model, e).target))
 				var $sum = 0
 				var $count = 0.U64
 				for q in ends {
-					qn = FlowLayoutGraph.port($s.model, q).node
-					if FlowLayoutGraph.node($s.model, qn).layer == layer {
+					qn = LayeredFlowGraph.port($s.model, q).node
+					if LayeredFlowGraph.node($s.model, qn).layer == layer {
 						$sum = $sum + ($s.node_pos.get(qn) ?? 0) + 1
 						$count = $count + 1
 					}
@@ -890,14 +893,14 @@ FlowLayoutOrder :: {}.{
 
 	sort_ports : State, U64 -> State
 	sort_ports = |s, n| {
-		node = FlowLayoutGraph.node(s.model, n)
-		sorted = FlowLayoutGraph.sort_by(
+		node = LayeredFlowGraph.node(s.model, n)
+		sorted = LayeredFlowGraph.sort_by(
 			node.ports,
 			|a, b| {
-				pa = FlowLayoutGraph.port(s.model, a)
-				pb = FlowLayoutGraph.port(s.model, b)
-				sa = FlowLayoutGraph.side_index(pa.side)
-				sb = FlowLayoutGraph.side_index(pb.side)
+				pa = LayeredFlowGraph.port(s.model, a)
+				pb = LayeredFlowGraph.port(s.model, b)
+				sa = LayeredFlowGraph.side_index(pa.side)
+				sb = LayeredFlowGraph.side_index(pb.side)
 				if sa != sb {
 					if (sa < sb) -1 else 1
 				} else {
@@ -919,7 +922,7 @@ FlowLayoutOrder :: {}.{
 				}
 			},
 		)
-		{ ..s, model: FlowLayoutGraph.set_node(s.model, n, { ..node, ports: sorted }) }
+		{ ..s, model: LayeredFlowGraph.set_node(s.model, n, { ..node, ports: sorted }) }
 	}
 
 	# ---------------------------------------------------------------- crossings
@@ -934,12 +937,12 @@ FlowLayoutOrder :: {}.{
 			var $pos = s.cross_pos
 			first = order.first() ?? []
 			last = order.last() ?? []
-			(p1, c1) = FlowLayoutOrder.in_layer_crossings(s.model, $pos, first, West)
-			(p2, c2) = FlowLayoutOrder.in_layer_crossings(s.model, p1, last, East)
+			(p1, c1) = LayeredFlowOrder.in_layer_crossings(s.model, $pos, first, West)
+			(p2, c2) = LayeredFlowOrder.in_layer_crossings(s.model, p1, last, East)
 			$pos = p2
 			var $total = c1 + c2
 			for l in 0..<(order.len() - 1) {
-				(p3, c3) = FlowLayoutOrder.between_layers(s.model, $pos, order.get(l) ?? [], order.get(l + 1) ?? [])
+				(p3, c3) = LayeredFlowOrder.between_layers(s.model, $pos, order.get(l) ?? [], order.get(l + 1) ?? [])
 				$pos = p3
 				$total = $total + c3
 			}
@@ -947,9 +950,9 @@ FlowLayoutOrder :: {}.{
 		}
 
 	## Ports of a node on one side, in the order the counter lists them.
-	side_ports : Model, U64, FlowLayoutGraph.Side, Bool -> List(U64)
+	side_ports : Model, U64, LayeredFlowGraph.Side, Bool -> List(U64)
 	side_ports = |m, n, side, top_down| {
-		view = FlowLayoutGraph.ports_on(m, n, side)
+		view = LayeredFlowGraph.ports_on(m, n, side)
 		if side == East {
 			if (top_down) view else view.rev()
 		} else if top_down {
@@ -964,7 +967,7 @@ FlowLayoutOrder :: {}.{
 		var $pos = pos0
 		var $ports = []
 		for n in left {
-			for p in FlowLayoutOrder.side_ports(m, n, East, True) {
+			for p in LayeredFlowOrder.side_ports(m, n, East, True) {
 				$pos = $pos.set(p, $ports.len().to_i64_wrap()) ?? $pos
 				$ports = $ports.append(p)
 			}
@@ -973,13 +976,13 @@ FlowLayoutOrder :: {}.{
 		while $k > 0 {
 			$k = $k - 1
 			n = right.get($k) ?? 0
-			for p in FlowLayoutOrder.side_ports(m, n, West, False) {
+			for p in LayeredFlowOrder.side_ports(m, n, West, False) {
 				$pos = $pos.set(p, $ports.len().to_i64_wrap()) ?? $pos
 				$ports = $ports.append(p)
 			}
 		}
 		positions = $pos
-		(positions, FlowLayoutOrder.count_on_ports(m, positions, $ports))
+		(positions, LayeredFlowOrder.count_on_ports(m, positions, $ports))
 	}
 
 	## Crossings on a sequence of ports: an edge from a port to a later port
@@ -1003,10 +1006,10 @@ FlowLayoutOrder :: {}.{
 					$i = $i + $i.bitwise_and($i.bitwise_xor(18446744073709551615).plus_wrap(1))
 				}
 			}
-			port = FlowLayoutGraph.port(m, p)
+			port = LayeredFlowGraph.port(m, p)
 			var $ends = []
 			for e in port.incoming.concat(port.outgoing) {
-				edge = FlowLayoutGraph.edge(m, e)
+				edge = LayeredFlowGraph.edge(m, e)
 				other = if (edge.source == p) edge.target else edge.source
 				end = position_of(other)
 				if end > position_of(p) {
@@ -1038,12 +1041,12 @@ FlowLayoutOrder :: {}.{
 		$crossings
 	}
 
-	in_layer_crossings : Model, List(I64), List(U64), FlowLayoutGraph.Side -> (List(I64), I64)
+	in_layer_crossings : Model, List(I64), List(U64), LayeredFlowGraph.Side -> (List(I64), I64)
 	in_layer_crossings = |m, pos0, nodes, side| {
 		var $pos = pos0
 		var $ports = []
 		for n in nodes {
-			for p in FlowLayoutOrder.side_ports(m, n, side, True) {
+			for p in LayeredFlowOrder.side_ports(m, n, side, True) {
 				$pos = $pos.set(p, $ports.len().to_i64_wrap()) ?? $pos
 				$ports = $ports.append(p)
 			}
@@ -1053,16 +1056,16 @@ FlowLayoutOrder :: {}.{
 		var $open = List.repeat(0, size)
 		var $crossings = 0
 		position_of = |p| positions.get(p) ?? 0
-		same_layer = |e| FlowLayoutGraph.node(m, FlowLayoutGraph.source_node(m, e)).layer == FlowLayoutGraph.node(m, FlowLayoutGraph.target_node(m, e)).layer
+		same_layer = |e| LayeredFlowGraph.node(m, LayeredFlowGraph.source_node(m, e)).layer == LayeredFlowGraph.node(m, LayeredFlowGraph.target_node(m, e)).layer
 		for p in $ports {
 			idx = position_of(p).max(0).to_u64_wrap()
 			$open = $open.set(idx, 0) ?? $open
-			port = FlowLayoutGraph.port(m, p)
+			port = LayeredFlowGraph.port(m, p)
 			var $between = 0
 			var $ends = []
 			for e in port.incoming.concat(port.outgoing) {
 				if same_layer(e) {
-					edge = FlowLayoutGraph.edge(m, e)
+					edge = LayeredFlowGraph.edge(m, e)
 					other = if (edge.source == p) edge.target else edge.source
 					end = position_of(other)
 					if end > position_of(p) {
@@ -1097,12 +1100,12 @@ FlowLayoutOrder :: {}.{
 		for h in s.holders {
 			match h.best {
 				Some(best) => {
-					graph = FlowLayoutGraph.graph($m, h.graph)
-					$m = FlowLayoutGraph.set_graph($m, h.graph, { ..graph, layers: best.layers })
+					graph = LayeredFlowGraph.graph($m, h.graph)
+					$m = LayeredFlowGraph.set_graph($m, h.graph, { ..graph, layers: best.layers })
 					for entry in best.ports {
-						node = FlowLayoutGraph.node($m, entry.node)
+						node = LayeredFlowGraph.node($m, entry.node)
 						constraints = if (node.port_constraints == FixedOrder or node.port_constraints == FixedPos) node.port_constraints else FixedOrder
-						$m = FlowLayoutGraph.set_node($m, entry.node, { ..node, ports: entry.ports, port_constraints: constraints })
+						$m = LayeredFlowGraph.set_node($m, entry.node, { ..node, ports: entry.ports, port_constraints: constraints })
 					}
 				}
 				None => {}
@@ -1115,38 +1118,29 @@ FlowLayoutOrder :: {}.{
 ## Test helper: a diagram's working graph with every node 152 by 41, edge
 ## labels 31.27 by 17 and titles 10 by 17, as Mermaid measured the recorded
 ## runs these tests take their expected values from.
-test_setup : Str -> FlowLayoutImport.Setup
+test_setup : Str -> LayeredFlowImport.Setup
 test_setup = |text| {
-	diagram = match Flowchart.parse(text) {
-		Ok(d) => d
-		Err(_) => { direction: Right, nodes: [], edges: [], groups: [], classes: [] }
-	}
-	box = { width: 152, height: 41, label: { lines: [], width: 0, height: 0 } }
-	sizes = {
-		nodes: List.repeat(box, diagram.nodes.len()),
-		edge_labels: diagram.edges.map(|e| if (e.label.is_empty()) None else Some({ lines: [], width: 31.26953125, height: 17 })),
-		group_titles: List.repeat({ lines: [], width: 10, height: 17 }, diagram.groups.len()),
-	}
-	FlowLayoutImport.build(diagram, sizes)
+	fixture = LayeredFlowFixtures.get(text)
+	LayeredFlowImport.build_registered(fixture.diagram, fixture.sizes, fixture.registration)
 }
 
 ## Test helper: the drawing's graph of `text`, layered, and the diagram
 ## index of each node of each layer.
-test_layered : Str -> { setup : FlowLayoutImport.Setup, model : FlowLayoutGraph.Model }
+test_layered : Str -> { setup : LayeredFlowImport.Setup, model : LayeredFlowGraph.Model }
 test_layered = |text| {
 	setup = test_setup(text)
 	m = setup.model
-	{ setup, model: FlowLayoutLayers.prepare(m, 0, FlowLayoutLayers.features(m, 0, False)) }
+	{ setup, model: LayeredFlowLayers.prepare(m, 0, LayeredFlowLayers.features(m, 0, False)) }
 }
 
-test_ids : FlowLayoutImport.Setup, FlowLayoutGraph.Model -> List(List(U64))
-test_ids = |setup, m| FlowLayoutGraph.graph(m, 0).layers.map(|layer| layer.map(|n| setup.node_of.find_first_index(|x| x == n) ?? 99))
+test_ids : LayeredFlowImport.Setup, LayeredFlowGraph.Model -> List(List(U64))
+test_ids = |setup, m| LayeredFlowGraph.graph(m, 0).layers.map(|layer| layer.map(|n| setup.node_of.find_first_index(|x| x == n) ?? 99))
 
 ## Ordering moves y below x to keep q --> y clear of r's edges. Recorded:
 ## ELK places r, q at y 93, 177.5 and z, x, y at y 12, 93, 174.
 expect {
 	r = test_layered("flowchart LR\n    r --> z\n    r --> y\n    r --> x\n    q --> y\n")
-	ordered = FlowLayoutOrder.minimize(r.model, True)
+	ordered = LayeredFlowOrder.minimize(r.model, True)
 	test_ids(r.setup, ordered) == [[0, 4], [1, 3, 2]]
 }
 
@@ -1154,8 +1148,8 @@ expect {
 ## it, so the same graph is ordered the same way, draw for draw.
 expect {
 	r = test_layered("flowchart LR\n    a --> b\n    a --> c\n    d --> b\n    d --> c\n    e --> b\n")
-	first = FlowLayoutOrder.minimize_traced(r.model, 0, True, True, [])
-	second = FlowLayoutOrder.minimize_traced(r.model, 0, True, True, [])
+	first = LayeredFlowOrder.minimize_traced(r.model, 0, True, True, [])
+	second = LayeredFlowOrder.minimize_traced(r.model, 0, True, True, [])
 	first.trace == second.trace and first.trace.any(|line| line.starts_with("rand")) and first.model == second.model
 }
 
@@ -1163,6 +1157,6 @@ expect {
 expect {
 	r = test_layered("flowchart LR\n    a --> b --> c\n    a --> c\n    d --> b\n    d --> e --> c\n")
 	before = test_ids(r.setup, r.model)
-	after = test_ids(r.setup, FlowLayoutOrder.minimize(r.model, True))
+	after = test_ids(r.setup, LayeredFlowOrder.minimize(r.model, True))
 	before.len() == after.len() and List.map2(before, after, |x, y| x.len() == y.len() and x.all(|n| y.contains(n))).all(|ok| ok)
 }

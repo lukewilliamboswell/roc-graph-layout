@@ -1,7 +1,6 @@
 import Flowchart
 import FlowGeometry
-import FlowLayoutElk
-import FlowLayoutGraph
+import FlowCore
 
 ## What Mermaid does to the layout engine's result before drawing it:
 ## subgraph frames are pulled in to their content, empty subgraphs and tiny
@@ -53,7 +52,7 @@ FlowLayoutAdjust :: {}.{
 
 	## Apply Mermaid's adjustments. The result is index-aligned with the
 	## diagram, in the engine's coordinates.
-	adjust : Flowchart.Diagram, FlowGeometry.Sizes, FlowLayoutElk.Raw -> { nodes : List(Rect), groups : List(Rect), edges : List({ points : List(Point), label : [None, Some(Point)] }) }
+	adjust : Flowchart.Diagram, FlowGeometry.Sizes, FlowCore.Raw -> { nodes : List(Rect), groups : List(Rect), edges : List({ points : List(Point), label : [None, Some(Point)] }) }
 	adjust = |diagram, sizes, raw| {
 		group_count = diagram.groups.len()
 		titles = FlowLayoutAdjust.upto(group_count).map(
@@ -196,17 +195,44 @@ FlowLayoutAdjust :: {}.{
 		$out
 	}
 
+	## Stable counting order of bounded hierarchy depths, deepest first.
+	## Depth is at most the number of groups; construction never comparison
+	## sorts a hot list or depends on sort pivot/ownership behavior.
+	depth_order : List(U64) -> List(U64)
+	depth_order = |depths| {
+		maximum = depths.fold(0, |acc, depth| acc.max(depth))
+		var $counts = List.repeat(0.U64, maximum + 1)
+		for depth in depths {
+			$counts = $counts.set(depth, ($counts.get(depth) ?? 0) + 1) ?? []
+		}
+		var $starts = List.repeat(0.U64, maximum + 1)
+		var $next = 0.U64
+		for step in 0..<(maximum + 1) {
+			depth = maximum - step
+			$starts = $starts.set(depth, $next) ?? []
+			$next = $next + ($counts.get(depth) ?? 0)
+		}
+		var $order = List.repeat(0.U64, depths.len())
+		for i in 0..<depths.len() {
+			depth = depths.get(i) ?? 0
+			at = $starts.get(depth) ?? 0
+			$order = $order.set(at, i) ?? []
+			$starts = $starts.set(depth, at + 1) ?? []
+		}
+		$order
+	}
+
 	## Pull each subgraph's frame in to its content: its members, the routes
 	## of edges inside it, and where edges meet it, plus padding; never past
 	## the engine's frame, never above its top, and at least as wide as its
 	## title. Inner subgraphs first.
-	even_frames : FlowLayoutElk.Raw, List(U64), List(U64), List((End, End)), List(F64) -> List(Rect)
+	even_frames : FlowCore.Raw, List(U64), List(U64), List((End, End)), List(F64) -> List(Rect)
 	even_frames = |raw, parents, node_parents, ends, titles| {
 		group_count = parents.len()
 		depth = |g| FlowLayoutAdjust.ancestors(Group(g), parents, node_parents).len()
 		# Deepest first; the merge sort keeps declaration order among equals.
 		depths = FlowLayoutAdjust.upto(group_count).map(depth)
-		order = FlowLayoutGraph.sort_by(FlowLayoutAdjust.upto(group_count), |a, b| (depths.get(b) ?? 0).to_i64_wrap() - (depths.get(a) ?? 0).to_i64_wrap())
+		order = FlowLayoutAdjust.depth_order(depths)
 		end_chains = ends.map(|(from, to)| (FlowLayoutAdjust.ancestors(from, parents, node_parents), FlowLayoutAdjust.ancestors(to, parents, node_parents)))
 		var $frames = raw.groups
 		for g in order {

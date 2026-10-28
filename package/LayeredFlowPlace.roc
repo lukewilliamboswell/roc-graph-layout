@@ -1,42 +1,42 @@
-import Flowchart
-import FlowLayoutGraph
-import FlowLayoutImport
-import FlowLayoutLayers
-import FlowLayoutLoops
-import FlowLayoutOrder
+import LayeredFlowImport
+import LayeredFlowFixtures
+import LayeredFlowGraph
+import LayeredFlowLayers
+import LayeredFlowLoops
+import LayeredFlowOrder
 
-## Where nodes go across the flow, as Mermaid's layout engine places them:
+## Where nodes go across the flow, as the layered solver places them:
 ## ports spread along their nodes' sides, each label moved to the middle
 ## layer its edge spans, then Brandes and Köpf's method: four alignments of
 ## nodes into blocks along straight edges (up or down, left or right),
 ## each compacted, then balanced by taking the mean of the two middle
 ## positions of each node.
-FlowLayoutPlace :: {}.{
+LayeredFlowPlace :: {}.{
 
-	Model : FlowLayoutGraph.Model
+	Model : LayeredFlowGraph.Model
 
 	nil : U64
-	nil = FlowLayoutGraph.nil
+	nil = LayeredFlowGraph.nil
 
 	## Spacing of a node's ports from the ends of its side, and the extra
 	## room the engine's port cell takes past the node's border.
 	ports_surrounding : F64
 	ports_surrounding = 12
 
-	label_port_vertical : FlowLayoutGraph.Spacing -> F64
+	label_port_vertical : LayeredFlowGraph.Spacing -> F64
 	label_port_vertical = |spacing| spacing.port_port / 10
 
 	## Place ports, set margins, place labels: everything before Brandes and
 	## Köpf.
 	prepare : Model, U64, Bool -> Model
-	prepare = |m0, g, vertical| FlowLayoutPlace.prepare_with_margins(m0, g, vertical, |model, _| model)
+	prepare = |m0, g, vertical| LayeredFlowPlace.prepare_with_margins(m0, g, vertical, |model, _| model)
 
 	prepare_with_margins : Model, U64, Bool, (Model, U64 -> Model) -> Model
 	prepare_with_margins = |m0, g, vertical, apply| {
-		m1 = FlowLayoutPlace.place_ports(FlowLayoutLoops.restore(m0, g), g)
-		m2 = FlowLayoutLoops.route(apply(FlowLayoutPlace.margins(m1, g), g), g)
-		m3 = FlowLayoutPlace.switch_label_dummies(m2, g)
-		m4 = FlowLayoutPlace.inline_labels(m3, g)
+		m1 = LayeredFlowPlace.place_ports(LayeredFlowLoops.restore(m0, g), g)
+		m2 = LayeredFlowLoops.route(apply(LayeredFlowPlace.margins(m1, g), g), g)
+		m3 = LayeredFlowPlace.switch_label_dummies(m2, g)
+		m4 = LayeredFlowPlace.inline_labels(m3, g)
 		_ = vertical
 		m4
 	}
@@ -48,46 +48,46 @@ FlowLayoutPlace :: {}.{
 	place_ports : Model, U64 -> Model
 	place_ports = |m0, g| {
 		var $m = m0
-		spacing = FlowLayoutGraph.graph(m0, g).spacing
+		spacing = LayeredFlowGraph.graph(m0, g).spacing
 		extend = spacing.port_port / 10
-		for layer in FlowLayoutGraph.graph(m0, g).layers {
+		for layer in LayeredFlowGraph.graph(m0, g).layers {
 			for n in layer {
-				node = FlowLayoutGraph.node($m, n)
+				node = LayeredFlowGraph.node($m, n)
 				if node.kind == Normal and node.port_constraints != FixedPos {
 					for side in [East, West] {
-						on_side = node.ports.keep_if(|p| FlowLayoutGraph.port($m, p).side == side)
+						on_side = node.ports.keep_if(|p| LayeredFlowGraph.port($m, p).side == side)
 						# West ports are placed from the bottom of the list.
 						ordered = if (side == West) on_side.rev() else on_side
 						count = ordered.len()
 						rect_y = 0 - extend
 						rect_h = node.height + 2 * extend
-						available = rect_h - 2 * FlowLayoutPlace.ports_surrounding
+						available = rect_h - 2 * LayeredFlowPlace.ports_surrounding
 						x = if (side == East) node.width else 0
 						for k in 0..<count {
 							p = ordered.get(k) ?? 0
 							# A lone port sits in the middle, or just inside the surrounding
 							# margin when the side is too short for it.
 							y = if count == 1 and available < 0 {
-								rect_y + FlowLayoutPlace.ports_surrounding
+								rect_y + LayeredFlowPlace.ports_surrounding
 							} else if count == 1 {
 								node.height / 2
 							} else {
-								rect_y + FlowLayoutPlace.ports_surrounding + (k + 1).to_f64() * available / (count + 1).to_f64()
+								rect_y + LayeredFlowPlace.ports_surrounding + (k + 1).to_f64() * available / (count + 1).to_f64()
 							}
-							$m = FlowLayoutGraph.set_port($m, p, { ..FlowLayoutGraph.port($m, p), x, y: FlowLayoutPlace.keep_on(node, y, node.height) })
+							$m = LayeredFlowGraph.set_port($m, p, { ..LayeredFlowGraph.port($m, p), x, y: LayeredFlowPlace.keep_on(node, y, node.height) })
 						}
 					}
 					# North and south ports (self-loops only), clockwise.
 					for side in [North, South] {
-						on_side = node.ports.keep_if(|p| FlowLayoutGraph.port($m, p).side == side)
+						on_side = node.ports.keep_if(|p| LayeredFlowGraph.port($m, p).side == side)
 						ordered = if (side == South) on_side.rev() else on_side
 						count = ordered.len()
-						available = node.width - 2 * FlowLayoutPlace.ports_surrounding
+						available = node.width - 2 * LayeredFlowPlace.ports_surrounding
 						y = if (side == South) node.height else 0
 						for k in 0..<count {
 							p = ordered.get(k) ?? 0
-							x = if (count == 1 and available < 0) FlowLayoutPlace.ports_surrounding else FlowLayoutPlace.ports_surrounding + (k + 1).to_f64() * available / (count + 1).to_f64()
-							$m = FlowLayoutGraph.set_port($m, p, { ..FlowLayoutGraph.port($m, p), x: FlowLayoutPlace.keep_on(node, x, node.width), y })
+							x = if (count == 1 and available < 0) LayeredFlowPlace.ports_surrounding else LayeredFlowPlace.ports_surrounding + (k + 1).to_f64() * available / (count + 1).to_f64()
+							$m = LayeredFlowGraph.set_port($m, p, { ..LayeredFlowGraph.port($m, p), x: LayeredFlowPlace.keep_on(node, x, node.width), y })
 						}
 					}
 				}
@@ -99,7 +99,7 @@ FlowLayoutPlace :: {}.{
 	## The engine lets ports on a side too short for them run past its
 	## ends; a diagram node's ports are kept on the side instead, so every
 	## edge meets its node. Only sides shorter than the ports' margins differ.
-	keep_on : FlowLayoutGraph.Node, F64, F64 -> F64
+	keep_on : LayeredFlowGraph.Node, F64, F64 -> F64
 	keep_on = |node, value, length|
 		match node.origin {
 			DiagramNode(_) => value.max(0).min(length)
@@ -110,15 +110,15 @@ FlowLayoutPlace :: {}.{
 	margins : Model, U64 -> Model
 	margins = |m0, g| {
 		var $m = m0
-		for layer in FlowLayoutGraph.graph(m0, g).layers {
+		for layer in LayeredFlowGraph.graph(m0, g).layers {
 			for n in layer {
-				node = FlowLayoutGraph.node($m, n)
+				node = LayeredFlowGraph.node($m, n)
 				var $left = 0.0
 				var $right = 0.0
 				var $top = 0.0
 				var $bottom = 0.0
 				for p in node.ports {
-					port = FlowLayoutGraph.port($m, p)
+					port = LayeredFlowGraph.port($m, p)
 					$left = $left.max(0 - port.x)
 					$right = $right.max(port.x + port.width - node.width)
 					$top = $top.max(0 - port.y)
@@ -128,18 +128,18 @@ FlowLayoutPlace :: {}.{
 				# internal title minimum can enlarge the flow axis instead, so
 				# its ink may overhang the other axis. Reserve those margins
 				# before node placement, just as for ports outside a node.
-				inside = if node.nested != FlowLayoutGraph.nil {
+				inside = if node.nested != LayeredFlowGraph.nil {
 					node.nested
 				} else {
 					node.inner
 				}
-				if inside != FlowLayoutGraph.nil {
-					inner = FlowLayoutGraph.graph($m, inside)
+				if inside != LayeredFlowGraph.nil {
+					inner = LayeredFlowGraph.graph($m, inside)
 					label_width = match inner.direction {
 						Down | Up => inner.title_height
 						_ => inner.title_width
 					}
-					vertical = match FlowLayoutGraph.graph($m, g).direction {
+					vertical = match LayeredFlowGraph.graph($m, g).direction {
 						Down | Up => True
 						_ => False
 					}
@@ -157,7 +157,7 @@ FlowLayoutPlace :: {}.{
 						$right = $right.max(overhang)
 					}
 				}
-				$m = FlowLayoutGraph.set_node($m, n, { ..node, margin: { top: $top, right: $right, bottom: $bottom, left: $left } })
+				$m = LayeredFlowGraph.set_node($m, n, { ..node, margin: { top: $top, right: $right, bottom: $bottom, left: $left } })
 			}
 		}
 		$m
@@ -170,7 +170,7 @@ FlowLayoutPlace :: {}.{
 	switch_label_dummies : Model, U64 -> Model
 	switch_label_dummies = |m0, g| {
 		var $m = m0
-		labels = FlowLayoutGraph.graph(m0, g).layers.fold([], |acc, l| acc.concat(l.keep_if(|n| FlowLayoutGraph.node(m0, n).kind == Label)))
+		labels = LayeredFlowGraph.graph(m0, g).layers.fold([], |acc, l| acc.concat(l.keep_if(|n| LayeredFlowGraph.node(m0, n).kind == Label)))
 		for label in labels {
 			# Long-edge dummies before and after the label.
 			var $left = []
@@ -178,11 +178,11 @@ FlowLayoutPlace :: {}.{
 			var $going = True
 			var $steps = 0
 			while $going and $steps < $m.nodes.len() {
-				ins = FlowLayoutGraph.incoming($m, $cur)
+				ins = LayeredFlowGraph.incoming($m, $cur)
 				match ins.first() {
 					Ok(e) => {
-						s = FlowLayoutGraph.source_node($m, e)
-						if FlowLayoutGraph.node($m, s).kind == LongEdge {
+						s = LayeredFlowGraph.source_node($m, e)
+						if LayeredFlowGraph.node($m, s).kind == LongEdge {
 							$left = [s].concat($left)
 							$cur = s
 						} else {
@@ -200,11 +200,11 @@ FlowLayoutPlace :: {}.{
 			$going = True
 			$steps = 0
 			while $going and $steps < $m.nodes.len() {
-				outs = FlowLayoutGraph.outgoing($m, $cur)
+				outs = LayeredFlowGraph.outgoing($m, $cur)
 				match outs.first() {
 					Ok(e) => {
-						t = FlowLayoutGraph.target_node($m, e)
-						if FlowLayoutGraph.node($m, t).kind == LongEdge {
+						t = LayeredFlowGraph.target_node($m, e)
+						if LayeredFlowGraph.node($m, t).kind == LongEdge {
 							$right = $right.append(t)
 							$cur = t
 						} else {
@@ -221,7 +221,7 @@ FlowLayoutPlace :: {}.{
 			target = (total - 1) / 2
 			if target != $left.len() {
 				other = if (target < $left.len()) $left.get(target) ?? label else $right.get(target - $left.len() - 1) ?? label
-				$m = FlowLayoutPlace.swap_nodes($m, g, label, other)
+				$m = LayeredFlowPlace.swap_nodes($m, g, label, other)
 			}
 		}
 		$m
@@ -230,9 +230,9 @@ FlowLayoutPlace :: {}.{
 	## Swap two dummies' places in their layers, reconnecting their edges.
 	swap_nodes : Model, U64, U64, U64 -> Model
 	swap_nodes = |m0, g, a, b| {
-		na = FlowLayoutGraph.node(m0, a)
-		nb = FlowLayoutGraph.node(m0, b)
-		layers = FlowLayoutGraph.graph(m0, g).layers
+		na = LayeredFlowGraph.node(m0, a)
+		nb = LayeredFlowGraph.node(m0, b)
+		layers = LayeredFlowGraph.graph(m0, g).layers
 		la = layers.get(na.layer) ?? []
 		lb = layers.get(nb.layer) ?? []
 		ia = la.find_first_index(|x| x == a) ?? 0
@@ -240,30 +240,30 @@ FlowLayoutPlace :: {}.{
 		layers1 = layers.set(na.layer, la.set(ia, b) ?? la) ?? layers
 		lb1 = layers1.get(nb.layer) ?? []
 		layers2 = layers1.set(nb.layer, lb1.set(ib, a) ?? lb1) ?? layers1
-		m1 = FlowLayoutGraph.set_graph(m0, g, { ..FlowLayoutGraph.graph(m0, g), layers: layers2 })
-		m2 = FlowLayoutGraph.set_node(FlowLayoutGraph.set_node(m1, a, { ..na, layer: nb.layer }), b, { ..nb, layer: na.layer })
-		in_port = |m, n| (FlowLayoutGraph.node(m, n).ports.find_first(|p| !FlowLayoutGraph.port(m, p).incoming.is_empty())) ?? FlowLayoutPlace.nil
-		out_port = |m, n| (FlowLayoutGraph.node(m, n).ports.find_first(|p| !FlowLayoutGraph.port(m, p).outgoing.is_empty())) ?? FlowLayoutPlace.nil
+		m1 = LayeredFlowGraph.set_graph(m0, g, { ..LayeredFlowGraph.graph(m0, g), layers: layers2 })
+		m2 = LayeredFlowGraph.set_node(LayeredFlowGraph.set_node(m1, a, { ..na, layer: nb.layer }), b, { ..nb, layer: na.layer })
+		in_port = |m, n| (LayeredFlowGraph.node(m, n).ports.find_first(|p| !LayeredFlowGraph.port(m, p).incoming.is_empty())) ?? LayeredFlowPlace.nil
+		out_port = |m, n| (LayeredFlowGraph.node(m, n).ports.find_first(|p| !LayeredFlowGraph.port(m, p).outgoing.is_empty())) ?? LayeredFlowPlace.nil
 		ia_port = in_port(m2, a)
 		oa_port = out_port(m2, a)
 		ib_port = in_port(m2, b)
 		ob_port = out_port(m2, b)
-		in_a = FlowLayoutGraph.port(m2, ia_port).incoming
-		out_a = FlowLayoutGraph.port(m2, oa_port).outgoing
-		in_b = FlowLayoutGraph.port(m2, ib_port).incoming
-		out_b = FlowLayoutGraph.port(m2, ob_port).outgoing
+		in_a = LayeredFlowGraph.port(m2, ia_port).incoming
+		out_a = LayeredFlowGraph.port(m2, oa_port).outgoing
+		in_b = LayeredFlowGraph.port(m2, ib_port).incoming
+		out_b = LayeredFlowGraph.port(m2, ob_port).outgoing
 		var $m = m2
 		for e in in_b {
-			$m = FlowLayoutGraph.set_target($m, e, ia_port)
+			$m = LayeredFlowGraph.set_target($m, e, ia_port)
 		}
 		for e in out_b {
-			$m = FlowLayoutGraph.set_source($m, e, oa_port)
+			$m = LayeredFlowGraph.set_source($m, e, oa_port)
 		}
 		for e in in_a {
-			$m = FlowLayoutGraph.set_target($m, e, ib_port)
+			$m = LayeredFlowGraph.set_target($m, e, ib_port)
 		}
 		for e in out_a {
-			$m = FlowLayoutGraph.set_source($m, e, ob_port)
+			$m = LayeredFlowGraph.set_source($m, e, ob_port)
 		}
 		$m
 	}
@@ -273,16 +273,16 @@ FlowLayoutPlace :: {}.{
 	inline_labels : Model, U64 -> Model
 	inline_labels = |m0, g| {
 		var $m = m0
-		spacing = FlowLayoutGraph.graph(m0, g).spacing
-		for layer in FlowLayoutGraph.graph(m0, g).layers {
+		spacing = LayeredFlowGraph.graph(m0, g).spacing
+		for layer in LayeredFlowGraph.graph(m0, g).layers {
 			for n in layer {
-				node = FlowLayoutGraph.node($m, n)
+				node = LayeredFlowGraph.node($m, n)
 				if node.kind == Label {
 					thickness = 1.0
-					port_y = FlowLayoutPlace.ceil(node.height - spacing.edge_label - thickness) / 2
-					$m = FlowLayoutGraph.set_node($m, n, { ..node, height: node.height - spacing.edge_label - thickness })
+					port_y = LayeredFlowPlace.ceil(node.height - spacing.edge_label - thickness) / 2
+					$m = LayeredFlowGraph.set_node($m, n, { ..node, height: node.height - spacing.edge_label - thickness })
 					for p in node.ports {
-						$m = FlowLayoutGraph.set_port($m, p, { ..FlowLayoutGraph.port($m, p), y: port_y })
+						$m = LayeredFlowGraph.set_port($m, p, { ..LayeredFlowGraph.port($m, p), y: port_y })
 					}
 				}
 			}
@@ -291,12 +291,12 @@ FlowLayoutPlace :: {}.{
 	}
 
 	ceil : F64 -> F64
-	ceil = |v| 0 - FlowLayoutGraph.floor(0 - v)
+	ceil = |v| 0 - LayeredFlowGraph.floor(0 - v)
 
 	# ---------------------------------------------------------------- Brandes & Köpf
 
 	## Spacing between two neighbours in a layer, by their kinds.
-	vertical_spacing : FlowLayoutGraph.Spacing, FlowLayoutGraph.Kind, FlowLayoutGraph.Kind -> F64
+	vertical_spacing : LayeredFlowGraph.Spacing, LayeredFlowGraph.Kind, LayeredFlowGraph.Kind -> F64
 	vertical_spacing = |s, a, b| {
 		rank = |k|
 			match k {
@@ -316,7 +316,7 @@ FlowLayoutPlace :: {}.{
 			(1, 2) => s.edge_edge
 			(1, 3) => s.edge_node
 			(2, 2) => s.port_port
-			(2, 3) => FlowLayoutPlace.label_port_vertical(s)
+			(2, 3) => LayeredFlowPlace.label_port_vertical(s)
 			_ => s.edge_edge
 		}
 	}
@@ -348,15 +348,15 @@ FlowLayoutPlace :: {}.{
 
 	neighbours : Model, U64, List(U64), Bool -> List({ node : U64, edge : U64 })
 	neighbours = |m, n, index, left| {
-		layer = FlowLayoutGraph.node(m, n).layer
-		edges = if (left) FlowLayoutGraph.incoming(m, n) else FlowLayoutGraph.outgoing(m, n)
+		layer = LayeredFlowGraph.node(m, n).layer
+		edges = if (left) LayeredFlowGraph.incoming(m, n) else LayeredFlowGraph.outgoing(m, n)
 		pairs = edges.keep_if(
 			|e| {
-				other = if (left) FlowLayoutGraph.source_node(m, e) else FlowLayoutGraph.target_node(m, e)
-				!FlowLayoutGraph.is_self_loop(m, e) and FlowLayoutGraph.node(m, other).layer != layer
+				other = if (left) LayeredFlowGraph.source_node(m, e) else LayeredFlowGraph.target_node(m, e)
+				!LayeredFlowGraph.is_self_loop(m, e) and LayeredFlowGraph.node(m, other).layer != layer
 			},
-		).map(|e| { node: if (left) FlowLayoutGraph.source_node(m, e) else FlowLayoutGraph.target_node(m, e), edge: e })
-		FlowLayoutGraph.sort_by(
+		).map(|e| { node: if (left) LayeredFlowGraph.source_node(m, e) else LayeredFlowGraph.target_node(m, e), edge: e })
+		LayeredFlowGraph.sort_by(
 			pairs,
 			|a, b| {
 				ia = index.get(a.node) ?? 0
@@ -368,7 +368,7 @@ FlowLayoutPlace :: {}.{
 
 	info : Model, U64 -> Info
 	info = |m, g| {
-		layers = FlowLayoutGraph.graph(m, g).layers
+		layers = LayeredFlowGraph.graph(m, g).layers
 		var $layer = List.repeat(0, m.nodes.len())
 		var $index = List.repeat(0, m.nodes.len())
 		for l in 0..<layers.len() {
@@ -384,22 +384,22 @@ FlowLayoutPlace :: {}.{
 		var $right = List.repeat([], m.nodes.len())
 		for layer in layers {
 			for n in layer {
-				$left = $left.set(n, FlowLayoutPlace.neighbours(m, n, index, True)) ?? $left
-				$right = $right.set(n, FlowLayoutPlace.neighbours(m, n, index, False)) ?? $right
+				$left = $left.set(n, LayeredFlowPlace.neighbours(m, n, index, True)) ?? $left
+				$right = $right.set(n, LayeredFlowPlace.neighbours(m, n, index, False)) ?? $right
 			}
 		}
 		base = { layer: $layer, index, left: $left, right: $right, layers, marked: List.repeat(False, m.edges.len()) }
-		{ ..base, marked: FlowLayoutPlace.mark_conflicts(m, base) }
+		{ ..base, marked: LayeredFlowPlace.mark_conflicts(m, base) }
 	}
 
 	## Inner segments: between two long-edge dummies in neighbouring layers.
 	incident_to_inner : Model, Info, U64, U64, U64 -> Bool
 	incident_to_inner = |m, ni, n, layer1, layer2|
-		if FlowLayoutGraph.node(m, n).kind == LongEdge {
-			FlowLayoutGraph.incoming(m, n).any(
+		if LayeredFlowGraph.node(m, n).kind == LongEdge {
+			LayeredFlowGraph.incoming(m, n).any(
 				|e| {
-					s = FlowLayoutGraph.source_node(m, e)
-					FlowLayoutGraph.node(m, s).kind == LongEdge and (ni.layer.get(s) ?? 0) == layer2 and (ni.layer.get(n) ?? 0) == layer1
+					s = LayeredFlowGraph.source_node(m, e)
+					LayeredFlowGraph.node(m, s).kind == LongEdge and (ni.layer.get(s) ?? 0) == layer2 and (ni.layer.get(n) ?? 0) == layer1
 				},
 			)
 		} else {
@@ -421,7 +421,7 @@ FlowLayoutPlace :: {}.{
 				var $l = 0
 				for l1 in 0..<layer.len() {
 					v = layer.get(l1) ?? 0
-					inner = FlowLayoutPlace.incident_to_inner(m, ni, v, i + 1, i)
+					inner = LayeredFlowPlace.incident_to_inner(m, ni, v, i + 1, i)
 					if l1 == layer.len() - 1 or inner {
 						k1 = if inner {
 							first = (ni.left.get(v) ?? []).first() ?? { node: 0, edge: 0 }
@@ -431,7 +431,7 @@ FlowLayoutPlace :: {}.{
 						}
 						while $l <= l1 {
 							vl = layer.get($l) ?? 0
-							if !FlowLayoutPlace.incident_to_inner(m, ni, vl, i + 1, i) {
+							if !LayeredFlowPlace.incident_to_inner(m, ni, vl, i + 1, i) {
 								for u in ni.left.get(vl) ?? [] {
 									k = ni.index.get(u.node) ?? 0
 									if k < $k0 or k > k1 {
@@ -452,16 +452,16 @@ FlowLayoutPlace :: {}.{
 	## Port offset of an edge's ports, for blocks.
 	port_y : Model, U64 -> F64
 	port_y = |m, p| {
-		port = FlowLayoutGraph.port(m, p)
+		port = LayeredFlowGraph.port(m, p)
 		port.y + port.anchor_y
 	}
 
 	## The edge connecting two nodes, as the engine finds it.
 	edge_between : Model, U64, U64 -> U64
 	edge_between = |m, a, b|
-		match FlowLayoutGraph.connected(m, a).find_first(|e| FlowLayoutGraph.target_node(m, e) == b or FlowLayoutGraph.source_node(m, e) == b) {
+		match LayeredFlowGraph.connected(m, a).find_first(|e| LayeredFlowGraph.target_node(m, e) == b or LayeredFlowGraph.source_node(m, e) == b) {
 			Ok(e) => e
-			Err(_) => FlowLayoutPlace.nil
+			Err(_) => LayeredFlowPlace.nil
 		}
 
 	new_layout : U64, Bool, Bool -> Layout
@@ -507,7 +507,7 @@ FlowLayoutPlace :: {}.{
 								$bal = { ..$bal, root: $bal.root.set(v, root_u) ?? $bal.root }
 								$bal = { ..$bal, align: $bal.align.set(v, root_u) ?? $bal.align }
 								od_root = $bal.od.get(root_u) ?? True
-								$bal = { ..$bal, od: $bal.od.set(root_u, od_root and FlowLayoutGraph.node(m, v).kind == LongEdge) ?? $bal.od }
+								$bal = { ..$bal, od: $bal.od.set(root_u, od_root and LayeredFlowGraph.node(m, v).kind == LongEdge) ?? $bal.od }
 								$r = ui
 							}
 						}
@@ -532,7 +532,7 @@ FlowLayoutPlace :: {}.{
 			}
 		}
 		for root in $roots {
-			rn = FlowLayoutGraph.node(m, root)
+			rn = LayeredFlowGraph.node(m, root)
 			var $above = rn.margin.top
 			var $below = rn.height + rn.margin.bottom
 			$bal = { ..$bal, inner: $bal.inner.set(root, 0) ?? $bal.inner }
@@ -540,16 +540,16 @@ FlowLayoutPlace :: {}.{
 			var $guard = 0
 			while ($bal.align.get($current) ?? root) != root and $guard < m.nodes.len() {
 				next = $bal.align.get($current) ?? root
-				e = FlowLayoutPlace.edge_between(m, $current, next)
-				edge = FlowLayoutGraph.edge(m, e)
+				e = LayeredFlowPlace.edge_between(m, $current, next)
+				edge = LayeredFlowGraph.edge(m, e)
 				diff = if $bal.right {
-					FlowLayoutPlace.port_y(m, edge.source) - FlowLayoutPlace.port_y(m, edge.target)
+					LayeredFlowPlace.port_y(m, edge.source) - LayeredFlowPlace.port_y(m, edge.target)
 				} else {
-					FlowLayoutPlace.port_y(m, edge.target) - FlowLayoutPlace.port_y(m, edge.source)
+					LayeredFlowPlace.port_y(m, edge.target) - LayeredFlowPlace.port_y(m, edge.source)
 				}
 				next_shift = ($bal.inner.get($current) ?? 0) + diff
 				$bal = { ..$bal, inner: $bal.inner.set(next, next_shift) ?? $bal.inner }
-				nn = FlowLayoutGraph.node(m, next)
+				nn = LayeredFlowGraph.node(m, next)
 				$above = $above.max(nn.margin.top - next_shift)
 				$below = $below.max(next_shift + nn.height + nn.margin.bottom)
 				$current = next
@@ -598,7 +598,7 @@ FlowLayoutPlace :: {}.{
 			nodes = if (bal0.down) layer else layer.rev()
 			for v in nodes {
 				if ($c.bal.root.get(v) ?? v) == v {
-					$c = FlowLayoutPlace.place_block(m, g, ni, $c, v)
+					$c = LayeredFlowPlace.place_block(m, g, ni, $c, v)
 				}
 			}
 		}
@@ -655,7 +655,7 @@ FlowLayoutPlace :: {}.{
 				$bal = { ..$bal, y: $bal.y.set(v, value) ?? $bal.y }
 			}
 		}
-		FlowLayoutPlace.post_process(m, ni, { ..$c, bal: $bal })
+		LayeredFlowPlace.post_process(m, ni, { ..$c, bal: $bal })
 	}
 
 	place_block : Model, U64, Info, Compaction, U64 -> Compaction
@@ -663,7 +663,7 @@ FlowLayoutPlace :: {}.{
 		if c0.bal.placed.get(root) ?? True {
 			c0
 		} else {
-			spacing_of = FlowLayoutGraph.graph(m, g).spacing
+			spacing_of = LayeredFlowGraph.graph(m, g).spacing
 			var $c = { ..c0, bal: { ..c0.bal, placed: c0.bal.placed.set(root, True) ?? c0.bal.placed, y: c0.bal.y.set(root, 0) ?? c0.bal.y } }
 			var $initial = True
 			var $current = root
@@ -678,20 +678,20 @@ FlowLayoutPlace :: {}.{
 				if has_neighbor {
 					neighbor = layer.get(if (down) index - 1 else index + 1) ?? 0
 					neighbor_root = $c.bal.root.get(neighbor) ?? neighbor
-					$c = FlowLayoutPlace.place_block(m, g, ni, $c, neighbor_root)
-					(c1, t) = FlowLayoutPlace.threshold(m, $c, $thresh, root, $current)
+					$c = LayeredFlowPlace.place_block(m, g, ni, $c, neighbor_root)
+					(c1, t) = LayeredFlowPlace.threshold(m, $c, $thresh, root, $current)
 					$c = c1
 					$thresh = t
 					if ($c.bal.sink.get(root) ?? root) == root {
 						$c = { ..$c, bal: { ..$c.bal, sink: $c.bal.sink.set(root, $c.bal.sink.get(neighbor_root) ?? neighbor_root) ?? $c.bal.sink } }
 					}
 					bal = $c.bal
-					cur = FlowLayoutGraph.node(m, $current)
-					nb = FlowLayoutGraph.node(m, neighbor)
+					cur = LayeredFlowGraph.node(m, $current)
+					nb = LayeredFlowGraph.node(m, neighbor)
 					y_of = |x| bal.y.get(x) ?? 0
 					inner_of = |x| bal.inner.get(x) ?? 0
 					if (bal.sink.get(root) ?? root) == (bal.sink.get(neighbor_root) ?? neighbor_root) {
-						spacing = FlowLayoutPlace.vertical_spacing(spacing_of, cur.kind, nb.kind)
+						spacing = LayeredFlowPlace.vertical_spacing(spacing_of, cur.kind, nb.kind)
 						current_pos = y_of(root)
 						new_value = if down {
 							pos = y_of(neighbor_root) + inner_of(neighbor) + nb.height + nb.margin.bottom + spacing + cur.margin.top - inner_of($current)
@@ -709,15 +709,15 @@ FlowLayoutPlace :: {}.{
 						} else {
 							y_of(root) + inner_of($current) + cur.height + cur.margin.bottom + spacing - (y_of(neighbor_root) + inner_of(neighbor) - nb.margin.top)
 						}
-						(c2, si) = FlowLayoutPlace.class_index($c, bal.sink.get(root) ?? root)
-						(c3, ti) = FlowLayoutPlace.class_index(c2, bal.sink.get(neighbor_root) ?? neighbor_root)
+						(c2, si) = LayeredFlowPlace.class_index($c, bal.sink.get(root) ?? root)
+						(c3, ti) = LayeredFlowPlace.class_index(c2, bal.sink.get(neighbor_root) ?? neighbor_root)
 						source_cls = c3.classes.get(si) ?? { node: 0, out: [], indegree: 0, shift: None }
 						c4 = { ..c3, classes: c3.classes.set(si, { ..source_cls, out: source_cls.out.append({ target: ti, sep: required }) }) ?? c3.classes }
 						target_cls = c4.classes.get(ti) ?? source_cls
 						$c = { ..c4, classes: c4.classes.set(ti, { ..target_cls, indegree: target_cls.indegree + 1 }) ?? c4.classes }
 					}
 				} else {
-					(c1, t) = FlowLayoutPlace.threshold(m, $c, $thresh, root, $current)
+					(c1, t) = LayeredFlowPlace.threshold(m, $c, $thresh, root, $current)
 					$c = c1
 					$thresh = t
 				}
@@ -742,12 +742,12 @@ FlowLayoutPlace :: {}.{
 			var $c = c
 			var $t = old
 			if is_root {
-				(c1, b) = FlowLayoutPlace.bound(m, $c, root, True)
+				(c1, b) = LayeredFlowPlace.bound(m, $c, root, True)
 				$c = c1
 				$t = b
 			}
 			if !F64.is_finite($t) and is_last {
-				(c2, b2) = FlowLayoutPlace.bound(m, $c, current, False)
+				(c2, b2) = LayeredFlowPlace.bound(m, $c, current, False)
 				$c = c2
 				$t = b2
 			}
@@ -759,39 +759,39 @@ FlowLayoutPlace :: {}.{
 	pick_edge : Model, Compaction, U64, Bool -> { has_edges : Bool, edge : U64 }
 	pick_edge = |m, c, free, is_root| {
 		edges = if is_root {
-			if (c.bal.right) FlowLayoutGraph.incoming(m, free) else FlowLayoutGraph.outgoing(m, free)
+			if (c.bal.right) LayeredFlowGraph.incoming(m, free) else LayeredFlowGraph.outgoing(m, free)
 		} else if !c.bal.right {
-			FlowLayoutGraph.incoming(m, free)
+			LayeredFlowGraph.incoming(m, free)
 		} else {
-			FlowLayoutGraph.outgoing(m, free)
+			LayeredFlowGraph.outgoing(m, free)
 		}
 		free_root = c.bal.root.get(free) ?? free
 		only_dummies = c.bal.od.get(free_root) ?? True
 		var $has = False
-		var $found = FlowLayoutPlace.nil
+		var $found = LayeredFlowPlace.nil
 		for e in edges {
-			if $found == FlowLayoutPlace.nil {
-				in_layer = FlowLayoutGraph.node(m, FlowLayoutGraph.source_node(m, e)).layer == FlowLayoutGraph.node(m, FlowLayoutGraph.target_node(m, e)).layer
+			if $found == LayeredFlowPlace.nil {
+				in_layer = LayeredFlowGraph.node(m, LayeredFlowGraph.source_node(m, e)).layer == LayeredFlowGraph.node(m, LayeredFlowGraph.target_node(m, e)).layer
 				if (only_dummies or !in_layer) and !(c.bal.su.get(free_root) ?? False) {
 					$has = True
-					other = if (FlowLayoutGraph.source_node(m, e) == free) FlowLayoutGraph.target_node(m, e) else FlowLayoutGraph.source_node(m, e)
+					other = if (LayeredFlowGraph.source_node(m, e) == free) LayeredFlowGraph.target_node(m, e) else LayeredFlowGraph.source_node(m, e)
 					if c.finished.get(c.bal.root.get(other) ?? other) ?? False {
 						$found = e
 					}
 				}
 			}
 		}
-		{ has_edges: $has or $found != FlowLayoutPlace.nil, edge: $found }
+		{ has_edges: $has or $found != LayeredFlowPlace.nil, edge: $found }
 	}
 
 	bound : Model, Compaction, U64, Bool -> (Compaction, F64)
 	bound = |m, c, block_node, is_root| {
 		invalid = if (c.bal.down) 0 - F64.infinity else F64.infinity
-		pick = FlowLayoutPlace.pick_edge(m, c, block_node, is_root)
-		if pick.edge == FlowLayoutPlace.nil and pick.has_edges {
+		pick = LayeredFlowPlace.pick_edge(m, c, block_node, is_root)
+		if pick.edge == LayeredFlowPlace.nil and pick.has_edges {
 			({ ..c, queue: c.queue.append({ free: block_node, is_root }) }, invalid)
-		} else if pick.edge != FlowLayoutPlace.nil {
-			edge = FlowLayoutGraph.edge(m, pick.edge)
+		} else if pick.edge != LayeredFlowPlace.nil {
+			edge = LayeredFlowGraph.edge(m, pick.edge)
 			left = edge.source
 			right = edge.target
 			(root_port, other_port) = if is_root {
@@ -802,15 +802,15 @@ FlowLayoutPlace :: {}.{
 				(left, right)
 			}
 			bal = c.bal
-			other_node = FlowLayoutGraph.port(m, other_port).node
-			root_node = FlowLayoutGraph.port(m, root_port).node
+			other_node = LayeredFlowGraph.port(m, other_port).node
+			root_node = LayeredFlowGraph.port(m, root_port).node
 			t = (bal.y.get(bal.root.get(other_node) ?? other_node) ?? 0)
 				+ (bal.inner.get(other_node) ?? 0)
-				+ FlowLayoutPlace.port_y(m, other_port)
+				+ LayeredFlowPlace.port_y(m, other_port)
 				- (bal.inner.get(root_node) ?? 0)
-				- FlowLayoutPlace.port_y(m, root_port)
-			ln = FlowLayoutGraph.port(m, left).node
-			rn = FlowLayoutGraph.port(m, right).node
+				- LayeredFlowPlace.port_y(m, root_port)
+			ln = LayeredFlowGraph.port(m, left).node
+			rn = LayeredFlowGraph.port(m, right).node
 			su1 = bal.su.set(bal.root.get(ln) ?? ln, True) ?? bal.su
 			su2 = su1.set(bal.root.get(rn) ?? rn, True) ?? su1
 			({ ..c, bal: { ..bal, su: su2 } }, t)
@@ -827,13 +827,13 @@ FlowLayoutPlace :: {}.{
 		while $head < $c.queue.len() {
 			pp = $c.queue.get($head) ?? { free: 0, is_root: False }
 			$head = $head + 1
-			pick = FlowLayoutPlace.pick_edge(m, $c, pp.free, pp.is_root)
-			if pick.edge != FlowLayoutPlace.nil {
+			pick = LayeredFlowPlace.pick_edge(m, $c, pp.free, pp.is_root)
+			if pick.edge != LayeredFlowPlace.nil {
 				free_root = $c.bal.root.get(pp.free) ?? pp.free
 				only_dummies = $c.bal.od.get(free_root) ?? True
-				in_layer = FlowLayoutGraph.node(m, FlowLayoutGraph.source_node(m, pick.edge)).layer == FlowLayoutGraph.node(m, FlowLayoutGraph.target_node(m, pick.edge)).layer
+				in_layer = LayeredFlowGraph.node(m, LayeredFlowGraph.source_node(m, pick.edge)).layer == LayeredFlowGraph.node(m, LayeredFlowGraph.target_node(m, pick.edge)).layer
 				if only_dummies or !in_layer {
-					(bal, moved) = FlowLayoutPlace.straighten(m, ni, $c.bal, pp.free, pick.edge)
+					(bal, moved) = LayeredFlowPlace.straighten(m, ni, $c.bal, pp.free, pick.edge)
 					$c = { ..$c, bal }
 					if !moved {
 						$stack = $stack.append({ free: pp.free, edge: pick.edge })
@@ -845,7 +845,7 @@ FlowLayoutPlace :: {}.{
 		while $k > 0 {
 			$k = $k - 1
 			item = $stack.get($k) ?? { free: 0, edge: 0 }
-			(bal, _) = FlowLayoutPlace.straighten(m, ni, $c.bal, item.free, item.edge)
+			(bal, _) = LayeredFlowPlace.straighten(m, ni, $c.bal, item.free, item.edge)
 			$c = { ..$c, bal }
 		}
 		$c.bal
@@ -853,22 +853,22 @@ FlowLayoutPlace :: {}.{
 
 	straighten : Model, Info, Layout, U64, U64 -> (Layout, Bool)
 	straighten = |m, ni, bal, free, e| {
-		edge = FlowLayoutGraph.edge(m, e)
-		free_is_source = FlowLayoutGraph.port(m, edge.source).node == free
+		edge = LayeredFlowGraph.edge(m, e)
+		free_is_source = LayeredFlowGraph.port(m, edge.source).node == free
 		fix = if (free_is_source) edge.target else edge.source
 		block = if (free_is_source) edge.source else edge.target
 		pos = |p| {
-			n = FlowLayoutGraph.port(m, p).node
-			(bal.y.get(n) ?? 0) + (bal.inner.get(n) ?? 0) + FlowLayoutPlace.port_y(m, p)
+			n = LayeredFlowGraph.port(m, p).node
+			(bal.y.get(n) ?? 0) + (bal.inner.get(n) ?? 0) + LayeredFlowPlace.port_y(m, p)
 		}
 		delta = pos(block) - pos(fix)
-		block_node = FlowLayoutGraph.port(m, block).node
+		block_node = LayeredFlowGraph.port(m, block).node
 		if delta > 0 and delta < 1.7976931348623157e308 {
-			available = FlowLayoutPlace.space_above(m, ni, bal, block_node, delta)
-			(FlowLayoutPlace.shift_block(bal, block_node, 0 - available), available > 0)
+			available = LayeredFlowPlace.space_above(m, ni, bal, block_node, delta)
+			(LayeredFlowPlace.shift_block(bal, block_node, 0 - available), available > 0)
 		} else if delta < 0 and 0 - delta < 1.7976931348623157e308 {
-			available = FlowLayoutPlace.space_below(m, ni, bal, block_node, 0 - delta)
-			(FlowLayoutPlace.shift_block(bal, block_node, available), available > 0)
+			available = LayeredFlowPlace.space_below(m, ni, bal, block_node, 0 - delta)
+			(LayeredFlowPlace.shift_block(bal, block_node, available), available > 0)
 		} else {
 			(bal, False)
 		}
@@ -892,11 +892,11 @@ FlowLayoutPlace :: {}.{
 	}
 
 	min_y : Model, Layout, U64 -> F64
-	min_y = |m, bal, n| (bal.y.get(bal.root.get(n) ?? n) ?? 0) + (bal.inner.get(n) ?? 0) - FlowLayoutGraph.node(m, n).margin.top
+	min_y = |m, bal, n| (bal.y.get(bal.root.get(n) ?? n) ?? 0) + (bal.inner.get(n) ?? 0) - LayeredFlowGraph.node(m, n).margin.top
 
 	max_y : Model, Layout, U64 -> F64
 	max_y = |m, bal, n| {
-		node = FlowLayoutGraph.node(m, n)
+		node = LayeredFlowGraph.node(m, n)
 		(bal.y.get(bal.root.get(n) ?? n) ?? 0) + (bal.inner.get(n) ?? 0) + node.height + node.margin.bottom
 	}
 
@@ -912,8 +912,8 @@ FlowLayoutPlace :: {}.{
 			if index > 0 {
 				layer = ni.layers.get(ni.layer.get($current) ?? 0) ?? []
 				neighbor = layer.get(index - 1) ?? 0
-				spacing = FlowLayoutPlace.vertical_spacing(FlowLayoutGraph.graph(m, FlowLayoutGraph.node(m, $current).graph).spacing, FlowLayoutGraph.node(m, $current).kind, FlowLayoutGraph.node(m, neighbor).kind)
-				$available = $available.min(FlowLayoutPlace.min_y(m, bal, $current) - (FlowLayoutPlace.max_y(m, bal, neighbor) + spacing))
+				spacing = LayeredFlowPlace.vertical_spacing(LayeredFlowGraph.graph(m, LayeredFlowGraph.node(m, $current).graph).spacing, LayeredFlowGraph.node(m, $current).kind, LayeredFlowGraph.node(m, neighbor).kind)
+				$available = $available.min(LayeredFlowPlace.min_y(m, bal, $current) - (LayeredFlowPlace.max_y(m, bal, neighbor) + spacing))
 			}
 			if $current == block_root {
 				$going = False
@@ -935,8 +935,8 @@ FlowLayoutPlace :: {}.{
 			layer = ni.layers.get(ni.layer.get($current) ?? 0) ?? []
 			if index + 1 < layer.len() {
 				neighbor = layer.get(index + 1) ?? 0
-				spacing = FlowLayoutPlace.vertical_spacing(FlowLayoutGraph.graph(m, FlowLayoutGraph.node(m, $current).graph).spacing, FlowLayoutGraph.node(m, $current).kind, FlowLayoutGraph.node(m, neighbor).kind)
-				$available = $available.min(FlowLayoutPlace.min_y(m, bal, neighbor) - (FlowLayoutPlace.max_y(m, bal, $current) + spacing))
+				spacing = LayeredFlowPlace.vertical_spacing(LayeredFlowGraph.graph(m, LayeredFlowGraph.node(m, $current).graph).spacing, LayeredFlowGraph.node(m, $current).kind, LayeredFlowGraph.node(m, neighbor).kind)
+				$available = $available.min(LayeredFlowPlace.min_y(m, bal, neighbor) - (LayeredFlowPlace.max_y(m, bal, $current) + spacing))
 			}
 			if $current == block_root {
 				$going = False
@@ -967,7 +967,7 @@ FlowLayoutPlace :: {}.{
 			var $pos = 0 - F64.infinity
 			for n in layer {
 				if $ok {
-					node = FlowLayoutGraph.node(m, n)
+					node = LayeredFlowGraph.node(m, n)
 					y = ys.get(n) ?? 0
 					top = y - node.margin.top
 					bottom = y + node.height + node.margin.bottom
@@ -985,19 +985,19 @@ FlowLayoutPlace :: {}.{
 	## Brandes and Köpf on one graph: sets each node's `y`.
 	brandes_koepf : Model, U64 -> Model
 	brandes_koepf = |m0, g| {
-		ni = FlowLayoutPlace.info(m0, g)
+		ni = LayeredFlowPlace.info(m0, g)
 		size = m0.nodes.len()
 		kinds = [{ down: True, right: True }, { down: False, right: True }, { down: True, right: False }, { down: False, right: False }]
 		aligned = kinds.map(
 			|k| {
-				bal = FlowLayoutPlace.vertical_alignment(m0, ni, FlowLayoutPlace.new_layout(size, k.down, k.right))
-				FlowLayoutPlace.inside_block_shift(m0, ni, bal)
+				bal = LayeredFlowPlace.vertical_alignment(m0, ni, LayeredFlowPlace.new_layout(size, k.down, k.right))
+				LayeredFlowPlace.inside_block_shift(m0, ni, bal)
 			},
 		)
-		layouts = aligned.map(|bal| FlowLayoutPlace.horizontal_compaction(m0, g, ni, bal))
+		layouts = aligned.map(|bal| LayeredFlowPlace.horizontal_compaction(m0, g, ni, bal))
 		# Positions per layout: block position plus inner shift.
 		positions = layouts.map(|bal| List.repeat(0, size).map_with_index(|_, n| (bal.y.get(n) ?? 0) + (bal.inner.get(n) ?? 0)))
-		widths = layouts.map(|bal| FlowLayoutPlace.layout_size(ni, bal))
+		widths = layouts.map(|bal| LayeredFlowPlace.layout_size(ni, bal))
 		var $min_layout = 0
 		for i in 0..<widths.len() {
 			if (widths.get($min_layout) ?? 0) > (widths.get(i) ?? 0) {
@@ -1011,7 +1011,7 @@ FlowLayoutPlace :: {}.{
 			for n in all_nodes {
 				y = ys.get(n) ?? 0
 				$lo = $lo.min(y)
-				$hi = $hi.max(y + FlowLayoutGraph.node(m0, n).height)
+				$hi = $hi.max(y + LayeredFlowGraph.node(m0, n).height)
 			}
 			{ lo: $lo, hi: $hi }
 		}
@@ -1021,17 +1021,17 @@ FlowLayoutPlace :: {}.{
 		var $balanced = List.repeat(0, size)
 		for n in all_nodes {
 			values = positions.map_with_index(|ys, i| (ys.get(n) ?? 0) + (shifts.get(i) ?? 0))
-			sorted = FlowLayoutGraph.sort_by(values, |a, b| if (a < b) -1 else if (a > b) 1 else 0)
+			sorted = LayeredFlowGraph.sort_by(values, |a, b| if (a < b) -1 else if (a > b) 1 else 0)
 			$balanced = $balanced.set(n, ((sorted.get(1) ?? 0) + (sorted.get(2) ?? 0)) / 2) ?? $balanced
 		}
-		chosen = if FlowLayoutPlace.feasible(m0, ni, $balanced) {
+		chosen = if LayeredFlowPlace.feasible(m0, ni, $balanced) {
 			$balanced
 		} else {
 			# The narrowest feasible alignment, else the first.
 			var $best = None
 			for i in 0..<positions.len() {
 				ys = positions.get(i) ?? []
-				if FlowLayoutPlace.feasible(m0, ni, ys) {
+				if LayeredFlowPlace.feasible(m0, ni, ys) {
 					w = widths.get(i) ?? 0
 					$best = match $best {
 						None => Some({ ys, w })
@@ -1046,7 +1046,7 @@ FlowLayoutPlace :: {}.{
 		}
 		var $m = m0
 		for n in all_nodes {
-			$m = FlowLayoutGraph.set_node($m, n, { ..FlowLayoutGraph.node($m, n), y: chosen.get(n) ?? 0 })
+			$m = LayeredFlowGraph.set_node($m, n, { ..LayeredFlowGraph.node($m, n), y: chosen.get(n) ?? 0 })
 		}
 		$m
 	}
@@ -1055,31 +1055,22 @@ FlowLayoutPlace :: {}.{
 ## Test helper: a diagram's working graph with every node 152 by 41, edge
 ## labels 31.27 by 17 and titles 10 by 17, as Mermaid measured the recorded
 ## runs these tests take their expected values from.
-test_setup : Str -> FlowLayoutImport.Setup
+test_setup : Str -> LayeredFlowImport.Setup
 test_setup = |text| {
-	diagram = match Flowchart.parse(text) {
-		Ok(d) => d
-		Err(_) => { direction: Right, nodes: [], edges: [], groups: [], classes: [] }
-	}
-	box = { width: 152, height: 41, label: { lines: [], width: 0, height: 0 } }
-	sizes = {
-		nodes: List.repeat(box, diagram.nodes.len()),
-		edge_labels: diagram.edges.map(|e| if (e.label.is_empty()) None else Some({ lines: [], width: 31.26953125, height: 17 })),
-		group_titles: List.repeat({ lines: [], width: 10, height: 17 }, diagram.groups.len()),
-	}
-	FlowLayoutImport.build(diagram, sizes)
+	fixture = LayeredFlowFixtures.get(text)
+	LayeredFlowImport.build_registered(fixture.diagram, fixture.sizes, fixture.registration)
 }
 
 ## Test helper: the drawing's graph of `text`, layered, ordered and with
 ## nodes placed across the flow.
-test_placed : Str -> { setup : FlowLayoutImport.Setup, model : FlowLayoutGraph.Model }
+test_placed : Str -> { setup : LayeredFlowImport.Setup, model : LayeredFlowGraph.Model }
 test_placed = |text| {
 	setup = test_setup(text)
 	m0 = setup.model
-	m1 = FlowLayoutLayers.prepare(m0, 0, FlowLayoutLayers.features(m0, 0, False))
-	m2 = FlowLayoutOrder.minimize(m1, True)
-	m3 = FlowLayoutPlace.prepare(m2, 0, False)
-	{ setup, model: FlowLayoutPlace.brandes_koepf(m3, 0) }
+	m1 = LayeredFlowLayers.prepare(m0, 0, LayeredFlowLayers.features(m0, 0, False))
+	m2 = LayeredFlowOrder.minimize(m1, True)
+	m3 = LayeredFlowPlace.prepare(m2, 0, False)
+	{ setup, model: LayeredFlowPlace.brandes_koepf(m3, 0) }
 }
 
 ## Balanced placement of a diamond: the fan's middle node lines up with both
@@ -1087,7 +1078,7 @@ test_placed = |text| {
 ## y 93, 12, 93, 174, 93.
 expect {
 	r = test_placed("flowchart LR\n    a --> b\n    a --> c\n    a --> d\n    b --> e\n    c --> e\n    d --> e\n")
-	y = |i| FlowLayoutGraph.node(r.model, r.setup.node_of.get(i) ?? 0).y
+	y = |i| LayeredFlowGraph.node(r.model, r.setup.node_of.get(i) ?? 0).y
 	y(1) - y(0) == -81 and y(2) == y(0) and y(3) - y(0) == 81 and y(4) == y(0)
 }
 
@@ -1096,9 +1087,9 @@ expect {
 expect {
 	r = test_placed("flowchart LR\n    a --> d\n    b --> c\n    a --> c\n    b --> d\n")
 	m = r.model
-	a = FlowLayoutGraph.node(m, r.setup.node_of.get(0) ?? 0)
-	ys = a.ports.map(|p| FlowLayoutGraph.port(m, p).y)
-	FlowLayoutGraph.sort_by(ys, |p, q| if (p < q) -1 else if (p > q) 1 else 0) == [17, 24]
+	a = LayeredFlowGraph.node(m, r.setup.node_of.get(0) ?? 0)
+	ys = a.ports.map(|p| LayeredFlowGraph.port(m, p).y)
+	LayeredFlowGraph.sort_by(ys, |p, q| if (p < q) -1 else if (p > q) 1 else 0) == [17, 24]
 }
 
 ## A lone port on a side too short for the ports' margins sits just inside
@@ -1107,8 +1098,8 @@ expect {
 expect {
 	r = test_placed("flowchart TD\n    a --> e\n    subgraph e [E]\n    end\n")
 	m = r.model
-	e = FlowLayoutGraph.node(m, r.setup.group_node.get(0) ?? 0)
-	e.ports.map(|p| FlowLayoutGraph.port(m, p).y) == [10]
+	e = LayeredFlowGraph.node(m, r.setup.group_node.get(0) ?? 0)
+	e.ports.map(|p| LayeredFlowGraph.port(m, p).y) == [10]
 }
 
 ## Oracle regression: multiline-flow's 497.484375px title overhangs the
@@ -1122,7 +1113,7 @@ expect
 				_ => False
 			}
 			node = {
-				..FlowLayoutGraph.blank_node,
+				..LayeredFlowGraph.blank_node,
 				nested: 1,
 				width: if vertical {
 					507.484375
@@ -1135,10 +1126,10 @@ expect
 					507.484375
 				},
 			}
-			outer = { ..FlowLayoutGraph.blank_graph, direction, layers: [[0]], nodes: [0] }
-			inner = { ..FlowLayoutGraph.blank_graph, direction: Down, parent: 0, title_width: 15.021484375, title_height: 497.484375 }
+			outer = { ..LayeredFlowGraph.blank_graph, direction, layers: [[0]], nodes: [0] }
+			inner = { ..LayeredFlowGraph.blank_graph, direction: Down, parent: 0, title_width: 15.021484375, title_height: 497.484375 }
 			m = { graphs: [outer, inner], nodes: [node], ports: [], edges: [], loops: [] }
-			margin = FlowLayoutGraph.node(FlowLayoutPlace.margins(m, 0), 0).margin
+			margin = LayeredFlowGraph.node(LayeredFlowPlace.margins(m, 0), 0).margin
 			if vertical {
 				margin == { top: 9.2421875, bottom: 9.2421875, left: 0, right: 0 }
 			} else {
@@ -1149,9 +1140,9 @@ expect
 
 ## An unpainted note-group title has no width and reserves no ink margin.
 expect {
-	node = { ..FlowLayoutGraph.blank_node, nested: 1, width: 100, height: 100 }
-	outer = { ..FlowLayoutGraph.blank_graph, direction: Down, layers: [[0]], nodes: [0] }
-	inner = { ..FlowLayoutGraph.blank_graph, direction: Down, parent: 0, title_width: 20, title_height: 0 }
+	node = { ..LayeredFlowGraph.blank_node, nested: 1, width: 100, height: 100 }
+	outer = { ..LayeredFlowGraph.blank_graph, direction: Down, layers: [[0]], nodes: [0] }
+	inner = { ..LayeredFlowGraph.blank_graph, direction: Down, parent: 0, title_width: 20, title_height: 0 }
 	m = { graphs: [outer, inner], nodes: [node], ports: [], edges: [], loops: [] }
-	FlowLayoutGraph.node(FlowLayoutPlace.margins(m, 0), 0).margin == FlowLayoutGraph.no_box
+	LayeredFlowGraph.node(LayeredFlowPlace.margins(m, 0), 0).margin == LayeredFlowGraph.no_box
 }

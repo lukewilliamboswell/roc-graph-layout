@@ -1,58 +1,58 @@
-import Drawing
-import FlowLayoutGraph
-import FlowLayoutPlace
-import FlowLayoutElk
+import Geom
+import LayeredFlowGraph
+import LayeredFlowPlace
+import LayeredFlow
 
-## The ELK head/tail-label margin phase, shared by real class rendering and
-## reference-sized layout probes. Labels extend their node's margins before
-## node balancing and edge routing, rather than becoming extra ranks.
-EntityLayout :: {}.{
+## Geometric endpoint-label packing. Measured label rectangles extend node
+## margins before balancing and routing, rather than becoming extra layers.
+LayeredFlowLabels :: {}.{
 	LabelSize : { width : F64, height : F64 }
 	Ends : { from : [None, Some(LabelSize)], to : [None, Some(LabelSize)] }
 	Part : { edge : U64, from : Bool, along : F64, cross : F64 }
-	Cell : { port : FlowLayoutGraph.Port, along : F64, cross : F64, thickness : F64, parts : List(Part) }
-	PlacedCell : { cell : Cell, box : Drawing.Rect }
-	Placement : { point : Drawing.Point, port : Drawing.Point }
+	Cell : { port : LayeredFlowGraph.Port, along : F64, cross : F64, thickness : F64, parts : List(Part) }
+	PlacedCell : { cell : Cell, box : Geom.Rect }
+	Placement : { point : Geom.Point, port : Geom.Point }
 	EndPlacements : { from : [None, Some(Placement)], to : [None, Some(Placement)] }
 
 	## ELK EndLabelPreprocessor: gather each port's padded head/tail labels,
 	## select their smart side, then union their rectangles into node margins.
 	## Internal model coordinates always read left to right. Only dimensions,
 	## never oracle positions, participate in this production phase.
-	margins : FlowLayoutGraph.Model, U64, List(Ends), Bool -> FlowLayoutGraph.Model
-	margins = |model, g, labels, vertical| {
+	margins : LayeredFlowGraph.Model, U64, List(Ends) -> LayeredFlowGraph.Model
+	margins = |model, g, labels| {
+		vertical = LayeredFlow.vertical(LayeredFlowGraph.graph(model, g).direction)
 		if labels.all(|ends| ends.from == None and ends.to == None) {
 			return model
 		}
 		var $model = model
-		spacing = FlowLayoutGraph.graph(model, g).spacing
-		for layer in FlowLayoutGraph.graph(model, g).layers {
+		spacing = LayeredFlowGraph.graph(model, g).spacing
+		for layer in LayeredFlowGraph.graph(model, g).layers {
 			for index in layer {
-				node = FlowLayoutGraph.node($model, index)
+				node = LayeredFlowGraph.node($model, index)
 				if node.kind == Normal {
 					var $margin = node.margin
-					for placed in EntityLayout.node_cells($model, node, labels, vertical, spacing.edge_label, spacing.label_label * 2) {
+					for placed in LayeredFlowLabels.node_cells($model, node, labels, vertical, spacing.edge_label, spacing.label_label * 2) {
 						box = placed.box
 						$margin = { top: $margin.top.max(-box.y), left: $margin.left.max(-box.x), right: $margin.right.max(box.x + box.width - node.width), bottom: $margin.bottom.max(box.y + box.height - node.height) }
 					}
-					$model = FlowLayoutGraph.set_node($model, index, { ..node, margin: $margin })
+					$model = LayeredFlowGraph.set_node($model, index, { ..node, margin: $margin })
 				}
 			}
 		}
 		$model
 	}
 
-	node_cells : FlowLayoutGraph.Model, FlowLayoutGraph.Node, List(Ends), Bool, F64, F64 -> List(PlacedCell)
+	node_cells : LayeredFlowGraph.Model, LayeredFlowGraph.Node, List(Ends), Bool, F64, F64 -> List(PlacedCell)
 	node_cells = |model, node, labels, vertical, edge_label, label_label| {
 		var $cells = []
 		for p in node.ports {
-			port = FlowLayoutGraph.port(model, p)
+			port = LayeredFlowGraph.port(model, p)
 			var $along = 0.0
 			var $cross = 0.0
 			var $thickness = 0.0
 			var $parts = []
 			for e in port.outgoing.concat(port.incoming) {
-				edge = FlowLayoutGraph.edge(model, e)
+				edge = LayeredFlowGraph.edge(model, e)
 				ends = labels.get(edge.origin) ?? { from: None, to: None }
 				is_from = (edge.source == p) != edge.reversed
 				maybe_size = if is_from {
@@ -134,7 +134,7 @@ EntityLayout :: {}.{
 				$placed = $placed.append({ cell, box })
 			}
 		}
-		$placed = EntityLayout.strip($placed, node, edge_label, label_label, vertical)
+		$placed = LayeredFlowLabels.strip($placed, node, edge_label, label_label, vertical)
 		$placed
 	}
 
@@ -183,10 +183,10 @@ EntityLayout :: {}.{
 	}
 
 	## ELK's rectangle-strip first-fit placement. The overlap graph itself
-	## may be quadratic for dense labels; source parsing bounds edges at500.
+	## may be quadratic when every measured label occupies the same strip.
 	## Lists stay flat and indexed; only genuine cross-interval intersections
 	## participate in first-fit placement, ordered by their current strip depth.
-	strip : List(PlacedCell), FlowLayoutGraph.Node, F64, F64, Bool -> List(PlacedCell)
+	strip : List(PlacedCell), LayeredFlowGraph.Node, F64, F64, Bool -> List(PlacedCell)
 	strip = |cells, node, edge_label, gap, vertical| {
 		var $result = cells
 		for side in (
@@ -206,7 +206,7 @@ EntityLayout :: {}.{
 					index,
 				},
 			).keep_if(|key| (cells.get(key.index) ?? crash "cell index").cell.port.side == side)
-			order = EntityLayout.sort(keys)
+			order = LayeredFlowLabels.sort(keys)
 			var $offsets = List.repeat(0.0, cells.len())
 			var $placed = []
 			for key in order {
@@ -240,7 +240,7 @@ EntityLayout :: {}.{
 					},
 				).map(|index| { key: $offsets.get(index) ?? 0, index })
 				var $offset = 0.0
-				for old in EntityLayout.sort(overlaps) {
+				for old in LayeredFlowLabels.sort(overlaps) {
 					box = (cells.get(old.index) ?? crash "cell index").box
 					old_depth = if vertical {
 						box.width
@@ -266,24 +266,29 @@ EntityLayout :: {}.{
 		$result
 	}
 
-	placements : FlowLayoutGraph.Model, List(Ends), Bool -> List(EndPlacements)
-	placements = |placed, labels, vertical| {
+	placements : LayeredFlowGraph.Model, List(Ends) -> List(EndPlacements)
+	placements = |placed, labels| {
 		if labels.all(|ends| ends.from == None and ends.to == None) {
 			return List.repeat({ from: None, to: None }, labels.len())
 		}
 		# Reconstruct the same local cells from port-only margins; the placed
 		# model already includes the expanded margins and must not add them twice.
-		model = FlowLayoutPlace.margins(placed, 0)
-		bases = FlowLayoutElk.origins(model)
-		places = FlowLayoutElk.placements(model, bases)
+		var $port_model = placed
+		for g in LayeredFlow.bottom_up(placed) {
+			$port_model = LayeredFlowPlace.margins($port_model, g)
+		}
+		model = $port_model
+		bases = LayeredFlow.origins(model)
+		places = LayeredFlow.placements(model, bases)
 		var $result = List.repeat({ from: None, to: None }, labels.len())
 		for node in model.nodes {
 			if node.kind == Normal {
-				spacing = FlowLayoutGraph.graph(model, node.graph).spacing
+				spacing = LayeredFlowGraph.graph(model, node.graph).spacing
+				vertical = LayeredFlow.vertical(LayeredFlowGraph.graph(model, node.graph).direction)
 				base = bases.get(node.graph) ?? { x: 0, y: 0 }
 				place = places.get(node.graph) ?? { direction: Right, dx: 0, dy: 0 }
-				world = |point| FlowLayoutElk.place_point(place, { x: base.x + node.x + point.x, y: base.y + node.y + point.y })
-				for cell in EntityLayout.node_cells(model, node, labels, vertical, spacing.edge_label, spacing.label_label * 2) {
+				world = |point| LayeredFlow.place_point(place, { x: base.x + node.x + point.x, y: base.y + node.y + point.y })
+				for cell in LayeredFlowLabels.node_cells(model, node, labels, vertical, spacing.edge_label, spacing.label_label * 2) {
 					var $cross = 0.0
 					for part in cell.cell.parts {
 						along = if cell.cell.port.side == West {

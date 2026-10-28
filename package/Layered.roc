@@ -1,5 +1,7 @@
 import CompoundRouting
 import Geom
+import LayeredGroup
+import LayeredGrouped
 import LayeredOrder
 import LayeredPlace
 import LayeredRank
@@ -2424,6 +2426,124 @@ ExactPrepared := {
 ## the fewest edge crossings under an explicit effort cap and reports whether
 ## optimality was proven.
 Layered := [].{
+
+	## Recursive ownership for coordinated directed flow. Children are `Node`
+	## indices or `Nested` groups. `Together` lets edges influence placement
+	## across group borders; `Separate(direction)` completes a child drawing
+	## before arranging it with its siblings. Padding and measured labels are
+	## geometric reservations, in the caller's units.
+	Group : LayeredGroup
+
+	## A group's direct members and geometric reservations. `flow` is
+	## `Together`, or `Separate(direction)` to complete an independent child.
+	## `spacing` is `Inherit` or `Set(gaps)`. The optional label is a measured
+	## exterior reservation; padding reserves space inside the group frame.
+	GroupOptions : {
+		children : List([Node(U64), Nested(Group)]),
+		flow : [Together, Separate([Down, Up, Left, Right])],
+		spacing : [Inherit, Set(GroupedSpacing)],
+		padding : { top : F64, right : F64, bottom : F64, left : F64 },
+		min_width : F64,
+		min_height : F64,
+		label : [None, Some({ width : F64, height : F64 })],
+	}
+
+	## Construct a group from structural and measured geometric input.
+	group : GroupOptions -> Group
+	group = |options| Group(options)
+
+	## Empty membership with inherited flow/spacing and zero reservations.
+	default_group_options : GroupOptions
+	default_group_options = { children: [], flow: Together, spacing: Inherit, padding: { top: 0, right: 0, bottom: 0, left: 0 }, min_width: 0, min_height: 0, label: None }
+
+	## Nodes and edges retain input order. Group indices are root-first
+	## preorder: group zero is the root drawing and cannot be an edge endpoint.
+	## Every node must occur exactly once in the ownership tree. Edge labels
+	## reserve measured rectangles at the middle of their routes.
+	GroupedInput : {
+		nodes : List({ width : F64, height : F64 }),
+		edges : List({ from : [Node(U64), Group(U64)], to : [Node(U64), Group(U64)] }),
+		edge_labels : List({ edge : U64, width : F64, height : F64 }),
+		end_labels : List({ edge : U64, endpoint : [From, To], width : F64, height : F64 }),
+		group_reservations : List({ group : U64, width : F64, height : F64 }),
+		root : Group,
+	}
+
+	## Flow direction and default geometric spacing. A group's `Set` spacing
+	## overrides the inherited spacing for that group's contents.
+	GroupedSettings : { direction : [Down, Up, Left, Right], spacing : GroupedSpacing }
+
+	## Distances between node boxes, layers, ports, edges and measured labels.
+	## Names ending in `between_layers` apply along the flow. Other gaps apply
+	## across the flow; `ports_surrounding` reserves room around port positions.
+	GroupedSpacing : {
+		node_node : F64,
+		node_node_between_layers : F64,
+		edge_node : F64,
+		edge_node_between_layers : F64,
+		edge_edge : F64,
+		edge_edge_between_layers : F64,
+		edge_label : F64,
+		label_label : F64,
+		label_node : F64,
+		port_port : F64,
+		node_self_loop : F64,
+		ports_surrounding : F64,
+	}
+
+	## An explicit seed selects deterministic ordering variants. It affects
+	## solving only, so prepared input can be reused with different seeds.
+	GroupedRunArgs : { seed : I64 }
+
+	## Independent input problems, reported together during preparation.
+	GroupedProblem : LayeredGrouped.Problem
+
+	## Validated structural input and reusable hierarchical edge segmentation.
+	GroupedPrepared : LayeredGrouped.Prepared
+
+	## Source-aligned geometry, group rectangles in root-first preorder,
+	## center-label anchors in label-input order, node layers local to their
+	## containing graph, and original edge indices drawn against the flow.
+	GroupedResult : {
+		layout : { positions : List(Geom.Point), routes : List(Geom.Route), bounds : Geom.Rect },
+		nodes : List(Geom.Rect),
+		groups : List(Geom.Rect),
+		label_anchors : List(Geom.Point),
+		end_label_placements : List({ point : Geom.Point, port : Geom.Point }),
+		layers : List(U64),
+		backward_edges : List(U64),
+	}
+
+	## Empty group with inherited flow/spacing and no geometric reservations.
+	default_group : Group
+	default_group = LayeredGrouped.default_group
+
+	## Empty coordinated flow input. Replace nodes, edges and root by record update.
+	default_grouped_input : GroupedInput
+	default_grouped_input = LayeredGrouped.default_input
+
+	## Top-to-bottom flow with ordinary node, layer, port and label gaps.
+	default_grouped_settings : GroupedSettings
+	default_grouped_settings = LayeredGrouped.default_settings
+
+	## Fixed seed one, with no ambient randomness.
+	default_grouped_run : GroupedRunArgs
+	default_grouped_run = LayeredGrouped.default_run
+
+	## Validate all structural and spatial inputs, then construct reusable
+	## hierarchy and edge indices. Geometry is computed during layout.
+	prepare_grouped : GroupedInput, GroupedSettings -> [Ok(GroupedPrepared), Err(List(GroupedProblem))]
+	prepare_grouped = LayeredGrouped.prepare
+
+	## Lay out validated grouped input. This operation cannot fail.
+	layout_grouped_prepared : GroupedPrepared, GroupedRunArgs -> GroupedResult
+	layout_grouped_prepared = LayeredGrouped.layout_prepared
+
+	## Lay out a nested directed graph in one call. Use this when edges crossing
+	## group boundaries should influence the groups' internal flow. For mixed
+	## layout families and independent group composition, use `Compound`.
+	layout_grouped : GroupedInput, GroupedSettings, GroupedRunArgs -> [Ok(GroupedResult), Err(List(GroupedProblem))]
+	layout_grouped = LayeredGrouped.layout
 
 	## Hard relationships between node layers. `BeforeLayer` follows the
 	## selected flow direction, so it has the same meaning for every direction.

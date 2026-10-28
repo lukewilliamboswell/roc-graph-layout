@@ -764,3 +764,51 @@ unchanged by the subsequent all-row envelope regression. Raw session data:
 `/tmp/mermaid-vertical-{before,after}.json`. The confirmed cause and the additive
 mode preserve legacy Linux-style glyph-bound expectations while state callers
 can select the actual SVG glyph envelope.
+
+## Coordinated flow extraction baseline — 2026-10-28
+
+Investigation status: the geometric phases now live in the core package. This is
+an extraction baseline, before consolidating the flat and coordinated solvers;
+it is not a claim that the inherited coordinated solver meets every scale target.
+
+The native optimized before/after controls use compiler
+`nightly-2026-10-26-3c0fffe`, macOS arm64. The before checkout is `1640711`.
+Both programs receive the same numeric wide/chain topology, node dimensions,
+spacing and endpoint-label dimensions. The before harness adapts those facts to
+the old source-shaped input without invoking its parser. Build the new harness
+with `roc build --opt=speed package/flow_phase_bench.roc`; it exposes zero,
+construction, layering, ordering, placement/routing, endpoint labels, an absent
+label control, and complete raw layout. Preceding phases run outside each
+measurement. There are three interleaved samples per version, phase, shape and
+size, at 100, 300 and 1000 edges: 288 observations retained in
+`benchmarks/measurements/flow-extraction.jsonl`.
+
+The hypothesis that extraction adds allocator traffic was refuted by these
+controls: allocation calls, reallocation calls, cumulative requested bytes and
+result observations match exactly for every measured case. Zero controls report
+zero measured work. Median elapsed time varies in both directions; the complete
+wide layout medians are 12.487/13.239 ms, 104.294/102.614 ms and
+1109.132/1049.562 ms (before/after). These are local observations, not a speedup
+claim.
+
+Complete-layout peak-extra bytes increase slightly while absolute peak live
+bytes fall. These are different measurements, not contradictory results: the
+input already live when measurement starts is smaller at the geometric boundary.
+For 1000-edge wide layout, start live bytes are 368240/88064 and absolute peaks
+are 34658024/34441904; peak-extra bytes are therefore 34289784/34353840.
+For the 1000-edge chain, absolute peaks are 2581158/2365038. Other isolated
+phase peak-extra measurements match. Cumulative requested bytes are allocator
+traffic, not resident memory.
+
+The inherited solver still has superlinear work. Wide raw layout requests
+2584800, 18364568 and 155005316 bytes at the three rungs; endpoint-label packing
+medians are 10.348/9.820, 125.779/124.528 and 1355.129/1371.435 ms. Phase and
+absent-label controls separate this from extraction overhead. No particular
+ownership fallback or ranking heuristic has yet been established as its cause.
+Use this baseline when sharing or optimizing ranking, placement and port data.
+
+Correctness evidence at this checkpoint: 391 native default/reference/sized
+profiles across all five diagram families have byte-identical observed JSON and
+SVG against the saved renderer. The independent oracle comparison passes all
+143 cases with unchanged gates. Subsequent geometric changes must repeat that
+comparison; these observations do not validate future changes automatically.

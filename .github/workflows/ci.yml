@@ -104,7 +104,7 @@ jobs:
           npm ci --prefix tools/mermaid-oracle
 
       - name: Test the comparison contract
-        run: node --test tools/mermaid-oracle/validate.test.mjs
+        run: node --test tools/mermaid-oracle/validate.test.mjs tools/mermaid-oracle/boundaries.test.mjs
 
       - name: Generate independent references for the runner's font environment
         run: |
