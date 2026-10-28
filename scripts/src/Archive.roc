@@ -87,6 +87,15 @@ Archive := [].{
 						Path.write_utf8!(Path.join(staged, file_name), Archive.published(Path.read_utf8!(file)?, urls)?)?
 						$entries = $entries.append("${root}/examples/${name}/${file_name}")
 					}
+					# Mermaid examples keep their source beside the app, either
+					# imported at compile time or read as an editable input file.
+					for resource in Files.sort_paths(Path.list!(directory)?) {
+						resource_name = Script.file_name(resource)?
+						if resource_name.ends_with(".mmd") and Path.is_file!(resource)? {
+							Path.write_bytes!(Path.join(staged, resource_name), Path.read_bytes!(resource)?)?
+							$entries = $entries.append("${root}/examples/${name}/${resource_name}")
+						}
+					}
 				}
 				Path.write_utf8!(Path.join(stage, "README.md"), Release.examples_readme(version, urls))?
 				Path.write_utf8!(Path.join(stage, "spec.json"), Spec.render_suite(apps, version, [urls.layout, urls.mermaid]))?
