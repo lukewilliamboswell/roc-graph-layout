@@ -7,6 +7,7 @@ import FlowGeometry
 import FlowLayout
 import FlowTheme
 import StateLayout
+import StateDrawEdge
 import StateModel
 import StateParser
 import TextMeasure
@@ -27,11 +28,22 @@ StateDraw :: {}.{
 	state_padding = |options| options.padding * 8 / 15
 
 	radius : Theme.Options -> F64
-	radius = |options| if (options.corners == Square) 0 else options.corner_radius
+	radius = |options| match options.corners {
+		Square => 0
+		Rounded => options.corner_radius
+		FamilyDefault => options.corner_radius * 5 / 12
+	}
 
 	measure_block : Str, Theme.Options, [NoWrap, Width(F64)] -> Block
-	measure_block = |text, options, wrap| {
-		measured = TextMeasure.block(text, { font: TextMeasure.inter, size: options.font_size, line_height: options.line_height, wrap, align: Middle })
+	measure_block = |text, options, wrap| StateDraw.measure_block_mode(text, options, wrap, False)
+
+	transition_block : Str, Theme.Options -> Block
+	transition_block = |text, options| StateDraw.measure_block_mode(text, options, if (options.wrapping == Wrap) Width(options.max_label_width) else NoWrap, True)
+
+	measure_block_mode : Str, Theme.Options, [NoWrap, Width(F64)], Bool -> Block
+	measure_block_mode = |text, options, wrap, advance| {
+		style = { font: TextMeasure.inter, size: options.font_size, line_height: options.line_height, wrap, align: Middle }
+		measured = if (advance) TextMeasure.block_advance(text, style) else TextMeasure.block(text, style)
 		# Browser-rounded metrics are authoritative at ordinary sizes.
 		# Unrounded font extents retain finite tiny text without charging
 		# every ordinary label for an emoji descender it does not contain.
@@ -71,7 +83,7 @@ StateDraw :: {}.{
 					Initial | Final => Circle
 					Choice => Diamond
 					Fork | Join => Rectangle
-					Normal => if (options.corners == Square or (state.descriptions.len() > 1 and options.corners == FamilyDefault)) Rectangle else Rounded
+					Normal => if (options.corners == Square) Rectangle else Rounded
 				},
 				container: state.container,
 				classes: state.classes,
@@ -121,7 +133,7 @@ StateDraw :: {}.{
 				{ width: size.width, height: size.height, label: text }
 			},
 		),
-		edge_labels: diagram.transitions.map(|edge| if (edge.label == "") None else Some(StateDraw.compartment_block(edge.label, options))),
+		edge_labels: diagram.transitions.map(|edge| if (edge.label == "") None else Some(StateDraw.transition_block(edge.label, options))),
 		group_titles: diagram.groups.map(|group| StateDraw.compartment_block(group.title, options)),
 	}
 
@@ -348,23 +360,33 @@ StateDraw :: {}.{
 					palette = StateDraw.container_colors(g, options)
 					paint = { fill: Fill(if (styled) options.node_fill else palette.fill), stroke: Stroke({ color: if (styled) options.node_stroke else palette.stroke, width: options.line_width }) }
 					color = options.node_text
-					group_radius = if (options.corners == Rounded) options.corner_radius else 0
-					$items = $items.append(Shape({ path: Drawing.rounded_rectangle(rect, group_radius), paint }))
+					group_radius = if (options.corners == Square) 0 else options.corner_radius
+					group_path = Drawing.rounded_rectangle(rect, group_radius)
+					$items = $items.concat(FlowDraw.shadows(theme, [group_path], paint, options.background)).append(Shape({ path: group_path, paint }))
 					body_fill = Fill(if (styled) options.node_fill else options.background)
 					inner = { x: rect.x, y: rect.y + title.height + 2, width: rect.width, height: (rect.height - title.height - 6).max(0) }
 					if inner.height > 0 {
 						$items = $items.append(Shape({ path: Drawing.rectangle(inner), paint: { fill: body_fill, stroke: paint.stroke } }))
 					}
-					$items = $items.concat(StateDraw.lines(title.lines, rect.x + rect.width / 2, rect.y - 2, color, options))
+					$items = $items.concat(StateDraw.lines_left(title.lines, rect.x + rect.width / 2 - title.width / 2, rect.y - 2, color, options))
 				}
 				_ => {}
 			}
 		}
 		hops = FlowDrawEdge.hops(geometry.edges.map(|edge| edge.points))
+		var $strokes = []
 		for i in 0..<flow.edges.len() {
 			match (flow.edges.get(i), geometry.edges.get(i)) {
 				(Ok(edge), Ok(route)) => {
-					$items = $items.concat(FlowDraw.edge_items(flow, edge, route.points, hops.get(i) ?? [], theme))
+					edge_items = StateDrawEdge.draw(edge, route.points, hops.get(i) ?? [], options)
+					$strokes = edge_items.fold(
+						$strokes,
+						|acc, item| match item {
+							Shape({ path, paint: { fill: NoFill, stroke: Stroke(stroke) } }) => acc.append({ path, color: stroke.color, width: stroke.width })
+							_ => acc
+						},
+					)
+					$items = $items.concat(edge_items)
 				}
 				_ => {}
 			}
@@ -374,7 +396,13 @@ StateDraw :: {}.{
 				(Ok(Some(label_block)), Ok(route)) => match route.label {
 					Some(at) => {
 						rect = { x: at.x - label_block.width / 2 - 2, y: at.y - label_block.height / 2 - 2, width: label_block.width + 4, height: label_block.height + 4 }
-						$items = $items.append(Shape({ path: Drawing.rectangle(rect), paint: { fill: Fill(options.transition_label_background), stroke: NoStroke } }))
+						beneath = StateDraw.beneath(diagram, geometry, sizes, at, options)
+						background = FlowDraw.blend(options.transition_label_background, beneath, options.label_background_opacity)
+						$items = $items.append(Shape({ path: Drawing.rectangle(rect), paint: { fill: Fill(background), stroke: NoStroke } }))
+						for stroke in $strokes {
+							color = FlowDraw.blend(options.transition_label_background, stroke.color, options.label_background_opacity)
+							$items = $items.concat(FlowDraw.shape(FlowDrawEdge.clip(stroke.path, rect), { fill: NoFill, stroke: Stroke({ color, width: stroke.width }) }))
+						}
 						$items = $items.concat(StateDraw.lines(label_block.lines, at.x, at.y - label_block.height / 2, options.label_text, options))
 					}
 					None => {}
@@ -397,14 +425,30 @@ StateDraw :: {}.{
 				(Ok(note), Ok(rect)) => {
 					note_block = StateDraw.block(note.text, options)
 					paint = { fill: Fill(options.note_fill), stroke: Stroke({ color: options.note_stroke, width: options.line_width }) }
-					$items = $items.append(Shape({ path: Drawing.rectangle(rect), paint }))
-					$items = $items.concat(StateDraw.lines(note_block.lines, rect.x + rect.width / 2, rect.y + options.padding, options.note_text, options))
+					note_path = Drawing.rectangle(rect)
+					$items = $items.concat(FlowDraw.shadows(theme, [note_path], paint, options.background)).append(Shape({ path: note_path, paint }))
+					$items = $items.concat(StateDraw.lines_left(note_block.lines, rect.x + rect.width / 2 - note_block.width / 2, rect.y + options.padding, options.note_text, options))
 				}
 				_ => {}
 			}
 		}
 
 		{ view: geometry.bounds, items: $items }
+	}
+
+	beneath : StateModel.Diagram, FlowGeometry.Geometry, FlowGeometry.Sizes, Drawing.Point, Theme.Options -> Drawing.Color
+	beneath = |diagram, geometry, sizes, point, options| {
+		var $color = options.background
+		for i in 0..<diagram.groups.len() {
+			group = diagram.groups.get(i) ?? crash "group index aligned"
+			rect = geometry.groups.get(i) ?? geometry.bounds
+			if point.x >= rect.x and point.x <= rect.x + rect.width and point.y >= rect.y and point.y <= rect.y + rect.height {
+				styled = !group.styles.is_empty() or !group.classes.is_empty()
+				title = sizes.group_titles.get(i) ?? { lines: [], width: 0, height: 0 }
+				$color = if (styled) options.node_fill else if (point.y < rect.y + title.height + 2) StateDraw.container_colors(i, options).fill else options.background
+			}
+		}
+		$color
 	}
 
 	node : StateModel.Diagram, StateModel.State, Drawing.Rect, Theme.Options -> List(Drawing.Item)
@@ -421,30 +465,42 @@ StateDraw :: {}.{
 			Initial | Final => Drawing.ellipse({ x: cx, y: cy }, rect.width / 2, rect.height / 2)
 			Choice => Drawing.polygon([{ x: cx, y: rect.y }, { x: rect.x + rect.width, y: cy }, { x: cx, y: rect.y + rect.height }, { x: rect.x, y: cy }])
 			Fork | Join => Drawing.rectangle(rect)
-			Normal => if (options.corners == Square or (state.descriptions.len() > 1 and options.corners == FamilyDefault)) Drawing.rectangle(rect) else Drawing.rounded_rectangle(rect, StateDraw.radius(options))
+			Normal => Drawing.rounded_rectangle(rect, StateDraw.radius(options))
 		}
 		fill = match state.effective_kind {
 			Initial => { fill: Fill(options.line), stroke: Stroke({ color: options.node_stroke, width: options.line_width / 2 }) }
-			Fork | Join => FlowDraw.paint_of(overrides, options.line, options.line, options.line_width)
+			Fork | Join => FlowDraw.paint_of(overrides, options.line, options.node_stroke, options.line_width)
 			Final => { fill: Fill(options.background), stroke: Stroke({ color: options.line, width: options.line_width }) }
 			Normal | Choice => paint
 		}
-		var $items = FlowDraw.shadows(StateDraw.drawing_theme(options), [path], fill, options.background).append(Shape({ path, paint: fill }))
+		shadow_theme = StateDraw.drawing_theme(options)
+		shadow = match state.effective_kind {
+			Choice | Fork | Join => NoShadow
+			Initial | Final => match options.shadow {
+				NoShadow => NoShadow
+				Shadow(value) => Shadow({ ..value, dx: value.dx / 2, dy: value.dy / 2 })
+			}
+			Normal => options.shadow
+		}
+		var $items = FlowDraw.shadows({ ..shadow_theme, shadow }, [path], fill, options.background).append(Shape({ path, paint: fill }))
 		if state.effective_kind == Final {
-			$items = $items.append(Shape({ path: Drawing.ellipse({ x: cx, y: cy }, rect.width * 5 / 28, rect.height * 5 / 28), paint: { fill: Fill(options.node_stroke), stroke: NoStroke } }))
+			$items = $items.append(Shape({ path: Drawing.ellipse({ x: cx, y: cy }, rect.width * 5 / 28, rect.height * 5 / 28), paint: { fill: Fill(options.node_stroke), stroke: Stroke({ color: options.node_stroke, width: options.line_width }) } }))
 		}
 		if state.effective_kind == Normal {
 			title = if (state.descriptions.len() > 1) StateDraw.compartment_block(state.label, options) else StateDraw.block(state.label, options)
 			body = StateDraw.compartment_block(Str.join_with(state.descriptions.drop_first(1), "\n"), options)
-			$items = $items.concat(StateDraw.lines(title.lines, cx, rect.y + (if (state.descriptions.len() > 1) StateDraw.state_padding(options) / 2 else StateDraw.state_padding(options)), color, options))
+			$items = $items.concat(StateDraw.lines_left(title.lines, if (state.descriptions.len() > 1) cx - title.width / 2 else rect.x + StateDraw.state_padding(options), rect.y + (if (state.descriptions.len() > 1) (StateDraw.state_padding(options) / 2).min(3) else StateDraw.state_padding(options)), color, options))
 			if state.descriptions.len() > 1 {
 				y = rect.y + StateDraw.state_padding(options) / 2 + title.height
 				$items = $items.append(Shape({ path: [MoveTo({ x: rect.x, y }), LineTo({ x: rect.x + rect.width, y })], paint: { fill: NoFill, stroke: paint.stroke } }))
-				$items = $items.concat(StateDraw.lines(body.lines, cx, rect.y + StateDraw.state_padding(options) + title.height + 5, color, options))
+				$items = $items.concat(StateDraw.lines_left(body.lines, cx - body.width / 2, rect.y + (StateDraw.state_padding(options) / 2).min(3) + StateDraw.state_padding(options) / 2 + title.height + 5, color, options))
 			}
 		}
 		$items
 	}
+
+	lines_left : List(Str), F64, F64, Drawing.Color, Theme.Options -> List(Drawing.Item)
+	lines_left = |rows, x, top, color, options| rows.map_with_index(|text, i| Text({ text, origin: { x, y: top + StateDraw.baseline(options) + i.to_f64() * options.font_size * options.line_height }, size: options.font_size, align: Start, color }))
 
 	lines : List(Str), F64, F64, Drawing.Color, Theme.Options -> List(Drawing.Item)
 	lines = |rows, x, top, color, options| rows.map_with_index(|text, i| Text({ text, origin: { x, y: top + StateDraw.baseline(options) + i.to_f64() * options.font_size * options.line_height }, size: options.font_size, align: Center, color }))
@@ -497,8 +553,12 @@ StateDraw :: {}.{
 						True
 					} else {
 						measured = TextMeasure.block(text_item.text, { font: TextMeasure.inter, size: options.font_size, line_height: options.line_height, wrap: NoWrap, align: Middle })
-						left = text_item.origin.x - measured.width / 2
-						right = text_item.origin.x + measured.width / 2
+						left = match text_item.align {
+							Start => text_item.origin.x
+							Center => text_item.origin.x - measured.width / 2
+							End => text_item.origin.x - measured.width
+						}
+						right = left + measured.width
 						# A normal row must not be charged the emoji descent
 						# of another font. Use this row's browser-style box,
 						# retaining unrounded extents for tiny font settings.
@@ -575,7 +635,7 @@ expect {
 }
 
 expect {
-	options = Theme.Options.{ font_size: 64, line_height: 0.1, padding: 0, max_label_width: 300, corner_radius: 19 }
+	options = Theme.Options.{ font_size: 64, line_height: 0.1, padding: 0, max_label_width: 300, corner_radius: 19, corners: Rounded }
 	diagram = StateParser.parse("stateDiagram-v2\nstate \"Titleg\" as A\nA: Bodyg\nA --> B : Edgeg\nnote right of A : Noteg\nstate Groupg {\nChildg\n}\nB --> Groupg\n")?
 	picture = StateDraw.draw(diagram, options)
 	theme = StateDraw.drawing_theme(options)

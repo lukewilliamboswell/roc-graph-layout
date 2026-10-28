@@ -67,10 +67,12 @@ StateDiagram := [].{
 	## values scale these roles together. Family-default wrapping applies
 	## to ordinary states and notes; transition labels and description
 	## compartments stay unwrapped.
-	## Composite frames are square by default, while ordinary states are
-	## rounded. Explicit wrapping/corner choices override the role defaults.
+	## Ordinary and compartmented states use 5px corners by default; composite
+	## frames use 12px. Explicit Rounded uses the supplied corner_radius;
+	## Square uses 0. FamilyDefault scales the 5px state role by 5/12.
 	## `transition_label_background` colours the square backing of transition
-	## labels; its default is white. `node_palette` overrides the composite
+	## labels; its default is white at 50% opacity, controlled by
+	## `label_background_opacity`. `node_palette` overrides the composite
 	## palette; a one-entry list gives every unstyled composite the same
 	## colours. `group_fill` and `group_stroke` control the first default slot.
 	draw : Str, Theme.Options -> Try(Drawing.Picture, List(Problem))

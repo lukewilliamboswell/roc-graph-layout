@@ -139,7 +139,19 @@ StateOracle :: {}.{
 		OracleJson.object([
 			("id", OracleJson.string("label-${i.to_str()}")),
 			("text", OracleJson.string(label.text)),
-			("box", OracleJson.rect({ x: label.origin.x - block.width / 2, y: label.origin.y - StateDraw.baseline(theme), width: block.width, height: block.height })),
+			(
+				"box",
+				OracleJson.rect({
+					x: match label.align {
+						Start => label.origin.x
+						Center => label.origin.x - block.width / 2
+						End => label.origin.x - block.width
+					},
+					y: label.origin.y - StateDraw.baseline(theme),
+					width: block.width,
+					height: block.height,
+				}),
+			),
 		])
 	}
 
@@ -422,12 +434,14 @@ expect {
 	options = Theme.Options.{ node_fill: Drawing.rgb(0x123456), node_stroke: Drawing.rgb(0x654321) }
 	setup = StateDraw.setup(d, options)
 	picture = StateDraw.draw_setup(d, options, setup)
-	match picture.items.first()? {
-		Shape(shape) => shape.path == Drawing.rectangle(setup.geometry.groups.first()?)
-			and shape.paint == { fill: Fill(options.node_fill), stroke: Stroke({ color: options.node_stroke, width: options.line_width }) }
-			and d.groups.first()?.styles == ["fill:#F8FAFC", "stroke:#64748B"]
-		_ => False
-	}
+	picture.items.any(
+		|item| match item {
+			Shape(shape) => shape.path == Drawing.rounded_rectangle(setup.geometry.groups.first() ?? setup.geometry.bounds, options.corner_radius)
+				and shape.paint == { fill: Fill(options.node_fill), stroke: Stroke({ color: options.node_stroke, width: options.line_width }) }
+				and (d.groups.first() ?? crash "group exists").styles == ["fill:#F8FAFC", "stroke:#64748B"]
+			_ => False
+		},
+	)
 }
 
 ## The pinned twelve-colour composite palette follows source declaration
@@ -440,3 +454,47 @@ expect {
 		and StateDraw.container_colors(13, options) == StateDraw.container_colors(1, options)
 		and StateDraw.container_colors(37, Theme.Options.{ node_palette: [{ fill: Drawing.black, stroke: Drawing.white }] }) == { fill: Drawing.black, stroke: Drawing.white }
 }
+
+## Actual state CSS overrides rect attributes:5px node corners, start-aligned
+## text in the120px label region, and translucent white label backing.
+expect {
+	options = Theme.Options.{}
+	d = StateDiagram.parse("stateDiagram-v2\nA --> B: continue\n")?
+	setup = StateDraw.setup(d, options)
+	picture = StateDraw.draw_setup(d, options, setup)
+	a = setup.geometry.nodes.first()?
+	StateDraw.radius(options) == 5
+		and StateDraw.radius(Theme.Options.{ corners: Rounded, corner_radius: 19 }) == 19
+		and StateDraw.radius(Theme.Options.{ corners: Square }) == 0
+		and picture.items.any(
+			|item| match item {
+				Text(label) => label.text == "A" and label.align == Start and label.origin.x == a.x + 8
+				_ => False
+			},
+		)
+		and picture.items.any(
+			|item| match item {
+				Shape(shape) => shape.path == Drawing.rounded_rectangle(a, 5) and shape.paint.fill == Fill(Drawing.white)
+				_ => False
+			},
+		)
+		and picture.items.any(
+			|item| match item {
+				Shape({ path: _, paint: { fill: NoFill, stroke: Stroke(stroke) } }) => stroke.color == Drawing.rgb(0x808080)
+				_ => False
+			},
+		)
+}
+
+## The pinned fork/join and choice paths have no shadow filter even though
+## ordinary state rectangles and small initial/final markers do.
+expect {
+	d = StateDiagram.parse("stateDiagram-v2\nstate Fork <<fork>>\n")?
+	picture = StateDraw.draw(d, Theme.Options.{})
+	picture.items.len() == 1
+		and picture.items.first()? == Shape({ path: Drawing.rectangle(StateDraw.setup(d, Theme.Options.{}).geometry.nodes.first()?), paint: { fill: Fill(Drawing.black), stroke: Stroke({ color: Drawing.rgb(0x28253D), width: 2 }) } })
+}
+
+## The pinned transition label input uses typographic advance rather than
+## the rounded glyph-outline overhang at the end of "submit".
+expect StateDraw.transition_block("submit", Theme.Options.{}).width == 44.484375
