@@ -712,3 +712,29 @@ For each hypothesis:
 7. Promote the direct diagnostic ladder into `benchmarks/cases/scale.jsonl`
    once its bounded rungs run reliably; then grow it toward the stated scale
    target in later changes.
+
+## Mermaid framing oracle correction (2026-10-28)
+
+The oracle exposed a correctness error in final framing: every path was padded
+by four stroke widths, even when its joins were straight, smooth, or right
+angles. A 4px shadow plus that maximum envelope enlarged normal state views by
+4px and shifted styled flowchart comparisons. The correction computes actual
+miter extents from adjacent segment tangents, with the SVG miter-limit fallback.
+It retains conservative cubic control hulls and includes explicit thick strokes.
+This is a framing correction, not a layout optimization.
+
+Native optimized phase controls (`package-mermaid/measure_framing.roc`, compiler
+2026-10-26-3c0fffe, arm64 macOS; three runs per size, median elapsed):
+
+| Rectangles | Before ms | After ms | Alloc calls (both) | Requested bytes (both) | Peak live bytes (both) |
+|---:|---:|---:|---:|---:|---:|
+| 100 | 1.806 | 2.220 | 403 | 17,552 | 46,760 |
+| 300 | 5.203 | 6.524 | 1,203 | 51,152 | 131,720 |
+| 1,000 | 17.393 | 18.954 | 4,003 | 168,752 | 439,160 |
+
+Zero-work controls at all three sizes exclude parsing, text measurement and
+layout, and confirm those phases cannot explain this observation. Allocator
+traffic and peak live bytes are unchanged; additional tangent arithmetic costs
+CPU time. The hypothesized excessive final envelope was confirmed separately
+from performance. Raw telemetry is in `/tmp/mermaid-framing-{before,after}.json`
+for this session; commands above reproduce the measurements without fixtures.
