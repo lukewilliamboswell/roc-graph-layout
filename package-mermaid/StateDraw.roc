@@ -311,6 +311,21 @@ StateDraw :: {}.{
 		shadow: options.shadow,
 	}
 
+	container_colors : U64, Theme.Options -> { fill : Drawing.Color, stroke : Drawing.Color }
+	container_colors = |index, options| {
+		palette = if (options.node_palette.is_empty()) FlowDraw.mermaid.group_colors else options.node_palette
+		if palette.is_empty() {
+			{ fill: options.group_fill, stroke: options.group_stroke }
+		} else {
+			slot = index % palette.len()
+			if options.node_palette.is_empty() and slot == 0 {
+				{ fill: options.group_fill, stroke: options.group_stroke }
+			} else {
+				palette.get(slot) ?? crash "palette modulo index in bounds"
+			}
+		}
+	}
+
 	draw : StateModel.Diagram, Theme.Options -> Drawing.Picture
 	draw = |diagram, options| StateDraw.draw_setup(diagram, options, StateDraw.setup(diagram, options))
 
@@ -330,7 +345,8 @@ StateDraw :: {}.{
 					styled = !original.styles.is_empty() or !original.classes.is_empty()
 					# Pinned Mermaid suppresses the composite palette for authored
 					# styles but does not apply those declarations to cluster shapes.
-					paint = { fill: Fill(if (styled) options.node_fill else options.group_fill), stroke: Stroke({ color: if (styled) options.node_stroke else options.group_stroke, width: options.line_width }) }
+					palette = StateDraw.container_colors(g, options)
+					paint = { fill: Fill(if (styled) options.node_fill else palette.fill), stroke: Stroke({ color: if (styled) options.node_stroke else palette.stroke, width: options.line_width }) }
 					color = options.node_text
 					group_radius = if (options.corners == Rounded) options.corner_radius else 0
 					$items = $items.append(Shape({ path: Drawing.rounded_rectangle(rect, group_radius), paint }))

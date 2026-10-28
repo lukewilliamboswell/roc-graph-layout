@@ -1,0 +1,21 @@
+stateDiagram-v2
+    direction LR
+    state "Release process" as Process {
+        direction LR
+        [*] --> Draft
+        state "Nested review" as Review {
+            direction TB
+            [*] --> Checking
+            Checking --> [*]
+        }
+        Draft --> Review: request review
+        Review --> Released: approved
+        Released --> [*]
+    }
+    state "Archive record" as Archive {
+        direction TB
+        [*] --> Stored
+        Stored --> [*]
+    }
+    Process --> Archive: retain
+    style Process fill:#F8FAFC,stroke:#64748B

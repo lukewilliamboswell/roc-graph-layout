@@ -57,6 +57,8 @@ export function normalizeReference(record) {
     for (const node of data.nodes ?? []) {
         const target = states.get(cleanId(node.id));
         if (target) target.effective_kind = kindOf(node.shape);
+        const group = groups.get(cleanId(node.id));
+        if (group) group.palette_index = node.colorIndex ?? null;
     }
     const semantic = {
         direction: direction(model.getDirection), states: [...states.values()], groups: [...groups.values()], transitions, notes,

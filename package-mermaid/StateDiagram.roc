@@ -11,7 +11,8 @@ import Theme
 ## to their states by dashed associations. `classDef`, `class` and `style`
 ## change state colours, outlines and text colours. Pinned Mermaid retains
 ## composite style declarations but paints those composites using the
-## base node colours; unstyled composites use the group colours.
+## base node colours. Unstyled composites cycle through Mermaid's colour
+## palette in declaration order, including slots spent on styled groups.
 ##
 ## Concurrent regions, history states and interactions are reported as
 ## unsupported rather than approximated. State and transition lists preserve
@@ -69,7 +70,9 @@ StateDiagram := [].{
 	## Composite frames are square by default, while ordinary states are
 	## rounded. Explicit wrapping/corner choices override the role defaults.
 	## `transition_label_background` colours the square backing of transition
-	## labels; its default is white.
+	## labels; its default is white. `node_palette` overrides the composite
+	## palette; a one-entry list gives every unstyled composite the same
+	## colours. `group_fill` and `group_stroke` control the first default slot.
 	draw : Str, Theme.Options -> Try(Drawing.Picture, List(Problem))
 	draw = |source, options| {
 		problems = Theme.validate(options)

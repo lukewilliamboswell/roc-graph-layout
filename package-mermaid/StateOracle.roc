@@ -165,8 +165,8 @@ StateOracle :: {}.{
 		(
 			"groups",
 			OracleJson.array(
-				diagram.groups.map(
-					|group| OracleJson.object([
+				diagram.groups.map_with_index(
+					|group, i| OracleJson.object([
 						("id", OracleJson.string(group.id)),
 						("parent", StateOracle.parent(diagram, group.container)),
 						(
@@ -182,6 +182,7 @@ StateOracle :: {}.{
 						("descriptions", OracleJson.strings(group.descriptions)),
 						("classes", OracleJson.strings(group.classes)),
 						("styles", OracleJson.strings(group.styles)),
+						("palette_index", if (group.styles.is_empty() and group.classes.is_empty()) i.to_str() else "null"),
 					]),
 				),
 			),
@@ -427,4 +428,15 @@ expect {
 			and d.groups.first()?.styles == ["fill:#F8FAFC", "stroke:#64748B"]
 		_ => False
 	}
+}
+
+## The pinned twelve-colour composite palette follows source declaration
+## indices, so a styled container still spends its slot. An explicit
+## one-colour palette overrides every unstyled container without sentinels.
+expect {
+	options = Theme.Options.{}
+	StateDraw.container_colors(1, options) == { fill: Drawing.rgb(0xF0FDFA), stroke: Drawing.rgb(0x2DD4BF) }
+		and StateDraw.container_colors(2, options) == { fill: Drawing.rgb(0xFFF7ED), stroke: Drawing.rgb(0xFB923C) }
+		and StateDraw.container_colors(13, options) == StateDraw.container_colors(1, options)
+		and StateDraw.container_colors(37, Theme.Options.{ node_palette: [{ fill: Drawing.black, stroke: Drawing.white }] }) == { fill: Drawing.black, stroke: Drawing.white }
 }
