@@ -1,3 +1,4 @@
+import PrefixCounts
 import LayeredFlowImport
 import LayeredFlowFixtures
 import LayeredFlowGraph
@@ -92,7 +93,7 @@ LayeredFlowOrder :: {}.{
 		root_graph = LayeredFlowGraph.graph(m, root)
 		empty = root_graph.layers.all(|l| l.is_empty())
 		if empty {
-			{ model: m, trace: [], randoms: List.repeat(LayeredFlowRandom.from_seed(1), m.graphs.len()) }
+			{ model: m, trace: [], randoms: List.repeat(LayeredFlowRandom.from_seed(seed_arg), m.graphs.len()) }
 		} else {
 			LayeredFlowOrder.run(m, root, model_order, tracing, names, seed_arg)
 		}
@@ -139,7 +140,7 @@ LayeredFlowOrder :: {}.{
 			g = $graphs.get($i) ?? 0
 			$i = $i + 1
 			order = LayeredFlowGraph.graph($s.model, g).layers
-			random0 = if (g == root) $s.minimizer_random else LayeredFlowRandom.from_seed(1)
+			random0 = if (g == root) $s.minimizer_random else LayeredFlowRandom.from_seed(seed_arg)
 			(random1, relative) = LayeredFlowRandom.next_bool(random0)
 			$s = LayeredFlowOrder.note($s, "rand 1 ${if (relative) "1" else "0"}")
 			children = order.fold([], |acc, layer| acc.concat(layer.keep_if(|n| LayeredFlowGraph.node($s.model, n).nested != LayeredFlowOrder.nil).map(|n| LayeredFlowGraph.node($s.model, n).nested)))
@@ -990,7 +991,7 @@ LayeredFlowOrder :: {}.{
 	count_on_ports : Model, List(I64), List(U64) -> I64
 	count_on_ports = |m, pos, ports| {
 		size = ports.len()
-		var $tree = List.repeat(0, size + 1)
+		var $tree = PrefixCounts.create(size)
 		var $per_index = List.repeat(0, size)
 		var $crossings = 0
 		position_of = |p| pos.get(p) ?? 0
@@ -1000,11 +1001,7 @@ LayeredFlowOrder :: {}.{
 			count_here = $per_index.get(idx) ?? 0
 			if count_here > 0 {
 				$per_index = $per_index.set(idx, 0) ?? $per_index
-				var $i = idx + 1
-				while $i < $tree.len() {
-					$tree = $tree.set($i, ($tree.get($i) ?? 0) - count_here) ?? $tree
-					$i = $i + $i.bitwise_and($i.bitwise_xor(18446744073709551615).plus_wrap(1))
-				}
+				$tree = PrefixCounts.add($tree, idx, 0 - count_here)
 			}
 			port = LayeredFlowGraph.port(m, p)
 			var $ends = []
@@ -1013,14 +1010,8 @@ LayeredFlowOrder :: {}.{
 				other = if (edge.source == p) edge.target else edge.source
 				end = position_of(other)
 				if end > position_of(p) {
-					# Rank: open edges ending before `end`.
-					var $sum = 0
-					var $i = end.to_u64_wrap()
-					while $i > 0 {
-						$sum = $sum + ($tree.get($i) ?? 0)
-						$i = $i - $i.bitwise_and($i.bitwise_xor(18446744073709551615).plus_wrap(1))
-					}
-					$crossings = $crossings + $sum
+					sum = PrefixCounts.before($tree, end.to_u64_wrap())
+					$crossings = $crossings + sum
 					$ends = $ends.append(end)
 				}
 			}
@@ -1030,11 +1021,7 @@ LayeredFlowOrder :: {}.{
 				ei = end.to_u64_wrap()
 				if ei < size {
 					$per_index = $per_index.set(ei, ($per_index.get(ei) ?? 0) + 1) ?? $per_index
-					var $i = ei + 1
-					while $i < $tree.len() {
-						$tree = $tree.set($i, ($tree.get($i) ?? 0) + 1) ?? $tree
-						$i = $i + $i.bitwise_and($i.bitwise_xor(18446744073709551615).plus_wrap(1))
-					}
+					$tree = PrefixCounts.add($tree, ei, 1)
 				}
 			}
 		}

@@ -17,7 +17,9 @@ The supported end-to-end layouts:
   assignment, balanced coordinates, sparse position hints, and exact pins;
   `Layered.layout_exact` swaps the
   crossing-reduction heuristic for an effort-capped exact search that reports
-  whether optimality was proven.
+  whether optimality was proven. `Layered.layout_grouped` coordinates nested
+  directed groups, with measured boxes, labels and independent child directions;
+  see the [grouped flow example](examples/grouped_flow/main.roc).
 - `Tree` — input that is already a hierarchy, drawn level by level
   (`Tree.layout`) or radially with the root at the center
   (`Tree.layout_radial`).
@@ -46,7 +48,7 @@ Routing never translates caller geometry. `Automatic` chooses a side and
 position, `On(side)` fixes only the side, and `Fixed` preserves an exact
 offset. Every containment boundary receives one perpendicular portal, with
 sparse group attachments acting as overrides. Selected attachments and group
-crossings remain source-aligned. Layered and Compound use this router by
+crossings remain source-aligned. Flat Layered and Compound use this router by
 default; Compound also reserves extra parent-layout space for busy boundaries.
 
 ## Example

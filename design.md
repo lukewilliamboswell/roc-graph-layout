@@ -949,6 +949,37 @@ lists its members and names the algorithm and configuration for its
 interior — grouping wraps the other classes rather than threading a
 group field through every spec (F6).
 
+**Coordinated directed groups.** `Layered` also accepts recursive ownership
+through `GroupedInput`. This is a different input meaning from independent
+composition: edges crossing a group boundary participate in internal ranking,
+ordering, port assignment and routing. `Together` keeps a child in that
+coordinated solve; `Separate(direction)` completes its directed interior before
+placing its measured box in its parent. Nodes have measured sizes, group padding
+is geometric, and measured labels and exterior reservations contain no text or
+styling. Group results use root-first preorder; node and edge results retain
+source indices. Preparation validates ownership and builds reusable hierarchy
+indices, while seeds select a solve after preparation.
+
+`Compound` remains the composition boundary when different groups use different
+layout families. It uses the ordinary family implementations, including flat
+`Layered`; it does not own another directed-flow solver. The directed solvers
+share stable adjacency, weighted network-simplex refinement, median alignment
+selection and balancing, and prefix crossing counts. Port-aware traversal and
+source-order tie-breaking remain internal policies of coordinated flow. Flat
+layout retains its weighted, constrained and exact-search contracts. Sharing
+mathematics must not erase those caller-visible guarantees.
+
+Mermaid owns source parsing, diagram semantics, text measurement, themes,
+shape painting and SVG generation. Flowcharts, state diagrams, class diagrams
+and entity relationships project measured geometry into the public grouped
+layout interface. Class and entity rendering use numeric box adapters rather
+than constructing a flowchart syntax model. Sequence timelines remain in
+Mermaid because message order, activations and temporal lifelines are diagram
+semantics. Core phase fixtures contain numeric structure and sizes, with no
+parser or renderer dependency. Independent pinned-Mermaid comparisons validate
+the consumers after geometric changes; extracted native output is also compared
+byte for byte with the accepted renderer.
+
 **The internal kit.** Shared machinery, internal unless a consumer
 case exists: a seeded pseudo-random generator (a small 64-bit mixer —
 part of the determinism contract, so its algorithm is frozen within a

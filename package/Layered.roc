@@ -1,3 +1,4 @@
+import LayeredBalance
 import CompoundRouting
 import Geom
 import LayeredGroup
@@ -720,16 +721,7 @@ LayeredInternals :: {}.{
 		LayeredInternals.indices_up_to(node_total).map(
 			|v| {
 				values = [ul, ur, ll, lr].map_with_index(|xs, i| (xs.get(v) ?? 0) + (shifts.get(i) ?? 0))
-				sorted = values.sort_with(
-					|a, b| if a < b {
-						Before
-					} else if a > b {
-						After
-					} else {
-						Same
-					},
-				)
-				((sorted.get(1) ?? 0) + (sorted.get(2) ?? 0)) / 2
+				LayeredBalance.middle_mean(values)
 			},
 		)
 	}
@@ -2436,8 +2428,9 @@ Layered := [].{
 
 	## A group's direct members and geometric reservations. `flow` is
 	## `Together`, or `Separate(direction)` to complete an independent child.
-	## `spacing` is `Inherit` or `Set(gaps)`. The optional label is a measured
-	## exterior reservation; padding reserves space inside the group frame.
+	## `spacing` is `Inherit` or `Set(gaps)`. Padding reserves space inside
+	## the frame; `GroupedInput.group_reservations` reserves measured exterior
+	## space without changing the group's own dimensions.
 	GroupOptions : {
 		children : List([Node(U64), Nested(Group)]),
 		flow : [Together, Separate([Down, Up, Left, Right])],
@@ -2445,7 +2438,6 @@ Layered := [].{
 		padding : { top : F64, right : F64, bottom : F64, left : F64 },
 		min_width : F64,
 		min_height : F64,
-		label : [None, Some({ width : F64, height : F64 })],
 	}
 
 	## Construct a group from structural and measured geometric input.
@@ -2454,7 +2446,7 @@ Layered := [].{
 
 	## Empty membership with inherited flow/spacing and zero reservations.
 	default_group_options : GroupOptions
-	default_group_options = { children: [], flow: Together, spacing: Inherit, padding: { top: 0, right: 0, bottom: 0, left: 0 }, min_width: 0, min_height: 0, label: None }
+	default_group_options = { children: [], flow: Together, spacing: Inherit, padding: { top: 0, right: 0, bottom: 0, left: 0 }, min_width: 0, min_height: 0 }
 
 	## Nodes and edges retain input order. Group indices are root-first
 	## preorder: group zero is the root drawing and cannot be an edge endpoint.
@@ -2485,7 +2477,6 @@ Layered := [].{
 		edge_edge_between_layers : F64,
 		edge_label : F64,
 		label_label : F64,
-		label_node : F64,
 		port_port : F64,
 		node_self_loop : F64,
 		ports_surrounding : F64,
@@ -2493,10 +2484,30 @@ Layered := [].{
 
 	## An explicit seed selects deterministic ordering variants. It affects
 	## solving only, so prepared input can be reused with different seeds.
-	GroupedRunArgs : { seed : I64 }
+	GroupedRunArgs : { seed : U32 }
 
 	## Independent input problems, reported together during preparation.
+	## Node problems are `InvalidNodeWidth(node)`, `InvalidNodeHeight(node)`,
+	## `MissingMember(node)`, `MissingNode(node)` and `DuplicateNode(node)`.
+	## Group problems are `InvalidGroupSize(group)`, `InvalidGroupPadding(group)`
+	## and `InvalidGroupSpacing(group)`. `InvalidSpacing` identifies the defaults.
+	## `MissingEdgeStart(edge)` and `MissingEdgeEnd(edge)` include nonexistent
+	## endpoints and attempts to connect to the root drawing.
+	##
+	## Sparse measured inputs use their own list indices: `MissingLabelEdge`,
+	## `InvalidLabelSize`, `DuplicateLabel`, `MissingEndLabelEdge`,
+	## `InvalidEndLabelSize`, `DuplicateEndLabel`, `MissingReservationGroup`,
+	## `InvalidReservationSize` and `DuplicateReservation`. Each carries one
+	## index. All sizes, padding and distances must be finite and nonnegative;
+	## every node occurs exactly once, each edge has at most one center label
+	## and one label per endpoint, and each group has at most one reservation.
+	## Use `grouped_problem_to_str` for a full explanation of one problem.
 	GroupedProblem : LayeredGrouped.Problem
+
+	## Explain a grouped preparation problem. List positions and group indices
+	## start at zero; groups use root-first preorder.
+	grouped_problem_to_str : GroupedProblem -> Str
+	grouped_problem_to_str = LayeredGrouped.problem_to_str
 
 	## Validated structural input and reusable hierarchical edge segmentation.
 	GroupedPrepared : LayeredGrouped.Prepared
@@ -2504,12 +2515,17 @@ Layered := [].{
 	## Source-aligned geometry, group rectangles in root-first preorder,
 	## center-label anchors in label-input order, node layers local to their
 	## containing graph, and original edge indices drawn against the flow.
+	## `attachments` reports each route's actual endpoint and rectangle side;
+	## a corner selects the first side clockwise from the top. Grouped flow
+	## assigns ports automatically. Use `Route` on the resulting geometry when
+	## a caller needs authored attachment constraints or a different router.
 	GroupedResult : {
 		layout : { positions : List(Geom.Point), routes : List(Geom.Route), bounds : Geom.Rect },
 		nodes : List(Geom.Rect),
 		groups : List(Geom.Rect),
 		label_anchors : List(Geom.Point),
 		end_label_placements : List({ point : Geom.Point, port : Geom.Point }),
+		attachments : List({ from : { point : Geom.Point, side : [Top, Right, Bottom, Left] }, to : { point : Geom.Point, side : [Top, Right, Bottom, Left] } }),
 		layers : List(U64),
 		backward_edges : List(U64),
 	}
@@ -2526,7 +2542,7 @@ Layered := [].{
 	default_grouped_settings : GroupedSettings
 	default_grouped_settings = LayeredGrouped.default_settings
 
-	## Fixed seed one, with no ambient randomness.
+	## Fixed seed zero, with no ambient randomness.
 	default_grouped_run : GroupedRunArgs
 	default_grouped_run = LayeredGrouped.default_run
 

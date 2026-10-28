@@ -11,7 +11,6 @@ LayeredGroup := [
 			padding : { top : F64, right : F64, bottom : F64, left : F64 },
 			min_width : F64,
 			min_height : F64,
-			label : [None, Some({ width : F64, height : F64 })],
 		},
 	),
 ]

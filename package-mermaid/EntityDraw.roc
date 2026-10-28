@@ -5,12 +5,13 @@ import Theme
 import TextMeasure
 import font.Font
 import layout.Geom
-import Flowchart
-import FlowGeometry
 import FlowDraw
 import FlowDrawEdge
 import FlowLayout
-import FlowCore
+import FlowGeometry
+import DiagramLayout
+import DiagramSpacing
+import layout.Layered
 import FlowLayoutAdjust
 import OracleJson
 
@@ -178,63 +179,62 @@ EntityDraw :: {}.{
 				}
 			}
 		}
-		diagram : Flowchart.Diagram
-		diagram = {
-			direction,
-			nodes: nodes.map_with_index(|node, i| { id: ids.get(i) ?? i.to_str(), label: node.title, shape: Rectangle, container: Root, classes: [], styles: [] }),
-			edges: edges.map_with_index(|edge, i| { id: i.to_str(), from: Node(edge.from), to: Node(edge.to), label: edge.label, line: if (edge.dashed) Dotted else Solid, start: None, end: None, length: 1, classes: [], styles: [] }),
-			groups: [],
-			classes: [],
+		center_specs = $labels.keep_if(|spec| spec.placement == Center)
+		var $center_sizes = List.repeat(None, edges.len())
+		for spec in center_specs {
+			$center_sizes = $center_sizes.set(spec.edge, Some(spec.block)) ?? []
 		}
-		sizes : FlowGeometry.Sizes
-		sizes = {
-			nodes: measured.map(|m| { width: m.width, height: m.height, label: { lines: m.title.lines, width: m.title.width, height: m.title.height } }),
-			edge_labels: edges.map_with_index(
-				|edge, i| {
-					if edge.label.is_empty() {
-						None
-					} else {
-						match $labels.find_first(|spec| spec.edge == i and spec.placement == Center) {
-							Ok(spec) => Some({ lines: spec.block.lines, width: spec.block.width, height: spec.block.height })
-							Err(_) => None
-						}
+		center_sizes = $center_sizes
+		center_labels = center_specs.map(|spec| { edge: spec.edge, width: DiagramLayout.finite_size(spec.block.width) + 4, height: DiagramLayout.finite_size(spec.block.height) + 4 })
+		end_labels = $labels.keep_if(|spec| spec.placement != Center).map(
+			|spec| {
+				endpoint = match spec.placement {
+					Near(value) => value
+					Center => crash "filtered endpoint label"
+				}
+				edge = edges.get(spec.edge) ?? crash "source-aligned label edge"
+				mark = if endpoint == From {
+					edge.from_mark
+				} else {
+					edge.to_mark
+				}
+				pad = if mark == None {
+					0
+				} else {
+					12
+				}
+				{ edge: spec.edge, endpoint, width: DiagramLayout.finite_size(spec.block.width + pad), height: DiagramLayout.finite_size(spec.block.height + pad) }
+			},
+		)
+		root = Layered.group({ ..Layered.default_group_options, children: List.repeat(0, nodes.len()).map_with_index(|_, i| Node(i)), spacing: Set(DiagramSpacing.root), padding: { top: 12, right: 12, bottom: 12, left: 12 } })
+		input = {
+			..Layered.default_grouped_input,
+			nodes: measured.map(|m| { width: DiagramLayout.finite_size(m.width), height: DiagramLayout.finite_size(m.height) }),
+			edges: edges.map(|edge| { from: Node(edge.from), to: Node(edge.to) }),
+			edge_labels: center_labels,
+			end_labels,
+			root,
+		}
+		core = match Layered.layout_grouped(input, { ..Layered.default_grouped_settings, direction }, { ..Layered.default_grouped_run, seed: 1 }) {
+			Ok(value) => value
+			Err(_) => crash "measured class/ER input satisfies the geometric contract"
+		}
+		raw = { nodes: core.nodes, groups: [], edges: DiagramLayout.routes(core, center_labels) }
+		paint_input = {
+			nodes: nodes.map(|_| { shape: Rectangle, container: Root }),
+			groups: [],
+			edges: edges.map_with_index(
+				|edge, index| {
+					label = match center_sizes.get(index) ?? None {
+						None => None
+						Some(block) => FlowLayoutAdjust.label_size(block.width, block.height)
 					}
+					{ from: Node(edge.from), to: Node(edge.to), start_offset: 0, end_offset: 0, label }
 				},
 			),
-			group_titles: [],
 		}
-		var $terminal_sizes = List.repeat({ from: None, to: None }, edges.len())
-		for spec in $labels {
-			match spec.placement {
-				Center => {}
-				Near(endpoint) => {
-					edge = edges.get(spec.edge) ?? crash "label edge is source aligned"
-					mark = if endpoint == From {
-						edge.from_mark
-					} else {
-						edge.to_mark
-					}
-					pad = if mark == None {
-						0
-					} else {
-						12
-					}
-					size = Some({ width: spec.block.width + pad, height: spec.block.height + pad })
-					current = $terminal_sizes.get(spec.edge) ?? crash "label edge is source aligned"
-					updated = if endpoint == From {
-						{ ..current, from: size }
-					} else {
-						{ ..current, to: size }
-					}
-					$terminal_sizes = $terminal_sizes.set(spec.edge, updated) ?? []
-				}
-			}
-		}
-		terminal_sizes = $terminal_sizes
-		arranged = FlowCore.arrange(diagram, sizes, terminal_sizes, [], [])
-		raw = arranged.raw
-		adjusted = FlowLayoutAdjust.adjust(diagram, sizes, raw)
-		label_sizes = sizes.edge_labels.map(
+		adjusted = FlowLayoutAdjust.adjust_boxes(paint_input, raw)
+		label_sizes = center_sizes.map(
 			|label| match label {
 				None => None
 				Some(block) => Some({ width: block.width + 4, height: block.height + 4 })
@@ -242,7 +242,7 @@ EntityDraw :: {}.{
 		)
 		geometry = FlowLayout.normalise({ nodes: adjusted.nodes, edges: adjusted.edges, groups: adjusted.groups, bounds: { x: 0, y: 0, width: 0, height: 0 } }, label_sizes, [])
 
-		terminal_placements = arranged.ends
+		terminal_placements = DiagramLayout.ends(core, end_labels)
 		initial_anchors = $labels.map(
 			|spec| {
 				route = geometry.edges.get(spec.edge) ?? { points: [], label: None }

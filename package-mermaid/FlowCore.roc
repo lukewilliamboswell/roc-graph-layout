@@ -1,3 +1,4 @@
+import DiagramLayout
 import Flowchart
 import FlowGeometry
 import FlowSourceLayout
@@ -9,7 +10,7 @@ import layout.Layered
 FlowCore :: {}.{
 	Raw : { nodes : List(FlowGeometry.Rect), groups : List(FlowGeometry.Rect), edges : List({ points : List(FlowGeometry.Point), label : [None, Some(FlowGeometry.Point)] }) }
 	finite : F64 -> F64
-	finite = |v| if (F64.is_finite(v) and v > 0) v else 0
+	finite = DiagramLayout.finite_size
 
 	layout : Flowchart.Diagram, FlowGeometry.Sizes -> Raw
 	layout = |diagram, sizes| FlowCore.arrange(diagram, sizes, [], [], []).raw
@@ -77,7 +78,6 @@ FlowCore :: {}.{
 				padding: { top: 24 + (if (height > 0) height + 5 else 0), right: 24, bottom: 24, left: 24 },
 				min_width: if (vertical or items.is_empty()) 0 else min,
 				min_height: if (!vertical or items.is_empty()) 0 else min,
-				label: if (items.is_empty()) None else Some({ width, height }),
 			})
 			$built = $built.set(g, value) ?? []
 		}
@@ -123,41 +123,31 @@ FlowCore :: {}.{
 			edges: diagram.edges.map(|edge| { from: endpoint(edge.from), to: endpoint(edge.to) }),
 			edge_labels: labels,
 			end_labels,
-			group_reservations: reservations.map(|r| { group: 1 + (preorder.find_first_index(|g| g == r.group) ?? crash "registered reservation group"), width: FlowCore.finite(r.width), height: FlowCore.finite(r.height) }),
-			root: Group({ children: root_children, flow: Together, spacing: Set(root_spacing), padding: { top: 12, right: 12, bottom: 12, left: 12 }, min_width: 0, min_height: 0, label: None }),
+			group_reservations: preorder.map_with_index(
+				|g, index| {
+					title = sizes.group_titles.get(g) ?? { lines: [], width: 0, height: 0 }
+					width = if children_of(Group(g)).is_empty() {
+						0
+					} else {
+						FlowCore.finite(title.width)
+					}
+					extra = reservations.find_first(|r| r.group == g)
+					reservation = match extra {
+						Ok(r) => { width: width.max(FlowCore.finite(r.width)), height: FlowCore.finite(r.height) }
+						Err(_) => { width, height: 0 }
+					}
+					{ group: index + 1, width: reservation.width, height: reservation.height }
+				},
+			).keep_if(|r| r.width > 0 or r.height > 0),
+			root: Group({ children: root_children, flow: Together, spacing: Set(root_spacing), padding: { top: 12, right: 12, bottom: 12, left: 12 }, min_width: 0, min_height: 0 }),
 		}
-		result = match Layered.layout_grouped(input, { ..Layered.default_grouped_settings, direction: diagram.direction }, Layered.default_grouped_run) {
+		result = match Layered.layout_grouped(input, { ..Layered.default_grouped_settings, direction: diagram.direction }, { ..Layered.default_grouped_run, seed: 1 }) {
 			Ok(value) => value
 			Err(_) => crash "parsed and measured flow input satisfies the geometry contract"
 		}
 		groups = diagram.groups.map_with_index(|_, g| result.groups.get(1 + (preorder.find_first_index(|i| i == g) ?? crash "registered group index")) ?? crash "group results aligned")
-		edges = result.layout.routes.map_with_index(
-			|route, e| {
-				points = match route {
-					Polyline(values) => values
-					Line(a, b) => [a, b]
-					Curves(_) => crash "coordinated flow returns polylines"
-				}
-				label = match labels.find_first_index(|item| item.edge == e) {
-					Ok(i) => Some(result.label_anchors.get(i) ?? crash "source-aligned label anchor")
-					Err(_) => None
-				}
-				{ points, label }
-			},
-		)
-		var $ends = List.repeat({ from: None, to: None }, diagram.edges.len())
-		for (label, i) in end_labels.map_with_index(|label, i| (label, i)) {
-			placement = Some(result.end_label_placements.get(i) ?? crash "source-aligned endpoint label placement")
-			old = $ends.get(label.edge) ?? crash "source-aligned endpoint edge"
-			$ends = $ends.set(
-				label.edge,
-				if label.endpoint == From {
-					{ ..old, from: placement }
-				} else {
-					{ ..old, to: placement }
-				},
-			) ?? []
-		}
-		{ raw: { nodes: result.nodes, groups, edges }, ends: $ends }
+		edges = DiagramLayout.routes(result, labels)
+		ends = DiagramLayout.ends(result, end_labels)
+		{ raw: { nodes: result.nodes, groups, edges }, ends }
 	}
 }

@@ -21,7 +21,7 @@ LayeredGrouped :: {}.{
 		root : LayeredGroup,
 	}
 	Settings : { direction : [Down, Up, Left, Right], spacing : Spacing }
-	RunArgs : { seed : I64 }
+	RunArgs : { seed : U32 }
 	Problem := [
 		InvalidNodeWidth(U64),
 		InvalidNodeHeight(U64),
@@ -30,7 +30,6 @@ LayeredGrouped :: {}.{
 		DuplicateNode(U64),
 		InvalidGroupSize(U64),
 		InvalidGroupPadding(U64),
-		InvalidGroupLabel(U64),
 		InvalidGroupSpacing(U64),
 		InvalidSpacing,
 		MissingEdgeStart(U64),
@@ -47,29 +46,68 @@ LayeredGrouped :: {}.{
 	].{
 		is_eq : _
 	}
+	problem_to_str : Problem -> Str
+	problem_to_str = |problem| match problem {
+		InvalidNodeWidth(i) => "Node ${i.to_str()} has a width that is negative or not finite."
+		InvalidNodeHeight(i) => "Node ${i.to_str()} has a height that is negative or not finite."
+		MissingMember(i) => "Node ${i.to_str()} must occur in the ownership tree."
+		MissingNode(i) => "An ownership member refers to node ${i.to_str()}, which does not exist."
+		DuplicateNode(i) => "Node ${i.to_str()} occurs more than once in the ownership tree."
+		InvalidGroupSize(i) => "Group ${i.to_str()} has a minimum size that is negative or not finite."
+		InvalidGroupPadding(i) => "Group ${i.to_str()} has padding that is negative or not finite."
+		InvalidGroupSpacing(i) => "Group ${i.to_str()} has spacing that is negative or not finite."
+		MissingEdgeStart(i) => "Edge ${i.to_str()} has a source node or group that does not exist, or refers to the root."
+		MissingEdgeEnd(i) => "Edge ${i.to_str()} has a target node or group that does not exist, or refers to the root."
+		MissingLabelEdge(i) => "Center label ${i.to_str()} refers to an edge that does not exist."
+		InvalidLabelSize(i) => "Center label ${i.to_str()} has a size that is negative or not finite."
+		DuplicateLabel(i) => "Center label ${i.to_str()} repeats a label for the same edge."
+		MissingEndLabelEdge(i) => "End label ${i.to_str()} refers to an edge that does not exist."
+		InvalidEndLabelSize(i) => "End label ${i.to_str()} has a size that is negative or not finite."
+		DuplicateEndLabel(i) => "End label ${i.to_str()} repeats a label for the same edge endpoint."
+		MissingReservationGroup(i) => "Reservation ${i.to_str()} refers to a group that does not exist."
+		InvalidReservationSize(i) => "Reservation ${i.to_str()} has a size that is negative or not finite."
+		DuplicateReservation(i) => "Reservation ${i.to_str()} repeats a reservation for the same group."
+		InvalidSpacing => "Default spacing must contain finite distances that are zero or greater."
+	}
 	Result : {
 		layout : { positions : List(Geom.Point), routes : List(Geom.Route), bounds : Geom.Rect },
 		nodes : List(Geom.Rect),
 		groups : List(Geom.Rect),
 		label_anchors : List(Geom.Point),
 		end_label_placements : List({ point : Geom.Point, port : Geom.Point }),
+		attachments : List({ from : { point : Geom.Point, side : [Top, Right, Bottom, Left] }, to : { point : Geom.Point, side : [Top, Right, Bottom, Left] } }),
 		layers : List(U64),
 		backward_edges : List(U64),
 	}
 	Prepared : GroupedPrepared
 	default_group : LayeredGroup
-	default_group = Group({ children: [], flow: Together, spacing: Inherit, padding: { top: 0, right: 0, bottom: 0, left: 0 }, min_width: 0, min_height: 0, label: None })
+	default_group = Group({ children: [], flow: Together, spacing: Inherit, padding: { top: 0, right: 0, bottom: 0, left: 0 }, min_width: 0, min_height: 0 })
 	default_input : Input
 	default_input = { nodes: [], edges: [], edge_labels: [], end_labels: [], group_reservations: [], root: LayeredGrouped.default_group }
 	default_settings : Settings
 	default_settings = { direction: Down, spacing: LayeredFlowGraph.blank_spacing }
 	default_run : RunArgs
-	default_run = { seed: 1 }
+	default_run = { seed: 0 }
+
+	## Route ends already lie on their endpoint rectangles. At a corner,
+	## choose the first side in the shared clockwise order deterministically.
+	attachment = |at, box| {
+		sides = [(Top, (at.y - box.y).abs()), (Right, (at.x - box.x - box.width).abs()), (Bottom, (at.y - box.y - box.height).abs()), (Left, (at.x - box.x).abs())]
+		(selected, _) = sides.drop_first(1).fold(
+			sides.first() ?? (Top, 0),
+			|best, next| if next.1 < best.1 {
+				next
+			} else {
+				best
+			},
+		)
+		{ point: at, side: selected }
+	}
 
 	valid : F64 -> Bool
 	valid = |v| F64.is_finite(v) and v >= 0
 	valid_spacing : Spacing -> Bool
-	valid_spacing = |s| [s.node_node, s.node_node_between_layers, s.edge_node, s.edge_node_between_layers, s.edge_edge, s.edge_edge_between_layers, s.edge_label, s.label_label, s.label_node, s.port_port, s.node_self_loop, s.ports_surrounding].all(LayeredGrouped.valid)
+	valid_spacing = |s| [s.node_node, s.node_node_between_layers, s.edge_node, s.edge_node_between_layers, s.edge_edge, s.edge_edge_between_layers, s.edge_label, s.label_label, s.port_port, s.node_self_loop, s.ports_surrounding].all(LayeredGrouped.valid)
 
 	prepare : Input, Settings -> [Ok(Prepared), Err(List(Problem))]
 	prepare = |input, settings| {
@@ -89,7 +127,6 @@ LayeredGrouped :: {}.{
 		var $seen = List.repeat(False, input.nodes.len())
 		var $nodes = List.repeat({ container: Root }, input.nodes.len())
 		var $groups = []
-		var $titles = []
 		var $registration = []
 		root_spacing = match root.spacing {
 			Inherit => settings.spacing
@@ -125,12 +162,7 @@ LayeredGrouped :: {}.{
 						Separate(d) => Set(d)
 					}
 					$groups = $groups.append({ container: item.parent, direction, separate: group.flow != Together, spacing, padding: group.padding, min_width: group.min_width, min_height: group.min_height })
-					$titles = $titles.append(
-						match group.label {
-							None => { width: 0, height: 0 }
-							Some(size) => size
-						},
-					)
+
 					$registration = $registration.append(GroupItem(g))
 					$group_values = $group_values.append((g + 1, group))
 					$stack = $stack.concat(group.children.rev().map(|child| { parent: Group(g), child, spacing }))
@@ -149,14 +181,7 @@ LayeredGrouped :: {}.{
 			if ![group.padding.top, group.padding.right, group.padding.bottom, group.padding.left].all(LayeredGrouped.valid) {
 				$problems = $problems.append(InvalidGroupPadding(i))
 			}
-			match group.label {
-				None => {}
-				Some(size) => {
-					if !LayeredGrouped.valid(size.width) or !LayeredGrouped.valid(size.height) {
-						$problems = $problems.append(InvalidGroupLabel(i))
-					}
-				}
-			}
+
 			match group.spacing {
 				Inherit => {}
 				Set(spacing) => {
@@ -250,10 +275,25 @@ LayeredGrouped :: {}.{
 			Together => settings.direction
 			Separate(d) => d
 		}
-		diagram = { direction, nodes: $nodes, groups: $groups, edges: input.edges.map(|e| { from: endpoint(e.from), to: endpoint(e.to) }), spacing, padding: root.padding }
-		sizes = { nodes: input.nodes, edge_labels: $labels, group_titles: $titles }
+		diagram = { direction, nodes: $nodes, groups: $groups, edges: input.edges.map(|e| { from: endpoint(e.from), to: endpoint(e.to) }), spacing, padding: LayeredFlowImport.internal_padding(direction, root.padding) }
+		sizes = { nodes: input.nodes, edge_labels: $labels, group_titles: List.repeat({ width: 0, height: 0 }, $groups.len()) }
 		setup = LayeredFlowImport.build_registered(diagram, sizes, $registration)
-		Ok({ diagram, setup, labels: input.edge_labels, end_labels: input.end_labels, end_sizes: $end_sizes, reservations: input.group_reservations, min_width: root.min_width, min_height: root.min_height })
+		Ok({
+			diagram,
+			setup,
+			labels: input.edge_labels,
+			end_labels: input.end_labels,
+			end_sizes: $end_sizes.map_with_index(
+				|ends, i| if setup.flipped.get(i) ?? False {
+					{ from: ends.to, to: ends.from }
+				} else {
+					ends
+				},
+			),
+			reservations: input.group_reservations,
+			min_width: root.min_width,
+			min_height: root.min_height,
+		})
 	}
 
 	layout_prepared : Prepared, RunArgs -> Result
@@ -278,7 +318,7 @@ GroupedPrepared := {
 	run : GroupedPrepared, LayeredGrouped.RunArgs -> LayeredGrouped.Result
 	run = |p, args| {
 		layered = LayeredFlow.layered(p.setup.model)
-		ordered = LayeredFlow.order_seeded(layered, False, [], args.seed)
+		ordered = LayeredFlow.order_seeded(layered, False, [], args.seed.to_i64())
 		placed = LayeredFlow.placed_with_margins(
 			ordered.model,
 			ordered.randoms,
@@ -319,7 +359,7 @@ GroupedPrepared := {
 		end_label_placements = p.end_labels.map(
 			|label| {
 				ends = end_placements.get(label.edge) ?? crash "validated end label edge"
-				placement = if label.endpoint == From {
+				placement = if (label.endpoint == From) != (p.setup.flipped.get(label.edge) ?? False) {
 					ends.from
 				} else ends.to
 				match placement {
@@ -364,9 +404,30 @@ GroupedPrepared := {
 			}
 		}
 		bounds = { ..$bounds, width: Geom.saturate($bounds.width - $bounds.x), height: Geom.saturate($bounds.height - $bounds.y) }
+		endpoint_box = |endpoint| match endpoint {
+			Node(n) => nodes.get(n) ?? crash "validated endpoint node"
+			Group(g) => groups.get(g) ?? crash "validated endpoint group"
+		}
+		attachments = p.diagram.edges.map_with_index(
+			|edge, i| {
+				points = (raw.edges.get(i) ?? crash "routes retain edge order").points
+				{ from: LayeredGrouped.attachment(point(points.first() ?? { x: 0, y: 0 }), endpoint_box(edge.from)), to: LayeredGrouped.attachment(point(points.last() ?? { x: 0, y: 0 }), endpoint_box(edge.to)) }
+			},
+		)
 		layers = p.setup.node_of.map(|n| LayeredFlowGraph.node(placed, n).layer)
-		backward_edges = p.setup.edge_of.map_with_index(|e, i| (i, (p.setup.flipped.get(i) ?? False) != LayeredFlowGraph.edge(placed, e).reversed)).keep_if(|(_, back)| back).map(|(i, _)| i)
-		{ layout: { positions: nodes.map(|r| point({ x: r.x + r.width / 2, y: r.y + r.height / 2 })), routes, bounds }, nodes, groups: [bounds].concat(groups), label_anchors, end_label_placements, layers, backward_edges }
+		backward_edges = p.setup.edge_of.map_with_index(
+			|e, i| {
+				parts = p.setup.segments.get(e) ?? []
+				segments = if parts.is_empty() {
+					[e]
+				} else {
+					parts
+				}
+				flipped = p.setup.flipped.get(i) ?? False
+				(i, segments.any(|segment| flipped != LayeredFlowGraph.edge(ordered.model, segment).reversed))
+			},
+		).keep_if(|(_, back)| back).map(|(i, _)| i)
+		{ layout: { positions: nodes.map(|r| point({ x: r.x + r.width / 2, y: r.y + r.height / 2 })), routes, bounds }, nodes, groups: [bounds].concat(groups), label_anchors, end_label_placements, attachments, layers, backward_edges }
 	}
 }
 
@@ -400,6 +461,130 @@ expect {
 		Ok(result) => match result.groups.get(1) {
 			Err(_) => False
 			Ok(box) => box.width == 80 and box.height == 30
+		}
+	}
+}
+
+## Independent child directions still connect the original endpoint boxes.
+expect {
+	Group(empty) = LayeredGrouped.default_group
+	on_box = |point, box| {
+		point.x >= box.x - 0.001 and point.x <= box.x + box.width + 0.001
+			and point.y >= box.y - 0.001 and point.y <= box.y + box.height + 0.001
+			and ((point.x - box.x).abs() < 0.001 or (point.x - box.x - box.width).abs() < 0.001 or (point.y - box.y).abs() < 0.001 or (point.y - box.y - box.height).abs() < 0.001)
+	}
+	[Down, Up, Right, Left].all(
+		|direction| [Down, Up, Right, Left].all(
+			|child_direction| [False, True].all(
+				|reverse| {
+					child = Group({ ..empty, children: [Node(0)], flow: Separate(child_direction), padding: { top: 10, right: 10, bottom: 10, left: 10 } })
+					input = {
+						..LayeredGrouped.default_input,
+						nodes: [{ width: 100, height: 40 }, { width: 60, height: 30 }],
+						end_labels: [{ edge: 0, endpoint: From, width: 12, height: 8 }, { edge: 0, endpoint: To, width: 14, height: 10 }],
+						edges: [
+							if reverse {
+								{ from: Node(1), to: Node(0) }
+							} else {
+								{ from: Node(0), to: Node(1) }
+							},
+						],
+						root: Group({ ..empty, children: [Nested(child), Node(1)] }),
+					}
+					match LayeredGrouped.layout(input, { ..LayeredGrouped.default_settings, direction }, LayeredGrouped.default_run) {
+						Err(_) => False
+						Ok(result) => match (result.layout.routes.first(), result.nodes.get(0), result.nodes.get(1)) {
+							(Ok(Polyline(points)), Ok(source), Ok(target)) => match (points.first(), points.last()) {
+								(Ok(first), Ok(last)) => {
+									labels_aligned = match (result.end_label_placements.get(0), result.end_label_placements.get(1)) {
+										(Ok(from), Ok(to)) => from.port == first and to.port == last
+										_ => False
+									}
+									labels_aligned and
+										on_box(
+											first,
+											if reverse {
+												target
+											} else {
+												source
+											},
+										) and on_box(
+											last,
+											if reverse {
+												source
+											} else {
+												target
+											},
+										)
+										and points.drop_last(1).map_with_index(
+											|a, i| {
+												b = points.get(i + 1) ?? a
+												(a.x - b.x).abs() < 0.001 or (a.y - b.y).abs() < 0.001
+											},
+										).all(|ok| ok)
+								}
+								_ => False
+							}
+							_ => False
+						}
+					}
+				},
+			),
+		),
+	)
+}
+
+## A cycle's original backward-edge indices survive route restoration.
+expect {
+	Group(empty) = LayeredGrouped.default_group
+	input = { ..LayeredGrouped.default_input, nodes: List.repeat({ width: 20, height: 10 }, 3), edges: [{ from: Node(0), to: Node(1) }, { from: Node(1), to: Node(2) }, { from: Node(2), to: Node(0) }], root: Group({ ..empty, children: [Node(0), Node(1), Node(2)] }) }
+	match LayeredGrouped.layout(input, LayeredGrouped.default_settings, LayeredGrouped.default_run) {
+		Err(_) => False
+		Ok(result) => result.backward_edges == [2]
+	}
+}
+
+## Accepted finite extremes cannot escape as nonfinite result coordinates.
+expect {
+	Group(empty) = LayeredGrouped.default_group
+	input = { ..LayeredGrouped.default_input, nodes: [{ width: F64.highest, height: F64.highest }], edges: [{ from: Node(0), to: Node(0) }], root: Group({ ..empty, children: [Node(0)] }) }
+	match LayeredGrouped.layout(input, LayeredGrouped.default_settings, LayeredGrouped.default_run) {
+		Err(_) => False
+		Ok(result) => {
+			finite = |p| F64.is_finite(p.x) and F64.is_finite(p.y)
+			result.nodes.all(|r| finite(r) and F64.is_finite(r.width) and F64.is_finite(r.height)) and result.layout.positions.all(finite) and result.layout.routes.all(
+				|r| match r {
+					Polyline(points) => points.all(finite)
+					_ => False
+				},
+			) and finite(result.layout.bounds) and F64.is_finite(result.layout.bounds.width) and F64.is_finite(result.layout.bounds.height)
+		}
+	}
+}
+
+expect LayeredGrouped.problem_to_str(DuplicateNode(2)) == "Node 2 occurs more than once in the ownership tree."
+
+## Root padding is physical, independent of the selected reading direction.
+expect {
+	Group(empty) = LayeredGrouped.default_group
+	input = { ..LayeredGrouped.default_input, nodes: [{ width: 40, height: 20 }], root: Group({ ..empty, children: [Node(0)], padding: { top: 1, right: 2, bottom: 3, left: 4 } }) }
+	[Down, Up, Left, Right].all(
+		|direction| match LayeredGrouped.layout(input, { ..LayeredGrouped.default_settings, direction }, LayeredGrouped.default_run) {
+			Err(_) => False
+			Ok(result) => result.nodes == [{ x: 4, y: 1, width: 40, height: 20 }] and result.layout.bounds == { x: 0, y: 0, width: 46, height: 24 }
+		},
+	)
+}
+
+## End labels retain the original endpoint identity on feedback edges.
+expect {
+	Group(empty) = LayeredGrouped.default_group
+	input = { ..LayeredGrouped.default_input, nodes: List.repeat({ width: 40, height: 20 }, 3), edges: [{ from: Node(0), to: Node(1) }, { from: Node(1), to: Node(2) }, { from: Node(2), to: Node(0) }], end_labels: [{ edge: 2, endpoint: From, width: 10, height: 8 }, { edge: 2, endpoint: To, width: 12, height: 8 }], root: Group({ ..empty, children: [Node(0), Node(1), Nested(Group({ ..empty, children: [Node(2)] }))] }) }
+	match LayeredGrouped.layout(input, LayeredGrouped.default_settings, LayeredGrouped.default_run) {
+		Err(_) => False
+		Ok(result) => match (result.layout.routes.get(2), result.end_label_placements.get(0), result.end_label_placements.get(1)) {
+			(Ok(Polyline(points)), Ok(from), Ok(to)) => points.first() == Ok(from.port) and points.last() == Ok(to.port)
+			_ => False
 		}
 	}
 }

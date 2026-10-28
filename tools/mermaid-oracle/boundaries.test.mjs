@@ -48,3 +48,20 @@ test('Mermaid uses exported core interfaces and owns no duplicate solver phases'
   assert.ok(!files.includes(`FlowLayout${phase}.roc`), `duplicate Mermaid phase FlowLayout${phase}`);
  }
 });
+
+test('flat and coordinated flow consume the same mathematical kernels', async () => {
+ const consumers = [
+  ['NetworkSimplex', ['LayeredRank', 'LayeredFlowSimplex']],
+  ['LayeredBalance', ['LayeredPlace', 'LayeredFlowPlace']],
+  ['PrefixCounts', ['LayeredOrder', 'LayeredFlowOrder']],
+ ];
+ const exported = new Set(await exportedModules('package'));
+ for (const [kernel, modules] of consumers) {
+  assert.ok(!exported.has(kernel), `${kernel} is an internal phase, not a new public algorithm`);
+  for (const module of modules) {
+   const source = await fs.readFile(`package/${module}.roc`, 'utf8');
+   assert.ok(source.includes(`import ${kernel}\n`), `${module} must use ${kernel}`);
+   assert.match(source, new RegExp(`${kernel}\\.[a-z]`), `${module} must call the shared kernel`);
+  }
+ }
+});

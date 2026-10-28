@@ -145,9 +145,9 @@ import LayeredFlowGraph
 LayeredFlowFixtures :: {}.{
     Fixture : { diagram : LayeredFlowInput.Input, sizes : LayeredFlowInput.Sizes, registration : List([GroupItem(U64), NodeItem(U64)]) }
     root_spacing : LayeredFlowGraph.Spacing
-    root_spacing = { node_node: 40, node_node_between_layers: 40, edge_node: 20, edge_node_between_layers: 20, edge_edge: 20, edge_edge_between_layers: 20, edge_label: 4, label_label: 0, label_node: 10, port_port: 20, node_self_loop: 20, ports_surrounding: 12 }
+    root_spacing = { node_node: 40, node_node_between_layers: 40, edge_node: 20, edge_node_between_layers: 20, edge_edge: 20, edge_edge_between_layers: 20, edge_label: 4, label_label: 0, port_port: 20, node_self_loop: 20, ports_surrounding: 12 }
     group_spacing : LayeredFlowGraph.Spacing
-    group_spacing = { node_node: 50, node_node_between_layers: 24, edge_node: 12, edge_node_between_layers: 30, edge_edge: 20, edge_edge_between_layers: 12, edge_label: 2.4, label_label: 0, label_node: 6, port_port: 12, node_self_loop: 12, ports_surrounding: 12 }
+    group_spacing = { node_node: 50, node_node_between_layers: 24, edge_node: 12, edge_node_between_layers: 30, edge_edge: 20, edge_edge_between_layers: 12, edge_label: 2.4, label_label: 0, port_port: 12, node_self_loop: 12, ports_surrounding: 12 }
     get : Str -> Fixture
     get = |source| match source {
 '''

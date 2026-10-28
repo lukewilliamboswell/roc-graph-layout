@@ -1,3 +1,4 @@
+import DiagramSpacing
 import Flowchart
 import layout.Layered
 
@@ -6,41 +7,10 @@ import layout.Layered
 FlowSourceLayout :: {}.{
 	Item : [GroupItem(U64), NodeItem(U64)]
 
-	## Spacing at the top level: Mermaid sets a base of 40, which doubles
-	## every spacing the engine derives from its base.
 	root_spacing : Layered.GroupedSpacing
-	root_spacing = {
-		node_node: 40,
-		node_node_between_layers: 40,
-		edge_node: 20,
-		edge_node_between_layers: 20,
-		edge_edge: 20,
-		edge_edge_between_layers: 20,
-		edge_label: 4,
-		label_label: 0,
-		label_node: 10,
-		port_port: 20,
-		node_self_loop: 20,
-		ports_surrounding: 12,
-	}
-
-	## Spacing inside subgraphs: a base of 24, with node, edge and
-	## edge-to-layer spacing set on their own.
+	root_spacing = DiagramSpacing.root
 	group_spacing : Layered.GroupedSpacing
-	group_spacing = {
-		node_node: 50,
-		node_node_between_layers: 24,
-		edge_node: 12,
-		edge_node_between_layers: 30,
-		edge_edge: 20,
-		edge_edge_between_layers: 12,
-		edge_label: 2.4,
-		label_label: 0,
-		label_node: 6,
-		port_port: 12,
-		node_self_loop: 12,
-		ports_surrounding: 12,
-	}
+	group_spacing = DiagramSpacing.inside
 
 	## The members of a container in Mermaid's order: subgraphs first, last
 	## declared first, then nodes in order.

@@ -16,6 +16,7 @@ input = {
 	nodes: [{ width: 80, height: 30 }, { width: 100, height: 40 }, { width: 60, height: 35 }],
 	edges: [{ from: Node(0), to: Node(1) }, { from: Node(1), to: Node(2) }, { from: Node(0), to: Group(1) }],
 	edge_labels: [{ edge: 0, width: 45, height: 18 }],
+	group_reservations: [{ group: 1, width: 90, height: 0 }],
 	root: Group({
 		children: [
 			Node(0),
@@ -27,7 +28,6 @@ input = {
 					padding: { top: 24, right: 16, bottom: 16, left: 16 },
 					min_width: 120,
 					min_height: 60,
-					label: Some({ width: 90, height: 18 }),
 				}),
 			),
 		],
@@ -36,14 +36,13 @@ input = {
 		padding: { top: 12, right: 12, bottom: 12, left: 12 },
 		min_width: 0,
 		min_height: 0,
-		label: None,
 	}),
 }
 
 main! : List(_) => Try({}, _)
-main! = |args| match Layered.layout_grouped(input, { ..Layered.default_grouped_settings, direction: if (args.is_empty()) Down else Right }, Layered.default_grouped_run) {
+main! = |args| match Layered.layout_grouped(input, { ..Layered.default_grouped_settings, direction: if (args.contains("--right")) Right else Down }, Layered.default_grouped_run) {
 	Err(problems) => Err(InvalidDiagram(Str.inspect(problems)))
-	Ok(result) => Stdout.line!(Str.inspect(result))
+	Ok(result) => Stdout.line!("Laid out ${result.nodes.len().to_str()} nodes, ${result.layout.routes.len().to_str()} edges and ${result.groups.len().to_str()} groups.")
 }
 
 expect match Layered.prepare_grouped(input, Layered.default_grouped_settings) {

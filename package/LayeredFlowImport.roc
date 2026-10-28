@@ -545,9 +545,15 @@ LayeredFlowImport :: {}.{
 		var $contained = []
 		graph_nodes = LayeredFlowGraph.graph($pre.model, g).nodes
 		for n in graph_nodes {
-			nested = LayeredFlowGraph.node($pre.model, n).nested
+			node = LayeredFlowGraph.node($pre.model, n)
+			nested = if node.nested != LayeredFlowImport.nil {
+				node.nested
+			} else {
+				node.inner
+			}
 			if nested != LayeredFlowImport.nil {
-				inner = LayeredFlowImport.transform_hierarchy_edges($pre, nested, n, direction)
+				inner_direction = LayeredFlowGraph.graph($pre.model, nested).direction
+				inner = LayeredFlowImport.transform_hierarchy_edges($pre, nested, n, inner_direction)
 				$pre = inner.pre
 				$contained = $contained.concat(inner.exported)
 				if LayeredFlowGraph.graph($pre.model, nested).external_ports {

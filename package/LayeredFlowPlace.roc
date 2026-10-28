@@ -1,3 +1,4 @@
+import LayeredBalance
 import LayeredFlowImport
 import LayeredFlowFixtures
 import LayeredFlowGraph
@@ -17,11 +18,6 @@ LayeredFlowPlace :: {}.{
 
 	nil : U64
 	nil = LayeredFlowGraph.nil
-
-	## Spacing of a node's ports from the ends of its side, and the extra
-	## room the engine's port cell takes past the node's border.
-	ports_surrounding : F64
-	ports_surrounding = 12
 
 	label_port_vertical : LayeredFlowGraph.Spacing -> F64
 	label_port_vertical = |spacing| spacing.port_port / 10
@@ -61,18 +57,18 @@ LayeredFlowPlace :: {}.{
 						count = ordered.len()
 						rect_y = 0 - extend
 						rect_h = node.height + 2 * extend
-						available = rect_h - 2 * LayeredFlowPlace.ports_surrounding
+						available = rect_h - 2 * spacing.ports_surrounding
 						x = if (side == East) node.width else 0
 						for k in 0..<count {
 							p = ordered.get(k) ?? 0
 							# A lone port sits in the middle, or just inside the surrounding
 							# margin when the side is too short for it.
 							y = if count == 1 and available < 0 {
-								rect_y + LayeredFlowPlace.ports_surrounding
+								rect_y + spacing.ports_surrounding
 							} else if count == 1 {
 								node.height / 2
 							} else {
-								rect_y + LayeredFlowPlace.ports_surrounding + (k + 1).to_f64() * available / (count + 1).to_f64()
+								rect_y + spacing.ports_surrounding + (k + 1).to_f64() * available / (count + 1).to_f64()
 							}
 							$m = LayeredFlowGraph.set_port($m, p, { ..LayeredFlowGraph.port($m, p), x, y: LayeredFlowPlace.keep_on(node, y, node.height) })
 						}
@@ -82,11 +78,11 @@ LayeredFlowPlace :: {}.{
 						on_side = node.ports.keep_if(|p| LayeredFlowGraph.port($m, p).side == side)
 						ordered = if (side == South) on_side.rev() else on_side
 						count = ordered.len()
-						available = node.width - 2 * LayeredFlowPlace.ports_surrounding
+						available = node.width - 2 * spacing.ports_surrounding
 						y = if (side == South) node.height else 0
 						for k in 0..<count {
 							p = ordered.get(k) ?? 0
-							x = if (count == 1 and available < 0) LayeredFlowPlace.ports_surrounding else LayeredFlowPlace.ports_surrounding + (k + 1).to_f64() * available / (count + 1).to_f64()
+							x = if (count == 1 and available < 0) spacing.ports_surrounding else spacing.ports_surrounding + (k + 1).to_f64() * available / (count + 1).to_f64()
 							$m = LayeredFlowGraph.set_port($m, p, { ..LayeredFlowGraph.port($m, p), x: LayeredFlowPlace.keep_on(node, x, node.width), y })
 						}
 					}
@@ -491,24 +487,26 @@ LayeredFlowPlace :: {}.{
 				neighbors = if (bal0.right) ni.left.get(v) ?? [] else ni.right.get(v) ?? []
 				d = neighbors.len()
 				if d > 0 {
-					low = (d + 1) / 2 - 1
-					high = d / 2
-					span = if (low == high) [low] else [low, high]
-					ms = if (bal0.down) span else span.rev()
-					for mi in ms {
-						if ($bal.align.get(v) ?? v) == v {
-							pair = neighbors.get(mi) ?? { node: 0, edge: 0 }
-							u = pair.node
-							ui = (ni.index.get(u) ?? 0).to_i64_wrap()
-							ok = !(ni.marked.get(pair.edge) ?? False) and (if (bal0.down) $r < ui else $r > ui)
-							if ok {
-								root_u = $bal.root.get(u) ?? u
-								$bal = { ..$bal, align: $bal.align.set(u, v) ?? $bal.align }
+					if ($bal.align.get(v) ?? v) == v {
+						chosen = LayeredBalance.select_median(
+							d,
+							bal0.down,
+							$r,
+							|index| {
+								pair = neighbors.get(index) ?? { node: 0, edge: 0 }
+								{ node: pair.node, position: (ni.index.get(pair.node) ?? 0).to_i64_wrap(), blocked: ni.marked.get(pair.edge) ?? False }
+							},
+						)
+						match chosen {
+							None => {}
+							Some(choice) => {
+								root_u = $bal.root.get(choice.node) ?? choice.node
+								$bal = { ..$bal, align: $bal.align.set(choice.node, v) ?? $bal.align }
 								$bal = { ..$bal, root: $bal.root.set(v, root_u) ?? $bal.root }
 								$bal = { ..$bal, align: $bal.align.set(v, root_u) ?? $bal.align }
 								od_root = $bal.od.get(root_u) ?? True
 								$bal = { ..$bal, od: $bal.od.set(root_u, od_root and LayeredFlowGraph.node(m, v).kind == LongEdge) ?? $bal.od }
-								$r = ui
+								$r = choice.position
 							}
 						}
 					}
@@ -659,40 +657,81 @@ LayeredFlowPlace :: {}.{
 	}
 
 	place_block : Model, U64, Info, Compaction, U64 -> Compaction
-	place_block = |m, g, ni, c0, root|
+	place_block = |m, g, ni, c0, root| {
 		if c0.bal.placed.get(root) ?? True {
-			c0
+			return c0
+		}
+		spacing_of = LayeredFlowGraph.graph(m, g).spacing
+		down = c0.bal.down
+		initial_threshold = if down {
+			0 - F64.infinity
 		} else {
-			spacing_of = LayeredFlowGraph.graph(m, g).spacing
-			var $c = { ..c0, bal: { ..c0.bal, placed: c0.bal.placed.set(root, True) ?? c0.bal.placed, y: c0.bal.y.set(root, 0) ?? c0.bal.y } }
-			var $initial = True
-			var $current = root
-			down = c0.bal.down
-			var $thresh = if (down) 0 - F64.infinity else F64.infinity
-			var $going = True
-			var $guard = 0
-			while $going and $guard <= m.nodes.len() {
-				index = ni.index.get($current) ?? 0
-				layer = ni.layers.get(ni.layer.get($current) ?? 0) ?? []
-				has_neighbor = if (down) index > 0 else index + 1 < layer.len()
+			F64.infinity
+		}
+		var $c = { ..c0, bal: { ..c0.bal, placed: c0.bal.placed.set(root, True) ?? [], y: c0.bal.y.set(root, 0) ?? [] } }
+		var $root = root
+		var $current = root
+		var $initial = True
+		var $thresh = initial_threshold
+		var $guard = 0
+		var $going = True
+		var $stack = []
+		# Explicit continuations preserve the recursive depth-first order without
+		# retaining node-sized compaction tables in native stack frames.
+		while $going or !$stack.is_empty() {
+			if !$going {
+				frame = $stack.last() ?? crash "pending compaction continuation"
+				$stack = $stack.drop_last(1)
+				$root = frame.root
+				$current = frame.current
+				$initial = frame.initial
+				$thresh = frame.threshold
+				$guard = frame.guard
+				$going = True
+			}
+			index = ni.index.get($current) ?? 0
+			layer = ni.layers.get(ni.layer.get($current) ?? 0) ?? []
+			has_neighbor = if down {
+				index > 0
+			} else {
+				index + 1 < layer.len()
+			}
+			neighbor = if has_neighbor {
+				layer.get(
+					if down {
+						index - 1
+					} else {
+						index + 1
+					},
+				) ?? 0
+			} else {
+				$current
+			}
+			neighbor_root = $c.bal.root.get(neighbor) ?? neighbor
+			if has_neighbor and !($c.bal.placed.get(neighbor_root) ?? True) {
+				$stack = $stack.append({ root: $root, current: $current, initial: $initial, threshold: $thresh, guard: $guard })
+				$root = neighbor_root
+				$current = neighbor_root
+				$initial = True
+				$thresh = initial_threshold
+				$guard = 0
+				$c = { ..$c, bal: { ..$c.bal, placed: $c.bal.placed.set(neighbor_root, True) ?? [], y: $c.bal.y.set(neighbor_root, 0) ?? [] } }
+			} else {
 				if has_neighbor {
-					neighbor = layer.get(if (down) index - 1 else index + 1) ?? 0
-					neighbor_root = $c.bal.root.get(neighbor) ?? neighbor
-					$c = LayeredFlowPlace.place_block(m, g, ni, $c, neighbor_root)
-					(c1, t) = LayeredFlowPlace.threshold(m, $c, $thresh, root, $current)
+					(c1, t) = LayeredFlowPlace.threshold(m, $c, $thresh, $root, $current)
 					$c = c1
 					$thresh = t
-					if ($c.bal.sink.get(root) ?? root) == root {
-						$c = { ..$c, bal: { ..$c.bal, sink: $c.bal.sink.set(root, $c.bal.sink.get(neighbor_root) ?? neighbor_root) ?? $c.bal.sink } }
+					if ($c.bal.sink.get($root) ?? $root) == $root {
+						$c = { ..$c, bal: { ..$c.bal, sink: $c.bal.sink.set($root, $c.bal.sink.get(neighbor_root) ?? neighbor_root) ?? $c.bal.sink } }
 					}
 					bal = $c.bal
 					cur = LayeredFlowGraph.node(m, $current)
 					nb = LayeredFlowGraph.node(m, neighbor)
 					y_of = |x| bal.y.get(x) ?? 0
 					inner_of = |x| bal.inner.get(x) ?? 0
-					if (bal.sink.get(root) ?? root) == (bal.sink.get(neighbor_root) ?? neighbor_root) {
+					if (bal.sink.get($root) ?? $root) == (bal.sink.get(neighbor_root) ?? neighbor_root) {
 						spacing = LayeredFlowPlace.vertical_spacing(spacing_of, cur.kind, nb.kind)
-						current_pos = y_of(root)
+						current_pos = y_of($root)
 						new_value = if down {
 							pos = y_of(neighbor_root) + inner_of(neighbor) + nb.height + nb.margin.bottom + spacing + cur.margin.top - inner_of($current)
 							if ($initial) pos.max($thresh) else current_pos.max(pos.max($thresh))
@@ -701,15 +740,15 @@ LayeredFlowPlace :: {}.{
 							if ($initial) pos.min($thresh) else current_pos.min(pos.min($thresh))
 						}
 						$initial = False
-						$c = { ..$c, bal: { ..bal, y: bal.y.set(root, new_value) ?? bal.y } }
+						$c = { ..$c, bal: { ..bal, y: bal.y.set($root, new_value) ?? bal.y } }
 					} else {
 						spacing = spacing_of.node_node
 						required = if down {
-							y_of(root) + inner_of($current) - cur.margin.top - y_of(neighbor_root) - inner_of(neighbor) - nb.height - nb.margin.bottom - spacing
+							y_of($root) + inner_of($current) - cur.margin.top - y_of(neighbor_root) - inner_of(neighbor) - nb.height - nb.margin.bottom - spacing
 						} else {
-							y_of(root) + inner_of($current) + cur.height + cur.margin.bottom + spacing - (y_of(neighbor_root) + inner_of(neighbor) - nb.margin.top)
+							y_of($root) + inner_of($current) + cur.height + cur.margin.bottom + spacing - (y_of(neighbor_root) + inner_of(neighbor) - nb.margin.top)
 						}
-						(c2, si) = LayeredFlowPlace.class_index($c, bal.sink.get(root) ?? root)
+						(c2, si) = LayeredFlowPlace.class_index($c, bal.sink.get($root) ?? $root)
 						(c3, ti) = LayeredFlowPlace.class_index(c2, bal.sink.get(neighbor_root) ?? neighbor_root)
 						source_cls = c3.classes.get(si) ?? { node: 0, out: [], indegree: 0, shift: None }
 						c4 = { ..c3, classes: c3.classes.set(si, { ..source_cls, out: source_cls.out.append({ target: ti, sep: required }) }) ?? c3.classes }
@@ -717,18 +756,20 @@ LayeredFlowPlace :: {}.{
 						$c = { ..c4, classes: c4.classes.set(ti, { ..target_cls, indegree: target_cls.indegree + 1 }) ?? c4.classes }
 					}
 				} else {
-					(c1, t) = LayeredFlowPlace.threshold(m, $c, $thresh, root, $current)
+					(c1, t) = LayeredFlowPlace.threshold(m, $c, $thresh, $root, $current)
 					$c = c1
 					$thresh = t
 				}
-				$current = $c.bal.align.get($current) ?? root
-				if $current == root {
+				$current = $c.bal.align.get($current) ?? $root
+				$guard = $guard + 1
+				if $current == $root or $guard > m.nodes.len() {
+					$c = { ..$c, finished: $c.finished.set($root, True) ?? [] }
 					$going = False
 				}
-				$guard = $guard + 1
 			}
-			{ ..$c, finished: $c.finished.set(root, True) ?? $c.finished }
 		}
+		$c
+	}
 
 	## The simple threshold strategy: a block's first and last node look for
 	## an edge to an already placed block and straighten it if they can.
@@ -1021,8 +1062,7 @@ LayeredFlowPlace :: {}.{
 		var $balanced = List.repeat(0, size)
 		for n in all_nodes {
 			values = positions.map_with_index(|ys, i| (ys.get(n) ?? 0) + (shifts.get(i) ?? 0))
-			sorted = LayeredFlowGraph.sort_by(values, |a, b| if (a < b) -1 else if (a > b) 1 else 0)
-			$balanced = $balanced.set(n, ((sorted.get(1) ?? 0) + (sorted.get(2) ?? 0)) / 2) ?? $balanced
+			$balanced = $balanced.set(n, LayeredBalance.middle_mean(values)) ?? $balanced
 		}
 		chosen = if LayeredFlowPlace.feasible(m0, ni, $balanced) {
 			$balanced

@@ -812,3 +812,49 @@ profiles across all five diagram families have byte-identical observed JSON and
 SVG against the saved renderer. The independent oracle comparison passes all
 143 cases with unchanged gates. Subsequent geometric changes must repeat that
 comparison; these observations do not validate future changes automatically.
+
+
+## Shared directed-flow kernels and explicit compaction stack — 2026-10-28
+
+The extraction baseline above is now followed by shared stable adjacency,
+weighted network-simplex refinement, median selection/balancing and prefix
+crossing counts. Coordinated compaction uses explicit continuations rather than
+retaining its node-sized state through native recursion. Port-aware and flat
+adapters retain their different structural contracts and deterministic traversal
+policies.
+
+The native optimized controls repeat the same eight phases, wide/chain inputs,
+100/300/1000-edge rungs and three interleaved samples against `1640711`.
+`benchmarks/measurements/flow-shared-kernels.jsonl` retains all 288 samples.
+The compiler is Oct 26 on macOS arm64. Other compiler processes were active,
+so elapsed measurements are recorded but do not support a throughput claim.
+Every before/after observation agrees; zero and absent-label controls allocate
+and request zero bytes. Construction, ordering and endpoint-label allocator
+traffic is unchanged. Shared ranking and placement account for the additional
+traffic; these controls narrow the change to those phases, without attributing
+it to a particular ownership fallback.
+
+For complete wide layout at 100/300/1000 edges, allocation calls change from
+11227/48189/336391 to 11255/48499/337401, and requested bytes change from
+2584800/18364568/155005316 to 2613763/18581011/157126459. The largest-rung
+increase in cumulative traffic is 1.37%. Absolute peak live bytes remain below
+the old source engine: 535116/4232964/34441904 versus
+556836/4297884/34658024. Placement-only absolute peaks agree at all three
+rungs. Complete chain layout has fewer allocation calls at each rung, slightly
+more requested bytes, and lower absolute peaks. The distinction between peak
+extra bytes and absolute live peaks from the extraction baseline still applies.
+
+This refactor removes duplicated mathematics and native compaction recursion;
+it does not resolve the inherited wide-layout superlinear traffic. Keep the
+phase controls and investigate that separately before increasing scale claims.
+
+
+The public grouped consumer separately completes star and chain graphs at
+100/300/1000 nodes, with zero-work, one-call and prepared-layout controls:
+54 retained samples in `benchmarks/measurements/layered-grouped.jsonl` after
+one warmup each. Every result observes `2*n+1` source-aligned nodes, edges and
+groups; zero controls observe zero. `benchmarks/GroupedBench.roc` is shared by
+the focused optimized runner and the regular benchmark dispatcher. The three
+practical rungs are retained in `benchmarks/cases/scale.jsonl`, with small
+star/chain controls in smoke. These fixtures intentionally include boundary-
+crossing edges; they are not equivalent to flat wide/chain phase fixtures.

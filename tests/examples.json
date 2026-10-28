@@ -47,6 +47,19 @@
           "name": "default",
           "stderr": "",
           "stdin": "",
+          "stdout": "Laid out 3 nodes, 3 edges and 2 groups.\n"
+        }
+      ],
+      "path": "examples/grouped_flow/main.roc"
+    },
+    {
+      "cases": [
+        {
+          "args": [],
+          "exit_code": 0,
+          "name": "default",
+          "stderr": "",
+          "stdin": "",
           "stdout": "Mapped 12 services by incident distance -> examples/incident_blast_radius/output.svg\n"
         }
       ],

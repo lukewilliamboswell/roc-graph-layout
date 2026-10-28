@@ -1,3 +1,4 @@
+import RouteGrid
 import LayeredFlowFixtures
 import LayeredFlowInput
 import Geom
@@ -104,7 +105,7 @@ LayeredFlow :: {}.{
 		# One run per graph laid out on its own, innermost first, each with its
 		# own random numbers; only the drawing considers declaration order.
 		var $trace = []
-		var $randoms = List.repeat(LayeredFlowRandom.from_seed(1), $m.graphs.len())
+		var $randoms = List.repeat(LayeredFlowRandom.from_seed(seed), $m.graphs.len())
 		for root in graphs {
 			if root == 0 or LayeredFlowGraph.graph($m, root).separate {
 				r = LayeredFlowOrder.minimize_seeded($m, root, root == 0, tracing, names, seed)
@@ -113,7 +114,7 @@ LayeredFlow :: {}.{
 				before = $m
 				for g in 0..<$randoms.len() {
 					if LayeredFlow.run_root(before, g) == root {
-						$randoms = $randoms.set(g, r.randoms.get(g) ?? LayeredFlowRandom.from_seed(1)) ?? []
+						$randoms = $randoms.set(g, r.randoms.get(g) ?? LayeredFlowRandom.from_seed(seed)) ?? []
 					}
 				}
 			}
@@ -150,7 +151,7 @@ LayeredFlow :: {}.{
 			is_vertical = LayeredFlow.vertical(direction)
 			$m = LayeredFlowPlace.prepare_with_margins($m, g, is_vertical, apply)
 			$m = LayeredFlowPlace.brandes_koepf($m, g)
-			fin = LayeredFlowRoute.finish($m, g, is_vertical, direction == Up, randoms.get(g) ?? LayeredFlowRandom.from_seed(1))
+			fin = LayeredFlowRoute.finish($m, g, is_vertical, direction == Up, randoms.get(g) ?? crash "random states are graph aligned")
 			$m = fin.model
 			# A subgraph laid out on its own is a box of fixed size to its
 			# parent, which may read the other way round.
@@ -263,6 +264,7 @@ LayeredFlow :: {}.{
 		}
 		graph_of_edge = |e| LayeredFlowGraph.node(m, LayeredFlowGraph.port(m, LayeredFlowGraph.edge(m, e).source).node).graph
 		edge_origin = |e| bases.get(graph_of_edge(e)) ?? { x: 0, y: 0 }
+		node_rects = diagram.nodes.map_with_index(|_, i| abs_rect(setup.node_of.get(i) ?? LayeredFlowGraph.nil))
 		edges = diagram.edges.map_with_index(
 			|_, i| {
 				segments0 = setup.segments.get(setup.edge_of.get(i) ?? LayeredFlowGraph.nil) ?? []
@@ -271,50 +273,75 @@ LayeredFlow :: {}.{
 				if segments.is_empty() {
 					{ points: [], label: None }
 				} else {
-					# Every segment of an edge is laid out in the same run.
-					pl = place_of(graph_of_edge(segments.first() ?? 0))
 					var $bends = []
 					var $last = None
 					var $label = None
 					for s in segments {
 						edge = LayeredFlowGraph.edge(m, s)
+						pl = place_of(graph_of_edge(s))
 						o = edge_origin(s)
 						seg_bends = edge.bends.map(|b| { x: o.x + b.x, y: o.y + b.y })
 						source_point = anchor(edge.source)
 						target_point = anchor(edge.target)
 						match $last {
 							Some(last) => {
-								next = seg_bends.first() ?? target_point
-								if (last.x - next.x).abs() > 0.001 or (last.y - next.y).abs() > 0.001 {
-									$bends = $bends.append(source_point)
+								if last.placement == pl {
+									# Preserve the original local comparison in a shared
+									# frame, including its floating-point threshold.
+									next = seg_bends.first() ?? target_point
+									if (last.raw.x - next.x).abs() > 0.001 or (last.raw.y - next.y).abs() > 0.001 {
+										$bends = $bends.append(LayeredFlow.place_point(pl, source_point))
+									}
+								} else {
+									# Independent child layouts have their own direction
+									# and origin. Join their actual world-space ports with
+									# the router's shared obstacle-aware path search.
+									next = LayeredFlow.place_point(pl, source_point)
+									connector = LayeredFlow.connect_frames(last.target, next, node_rects)
+									$bends = $bends.concat(connector)
 								}
 							}
 							None => {}
 						}
-						$bends = $bends.concat(seg_bends)
-						$last = Some(seg_bends.last() ?? source_point)
+						$bends = $bends.concat(seg_bends.map(|p| LayeredFlow.place_point(pl, p)))
+						$last = Some({ raw: seg_bends.last() ?? source_point, target: LayeredFlow.place_point(pl, target_point), placement: pl })
 						if !edge.labels.is_empty() and $label == None {
-							$label = Some({ x: o.x + edge.label_x, y: o.y + edge.label_y })
+							$label = Some(LayeredFlow.place_point(pl, { x: o.x + edge.label_x, y: o.y + edge.label_y }))
 						}
 					}
 					first = LayeredFlowGraph.edge(m, segments.first() ?? 0)
 					last_edge = LayeredFlowGraph.edge(m, segments.last() ?? 0)
-					points = [anchor(first.source)].concat($bends).append(anchor(last_edge.target)).map(|p| LayeredFlow.place_point(pl, p))
+					first_place = place_of(graph_of_edge(segments.first() ?? 0))
+					last_place = place_of(graph_of_edge(segments.last() ?? 0))
+					points = [LayeredFlow.place_point(first_place, anchor(first.source))].concat($bends).append(LayeredFlow.place_point(last_place, anchor(last_edge.target)))
 					flipped = setup.flipped.get(i) ?? False
 					{
 						points: if (flipped) points.rev() else points,
-						label: match $label {
-							Some(p) => Some(LayeredFlow.place_point(pl, p))
-							None => None
-						},
+						label: $label,
 					}
 				}
 			},
 		)
 		{
-			nodes: diagram.nodes.map_with_index(|_, i| abs_rect(setup.node_of.get(i) ?? LayeredFlowGraph.nil)),
+			nodes: node_rects,
 			groups: diagram.groups.map_with_index(|_, g| abs_rect(setup.group_node.get(g) ?? LayeredFlowGraph.nil)),
 			edges,
+		}
+	}
+
+	connect_frames : Point, Point, List(Rect) -> List(Point)
+	connect_frames = |a, b, nodes| {
+		point = |p| { x: Geom.saturate(p.x), y: Geom.saturate(p.y) }
+		start = point(a)
+		finish = point(b)
+		boxes = nodes.map(|r| { min_x: Geom.saturate(r.x), min_y: Geom.saturate(r.y), max_x: Geom.saturate(r.x + r.width), max_y: Geom.saturate(r.y + r.height) })
+		path = RouteGrid.shortest(start, finish, boxes, 0, 0, [])
+		if path.is_empty() {
+			# Overlapping or numerically saturated geometry can prevent a clear
+			# route. Retain a finite orthogonal connection in those cases.
+			[start, { x: start.x, y: finish.y }, finish]
+		} else {
+			path
 		}
 	}
 

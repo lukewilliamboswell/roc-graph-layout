@@ -1,3 +1,5 @@
+import NetworkSimplex
+
 ## Layers by network simplex, step for step as the layered solver
 ## assigns them: a feasible tree grown by depth-first search from the first
 ## node, cut values computed from the leaves, tree edges exchanged while one
@@ -40,10 +42,6 @@ LayeredFlowSimplex :: {}.{
 		tree_edge : List(Bool),
 		tree_edges : List(U64),
 		edge_visited : List(Bool),
-		cut : List(F64),
-		po : List(I64),
-		lowest : List(I64),
-		post_order : I64,
 		edges : List({ source : U64, target : U64, weight : F64, delta : I64 }),
 
 		## The edges of the graph in initialisation order, which can differ from
@@ -94,10 +92,6 @@ LayeredFlowSimplex :: {}.{
 			tree_edge: List.repeat(False, problem.edges.len()),
 			tree_edges: [],
 			edge_visited: List.repeat(False, problem.edges.len()),
-			cut: List.repeat(0, problem.edges.len()),
-			po: List.repeat(0, n),
-			lowest: List.repeat(0, n),
-			post_order: 1,
 			edges: problem.edges,
 			edge_list: [],
 		}
@@ -139,14 +133,8 @@ LayeredFlowSimplex :: {}.{
 		}
 		$s = { ..$s, edge_list: $edge_list }
 		$s = LayeredFlowSimplex.feasible_tree($s, $sources)
-		var $iter = 0
-		var $leave = LayeredFlowSimplex.leave_edge($s)
-		while $leave != LayeredFlowSimplex.nil and $iter < problem.iteration_limit {
-			enter = LayeredFlowSimplex.enter_edge($s, $leave)
-			$s = if (enter == LayeredFlowSimplex.nil) $s else LayeredFlowSimplex.exchange($s, $leave, enter)
-			$leave = if (enter == LayeredFlowSimplex.nil) LayeredFlowSimplex.nil else LayeredFlowSimplex.leave_edge($s)
-			$iter = $iter + 1
-		}
+		refined = NetworkSimplex.refine(n, problem.edges.map(|e| { from: e.source, to: e.target }), problem.edges.map(|e| e.weight), problem.edges.map(|e| e.delta.to_u64_wrap()), $s.layer, $s.tree_edge, { effort_cap: problem.iteration_limit, cut_tolerance: 1e-10, order: Source({ nodes: $s.nodes, edges: $s.edge_list, tree_edges: $s.tree_edges }) })
+		$s = { ..$s, layer: refined }
 		if remove_subtrees {
 			var $k = $stack.len()
 			while $k > 0 {
@@ -260,9 +248,7 @@ LayeredFlowSimplex :: {}.{
 				}
 				$guard = $guard + 1
 			}
-			$s = { ..$s, edge_visited: List.repeat(False, $s.edges.len()), post_order: 1 }
-			$s = LayeredFlowSimplex.postorder($s, first)
-			LayeredFlowSimplex.cutvalues($s)
+			$s
 		}
 	}
 
@@ -346,135 +332,6 @@ LayeredFlowSimplex :: {}.{
 		$best
 	}
 
-	postorder : State, U64 -> State
-	postorder = |s0, start| {
-		var $s = s0
-		var $stack = [{ node: start, edges: LayeredFlowSimplex.connected(s0, start), next: 0, lowest: LayeredFlowSimplex.big }]
-		while !$stack.is_empty() {
-			top = $stack.last() ?? { node: 0, edges: [], next: 0, lowest: 0 }
-			if top.next >= top.edges.len() {
-				order = $s.post_order
-				low = top.lowest.min(order)
-				$s = { ..$s, po: $s.po.set(top.node, order) ?? [], lowest: $s.lowest.set(top.node, low) ?? [], post_order: order + 1 }
-				$stack = $stack.drop_last(1)
-				# Report the result to the parent frame.
-				if !$stack.is_empty() {
-					parent = $stack.last() ?? top
-					$stack = $stack.set($stack.len() - 1, { ..parent, lowest: parent.lowest.min(low) }) ?? []
-				}
-			} else {
-				$stack = $stack.set($stack.len() - 1, { ..top, next: top.next + 1 }) ?? []
-				e = top.edges.get(top.next) ?? 0
-				if ($s.tree_edge.get(e) ?? False) and !($s.edge_visited.get(e) ?? True) {
-					$s = { ..$s, edge_visited: $s.edge_visited.set(e, True) ?? [] }
-					o = LayeredFlowSimplex.other($s, e, top.node)
-					$stack = $stack.append({ node: o, edges: LayeredFlowSimplex.connected($s, o), next: 0, lowest: LayeredFlowSimplex.big })
-				}
-			}
-		}
-		$s
-	}
-
-	in_head : State, U64, U64 -> Bool
-	in_head = |s, v, e| {
-		edge = LayeredFlowSimplex.edge_of(s, e)
-		po = |x| s.po.get(x) ?? 0
-		low = |x| s.lowest.get(x) ?? 0
-		pv = po(v)
-		if low(edge.source) <= pv and pv <= po(edge.source) and low(edge.target) <= pv and pv <= po(edge.target) {
-			!(po(edge.source) < po(edge.target))
-		} else {
-			po(edge.source) < po(edge.target)
-		}
-	}
-
-	cutvalues : State -> State
-	cutvalues = |s0| {
-		var $s = s0
-		var $unknown = List.repeat([], s0.layer.len())
-		var $leafs = []
-		for v in $s.nodes {
-			tree = LayeredFlowSimplex.connected($s, v).keep_if(|e| $s.tree_edge.get(e) ?? False)
-			$unknown = $unknown.set(v, tree) ?? []
-			if tree.len() == 1 {
-				$leafs = $leafs.append(v)
-			}
-		}
-		var $cut = $s.cut
-		for leaf in $leafs {
-			var $v = leaf
-			var $guard = 0
-			while ($unknown.get($v) ?? []).len() == 1 and $guard <= $s.edges.len() {
-				d = ($unknown.get($v) ?? []).first() ?? 0
-				de = LayeredFlowSimplex.edge_of($s, d)
-				var $value = de.weight
-				for e in LayeredFlowSimplex.connected($s, $v) {
-					if e != d {
-						edge = LayeredFlowSimplex.edge_of($s, e)
-						if $s.tree_edge.get(e) ?? False {
-							c = ($cut.get(e) ?? 0) - edge.weight
-							$value = if (de.source == edge.source or de.target == edge.target) $value - c else $value + c
-						} else if $v == de.source {
-							$value = if (edge.source == $v) $value + edge.weight else $value - edge.weight
-						} else {
-							$value = if (edge.source == $v) $value - edge.weight else $value + edge.weight
-						}
-					}
-				}
-				$cut = $cut.set(d, $value) ?? []
-				$unknown = $unknown.set(de.source, LayeredFlowSimplex.without($unknown.get(de.source) ?? [], d)) ?? []
-				$unknown = $unknown.set(de.target, LayeredFlowSimplex.without($unknown.get(de.target) ?? [], d)) ?? []
-				$v = if (de.source == $v) de.target else de.source
-				$guard = $guard + 1
-			}
-		}
-		{ ..$s, cut: $cut }
-	}
-
-	leave_edge : State -> U64
-	leave_edge = |s|
-		match s.tree_edges.find_first(|e| (s.tree_edge.get(e) ?? False) and (s.cut.get(e) ?? 0) < -1e-10) {
-			Ok(e) => e
-			Err(_) => LayeredFlowSimplex.nil
-		}
-
-	enter_edge : State, U64 -> U64
-	enter_edge = |s, leave| {
-		var $best = LayeredFlowSimplex.nil
-		var $rep = LayeredFlowSimplex.big
-		for e in s.edge_list {
-			edge = LayeredFlowSimplex.edge_of(s, e)
-			if LayeredFlowSimplex.in_head(s, edge.source, leave) and !LayeredFlowSimplex.in_head(s, edge.target, leave) {
-				slack = LayeredFlowSimplex.lay(s, edge.target) - LayeredFlowSimplex.lay(s, edge.source) - edge.delta
-				if slack < $rep {
-					$rep = slack
-					$best = e
-				}
-			}
-		}
-		$best
-	}
-
-	exchange : State, U64, U64 -> State
-	exchange = |s0, leave, enter| {
-		s1 = {
-			..s0,
-			tree_edge: (s0.tree_edge.set(leave, False) ?? []).set(enter, True) ?? [],
-			tree_edges: LayeredFlowSimplex.without(s0.tree_edges, leave).append(enter),
-		}
-		edge = LayeredFlowSimplex.edge_of(s1, enter)
-		delta0 = LayeredFlowSimplex.lay(s1, edge.target) - LayeredFlowSimplex.lay(s1, edge.source) - edge.delta
-		delta = if (LayeredFlowSimplex.in_head(s1, edge.target, leave)) delta0 else 0 - delta0
-		var $layer = s1.layer
-		for v in s1.nodes {
-			if !LayeredFlowSimplex.in_head(s1, v, leave) {
-				$layer = $layer.set(v, ($layer.get(v) ?? 0) + delta) ?? []
-			}
-		}
-		s2 = { ..s1, layer: $layer, post_order: 1, edge_visited: List.repeat(False, s1.edges.len()) }
-		s3 = LayeredFlowSimplex.postorder(s2, s2.nodes.first() ?? 0)
-		LayeredFlowSimplex.cutvalues(s3)
-	}
 }
 
 ## A chain gets one layer per node.
