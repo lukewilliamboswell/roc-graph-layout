@@ -762,8 +762,34 @@ Zero controls allocate/request0, at1/1/2µs. SVG mode observes height as well
 as width; elapsed values are not a speedup claim. The one-line benchmark is
 unchanged by the subsequent all-row envelope regression. Raw session data:
 `/tmp/mermaid-vertical-{before,after}.json`. The confirmed cause and the additive
-mode preserve legacy Linux-style glyph-bound expectations while state callers
-can select the actual SVG glyph envelope.
+mode preserve legacy Linux-style glyph-bound expectations. These particular
+vertical measurements were taken with macOS Chrome. After selecting Linux x64
+as the canonical oracle, state callers use the rounded Linux metrics instead;
+the unrounded mode remains a diagnostic control. Class and ER callers include
+horizontal glyph overhangs, and class headers include Skia's synthetic-bold
+stroke in their measured bounds. These are Mermaid text-measurement policies;
+the extracted core geometry and its benchmark controls are unchanged.
+
+The canonical-Linux correction also retains the ordinary text hot path's
+observations and allocator traffic. Optimized `ClassTextBench` controls on
+Oct26, macOS arm64 compare the existing pre-bold SVG-envelope binary with
+commit `410e129`. Each zero/block/advance/svg operation has a warm-up and three
+interleaved before/after samples at 100/300/1000 labels (72 saved samples).
+Every paired observation, allocation-call count, cumulative requested-byte
+count and peak live-byte count is identical. The zero controls allocate and
+request nothing during measurement. These controls isolate the added metrics
+field; they do not measure the additional bold-title work itself.
+
+| Labels | Block median ms before/after | Calls | Requested bytes | Peak live bytes |
+|---:|---:|---:|---:|---:|
+|100|27.529/27.530|15,200|2,562,660|5,758|
+|300|84.683/83.118|45,600|7,743,860|10,623|
+|1000|272.139/269.568|152,000|25,878,060|27,423|
+
+No speedup is claimed. The suspected incidental cost to regular measurement
+was refuted by these controls; the font-bound difference itself is confirmed
+by the independent native Linux-oracle comparison. Raw measurements retain
+both binary hashes in `benchmarks/measurements/mermaid-linux-text-bounds.jsonl`.
 
 ## Coordinated flow extraction baseline — 2026-10-28
 

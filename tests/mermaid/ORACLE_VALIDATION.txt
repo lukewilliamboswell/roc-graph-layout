@@ -3,10 +3,11 @@ Mermaid independent oracle validation — 2026-10-28
 Result: 143 cases, 0 failures. This is the actual native comparison, not unit expectations alone.
 
 Reference: Mermaid12.2.0, Puppeteer25.16.0, Chrome156.0.8078.47, Inter Regular.
-Host: macOS arm64. Package compiler: nightly-2026-10-26-3c0fffe.
+Canonical browser: Linux x64 (pinned container, browser-server.mjs).
+Native host: macOS arm64. Package compiler: nightly-2026-10-26-3c0fffe.
 Script compiler: nightly-2026-10-23-18478ff.
-Extractor schema10; every source gets a fresh browser page.
-Native binary SHA256: 39623dfa27f729adbaa1271659603117ec24b9886523d43eed12b9787a290561
+Extractor schema11; every source gets a fresh browser page.
+Native binary SHA256: e972060a8623521f2c6d5c9639b378ba9302d67350ce84b42d87e9a394b97ad8
 Full provenance, comparator hashes and per-case scores: validation-report.json.
 
 RAW PUBLIC SVG PIXEL DIFFERENCES
@@ -14,11 +15,11 @@ RAW PUBLIC SVG PIXEL DIFFERENCES
 exactly1 CSS pixel per SVG unit, no rescaling or best-shift normalization.)
 
 Family       Cases  Rendered  Mean %   Worst %
-flowchart     116        92     2.66     41.84
-sequence        7         7     0.95      2.28
-entity          5         3     0.22      0.52
-class           6         6     1.91      3.20
-state           9         9     0.90      1.63
+flowchart     116        92     2.41     44.95
+sequence        7         7     0.95      2.32
+entity          5         3     1.74      2.99
+class           6         6     0.92      1.49
+state           9         9     1.33      2.06
 
 ACCEPTANCE CRITERIA
 Exact canonical parser semantics and expected acceptance/rejection for every case.
@@ -66,6 +67,8 @@ A fractional-view-box test asserts a unit SVG-to-CSS transform.
 
 REPRODUCE
 npm ci --prefix tools/mermaid-oracle
+# On other hosts, start the pinned Linux browser and set
+# MERMAID_ORACLE_BROWSER_URL as documented in tools/mermaid-oracle/README.md.
 roc build package-mermaid/oracle_dump.roc --output=/tmp/mermaid-oracle-dump
 node --test tools/mermaid-oracle/validate.test.mjs
 ORACLE_DUMP=/tmp/mermaid-oracle-dump node --test tools/mermaid-oracle/validate.integration.test.mjs
@@ -73,28 +76,44 @@ node tools/mermaid-oracle/validate.mjs /tmp/mermaid-oracle-dump /tmp/mermaid-ora
 
 CI force-records independent references for its own font environment, applies
 these gates, and uploads compiler version, both SVGs, differences and full JSON.
-Local artifacts for this run: /tmp/mermaid-refactor-publish-validation.
+Local artifacts for this run: /tmp/mermaid-refactor-linux-final-validation.
 
-PREVIOUS REPOSITORY VERIFICATION (before the core extraction)
-The complete scripts/check.roc run exited0 using the compiler pair above.
-It passed geometry375tests, Mermaid/package and differential expectations,
-fuzz contract tests and native smoke, all16native examples, node-editor smoke,
-benchmark smoke, bundled examples/release checks, reproducible documentation
-archives/site generation, and gitdiff--check. The final native oracle binary
-built with0errors and0warnings. Comparison unit tests7/7 and CLI/metrology
-integration tests2/2 passed. The integration worktree is clean; the original
-checkout's existing edits were preserved.
-Logs for this session: /tmp/mermaid-oracle-all-repository-check.log,
-/tmp/mermaid-oracle-cold-verified.log, /tmp/mermaid-oracle-cold-guards.log.
+REFACTOR AND CANONICAL LINUX VERIFICATION
+The core refactor from1640711 to4fafb97 preserves all391 native JSON/SVG
+profiles byte for byte on BOTH macOS and Linux. refactor-comparison.json records
+the exact source revisions, native hashes and separate platform results. The
+six Linux oracle failures were already present before the refactor.
 
-REFACTOR VERIFICATION
-The committed grouped-layout refactor preserves all391 saved native JSON/SVG
-profiles byte for byte, and its final-source binary passes all143 independent
-oracle cases with unchanged gates. The new public grouped example and all17
-native examples pass, as does the node-editor native smoke. All core/Mermaid
-native fuzz smoke targets complete200runs each. Generated docs keep private
-solver phases out of the public surface. The canonical repository check is
-being repeated with Zig0.16 from Blueprint.roc after the shell selected0.17
-for its benchmark-host build. These checks use the Oct26 package compiler;
-Oct27 checks the core and Mermaid packages successfully but fails in the
-existing node-editor Datastar/SQLite generic code. This is not a green-CI claim.
+The user selected pinned Linux as the canonical browser. Commit410e129 then
+intentionally corrects Mermaid's default text bounds: horizontal glyph
+overhangs for class/ER/state, rounded Linux vertical metrics for states, and
+synthetic-bold title bounds plus Mermaid's compartment centering for classes.
+Core geometry is unchanged. Browser transport and provenance changed; Mermaid
+configuration, extraction observations and acceptance gates did not. The
+committed Docker recipe builds and verifies Chrome156.0.8078.47 on Linux x64.
+All refreshed records pass the freshness check; generated Roc goldens are
+unchanged. The final native binary passes all143 independent cases, including
+all six previous Linux failures, with no reference positions/routes injected.
+
+Final affected checks:510 Mermaid package tests,529 native-probe expectations,
+10 boundary/comparison tests,2 real-CLI/metrology integration tests, and the
+existing ER/class/state fuzz expectations pass. The three affected native
+examples regenerate the committed SVGs. Both packages check on compiler
+checkout52c00c23. No SQLite/Datastar workaround annotations were retained.
+
+The complete unchanged canonical scripts/check.roc command exits0 on410e129
+with RocOct26, toolingRocOct23 and Zig0.16 from Blueprint.roc. It passes421core
+tests,510Mermaid tests, generated oracle expectations, all17native examples,
+every native fuzz smoke target (200runs each), benchmark smoke, release bundles
+and served examples, generated docs/site, reproducible documentation archives,
+and gitdiff--check. These are smoke runs, not a coverage-guided fuzz campaign.
+Log: /tmp/mermaid-refactor-linux-final-repository-check.log.
+Optimized core controls and source revisions remain in benchmarks/measurements;
+the subsequent text calibration does not change the core geometry.
+
+COMPILER REGRESSION
+The floating Oct27 compiler rejects a24-line pure module by inferring duplicate
+error tags: Try(value,[Bad,Bad]) against Try(value,[Bad]). Oct26 accepts it.
+Compiler checkout52c00c23 accepts both the reproducer and the original node
+editor without extra annotations; all313 node-editor tests discovered by that
+compiler pass. This does not require publishing a dependency workaround.
