@@ -35,7 +35,7 @@ StateDraw :: {}.{
 	}
 
 	measure_block : Str, Theme.Options, [NoWrap, Width(F64)] -> Block
-	measure_block = |text, options, wrap| StateDraw.measure_block_mode(text, options, wrap, False)
+	measure_block = |text, options, wrap| StateDraw.measure_block_mode(text, options, wrap, True)
 
 	transition_block : Str, Theme.Options -> Block
 	transition_block = |text, options| StateDraw.measure_block_mode(text, options, if (options.wrapping == Wrap) Width(options.max_label_width) else NoWrap, True)
@@ -43,7 +43,7 @@ StateDraw :: {}.{
 	measure_block_mode : Str, Theme.Options, [NoWrap, Width(F64)], Bool -> Block
 	measure_block_mode = |text, options, wrap, advance| {
 		style = { font: TextMeasure.inter, size: options.font_size, line_height: options.line_height, wrap, align: Middle }
-		measured = if (advance) TextMeasure.block_advance(text, style) else TextMeasure.block(text, style)
+		measured = TextMeasure.block_svg(text, style, advance)
 		# Browser-rounded metrics are authoritative at ordinary sizes.
 		# Unrounded font extents retain finite tiny text without charging
 		# every ordinary label for an emoji descender it does not contain.

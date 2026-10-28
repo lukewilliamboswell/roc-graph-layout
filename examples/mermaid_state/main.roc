@@ -14,13 +14,14 @@ import mermaid.Theme
 import "lifecycle.mmd" as source : Str
 
 ## State syntax, composite groups and state-specific geometry through the
-## public API. The shared record properties need only the desired overrides.
+## public API and the family defaults. Shared record properties allow
+## callers to override only the appearance settings they want to change.
 main! = |args| {
 	text = match args {
 		[file] => Path.read_utf8!(Path.utf8(OsStr.display(file)))?
 		_ => source
 	}
-	picture = match StateDiagram.draw(text, Theme.Options.{ max_label_width: 180 }) {
+	picture = match StateDiagram.draw(text, Theme.Options.{}) {
 		Ok(value) => value
 		Err(problems) => return Err(StateProblems(problems))
 	}
