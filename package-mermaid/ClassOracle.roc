@@ -98,3 +98,18 @@ expect {
 		}
 	}
 }
+
+## A recognized endpoint size override must reach the production measured
+## label block; accepting its role name alone is not a sized-control proof.
+expect {
+	match ClassDiagram.parse("classDiagram\nA \"1\" --> \"many\" B") {
+		Err(_) => False
+		Ok(diagram) => {
+			arranged = EntityDraw.arrange_sized(ClassRender.nodes(diagram.classes), ClassRender.edges(diagram.relationships), Down, Theme.Options.{}, ["A", "B"], [{ kind: "label", id: "0-from-label", width: 100, height: 50 }])
+			match arranged.labels.first() {
+				Ok(label) => label.block.width == 100 and label.block.height == 50
+				Err(_) => False
+			}
+		}
+	}
+}

@@ -51,3 +51,49 @@ association/dependency; logical geometry stays port-aligned. ER cardinalities
 use quadratic lens shapes,9px half-height bars,6px radius circles, and the
 pinned endpoint-specific27.5/28px zero-many offsets. Existing FlowDrawEdge
 implements the same rounded5px bends and continuous3px dashed paths.
+
+Final pinned native evidence (2026-10-28)
+Native compiler26 dev build:0errors0warnings,2m04s. Nine accepted drawings
+compared at their own view boxes with no scaling/alignment correction. Raw
+unmatched-ink scores (one CSS pixel match radius from shared fixed raster):
+class compartments2.954%, generics0.699%, payments2.317%, relationships3.403%,
+terminal-labels1.019%, dense-terminal-labels0.886%; ER loops1.173%, shop0.173%,
+unquoted-role-statements0.018%. All nine are below the unchanged5% gate.
+Residual height differences reach0.392px from native versus browser glyph
+extents; widths agree to SVG decimal output precision. No broad grammar
+completeness claim follows from these cases.
+
+All original10 accepted/rejected decisions and full canonical semantics match.
+With independently measured node/edge-label dimensions supplied to the same
+production solver, every node box agrees within2.27e-13 and every raw route
+point within5.68e-14; all size_problems lists empty. Reference positions,
+routes, normalization and rescaling are never supplied to native layout.
+
+The new dense-terminal-labels fixture records four common1..*/0..1 edges on
+one short Hub class. Before the rectangle-strip phase it mismatched30.286%,
+with missing28px layer space and clipped terminal ink. The source-derived
+ELK greedy first-fit phase places source labels in14px rows0/14/28/0. Actual
+cell centres are preserved through drawing; named-side reflection is refused
+when another route/node/label blocks it. The final331.719x306 SVG matches
+reference331.71875x306 and raw mismatch is0.886%. Permanent expects cover
+node centres, all four source label centres, and actual canvas bounds.
+
+Crowded phase native optimized benchmark (ClassMarginBench)
+Frozen ClassMarginBefore is authoring-only, never imported by drawing. Input
+ordering/ports are prepared outside the measured window. Star counts4/16/64
+exercise the changed margin phase; no-label controls test the early skip.
+count mode     elapsed_us alloc realloc requested_B peak_extra_B
+4     before     12        21      4       5000        1504
+4     after      17        88     10      12640        2760
+4     control     7         0      0          0           0
+16    before     25        81      8      21480        5344
+16    after      93       403     55      57640       10920
+16    control     9         0      0          0           0
+64    before    422       321     14     107848       23648
+64    after    1405      2804    345     365232       48808
+64    control    14         0      0          0           0
+This is added source-required overlap work, not a performance improvement.
+The overlap graph is dense for short hubs, so greedy first-fit may require
+quadratic comparisons, as in the pinned source. Source parsing bounds edges
+at500. Lists stay flat/indexed and merge sorting avoids the compiler builtin's
+quadratic ordered-input path. No-label graphs allocate nothing in this phase.
