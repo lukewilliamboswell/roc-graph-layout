@@ -74,3 +74,15 @@ node tools/mermaid-oracle/validate.mjs /tmp/mermaid-oracle-dump /tmp/mermaid-ora
 CI force-records independent references for its own font environment, applies
 these gates, and uploads compiler version, both SVGs, differences and full JSON.
 Local artifacts for this run: /tmp/mermaid-oracle-cold-verified-results.
+
+FINAL REPOSITORY VERIFICATION
+The complete scripts/check.roc run exited0 using the compiler pair above.
+It passed geometry375tests, Mermaid/package and differential expectations,
+fuzz contract tests and native smoke, all16native examples, node-editor smoke,
+benchmark smoke, bundled examples/release checks, reproducible documentation
+archives/site generation, and gitdiff--check. The final native oracle binary
+built with0errors and0warnings. Comparison unit tests7/7 and CLI/metrology
+integration tests2/2 passed. The integration worktree is clean; the original
+checkout's existing edits were preserved.
+Logs for this session: /tmp/mermaid-oracle-all-repository-check.log,
+/tmp/mermaid-oracle-cold-verified.log, /tmp/mermaid-oracle-cold-guards.log.
