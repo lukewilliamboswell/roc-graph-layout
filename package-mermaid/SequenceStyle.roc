@@ -8,7 +8,6 @@ SequenceStyle :: {}.{
 	resolve : Theme.Options -> Theme.Options
 	resolve = |options| {
 		defaults = Theme.Options.{}
-		dark = Drawing.rgb(0x28253D)
 		Theme.Options.{
 			background: options.background,
 			node_fill: options.node_fill,
@@ -16,23 +15,12 @@ SequenceStyle :: {}.{
 			node_text: options.node_text,
 			node_palette: options.node_palette,
 			note_fill: options.note_fill,
-			note_stroke: if options.note_stroke == defaults.note_stroke {
-				Drawing.rgb(0xFACC15)
-			} else {
-				options.note_stroke
-			},
+			note_stroke: options.message_colors.note_stroke,
 			note_text: options.note_text,
-			line: if options.line == defaults.line {
-				dark
-			} else {
-				options.line
-			},
+			line: options.message_colors.line,
 			line_width: options.line_width * 1.5 / defaults.line_width,
-			label_background: if options.label_background == defaults.label_background {
-				Drawing.white
-			} else {
-				options.label_background
-			},
+			label_background: options.message_colors.control_fill,
+			message_colors: options.message_colors,
 			label_text: options.label_text,
 			accent: options.accent,
 			group_fill: options.group_fill,
@@ -61,24 +49,18 @@ SequenceStyle :: {}.{
 
 	actor : U64, Theme.Options -> { fill : Drawing.Color, stroke : Drawing.Color }
 	actor = |index, options| {
-		defaults = Theme.Options.{}
 		palette = if options.node_palette.is_empty() {
 			FlowDraw.mermaid.group_colors
 		} else {
 			options.node_palette
 		}
 		entry = palette.get(index % palette.len()) ?? { fill: options.node_fill, stroke: options.node_stroke }
-		{
-			fill: if options.node_fill == defaults.node_fill {
-				entry.fill
-			} else {
-				options.node_fill
-			},
-			stroke: if options.node_stroke == defaults.node_stroke {
-				entry.stroke
-			} else {
-				options.node_stroke
-			},
-		}
+		entry
 	}
+}
+
+expect {
+	options = Theme.Options.{ message_colors: Theme.MessageColors.{ line: Drawing.black, note_stroke: Drawing.rgb(0x28253D), control_fill: Drawing.rgb(0xCCCCCC) } }
+	actual = SequenceStyle.resolve(options)
+	actual.line == Drawing.black and actual.note_stroke == Drawing.rgb(0x28253D) and actual.label_background == Drawing.rgb(0xCCCCCC)
 }

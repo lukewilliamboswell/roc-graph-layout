@@ -1,13 +1,29 @@
 import Drawing
 
 ## Shared appearance for Mermaid diagrams. Colours are sRGB and distances
-## are CSS pixels. Construct `Options.{}` for a readable light palette, or
+## use a 14px flowchart base. Other families retain Mermaid's role
+## proportions (for example 16px sequence messages and 8px state padding).
+## Construct `Options.{}` for pinned Mermaid defaults, or
 ## supply only the properties you want to change. Labels are measured and
 ## drawn in Inter; changing their size also changes the space they receive.
+## Empty `node_palette` selects family defaults; one entry selects flat
+## actor/table colours. Graph edges use `line`; sequence messages and their
+## note outlines use `message_colors`. Flow labels use `label_background`
+## with `label_background_opacity`; state transitions and ER/class relations
+## use the opaque `transition_label_background`.
 Theme :: {}.{
 
 	## A numeric property outside its documented range.
 	Problem : [InvalidTheme(Str)]
+
+	## Sequence messages, note outlines and control captions have distinct
+	## Mermaid defaults from graph edges and their labels. Explicit values
+	## are always honoured, including black lines and grey caption fills.
+	MessageColors := {
+		line : Drawing.Color ?? Drawing.rgb(0x28253D),
+		note_stroke : Drawing.Color ?? Drawing.rgb(0xFACC15),
+		control_fill : Drawing.Color ?? Drawing.white,
+	}
 
 	Options := {
 		background : Drawing.Color ?? Drawing.white,
@@ -20,8 +36,10 @@ Theme :: {}.{
 		note_text : Drawing.Color ?? Drawing.rgb(0x28253D),
 		line : Drawing.Color ?? Drawing.rgb(0x000000),
 		line_width : F64 ?? 2,
-		label_background : Drawing.Color ?? Drawing.rgb(0xE5E5E5),
+		label_background : Drawing.Color ?? Drawing.rgb(0xCCCCCC),
+		label_background_opacity : F64 ?? 0.5,
 		transition_label_background : Drawing.Color ?? Drawing.white,
+		message_colors : MessageColors ?? MessageColors.{},
 		label_text : Drawing.Color ?? Drawing.rgb(0x28253D),
 		accent : Drawing.Color ?? Drawing.rgb(0x28253D),
 		group_fill : Drawing.Color ?? Drawing.rgb(0xFDF4FF),
@@ -69,6 +87,9 @@ Theme :: {}.{
 					$problems = $problems.append(InvalidTheme("shadow.opacity"))
 				}
 			}
+		}
+		if !F64.is_finite(options.label_background_opacity) or options.label_background_opacity < 0 or options.label_background_opacity > 1 {
+			$problems = $problems.append(InvalidTheme("label_background_opacity"))
 		}
 		$problems
 	}

@@ -24,7 +24,8 @@ Mermaid := [].{
 
 	## Override only the appearance choices you need. For example,
 	## `Options.{ theme: Theme.Options.{ font_size: 16 } }` measures labels
-	## at 16 pixels and gives them the corresponding space before layout.
+	## at a 16px flowchart base and gives them the corresponding space
+	## before layout. Other family roles keep their Mermaid proportions.
 	Options := { theme : Theme.Options ?? Theme.Options.{} }
 
 	## Source problems and invalid numeric theme properties. `Syntax` names
