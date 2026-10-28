@@ -414,6 +414,15 @@ SequenceDraw :: {}.{
 						Close => True
 					},
 				)
+				StyledText(styled) => {
+					measured = TextMeasure.block(styled.label.text, style)
+					left = match styled.label.align {
+						Start => styled.label.origin.x
+						Center => styled.label.origin.x - measured.width / 2
+						End => styled.label.origin.x - measured.width
+					}
+					inside({ x: left, y: styled.label.origin.y }) and inside({ x: left + measured.width, y: styled.label.origin.y })
+				}
 				Text(label) => {
 					measured = TextMeasure.block(label.text, style)
 					left = match label.align {
