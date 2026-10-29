@@ -66,9 +66,39 @@ Release := [].{
 	dry_run_version : Str
 	dry_run_version = "0.0.1-dry-run"
 
-	## Whether `value` is the file name `roc bundle` gives a package archive.
+	## A hash-named archive, optionally prefixed with its package namespace.
 	valid_bundle_file : Str -> Bool
-	valid_bundle_file = |value| value.ends_with(".tar.zst") and Text.is_alphanumeric(value.drop_suffix(".tar.zst"))
+	valid_bundle_file = |value| Release.bundle_hash_file(value).is_ok()
+
+	## The hash-only filename, accepting old release names as well as the two
+	## named assets. The filename prefix is part of Roc's package identity.
+	bundle_hash_file : Str -> Try(Str, [InvalidBundleFile(Str)])
+	bundle_hash_file = |value| {
+		stem = value.drop_suffix(".tar.zst")
+		hash = if stem.starts_with("layout-") {
+			stem.drop_prefix("layout-")
+		} else if stem.starts_with("mermaid-") {
+			stem.drop_prefix("mermaid-")
+		} else {
+			stem
+		}
+		if value.ends_with(".tar.zst") and Text.is_alphanumeric(hash) {
+			Ok("${hash}.tar.zst")
+		} else {
+			Err(InvalidBundleFile(value))
+		}
+	}
+
+	## Give each package its own versioned URL identity in the same release.
+	bundle_asset_name : [Layout, Mermaid], Str -> Try(Str, [InvalidBundleFile(Str)])
+	bundle_asset_name = |kind, value| {
+		hash_file = Release.bundle_hash_file(value)?
+		prefix = match kind {
+			Layout => "layout"
+			Mermaid => "mermaid"
+		}
+		Ok("${prefix}-${hash_file}")
+	}
 
 	## The immutable URL of a bundle attached to the release `version`.
 	bundle_url : Str, Str -> Try(Str, [InvalidVersion(Str), InvalidBundleFile(Str)])
@@ -211,6 +241,10 @@ expect Release.is_final("0.2.0") and !Release.is_final("1.0.0-rc.1")
 expect Release.final_of("0.3.0-rc1") == "0.3.0" and Release.final_of("1.0.0-rc.1") == "1.0.0" and Release.final_of("0.2.0") == "0.2.0"
 expect Release.publishable_version("0.0.1-dry-run") and !Release.publishable_version("0.0.0") and !Release.publishable_version("0.0.0-rc1")
 expect Release.valid_bundle_file("Abc123.tar.zst") and !Release.valid_bundle_file("../Abc123.tar.zst") and !Release.valid_bundle_file(".tar.zst")
+expect Release.bundle_asset_name(Layout, "Abc123.tar.zst") == Ok("layout-Abc123.tar.zst")
+expect Release.bundle_asset_name(Mermaid, "Abc123.tar.zst") == Ok("mermaid-Abc123.tar.zst")
+expect Release.valid_bundle_file("layout-Abc123.tar.zst") and Release.valid_bundle_file("mermaid-Abc123.tar.zst")
+expect !Release.valid_bundle_file("layout-.tar.zst") and !Release.valid_bundle_file("layout-../Abc123.tar.zst") and !Release.valid_bundle_file("layout-mermaid-Abc123.tar.zst")
 expect Release.bundle_url("0.2.0", "Abc123.tar.zst") == Ok(url)
 expect Release.bundle_url("latest", "Abc123.tar.zst") == Err(InvalidVersion("latest"))
 expect Release.bundle_url("0.2.0", "a/b.tar.zst") == Err(InvalidBundleFile("a/b.tar.zst"))

@@ -2,6 +2,7 @@ import cli.Cmd
 import cli.Duration
 import cli.Path
 import cli.Tcp
+import Release
 import Script
 
 ## Serves package bundles from 127.0.0.1.
@@ -15,16 +16,20 @@ Loopback := [].{
 	## Each bundle is served at `base` followed by `/` and its file name.
 	Server : { listener : Tcp.Listener, files : List({ name : Str, bytes : List(U8) }), base : Str }
 
-	## Read `bundles` and start listening on a free port.
-	start! : List(Path) => Try(Server, _)
-	start! = |bundles| {
+	## Preserve the release version and asset names in local URLs, so Roc's
+	## version resolver sees the same package namespaces as publication.
+	start! : List(Path), Str => Try(Server, _)
+	start! = |bundles, version| {
+		if !Release.publishable_version(version) {
+			return Script.fail!("invalid loopback release version: ${version}")
+		}
 		var $files = []
 		for bundle in bundles {
-			$files = $files.append({ name: Script.file_name(bundle)?, bytes: Path.read_bytes!(bundle)? })
+			$files = $files.append({ name: "${version}/${Script.file_name(bundle)?}", bytes: Path.read_bytes!(bundle)? })
 		}
 		listener = Tcp.listen!("127.0.0.1", 0, Duration.seconds(5))?
 		port = listener.local_port!()?
-		Ok({ listener, files: $files, base: "http://127.0.0.1:${port.to_str()}" })
+		Ok({ listener, files: $files, base: "http://127.0.0.1:${port.to_str()}/${version}" })
 	}
 
 	## The URL `server` answers with `bundle`, to put in place of its release URL.
@@ -92,4 +97,5 @@ response_headers = |status, content_length|
 	)
 
 expect requested(Str.to_utf8("GET /Abc123.tar.zst HTTP/1.1\r\n")) == "Abc123.tar.zst"
+expect requested(Str.to_utf8("GET /0.0.1-dry-run/layout-Abc123.tar.zst HTTP/1.1\r\n")) == "0.0.1-dry-run/layout-Abc123.tar.zst"
 expect requested(Str.to_utf8("\r\n")) == ""
