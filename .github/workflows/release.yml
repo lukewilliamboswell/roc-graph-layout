@@ -69,7 +69,7 @@ jobs:
           cache-workload: dev
 
       - name: Install the latest Roc nightly
-        uses: roc-lang/setup-roc@f5a74bf90aa694b43ab4a7cbfdb19273bc6aa697
+        uses: roc-lang/setup-roc@dd81390553b0a1236aedb61cdd4c0ed7cf7eaec4
         with:
           version: nightly-new-compiler
           nightly-tag: ${{ steps.nightly.outputs.tag }}
@@ -157,7 +157,7 @@ jobs:
         uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@7aff4132691ad4fc348abe9df146a57512b49bd6
 
       - name: Install the Roc nightly this run resolved
-        uses: roc-lang/setup-roc@f5a74bf90aa694b43ab4a7cbfdb19273bc6aa697
+        uses: roc-lang/setup-roc@dd81390553b0a1236aedb61cdd4c0ed7cf7eaec4
         with:
           version: nightly-new-compiler
           nightly-tag: ${{ needs.build.outputs.nightly_tag }}
