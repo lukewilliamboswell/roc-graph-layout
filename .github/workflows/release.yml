@@ -63,15 +63,15 @@ jobs:
         run: echo "tag=$(gh api repos/roc-lang/nightlies/releases/latest --jq .tag_name)" >> "$GITHUB_OUTPUT"
 
       - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@7aff4132691ad4fc348abe9df146a57512b49bd6
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@8454f8ed9acc026c85e31e87b132dfeeaf9f1b81
         with:
           cache: 'true'
           cache-workload: dev
 
       - name: Install the latest Roc nightly
-        uses: roc-lang/setup-roc@f5a74bf90aa694b43ab4a7cbfdb19273bc6aa697
+        uses: roc-lang/setup-roc@dd81390553b0a1236aedb61cdd4c0ed7cf7eaec4
         with:
-          version: nightly-new-compiler
+          version: nightly
           nightly-tag: ${{ steps.nightly.outputs.tag }}
 
       # Rejects a version whose tag or release already exists.
@@ -154,12 +154,12 @@ jobs:
           persist-credentials: false
 
       - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@7aff4132691ad4fc348abe9df146a57512b49bd6
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@8454f8ed9acc026c85e31e87b132dfeeaf9f1b81
 
       - name: Install the Roc nightly this run resolved
-        uses: roc-lang/setup-roc@f5a74bf90aa694b43ab4a7cbfdb19273bc6aa697
+        uses: roc-lang/setup-roc@dd81390553b0a1236aedb61cdd4c0ed7cf7eaec4
         with:
-          version: nightly-new-compiler
+          version: nightly
           nightly-tag: ${{ needs.build.outputs.nightly_tag }}
 
       - name: Download the release candidate
@@ -197,7 +197,7 @@ jobs:
       # Stages a draft, downloads every asset back and compares it with the
       # tested file, and only then publishes the release.
       - name: Publish the tested assets
-        uses: lukewilliamboswell/roc-automation/actions/publish-release@7aff4132691ad4fc348abe9df146a57512b49bd6
+        uses: lukewilliamboswell/roc-automation/actions/publish-release@8454f8ed9acc026c85e31e87b132dfeeaf9f1b81
         with:
           version: ${{ needs.build.outputs.release_version }}
           prerelease: ${{ needs.build.outputs.is_prerelease }}

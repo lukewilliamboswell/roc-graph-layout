@@ -115,23 +115,6 @@ Click a layout to open the example app that generated it.
 | [Mermaid conversation](examples/mermaid_sequence/main.roc)<br>[![A Mermaid sequence diagram](examples/mermaid_sequence/output.svg)](examples/mermaid_sequence/main.roc) | [Mermaid database model](examples/mermaid_entity/main.roc)<br>[![A Mermaid entity relationship diagram](examples/mermaid_entity/output.svg)](examples/mermaid_entity/main.roc) |
 | [Mermaid class model](examples/mermaid_class/main.roc)<br>[![A Mermaid class diagram](examples/mermaid_class/output.svg)](examples/mermaid_class/main.roc) | [Mermaid lifecycle](examples/mermaid_state/main.roc)<br>[![A Mermaid state diagram](examples/mermaid_state/output.svg)](examples/mermaid_state/main.roc) |
 
-See the [build-pipeline example](examples/build_pipeline/main.roc) for a
-complete program that writes the result as SVG, the
-[org-chart example](examples/org_chart/main.roc) for a level-by-level tree,
-the [mind-map example](examples/mind_map/main.roc) for a radial tree, the
-[service-ring example](examples/service_ring/main.roc) for a circular graph,
-and the [collab-network example](examples/collab_network/main.roc) for a
-force-directed graph with a disconnected component. The
-[incident blast-radius example](examples/incident_blast_radius/main.roc) uses
-concentric dependency hops, the
-[cloud-deployment example](examples/cloud_deployment/main.roc) composes nested
-infrastructure groups, and the
-[release-workflow example](examples/release_workflow/main.roc) keeps work in
-domain-specific responsibility lanes. The
-[transit-network example](examples/transit_network/main.roc) shares its plain
-graph fixture with the browser playground and uses stress layout so drawn
-distance reflects network distance.
-
 For repeated layouts of the same input and settings, use `Layered.prepare` once
 and pass the result to `Layered.layout_prepared` with `Layered.default_run`.
 Changed input must be prepared again.
@@ -142,22 +125,4 @@ drag-to-pin behavior, and authoritative routed geometry.
 
 ## Development
 
-Install [Blueprint](https://github.com/lukewilliamboswell/roc-blueprint/releases/tag/0.8.0)
-and put the latest Roc nightly on your `PATH` as `roc`. The package floats
-with the nightly; Blueprint provides the fixed compiler that runs the scripts
-under `scripts/`, and Zig for the benchmark host.
-
-```sh
-blueprint run check                  # everything CI checks
-blueprint run examples               # run the examples, compare their output
-blueprint run examples -- --update   # record what the examples print
-blueprint run serve                  # build the site and preview it locally
-blueprint run bench -- smoke         # native optimized benchmarks
-```
-
-The guide is AsciiDoc in `docs/index.adoc` and its chapters, rendered by
-roc-automation's shared `roc-docs` utility into the site and a PDF; release
-notes live in `docs/releases/`.
-
-`tests/examples.json` records what each example prints, and each example
-rewrites its drawing beside its source, so `git diff` shows any change.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, checks and documentation work.
