@@ -250,3 +250,11 @@ When several agents or sessions work concurrently:
   design guidance in the same change.
 - Preserve enduring constraints here; keep current status, temporary migration
   notes, and task lists elsewhere.
+
+## Documentation
+
+Documentation serves current users and contributors. Every paragraph must help a
+current task; delete obsolete or duplicated material. Keep implementation history
+in Git, unfinished work in issues, and release changes in release records. Preserve
+required public anchors without explaining their history. Follow the
+[shared documentation guidance](https://lukewilliamboswell.github.io/roc-automation/documentation.html#write-project-documentation).
