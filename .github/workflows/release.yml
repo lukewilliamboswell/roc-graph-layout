@@ -13,10 +13,6 @@ on:
         description: "Release version, e.g. 0.2.0, or 0.2.0-rc1 for a release candidate"
         required: true
         type: string
-      skip_api_comparison:
-        description: "Skip roc bump, only when the previous release no longer compiles; say so in the notes"
-        type: boolean
-        default: false
   pull_request:
 
 permissions: {}
@@ -85,14 +81,14 @@ jobs:
           dry_run_version: 0.0.1-dry-run
           github_token: ${{ github.token }}
 
-      # Stops a version that understates what changed in the layout package's
-      # API since the latest release. A dry run has no version to check.
-      - name: Check the version with roc bump
+      # A breaking-version boundary satisfies every API-change lower bound;
+      # versions within that boundary still require roc bump. A dry run has
+      # no publication version to check.
+      - name: Check the release version promise
         if: github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_VERSION: ${{ steps.validate.outputs.release_version }}
-          SKIP_API_COMPARISON: ${{ inputs.skip_api_comparison && '1' || '' }}
         run: blueprint run check-version
 
       - name: Check the scripts, package, examples and release artifacts

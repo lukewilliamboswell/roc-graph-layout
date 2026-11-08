@@ -22,3 +22,20 @@ Write for a current user or contributor task. Delete superseded or duplicated
 material and follow the [shared documentation guidance](https://lukewilliamboswell.github.io/roc-automation/documentation.html#write-project-documentation).
 Implementation history belongs in Git, pending work in issues and release
 changes in the release record.
+
+## Release versions
+
+A release must name a canonical three-component version. Components fit in
+`U64`, contain no leading zeroes, and prerelease identifiers are nonempty;
+numeric prerelease identifiers also have no leading zeroes. The version check
+validates the latest final release and its bundle URLs before deciding how to
+compare APIs. It accepts a strictly greater major version, or a strictly greater
+minor version when both majors are zero, as sufficient for any API change.
+Releases within that boundary still run `roc bump`; an unreadable previous API
+cannot satisfy that comparison. There is no manual switch to bypass it.
+
+This prevents malformed metadata, a downgrade, or a different repository's bundle
+from being used to justify publication. Pure release tests cover those rejected
+inputs and the pre-1.0 boundary. The proof establishes the version's compatibility
+promise, not that the package or its archived examples work; all existing build,
+example, oracle and archive checks remain required.

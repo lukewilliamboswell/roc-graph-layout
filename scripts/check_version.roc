@@ -20,8 +20,9 @@ import src/Text
 ##
 ## Needs `gh` to be authenticated, for example through `GH_TOKEN`. A version
 ## that understates a breaking change fails. `roc bump` must be able to
-## compile the previous release; when a newer compiler no longer can, set
-## `SKIP_API_COMPARISON=1` to release anyway and say so in the notes.
+## compare releases within the same breaking-version boundary. An increasing
+## major version, or minor version within 0.x, already promises every possible
+## API change. That proof still validates the previous release and bundle URLs.
 ##
 ## Only the layout package is compared. The Mermaid package, published
 ## beside it under the same version, is not compared.
@@ -30,28 +31,33 @@ main! = |_args| {
 	if !Release.publishable_version(version) {
 		return Script.fail!("not a publishable release version: ${version}")
 	}
-	if Script.env_or!("SKIP_API_COMPARISON", "")? == "1" {
-		return Script.info!("SKIP", "the public API is not compared with the previous release")
+	match Release.breaking_suffices(version, "0.0.0") {
+		Ok(_) => {}
+		Err(reason) => return Script.fail!(reason)
 	}
 	gh = Script.command("gh")
 	# The newest published final release, and the URL of its bundle.
 	query = "[.[] | select((.draft or .prerelease) | not)] | first | [.tag_name] + [.assets[] | select(.name | endswith(\".tar.zst\")) | .browser_download_url] | .[]"
-	previous = match Text.lines(gh.capture_utf8!(["api", "repos/${Release.repository}/releases?per_page=100", "--jq", query], ".")?) {
-		[] => return Script.info!("FIRST", "no earlier release to compare ${version} with")
-		# Releases before the Mermaid package published the layout package alone.
-		[tag, only] => {
-			if Release.version_of_bundle_url(only) != Ok(tag) {
-				return Script.fail!("release ${tag} has an unexpected bundle URL: ${only}")
-			}
-			only
-		}
-		[tag, .. as bundles] => {
-			if bundles.any(|bundle| Release.version_of_bundle_url(bundle) != Ok(tag)) {
-				return Script.fail!("release ${tag} has an unexpected bundle URL among ${Str.join_with(bundles, ", ")}")
-			}
-			layout_url!(gh, tag)?
-		}
+	metadata = Text.lines(gh.capture_utf8!(["api", "repos/${Release.repository}/releases?per_page=100", "--jq", query], ".")?)
+	if metadata.is_empty() {
+		return Script.info!("FIRST", "no earlier release to compare ${version} with")
 	}
+	previous_release = match Release.previous_release(metadata) {
+		Ok(previous) => previous
+		Err(reason) => return Script.fail!(reason)
+	}
+	previous = match previous_release.bundles {
+		[only] => only
+		_ => layout_url!(gh, previous_release.version)?
+	}
+	sufficient = match Release.breaking_suffices(version, previous_release.version) {
+		Ok(value) => value
+		Err(reason) => return Script.fail!(reason)
+	}
+	if sufficient {
+		return Script.info!("BREAKING VERSION", "${version} crosses the breaking-version boundary of ${previous_release.version}; no public API comparison is required")
+	}
+
 	Script.info!("COMPARE", "the layout package with ${previous}; the Mermaid package is not compared")?
 	# A release candidate is held to what its final release must promise.
 	Script.roc!()?.run!(["bump", "--old", OsStr.from_str(previous), "--expect", OsStr.from_str(Release.final_of(version)), "package/main.roc"])
