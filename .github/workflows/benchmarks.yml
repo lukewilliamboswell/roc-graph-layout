@@ -1,4 +1,4 @@
-name: Token-free fixed basic-cli delivery diagnostic
+name: Fixed compiler transport diagnostic
 on:
   workflow_dispatch:
 permissions:
@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Measure token-free fixed basic-cli asset delivery
+      - name: Measure fixed compiler browser and token-free API delivery
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -23,10 +23,10 @@ jobs:
           import subprocess
           import time
 
-          ROOT = Path(os.environ["RUNNER_TEMP"]) / "graph-token-free-transport-probe"
+          ROOT = Path(os.environ["RUNNER_TEMP"]) / "graph-compiler-transport-probe"
           ROOT.mkdir(mode=0o700, exist_ok=True)
           ASSETS = [
-              ("roc-lang/basic-cli", "0.27.0", 720815853, "9yjxqdGTP4xSpSEmDazwTmRsehfRZzA19pwEKkR6fj1g.tar.zst", 23399272, "81760dd9d6f31d8a1ef4263357228bdcacc4ef23e6ba624abff02e161724a8af"),
+              ("roc-lang/nightlies", "nightly-2026-11-07-ad3a5d2", 720599795, "roc_nightly-linux_x86_64-2026-11-07-ad3a5d2.tar.gz", 79504440, "21710f7007403428d96f5927343c60c2b3dbefc298394d62cf066fe6fa966495"),
           ]
 
 
@@ -84,23 +84,26 @@ jobs:
               asset, = [a for a in release["assets"] if a["id"] == identifier]
               assert asset["name"] == name and asset["size"] == size and asset["digest"] == "sha256:" + digest
               assert asset["browser_download_url"] == f"https://github.com/{repository}/releases/download/{version}/{name}"
-              path = ROOT / name
-              command = ["curl", "--disable", "--fail", "--silent", "--show-error", "--location", "--proto", "=https", "--proto-redir", "=https", "--max-time", "60", "--max-filesize", str(size), "--header", "Accept: application/octet-stream", "--output", str(path), "--write-out", "%{http_code} %{time_total} %{size_download} %{num_redirects} %{content_type}", f"https://api.github.com/repos/{repository}/releases/assets/{identifier}"]
-              rc, metrics, error, elapsed, reason = bounded(command, 4096, child_environment)
-              data = path.read_bytes() if path.exists() else b""
-              result = {"repository": repository, "version": version, "asset_id": identifier, "asset": name, "transport": "token-free official asset-ID API", "argv": command, "child_credentials_absent": credentials_absent,
-                        "code": rc, "reason": reason, "seconds": elapsed, "stderr": error.decode(errors="replace"), "http_metrics": metrics.decode(errors="replace"), "size": len(data), "sha256": hashlib.sha256(data).hexdigest(),
-                        "matches_admitted_bytes": rc == 0 and reason == "exited" and len(data) == size and hashlib.sha256(data).hexdigest() == digest}
-              facts["requests"].append(result)
-              (ROOT / "report.json").write_text(json.dumps(facts, indent=2) + "\n")
-              print(json.dumps(result), flush=True)
-          assert len(facts["requests"]) == 1 and all(r["matches_admitted_bytes"] for r in facts["requests"]), "Token-free delivery failed; measurements preserved"
+              for route, url in [("browser", asset["browser_download_url"]),
+                                 ("anonymous-api", f"https://api.github.com/repos/{repository}/releases/assets/{identifier}")]:
+                  path = ROOT / (route + "-" + name)
+                  command = ["curl", "--disable", "--fail", "--silent", "--show-error", "--location", "--proto", "=https", "--proto-redir", "=https", "--max-time", "60", "--max-filesize", str(size), "--header", "Accept: application/octet-stream", "--output", str(path), "--write-out", "%{http_code} %{time_total} %{size_download} %{num_redirects} %{content_type}", url]
+                  rc, metrics, error, elapsed, reason = bounded(command, 4096, child_environment)
+                  data = path.read_bytes() if path.exists() else b""
+                  result = {"repository": repository, "version": version, "asset_id": identifier, "asset": name, "transport": route, "argv": command, "child_credentials_absent": credentials_absent,
+                            "code": rc, "reason": reason, "seconds": elapsed, "stderr": error.decode(errors="replace"), "http_metrics": metrics.decode(errors="replace"), "size": len(data), "sha256": hashlib.sha256(data).hexdigest(),
+                            "matches_admitted_bytes": rc == 0 and reason == "exited" and len(data) == size and hashlib.sha256(data).hexdigest() == digest}
+                  facts["requests"].append(result)
+                  (ROOT / "report.json").write_text(json.dumps(facts, indent=2) + "\n")
+                  print(json.dumps(result), flush=True)
+
+          assert len(facts["requests"]) == 2 and all(r["matches_admitted_bytes"] for r in facts["requests"]), "Token-free delivery failed; measurements preserved"
           PY
       - name: Preserve token-free transport measurements
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: graph-token-free-transport-probe
-          path: ${{ runner.temp }}/graph-token-free-transport-probe/report.json
+          name: graph-compiler-transport-probe
+          path: ${{ runner.temp }}/graph-compiler-transport-probe/report.json
           if-no-files-found: error
           retention-days: 14
