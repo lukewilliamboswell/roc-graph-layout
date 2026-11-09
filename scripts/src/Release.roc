@@ -61,6 +61,47 @@ Release := [].{
 	publishable_version : Str -> Bool
 	publishable_version = |version| Release.valid_version(version) and version != "0.0.0" and !version.starts_with("0.0.0-")
 
+	## Crossing a breaking-version boundary satisfies every possible API-change
+	## lower bound: major after 1.0, minor within 0.x. Malformed metadata never
+	## proves a bump, and releases within a boundary still need API comparison.
+	breaking_suffices : Str, Str -> Try(Bool, Str)
+	breaking_suffices = |requested, previous| {
+		if !Release.publishable_version(requested) or !Release.is_final(previous) {
+			return Err("requested and latest-final versions must be semantic versions")
+		}
+		for version in [requested, previous] {
+			if !Release.final_of(version).split_on(".").all(|part| part == "0" or !part.starts_with("0")) {
+				return Err("version components must not contain leading zeroes")
+			}
+		}
+		match requested.split_first("-") {
+			Ok({ after, .. }) => if !after.split_on(".").all(|part| !part.is_empty() and (!Text.is_digits(part) or part == "0" or !part.starts_with("0"))) {
+				return Err("invalid prerelease identifiers")
+			}
+			Err(_) => {}
+		}
+		next = Release.final_of(requested).split_on(".").map_try(|part| U64.from_str(part).map_err(|_| "requested version component exceeds the supported integer range"))?
+		old = previous.split_on(".").map_try(|part| U64.from_str(part).map_err(|_| "latest-final version component exceeds the supported integer range"))?
+		match (next, old) {
+			([next_major, next_minor, _], [old_major, old_minor, _]) => Ok(next_major > old_major or (old_major == 0 and next_major == 0 and next_minor > old_minor))
+			_ => Err("requested and latest-final versions must have three components")
+		}
+	}
+
+	## Validate release metadata before a version boundary can satisfy API checking.
+	previous_release : List(Str) -> Try({ version : Str, bundles : List(Str) }, Str)
+	previous_release = |metadata|
+		match metadata {
+			[version, .. as bundles] if !bundles.is_empty() => {
+				_ = Release.breaking_suffices("1.0.0", version)?
+				if !bundles.all(|bundle| Release.version_of_bundle_url(bundle) == Ok(version)) {
+					return Err("previous release bundles must belong to this repository and its exact release version")
+				}
+				Ok({ version, bundles })
+			}
+			_ => Err("previous release must name a final version and at least one bundle")
+		}
+
 	## The version a pull request builds and tests its release under. It is
 	## never published.
 	dry_run_version : Str
@@ -267,3 +308,39 @@ expect !Release.valid_docs_entry("0.2.0", "../escape") and !Release.valid_docs_e
 expect Release.newest_first(["0.9.0", "0.13.1", "0.10.0", "0.13.0"]) == ["0.13.1", "0.13.0", "0.10.0", "0.9.0"]
 expect Release.examples_readme("0.2.0", { layout: url, mermaid: "M" }).contains("    layout: \"${url}\"\n")
 expect Release.examples_readme("0.2.0", { layout: url, mermaid: "M" }).contains("    mermaid: \"M\"\n")
+
+expect Release.breaking_suffices("4.0.0", "3.0.0") == Ok(True)
+expect Release.breaking_suffices("4.0.0-rc.1", "3.0.0") == Ok(True)
+expect Release.breaking_suffices("3.1.0", "3.0.0") == Ok(False)
+expect Release.breaking_suffices("3.0.1", "3.0.0") == Ok(False)
+expect Release.breaking_suffices("3.0.0", "3.0.0") == Ok(False)
+expect Release.breaking_suffices("2.0.0", "3.0.0") == Ok(False)
+expect Release.breaking_suffices("1.0.0", "0.9.0") == Ok(True)
+expect ["", "garbage", "v3.0.0", "3.0.0-rc.1", "03.0.0", "3.00.0", "18446744073709551616.0.0"].all(|previous| Release.breaking_suffices("4.0.0", previous).is_err())
+expect ["04.0.0", "4.00.0", "4.0.00", "4.0.0-.", "4.0.0-rc..1", "4.0.0-01", "18446744073709551616.0.0"].all(|requested| Release.breaking_suffices(requested, "3.0.0").is_err())
+
+expect Release.breaking_suffices("10.0.0", "9.0.0") == Ok(True)
+expect Release.breaking_suffices("18446744073709551615.0.0", "18446744073709551614.0.0") == Ok(True)
+expect Release.breaking_suffices("4.0.0", "18446744073709551615.0.0") == Ok(False)
+
+expect Release.breaking_suffices("0.12.0", "0.11.0") == Ok(True)
+expect Release.breaking_suffices("0.12.0-rc.1", "0.11.9") == Ok(True)
+expect Release.breaking_suffices("0.11.1", "0.11.0") == Ok(False)
+expect Release.breaking_suffices("0.11.0", "0.11.0") == Ok(False)
+expect Release.breaking_suffices("0.10.9", "0.11.0") == Ok(False)
+expect Release.breaking_suffices("0.12.0", "1.11.0") == Ok(False)
+expect Release.breaking_suffices("0.10.0", "0.9.9") == Ok(True)
+expect Release.breaking_suffices("0.18446744073709551615.0", "0.18446744073709551614.0") == Ok(True)
+expect ["0.18446744073709551616.0", "0.11.18446744073709551616"].all(|previous| Release.breaking_suffices("0.12.0", previous).is_err())
+expect ["0.18446744073709551616.0", "0.12.18446744073709551616"].all(|requested| Release.breaking_suffices(requested, "0.11.0").is_err())
+
+expect Release.previous_release(["0.2.0", url]) == Ok({ version: "0.2.0", bundles: [url] })
+expect [[], ["0.2.0"], ["0.2.0", ""], ["0.2.0", "https://github.com/other/repo/releases/download/0.2.0/Abc.tar.zst"], ["0.2.0", "https://github.com/lukewilliamboswell/roc-graph-layout/releases/download/0.1.0/Abc.tar.zst"], ["0.2.0-rc.1", url], ["00.2.0", url]].all(|metadata| Release.previous_release(metadata).is_err())
+expect Release.previous_release(["0.2.0", url, "https://github.com/other/repo/releases/download/0.2.0/Abc.tar.zst"]).is_err()
+
+expect Release.breaking_suffices("0.3.0", "0.2.0") == Ok(True)
+expect Release.breaking_suffices("0.3.0-rc.1", "0.2.9") == Ok(True)
+expect ["1.18446744073709551616.0", "1.0.18446744073709551616"].all(|requested| Release.breaking_suffices(requested, "0.2.0").is_err())
+expect ["1.18446744073709551616.0", "1.0.18446744073709551616"].all(|previous| Release.breaking_suffices("2.0.0", previous).is_err())
+expect Release.previous_release(["0.3.0", "https://github.com/lukewilliamboswell/roc-graph-layout/releases/download/0.3.0/layout-Abc.tar.zst", "https://github.com/lukewilliamboswell/roc-graph-layout/releases/download/0.3.0/mermaid-Def.tar.zst"]).is_ok()
+expect ["http://github.com/lukewilliamboswell/roc-graph-layout/releases/download/0.2.0/Abc.tar.zst", "https://github.com/lukewilliamboswell/roc-graph-layout/releases/download/0.2.0/../Abc.tar.zst", "https://github.com/lukewilliamboswell/roc-graph-layout/releases/download/0.2.0/Abc.tar.zst?redirect=1"].all(|bundle| Release.previous_release(["0.2.0", bundle]).is_err())

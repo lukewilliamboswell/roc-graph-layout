@@ -2,7 +2,7 @@
 app [main!] {
 	fixtures: "../data/main.roc",
 	layout: "../../package/main.roc",
-	pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
+	pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.27.0/9yjxqdGTP4xSpSEmDazwTmRsehfRZzA19pwEKkR6fj1g.tar.zst",
 	svg: "../svg/main.roc",
 }
 import fixtures.ExampleData
