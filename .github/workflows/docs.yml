@@ -29,7 +29,7 @@ jobs:
           persist-credentials: false
 
       - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@3d0de80181b04e0549e15955672746fb56f622e4
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@e12512e2605608588782edb044dd766137e34869
 
       - name: Install the latest Roc nightly
         uses: roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c
