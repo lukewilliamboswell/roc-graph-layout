@@ -1,79 +1,73 @@
-name: Windows Core data-only witness
+name: Windows compiler-free Core decoder witness
 on:
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  core-windows:
+  core-decoder-windows:
     runs-on: windows-2025
-    timeout-minutes: 10
+    timeout-minutes: 5
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
     defaults:
       run:
         shell: python
     steps:
-      - name: Initialize data-only witness report
+      - name: Initialize compiler-free witness report
         run: |
           import json, os
           from pathlib import Path
-          root = Path(os.environ["RUNNER_TEMP"]) / "graph-core-windows-probe"
+          root = Path(os.environ["RUNNER_TEMP"]) / "graph-core-windows-decoder-probe"
           root.mkdir(exist_ok=False)
           facts = {"run_id": os.environ["GITHUB_RUN_ID"], "attempt": os.environ["GITHUB_RUN_ATTEMPT"],
                    "source": os.environ["GITHUB_SHA"], "runner_os": os.environ["RUNNER_OS"],
-                   "scope": "private Windows Core data-only unbundle and filesystem witness",
+                   "scope": "existing host Windows decoder plus fixed Core tar inventory; no compiler or extraction",
                    "success": False, "started": True}
           (root / "report.json").write_text(json.dumps(facts, indent=2) + "\n", encoding="utf-8")
-      - name: Install reviewed exact November 7 compiler
-        uses: roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c
-        with:
-          version: nightly
-          nightly-tag: nightly-2026-11-07-ad3a5d2
-          download-method: asset-api
-          cache: 'false'
-      - name: Witness fixed Core bytes and private NTFS controls
+      - name: Measure existing decoder and fixed Core tar bytes
         run: |
-          """Read-only Windows witness for the one already-admitted Core 0.12 blob.
-          
-          No checkout, package evaluation, shared-cache insertion, or sidecar creation.
-          All child commands are fixed trusted tools. A Windows job contains each child
-          before its first instruction and kills descendants at the deadline/byte cap.
-          """
+          """Windows data-only decoder capability witness; no Roc, extraction or cache writes."""
           import ctypes
           from ctypes import wintypes as W
           import hashlib
+          import io
           import json
           import os
           from pathlib import Path
           import shutil
           import stat
           import subprocess
+          import sys
+          import tarfile
           import tempfile
           import threading
           import time
-          
+
           HASH = "3mh7nRh7hHcVamEwYFCtd7aMUEoP3cdpAk9gLsZMV17m"
           RAW_SIZE = 132723
           RAW_SHA = "b367d5d91a32c002d09d5309a28ae82c0e978a6cd59ed4eb249e395700a01910"
           URL = "https://api.github.com/repos/lukewilliamboswell/roc-blueprint/releases/assets/725946981"
           MEMBERS = (('main.roc', 313, '017d20c102592c9c502aa46cf3e6e78eb86249cb9f44757eea5f80e2190190c6'), ('Activation.roc', 6080, '8c7b68df85f5e0607db71ef653e02efd351e6a6a194e1d96e40fa8e4e53ee117'), ('BuildModel.roc', 13239, '03e540330810e54e05f879b8d1af647209983a3b4e2dd2ef57f20e089272bf41'), ('CycloneDx.roc', 19960, '334b7ef4d3881142ed1e4c5edd7c4edd3588a0c6a7fae7dc07c8d0023d671ce4'), ('JsonData.roc', 17611, 'a1a4cacbb774184ba3573b5fb03519094ede649c0c3704cbbc24d81f269dd656'), ('Layout.roc', 2510, '2788742ec5aa05b875c1a717a0362fc03fee4be56a7acc5bc8e4f33cba49cdf3'), ('Lock.roc', 31027, '6e6b2f0f93dfb8e88b1f73eaaf442748b980cedd63f008196c03b107ae7cd8b1'), ('LockSnapshot.roc', 18687, '08e948136d70d70d2c0ea61378ff4cbbd6300d7dea84b08a414d1e06b05d61d6'), ('Lookup.roc', 2391, '876a2cc466ab609ead5849cd65ad3c18f741ab5b643d3be597be5e2dde6749ed'), ('Manifest.roc', 9690, '6ab1e0189ce7962c9a0216b29154a33de9af258170edc53eddd035fe2ad962d2'), ('Project.roc', 94022, '363b876e8be8d8da43574ae89af53c63940a36ce8d2847212a1cf7165f760a5f'), ('Provider.roc', 5774, '4e6af75588f5854c2373a6693ccb5929bd90040068263d4df45475c751578c6c'), ('Realise.roc', 60253, 'ae47de85c20ad12366420e99eb5c40b74565607ab11512f4c56463f6a5df8c7d'), ('Request.roc', 175, '64c38f6c49e3f993b88c3a736365005624584dc1d2692486b11a21799d7fdb91'), ('Sbom.roc', 111185, '13c2f51b8703324e61b38cb8b7aaba205cb54d9d223e1026011936f0728fb123'), ('SbomLicenses.roc', 14878, 'ccb1aadbd6d955564c400a0c0ef94e8fc8f6e65781eb172f4cd1182afd6a3975'), ('Sexpr.roc', 14985, '73946181e9e2f2e500d359796476d37805a32cebdd4dea99989e61e052cc6515'), ('Sidecar.roc', 6882, '5cd13d8a3553005472dda9a001e48a92d0b53a51c7e8fc19140ef12d28b26e44'), ('Spdx2.roc', 21038, '0a991a66ef13de35c1487fc9dda9443d4b2e9e788539350fa62c2b6f307161d0'), ('Spdx3.roc', 23586, 'a19d011f3f710c75f1050dbbaac203f257fb2f7cc12caa46cee0ce3bf893c3cf'), ('Spec.roc', 17235, '4e09cce6645824d4aaee778515c71fcfd9f78ab838d4952018fac4db0c373373'), ('Steps.roc', 5449, 'b62dbe60212d6f4edcac103e6b03d441696e811f85167bb41472df1f4e44adec'), ('Tree.roc', 3715, 'b56e382a481480325f537e1ff6c086379cd063a986d5be1a368c709bd58536ad'), ('Value.roc', 6169, 'a5bb19f95c3ee2af7e598e9b831cce3960de6083ee4d1c21d556087d4ac0df02'), ('lock-snapshot-v2.schema.json', 5004, '11c7f5497d0d2cf55a6cfd66288d969ecf61603e18f94d864c16b89ca9587246'))
           REPARSE = 0x400
-          ROOT = Path(os.environ["RUNNER_TEMP"]) / "graph-core-windows-probe"
+          TAR_SIZE = 531968
+          TAR_SHA = "48c76e46db21fe1562fc07e4fc16e457f18f9111dc982dca3bc18bbee9ee7cb9"
+          ROOT = Path(os.environ["RUNNER_TEMP"]) / "graph-core-windows-decoder-probe"
           REPORT = ROOT / "report.json"
           FACTS = json.loads(REPORT.read_text(encoding="utf-8"))
-          
-          
+
           def require(ok, message):
               if not ok:
                   raise RuntimeError(message)
-          
-          
+
+
           def save():
               REPORT.write_text(json.dumps(FACTS, indent=2) + "\n", encoding="utf-8")
-          
-          
+
+
           def sha(data):
               return hashlib.sha256(data).hexdigest()
-          
-          
+
+
           def plain(path, directory=None):
               info = path.lstat()
               require(not info.st_file_attributes & REPARSE, "reparse point refused: " + str(path))
@@ -82,36 +76,31 @@ jobs:
               if directory is False:
                   require(stat.S_ISREG(info.st_mode) and info.st_nlink == 1, "non-regular/hardlinked file refused")
               return info
-          
-          
-          def plain_chain(path):
-              for component in reversed((path, *path.parents)):
-                  plain(component, True)
-          
-          
+
+
           class BasicLimits(ctypes.Structure):
               _fields_ = [("PerProcessUserTimeLimit", ctypes.c_longlong), ("PerJobUserTimeLimit", ctypes.c_longlong),
                           ("LimitFlags", W.DWORD), ("MinimumWorkingSetSize", ctypes.c_size_t),
                           ("MaximumWorkingSetSize", ctypes.c_size_t), ("ActiveProcessLimit", W.DWORD),
                           ("Affinity", ctypes.c_size_t), ("PriorityClass", W.DWORD), ("SchedulingClass", W.DWORD)]
-          
-          
+
+
           class IOCounters(ctypes.Structure):
               _fields_ = [(name, ctypes.c_ulonglong) for name in
                           ("ReadOperationCount", "WriteOperationCount", "OtherOperationCount", "ReadTransferCount", "WriteTransferCount", "OtherTransferCount")]
-          
-          
+
+
           class ExtendedLimits(ctypes.Structure):
               _fields_ = [("BasicLimitInformation", BasicLimits), ("IoInfo", IOCounters),
                           ("ProcessMemoryLimit", ctypes.c_size_t), ("JobMemoryLimit", ctypes.c_size_t),
                           ("PeakProcessMemoryUsed", ctypes.c_size_t), ("PeakJobMemoryUsed", ctypes.c_size_t)]
-          
-          
+
+
           class ThreadEntry(ctypes.Structure):
               _fields_ = [("dwSize", W.DWORD), ("cntUsage", W.DWORD), ("th32ThreadID", W.DWORD),
                           ("th32OwnerProcessID", W.DWORD), ("tpBasePri", W.LONG), ("tpDeltaPri", W.LONG), ("dwFlags", W.DWORD)]
-          
-          
+
+
           def configure_windows():
               kernel = ctypes.WinDLL("kernel32", use_last_error=True)
               signatures = {
@@ -132,8 +121,8 @@ jobs:
                   function = getattr(kernel, name)
                   function.argtypes, function.restype = arguments, result
               return kernel
-          
-          
+
+
           def resume_initial_thread(kernel, process):
               snapshot = kernel.CreateToolhelp32Snapshot(4, 0)
               require(snapshot not in (None, ctypes.c_void_p(-1).value), "thread snapshot failed")
@@ -155,9 +144,9 @@ jobs:
                   require(kernel.ResumeThread(thread) == 1, "resuming suspended thread failed")
               finally:
                   kernel.CloseHandle(thread)
-          
-          
-          def run(kernel, argv, environment, cwd, seconds=65, maximum=8192):
+
+
+          def run(kernel, argv, environment, cwd, seconds=65, maximum=8192, binary=False):
               started = time.monotonic()
               job = kernel.CreateJobObjectW(None, None)
               require(bool(job), "creating Windows process job failed")
@@ -175,7 +164,7 @@ jobs:
                                              creationflags=4 | subprocess.CREATE_NEW_PROCESS_GROUP)
                   require(kernel.AssignProcessToJobObject(job, int(process._handle)), "assigning suspended child to job failed")
                   resume_initial_thread(kernel, process)
-          
+
                   def collect(pipe, name, cap):
                       while True:
                           data = pipe.read1(min(65536, cap - len(streams[name]) + 1))
@@ -185,7 +174,7 @@ jobs:
                           if len(streams[name]) > cap:
                               overflow.set()
                               return
-          
+
                   for name, pipe, cap in (("stdout", process.stdout, maximum), ("stderr", process.stderr, 16384)):
                       thread = threading.Thread(target=collect, args=(pipe, name, cap), daemon=True)
                       thread.start()
@@ -211,54 +200,57 @@ jobs:
               require(all(not thread.is_alive() for thread in readers), "child pipe cleanup failed")
               record = {"argv": argv, "code": process.returncode, "reason": reason,
                         "seconds": round(time.monotonic() - started, 3),
-                        "stdout": streams["stdout"].decode(errors="replace"),
+                        "stdout": ({"size": len(streams["stdout"]), "sha256": sha(streams["stdout"])} if binary else streams["stdout"].decode(errors="replace")),
                         "stderr": streams["stderr"].decode(errors="replace"),
                         "suspended_until_job_assignment": True, "job_closed": True}
               FACTS["commands"].append(record)
               save()
               require(reason == "exited" and not overflow.is_set() and process.returncode == 0, "fixed child command failed; bounded diagnostics preserved")
               return bytes(streams["stdout"])
-          
-          
-          def tree(path):
-              plain_chain(path)
+
+
+          def verify_tar(data):
+              require(len(data) == TAR_SIZE and sha(data) == TAR_SHA, "fixed expanded tar digest/size mismatch")
               expected = {name: (size, digest) for name, size, digest in MEMBERS}
-              require({p.name for p in path.iterdir()} == set(expected), "wrong extracted inventory")
+              seen = set()
               result = []
-              for name in sorted(expected):
-                  item = path / name
-                  info = plain(item, False)
-                  size, digest = expected[name]
-                  require(info.st_size == size, "wrong extracted size: " + name)
-                  require(sha(item.read_bytes()) == digest, "wrong extracted bytes: " + name)
-                  result.append({"path": name, "size": size, "sha256": digest, "mode": oct(stat.S_IMODE(info.st_mode)),
-                                 "windows_attributes": info.st_file_attributes, "reparse_tag": info.st_reparse_tag, "nlink": info.st_nlink})
+              with tarfile.open(fileobj=io.BytesIO(data), mode="r:") as archive:
+                  require(not archive.pax_headers, "global PAX metadata refused")
+                  for item in archive:
+                      require(item.name in expected and item.name not in seen, "unexpected/duplicate tar member")
+                      require(item.type == tarfile.REGTYPE and not item.linkname and not item.pax_headers, "non-regular/link/PAX tar member refused")
+                      require(item.mode == 0o644, "unexpected archive mode")
+                      size, digest = expected[item.name]
+                      require(item.size == size, "tar member size mismatch")
+                      with archive.extractfile(item) as stream:
+                          payload = stream.read(size + 1)
+                      require(len(payload) == size and sha(payload) == digest, "tar member bytes mismatch")
+                      result.append({"path": item.name, "size": size, "sha256": digest, "type": "regular", "mode": "0o644"})
+                      seen.add(item.name)
+              require(seen == set(expected), "missing tar member")
               return result
-          
-          
-          def move_without_replacement(kernel, source, destination):
-              # MoveFileW has no replacement flag; an occupied destination must fail.
-              result = bool(kernel.MoveFileW(str(source), str(destination)))
-              return result, ctypes.get_last_error() if not result else 0
-          
-          
+
+
           def main():
-              require(os.name == "nt", "Windows-only diagnostic")
+              FACTS["python"] = {"version": sys.version, "executable": sys.executable}
+              try:
+                  import compression.zstd as zstd
+              except ImportError as error:
+                  zstd = None
+                  FACTS["stdlib_zstd"] = {"available": False, "reason": type(error).__name__}
+              else:
+                  FACTS["stdlib_zstd"] = {"available": True, "module": zstd.__name__,
+                                           "documentation": "https://docs.python.org/3.14/library/compression.zstd.html#compression.zstd.ZstdDecompressor"}
+              host_zstd = shutil.which("zstd")
+              FACTS["host_zstd_path"] = host_zstd
+              FACTS["roc_invoked"] = False
+              FACTS["new_tools_installed"] = False
+              FACTS["source_extracted_or_evaluated"] = False
+              FACTS["cache_written"] = False
+              save()
+              require(os.name == "nt", "Windows-only decoder witness")
               kernel = configure_windows()
               before = {key: os.environ.get(key) for key in ("XDG_CACHE_HOME", "HOME", "LOCALAPPDATA", "ROC_CACHE_DIR")}
-              FACTS["cache_environment_before"] = before
-              # This mirrors immutable ad3a5d2 compile_build.zig:147-163; it observes
-              # the destination only and is not a claim of a compiler lookup execution.
-              if before["XDG_CACHE_HOME"]:
-                  cache = Path(before["XDG_CACHE_HOME"]) / "roc" / "packages"
-              elif before["LOCALAPPDATA"]:
-                  cache = Path(before["LOCALAPPDATA"]) / "roc" / "packages"
-              else:
-                  require(bool(before["HOME"]), "no compiler package-cache root")
-                  cache = Path(before["HOME"]) / ".cache" / "roc" / "packages"
-              global_slots = (cache / HASH, cache / (HASH + ".deps"))
-              slots_before = [os.path.lexists(path) for path in global_slots]
-              FACTS["observed_global_slots"] = {"paths": list(map(str, global_slots)), "before": slots_before}
               child = os.environ.copy()
               for key in list(child):
                   if key.startswith(("GH_", "GITHUB_")) or key in ("GIT_ASKPASS", "SSH_ASKPASS", "CURL_HOME", "NETRC"):
@@ -266,85 +258,52 @@ jobs:
               child["GH_TOKEN"] = child["GITHUB_TOKEN"] = ""
               FACTS["child_credentials_absent"] = all(not value for key, value in child.items() if key.startswith(("GH_", "GITHUB_")))
               require(FACTS["child_credentials_absent"], "credential stripping failed")
-              work = Path(tempfile.mkdtemp(prefix="private-data-", dir=ROOT))
-              plain_chain(work)
-              filesystem = ctypes.create_unicode_buffer(32)
-              require(kernel.GetVolumeInformationW(work.anchor, None, 0, None, None, None, filesystem, len(filesystem)), "volume identity lookup failed")
-              FACTS["filesystem"] = filesystem.value
-              require(filesystem.value == "NTFS", "NTFS controls need an NTFS witness")
-              compiler = shutil.which("roc")
-              curl = shutil.which("curl.exe")
-              require(compiler and curl, "trusted installed tools are missing")
-              compiler = str(Path(compiler).resolve(strict=True))
-              compiler_info = plain(Path(compiler), False)
-              require(compiler_info.st_size < 1024 * 1024 * 1024, "compiler file too large")
-              version = run(kernel, [compiler, "version"], child, work, 30).decode().strip()
-              require(version == "Roc compiler version nightly-2026-11-07-ad3a5d2", "wrong trusted compiler version")
-              FACTS["compiler"] = {"path": compiler, "size": compiler_info.st_size, "sha256": sha(Path(compiler).read_bytes()), "version": version,
-                                   "installer": "roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c",
-                                   "installer_upstream_merged": False, "download_method": "asset-api"}
+              work = Path(tempfile.mkdtemp(prefix="private-raw-", dir=ROOT))
+              plain(work, True)
               archive = work / (HASH + ".tar.zst")
-              argv = [curl, "--disable", "--fail", "--silent", "--show-error", "--location", "--no-netrc",
-                      "--proto", "=https", "--proto-redir", "=https", "--max-redirs", "3", "--connect-timeout", "10",
-                      "--max-time", "60", "--max-filesize", str(RAW_SIZE), "--header", "Accept: application/octet-stream",
-                      "--output", str(archive), "--write-out", "%{http_code} %{time_total} %{size_download} %{num_redirects} %{content_type}", URL]
-              run(kernel, argv, child, work)
-              info = plain(archive, False)
-              require(info.st_size == RAW_SIZE and sha(archive.read_bytes()) == RAW_SHA, "fixed Core raw digest/size mismatch")
-              FACTS["core"] = {"repository": "lukewilliamboswell/roc-blueprint", "tag": "0.12.0", "asset_id": 725946981,
-                               "canonical_url": "https://github.com/lukewilliamboswell/roc-blueprint/releases/download/0.12.0/roc-blueprint-core-" + archive.name,
-                               "api_url": URL, "size": RAW_SIZE, "sha256": RAW_SHA, "bare_hash": HASH,
-                               "prior_identical_blob_tar_sha256": "48c76e46db21fe1562fc07e4fc16e457f18f9111dc982dca3bc18bbee9ee7cb9",
-                               "tar_hash_remeasured_on_windows": False}
+              curl = shutil.which("curl.exe")
+              require(bool(curl), "host curl is unavailable")
+              command = [curl, "--disable", "--fail", "--silent", "--show-error", "--location", "--no-netrc",
+                         "--proto", "=https", "--proto-redir", "=https", "--max-redirs", "3", "--connect-timeout", "10",
+                         "--max-time", "60", "--max-filesize", str(RAW_SIZE), "--header", "Accept: application/octet-stream",
+                         "--output", str(archive), "--write-out", "%{http_code} %{time_total} %{size_download} %{num_redirects} %{content_type}", URL]
+              run(kernel, command, child, work)
+              require(plain(archive, False).st_size == RAW_SIZE and sha(archive.read_bytes()) == RAW_SHA, "Core raw digest/size mismatch")
+              FACTS["core"] = {"asset_id": 725946981, "size": RAW_SIZE, "sha256": RAW_SHA, "api_url": URL}
               save()
-              run(kernel, [compiler, "unbundle", archive.name], child, work, 60)
-              require({p.name for p in work.iterdir()} == {archive.name, HASH}, "unexpected official unbundle output/sidecar")
-              extracted = work / HASH
-              FACTS["official_unbundle_inventory"] = tree(extracted)
-              FACTS["official_unbundle_blake3_passed"] = True
-              FACTS["root_attributes"] = extracted.lstat().st_file_attributes
-              destination = work / "private-destination"
-              require(not os.path.lexists(destination), "private destination unexpectedly exists")
-              # An actor fills the absent destination after preflight and before rename.
-              destination.mkdir()
-              renamed, error = move_without_replacement(kernel, extracted, destination)
-              require(not renamed and extracted.is_dir() and not list(destination.iterdir()), "occupied-directory race was not refused")
-              FACTS["occupied_directory_race"] = {"refused": True, "winerror": error, "source_unchanged": tree(extracted) == FACTS["official_unbundle_inventory"]}
-              destination.rmdir()
-              destination.write_bytes(b"existing destination sentinel")
-              renamed, error = move_without_replacement(kernel, extracted, destination)
-              require(not renamed and destination.read_bytes() == b"existing destination sentinel", "occupied-file replacement was not refused")
-              FACTS["occupied_file"] = {"refused": True, "winerror": error}
-              destination.unlink()
-              renamed, error = move_without_replacement(kernel, extracted, destination)
-              require(renamed and not os.path.lexists(extracted), "absent-destination atomic move failed: " + str(error))
-              require(tree(destination) == FACTS["official_unbundle_inventory"], "atomic move changed data/attributes")
-              FACTS["private_atomic_move"] = {"succeeded": True, "destination": str(destination), "full_posttree_unchanged": True}
-              alias = work / "reparse-alias"
-              os.symlink(destination, alias, target_is_directory=True)
-              require(alias.lstat().st_file_attributes & REPARSE, "reparse fixture was not a reparse point")
-              try:
-                  plain_chain(alias)
-              except RuntimeError as error:
-                  require("reparse point refused" in str(error), "wrong alias refusal")
-                  FACTS["reparse_control"] = {"refused": True, "attributes": alias.lstat().st_file_attributes, "tag": alias.lstat().st_reparse_tag}
+              if zstd is not None:
+                  # Official Python API: options bounds the maximum window; max_length
+                  # bounds returned output. eof/unused_data reject truncation/extra frames.
+                  decoder = """import hashlib, sys
+          from pathlib import Path
+          from compression.zstd import ZstdDecompressor, DecompressionParameter
+          raw = Path(sys.argv[1]).read_bytes()
+          if len(raw) != 132723 or hashlib.sha256(raw).hexdigest() != "b367d5d91a32c002d09d5309a28ae82c0e978a6cd59ed4eb249e395700a01910": raise SystemExit("wrong fixed Core raw bytes")
+          decoder = ZstdDecompressor(options={DecompressionParameter.window_log_max: 26})
+          data = decoder.decompress(raw, max_length=531969)
+          if len(data) != 531968 or not decoder.eof or decoder.unused_data: raise SystemExit("wrong bounded complete frame")
+          sys.stdout.buffer.write(data)
+          """
+                  data = run(kernel, [sys.executable, "-I", "-c", decoder, str(archive)], child, work, seconds=30, maximum=TAR_SIZE + 1, binary=True)
+                  FACTS["decoder"] = {"selected": "stdlib compression.zstd", "maximum_output_bytes": TAR_SIZE + 1, "maximum_window_bytes": 2 ** 26, "seconds_limit": 30}
               else:
-                  raise RuntimeError("reparse directory was accepted")
-              alias.unlink()
-              require(not any(p.name.endswith(".deps") for p in work.rglob("*")), "unexpected sidecar")
-              after = {key: os.environ.get(key) for key in before}
-              require(before == after, "caller cache environment changed")
-              require(slots_before == [os.path.lexists(path) for path in global_slots], "global Core/cache sidecar presence changed")
-              FACTS["observed_global_slots"]["after"] = slots_before
+                  require(bool(host_zstd), "no preinstalled compiler-free zstd decoder; availability preserved")
+                  host_zstd = str(Path(host_zstd).resolve(strict=True))
+                  plain(Path(host_zstd), False)
+                  version = run(kernel, [host_zstd, "--version"], child, work, seconds=10).decode(errors="replace").strip()
+                  data = run(kernel, [host_zstd, "--decompress", "--stdout", "--memory=64MB", str(archive)], child, work, seconds=30, maximum=TAR_SIZE + 1, binary=True)
+                  FACTS["decoder"] = {"selected": "preinstalled host zstd", "path": host_zstd, "version": version,
+                                      "maximum_output_bytes": TAR_SIZE + 1, "maximum_window_bytes": 2 ** 26, "seconds_limit": 30}
+              require(sha(archive.read_bytes()) == RAW_SHA, "raw input changed during decoding")
+              FACTS["inventory"] = verify_tar(data)
+              require({p.name for p in work.iterdir()} == {archive.name}, "unexpected private output/source extraction")
+              require(before == {key: os.environ.get(key) for key in before}, "cache environment changed")
               FACTS["cache_environment_unchanged"] = True
-              FACTS["core_evaluated"] = False
-              FACTS["shared_cache_written"] = False
-              FACTS["sidecar_created"] = False
-              FACTS["file_count"] = len(MEMBERS)
-              FACTS["content_bytes"] = sum(item[1] for item in MEMBERS)
+              FACTS["tar"] = {"size": len(data), "sha256": sha(data), "file_count": len(FACTS["inventory"]),
+                              "content_bytes": sum(item["size"] for item in FACTS["inventory"])}
               FACTS["success"] = True
-          
-          
+
+
           try:
               FACTS["commands"] = []
               main()
@@ -354,11 +313,11 @@ jobs:
               raise
           finally:
               save()
-      - name: Preserve Windows Core witness
+      - name: Preserve compiler-free Windows witness
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: graph-core-windows-data-witness
-          path: ${{ runner.temp }}/graph-core-windows-probe/report.json
+          name: graph-core-windows-decoder-witness
+          path: ${{ runner.temp }}/graph-core-windows-decoder-probe/report.json
           if-no-files-found: error
           retention-days: 14
