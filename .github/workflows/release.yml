@@ -59,7 +59,7 @@ jobs:
         run: echo "tag=$(gh api repos/roc-lang/nightlies/releases/latest --jq .tag_name)" >> "$GITHUB_OUTPUT"
 
       - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@72c376825e7dc7630baeb3209bfd1de4adbf7415
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@3d0de80181b04e0549e15955672746fb56f622e4
         with:
           cache: 'true'
           cache-workload: dev
@@ -159,7 +159,7 @@ jobs:
           persist-credentials: false
 
       - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@72c376825e7dc7630baeb3209bfd1de4adbf7415
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@3d0de80181b04e0549e15955672746fb56f622e4
 
       - name: Install the Roc nightly this run resolved
         uses: roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c
@@ -210,7 +210,7 @@ jobs:
       # Stages a draft, downloads every asset back and compares it with the
       # tested file, and only then publishes the release.
       - name: Publish the tested assets
-        uses: lukewilliamboswell/roc-automation/actions/publish-release@72c376825e7dc7630baeb3209bfd1de4adbf7415
+        uses: lukewilliamboswell/roc-automation/actions/publish-release@3d0de80181b04e0549e15955672746fb56f622e4
         with:
           version: ${{ needs.build.outputs.release_version }}
           prerelease: ${{ needs.build.outputs.is_prerelease }}

@@ -20,7 +20,7 @@ jobs:
           persist-credentials: false
 
       - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@72c376825e7dc7630baeb3209bfd1de4adbf7415
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@3d0de80181b04e0549e15955672746fb56f622e4
         with:
           cache: 'true'
           cache-workload: dev
