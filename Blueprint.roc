@@ -12,7 +12,7 @@
 # examples, the site and the benchmarks are built with whatever `roc` is on
 # PATH, which is meant to be the latest nightly, so nothing here provides a
 # bare `roc`.
-app [config] { pf: platform "https://github.com/lukewilliamboswell/roc-blueprint/releases/download/0.8.0/FbJymjYdCxx9vqMcau7r4tQfeAbnVGqqJoYrLGqPCqKu.tar.zst" }
+app [config] { pf: platform "https://github.com/lukewilliamboswell/roc-blueprint/releases/download/0.12.0/GSb71LxYHqLohZz8jMfawWEwQcyev9ZdVC26sfsDwfq8.tar.zst" }
 
 import pf.Config
 import pf.Recipes
@@ -30,7 +30,7 @@ config = [
 					# Builds the benchmark platform's host library.
 					Fetch("zig", zig),
 					# The shared documentation renderer: the guides as a site and a PDF.
-					Fetch("roc-docs", Recipes.file("https://github.com/lukewilliamboswell/roc-automation/releases/download/tools-0.9.0/roc-docs-{system}")),
+					Fetch("roc-docs", Recipes.file("https://github.com/lukewilliamboswell/roc-automation/releases/download/tools-0.10.1/roc-docs-{system}")),
 				],
 			),
 			# Every bundle the scripts depend on, including dependencies of
