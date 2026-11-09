@@ -5,6 +5,9 @@ app [main!] {
 }
 
 import cli.Env
+import cli.Cmd
+import cli.Stdout
+import cli.Stderr
 import cli.OsStr
 import cli.Path
 import src/Bundle
@@ -20,7 +23,8 @@ import src/Text
 ##
 ## Needs `gh` to be authenticated, for example through `GH_TOKEN`. A version
 ## that understates a breaking change fails. `roc bump` must be able to
-## compare releases within the same breaking-version boundary. An increasing
+## compare changed releases within the same breaking-version boundary; an exact
+## two-bundle content proof can establish an unchanged later patch. An increasing
 ## major version, or minor version within 0.x, already promises every possible
 ## API change. That proof still validates the previous release and bundle URLs.
 ##
@@ -56,6 +60,19 @@ main! = |_args| {
 	}
 	if sufficient {
 		return Script.info!("BREAKING VERSION", "${version} crosses the breaking-version boundary of ${previous_release.version}; no public API comparison is required")
+	}
+
+	# A packaging-only later patch can prove both bundle contents directly.
+	# Integrity errors stop the gate; actual source changes still need roc bump.
+	if Release.is_final(version) {
+		identity = Cmd.new("python3").args(["scripts/check_bundle_identity.py", OsStr.from_str(version), OsStr.from_str(previous_release.version), OsStr.from_str(Script.env_or!("OUTPUT_DIR", "dist")?)]).run!()?
+		Stdout.write_bytes!(identity.stdout_bytes)?
+		Stderr.write_bytes!(identity.stderr_bytes)?
+		match identity.status {
+			Exited(0) => return Script.info!("IDENTICAL BUNDLES", "fresh layout bytes and Mermaid dependency rebinding prove unchanged package contents")
+			Exited(3) => {}
+			_ => return Script.fail!("bundle identity integrity validation failed")
+		}
 	}
 
 	Script.info!("COMPARE", "the layout package with ${previous}; the Mermaid package is not compared")?

@@ -183,8 +183,16 @@ Bundle := [].{
 							},
 					},
 				)
+				if ran.is_err() {
+					Loopback.stop!(server)?
+					return ran
+				}
+				canonical = Loopback.run!(server, Script.command("python3").cmd(["scripts/check_archived_examples.py", Path.to_os_str(unpacked.root), "roc", OsStr.from_str(server.base)]))?
 				Loopback.stop!(server)?
-				ran
+				if canonical.status != Exited(0) {
+					return Script.fail!("application-directory archive contract failed\n${Str.from_utf8_lossy(canonical.stdout_bytes)}${Str.from_utf8_lossy(canonical.stderr_bytes)}")
+				}
+				Script.info!("ARCHIVE CONTRACT", Str.from_utf8_lossy(canonical.stdout_bytes).trim())
 			},
 		)
 	}

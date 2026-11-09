@@ -96,6 +96,7 @@ check_compiler_pins! = || {
 
 check_scripts! = |roc_stable| {
 	Script.section!("Scripts, with the tooling compiler")?
+	Script.command("python3").run!(["-B", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"])?
 	# The modules without effects carry the tests of the scripts' logic.
 	for module_name in ["BenchCases", "BenchFormat", "BenchJson", "BenchReport", "Headers", "Notes", "Release", "Report", "Spec", "Text"] {
 		roc_stable.run!(["test", OsStr.from_str("scripts/src/${module_name}.roc")])?
