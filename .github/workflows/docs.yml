@@ -11,6 +11,11 @@ on:
     branches: [main]
   pull_request:
   workflow_call:
+    inputs:
+      nightly-tag:
+        description: "Roc nightly already resolved by the release caller; empty uses latest"
+        type: string
+        default: ''
   workflow_dispatch:
 
 permissions: {}
@@ -29,18 +34,20 @@ jobs:
           persist-credentials: false
 
       - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@0ad737abd3cad3d14d7e409e91161cd42c05142c
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@e12512e2605608588782edb044dd766137e34869
 
-      - name: Install the latest Roc nightly
-        uses: roc-lang/setup-roc@dd81390553b0a1236aedb61cdd4c0ed7cf7eaec4
+      - name: Install the caller's Roc nightly, or latest
+        uses: roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c
         with:
           version: nightly
+          download-method: asset-api
+          nightly-tag: ${{ inputs.nightly-tag }}
 
       - name: Admit the fixed build dependencies before Blueprint evaluation
         run: |
           raw="$RUNNER_TEMP/graph-release-sources"
-          python3 scripts/admit_release_sources.py prepare --raw-dir "$raw" --source core --source font --source basic-cli --source legacy-http
-          python3 scripts/admit_release_sources.py seed --raw-dir "$raw" --source core --source font --source basic-cli --source legacy-http
+          python3 scripts/admit_release_sources.py prepare --raw-dir "$raw" --source font --source basic-cli --source legacy-http
+          python3 scripts/admit_release_sources.py seed --raw-dir "$raw" --source font --source basic-cli --source legacy-http
           echo "GRAPH_RELEASE_SOURCES_DIR=$raw" >> "$GITHUB_ENV"
 
       - name: Build the guides and the API reference of each release

@@ -13,6 +13,11 @@ on:
         description: "Release version, e.g. 0.2.0, or 0.2.0-rc1 for a release candidate"
         required: true
         type: string
+      nightly-tag:
+        description: "Exact Roc nightly; empty resolves the current latest once"
+        required: false
+        type: string
+        default: ''
   pull_request:
 
 permissions: {}
@@ -52,29 +57,54 @@ jobs:
           persist-credentials: false
 
       # Resolved once here, so every job of this run uses the same compiler.
-      - name: Resolve the latest Roc nightly
+      - name: Resolve the release compiler
         id: nightly
         env:
           GH_TOKEN: ${{ github.token }}
-        run: echo "tag=$(gh api repos/roc-lang/nightlies/releases/latest --jq .tag_name)" >> "$GITHUB_OUTPUT"
+          REQUESTED_NIGHTLY: ${{ inputs.nightly-tag }}
+        run: |
+          python3 - <<'PY'
+          import datetime
+          import json
+          import os
+          import re
+          import subprocess
+
+          tag = os.environ["REQUESTED_NIGHTLY"]
+          if not tag:
+              tag = json.loads(subprocess.check_output([
+                  "gh", "api", "--hostname", "github.com",
+                  "repos/roc-lang/nightlies/releases/latest", "--jq", ".tag_name | tojson",
+              ], text=True))
+          if not isinstance(tag, str) or re.fullmatch(r"nightly-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9a-f]{7,40}", tag) is None:
+              raise SystemExit("Invalid canonical Roc nightly tag")
+          try:
+              datetime.date.fromisoformat(tag[8:18])
+          except ValueError:
+              raise SystemExit("Invalid Roc nightly calendar date")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"tag={tag}\n")
+          print(f"Selected Roc nightly: {tag}")
+          PY
 
       - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@0ad737abd3cad3d14d7e409e91161cd42c05142c
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@e12512e2605608588782edb044dd766137e34869
         with:
           cache: 'true'
           cache-workload: dev
 
       - name: Install the latest Roc nightly
-        uses: roc-lang/setup-roc@dd81390553b0a1236aedb61cdd4c0ed7cf7eaec4
+        uses: roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c
         with:
           version: nightly
+          download-method: asset-api
           nightly-tag: ${{ steps.nightly.outputs.tag }}
 
       - name: Admit the fixed build dependencies before Blueprint evaluation
         run: |
           raw="$RUNNER_TEMP/graph-release-sources"
-          python3 scripts/admit_release_sources.py prepare --raw-dir "$raw" --source core --source font --source basic-cli --source legacy-http
-          python3 scripts/admit_release_sources.py seed --raw-dir "$raw" --source core --source font --source basic-cli --source legacy-http
+          python3 scripts/admit_release_sources.py prepare --raw-dir "$raw" --source font --source basic-cli --source legacy-http
+          python3 scripts/admit_release_sources.py seed --raw-dir "$raw" --source font --source basic-cli --source legacy-http
           echo "GRAPH_RELEASE_SOURCES_DIR=$raw" >> "$GITHUB_ENV"
 
       # Rejects a version whose tag or release already exists.
@@ -158,19 +188,20 @@ jobs:
           persist-credentials: false
 
       - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@0ad737abd3cad3d14d7e409e91161cd42c05142c
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@e12512e2605608588782edb044dd766137e34869
 
       - name: Install the Roc nightly this run resolved
-        uses: roc-lang/setup-roc@dd81390553b0a1236aedb61cdd4c0ed7cf7eaec4
+        uses: roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c
         with:
           version: nightly
+          download-method: asset-api
           nightly-tag: ${{ needs.build.outputs.nightly_tag }}
 
       - name: Admit the fixed build dependencies before Blueprint evaluation
         run: |
           raw="$RUNNER_TEMP/graph-release-sources"
-          python3 scripts/admit_release_sources.py prepare --raw-dir "$raw" --source core --source font --source basic-cli --source legacy-http
-          python3 scripts/admit_release_sources.py seed --raw-dir "$raw" --source core --source font --source basic-cli --source legacy-http
+          python3 scripts/admit_release_sources.py prepare --raw-dir "$raw" --source font --source basic-cli --source legacy-http
+          python3 scripts/admit_release_sources.py seed --raw-dir "$raw" --source font --source basic-cli --source legacy-http
           echo "GRAPH_RELEASE_SOURCES_DIR=$raw" >> "$GITHUB_ENV"
 
       - name: Download the release candidate
@@ -208,7 +239,7 @@ jobs:
       # Stages a draft, downloads every asset back and compares it with the
       # tested file, and only then publishes the release.
       - name: Publish the tested assets
-        uses: lukewilliamboswell/roc-automation/actions/publish-release@0ad737abd3cad3d14d7e409e91161cd42c05142c
+        uses: lukewilliamboswell/roc-automation/actions/publish-release@e12512e2605608588782edb044dd766137e34869
         with:
           version: ${{ needs.build.outputs.release_version }}
           prerelease: ${{ needs.build.outputs.is_prerelease }}
@@ -232,3 +263,5 @@ jobs:
       pages: write
       id-token: write
     uses: ./.github/workflows/docs.yml
+    with:
+      nightly-tag: ${{ needs.build.outputs.nightly_tag }}

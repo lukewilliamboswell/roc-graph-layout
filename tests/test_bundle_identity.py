@@ -1,8 +1,11 @@
 import copy
+import errno
 import importlib.util
 import io
+import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import sys
 import tarfile
@@ -163,14 +166,91 @@ class BundleIdentityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             marker = Path(temporary) / "descendant-survived"
             started = Path(temporary) / "descendant-started"
-            child = "import time,pathlib; pathlib.Path(" + repr(str(started)) + ").write_text('started'); time.sleep(2); pathlib.Path(" + repr(str(marker)) + ").write_text('alive')"
+            child = "import os,json,time,pathlib; pathlib.Path(" + repr(str(started)) + ").write_text(json.dumps({'pid':os.getpid(),'pgid':os.getpgrp(),'sid':os.getsid(0)})); time.sleep(2); pathlib.Path(" + repr(str(marker)) + ").write_text('alive')"
             parent = "import subprocess,sys,time; subprocess.Popen([sys.executable,'-c'," + repr(child) + "]); time.sleep(10)"
-            code, _, _, reason = proof.bounded_api([sys.executable, "-c", parent], 64, seconds=1)
+            processes, signals, identities = [], [], []
+            real_popen, real_killpg = subprocess.Popen, os.killpg
+
+            def create(*args, **kwargs):
+                self.assertTrue(kwargs["start_new_session"])
+                process = real_popen(*args, **kwargs)
+                processes.append(process)
+                identities.append((process.pid, os.getpgid(process.pid), os.getsid(process.pid)))
+                return process
+
+            def kill_once(group, sent):
+                signals.append((group, sent))
+                if len(signals) > 1:
+                    raise PermissionError(errno.EPERM, "second signal to already cleaned group")
+                real_killpg(group, sent)
+
+            with patch.object(proof.subprocess, "Popen", side_effect=create), patch.object(proof.os, "killpg", side_effect=kill_once):
+                code, _, _, reason = proof.bounded_api([sys.executable, "-c", parent], 64, seconds=1)
             self.assertEqual(reason, "timeout")
             self.assertNotEqual(code, 0)
             self.assertTrue(started.exists())
+            process, = processes
+            self.assertEqual(identities, [(process.pid, process.pid, process.pid)])
+            self.assertNotEqual(os.getpgrp(), process.pid)
+            self.assertEqual(signals, [(process.pid, signal.SIGKILL)])
+            self.assertTrue(process.stdout.closed and process.stderr.closed)
+            identity = json.loads(started.read_text())
+            self.assertEqual((identity["pgid"], identity["sid"]), (process.pid, process.pid))
             time.sleep(1.3)
             self.assertFalse(marker.exists())
+            # An orphan can remain a zombie until its new parent reaps it.
+            # Observe the actual owned child: signal(0) alone cannot distinguish
+            # a dead zombie from a runnable descendant or permission failure.
+            state = subprocess.run(["ps", "-p", str(identity["pid"]), "-o", "pid=,pgid=,stat="],
+                                   capture_output=True, text=True, timeout=2)
+            if state.returncode == 1:
+                self.assertEqual(state.stdout.strip(), "")
+            else:
+                self.assertEqual(state.returncode, 0, state.stderr)
+                pid, group, status = state.stdout.split()
+                self.assertEqual((int(pid), int(group)), (identity["pid"], process.pid))
+                self.assertTrue(status.startswith("Z"), state.stdout)
+
+    def test_api_cleanup_errors_fail_and_close_descriptors(self):
+        for failure in ("first-signal", "reap"):
+            with self.subTest(failure=failure):
+                processes, selectors_seen = [], []
+                real_popen = subprocess.Popen
+                real_selector = proof.selectors.DefaultSelector
+
+                def create(*args, **kwargs):
+                    process = real_popen(*args, **kwargs)
+                    processes.append(process)
+                    if failure == "reap":
+                        real_wait = process.wait
+
+                        def wait(*args, **kwargs):
+                            result = real_wait(*args, **kwargs)
+                            if kwargs.get("timeout") == 5:
+                                raise subprocess.TimeoutExpired(process.args, 5)
+                            return result
+
+                        process.wait = wait
+                    return process
+
+                def select():
+                    selector = real_selector()
+                    selectors_seen.append(selector)
+                    return selector
+
+                expected = PermissionError if failure == "first-signal" else subprocess.TimeoutExpired
+                with patch.object(proof.subprocess, "Popen", side_effect=create), patch.object(proof.selectors, "DefaultSelector", side_effect=select):
+                    if failure == "first-signal":
+                        with patch.object(proof.os, "killpg", side_effect=PermissionError(errno.EPERM, "first signal refused")):
+                            with self.assertRaises(expected):
+                                proof.bounded_api([sys.executable, "-c", "print('complete')"], 64, seconds=5)
+                    else:
+                        with self.assertRaises(expected):
+                            proof.bounded_api([sys.executable, "-c", "import time; time.sleep(10)"], 64, seconds=0.1)
+                process, = processes
+                self.assertIsNotNone(process.returncode)
+                self.assertTrue(process.stdout.closed and process.stderr.closed)
+                self.assertIsNone(selectors_seen[0].get_map())
 
     def test_api_normal_exit_also_reaps_process_group(self):
         with tempfile.TemporaryDirectory() as temporary:

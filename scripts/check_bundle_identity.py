@@ -108,23 +108,21 @@ def bounded_api(command, maximum, seconds=60):
                 process.wait(timeout=max(0.01, deadline - time.monotonic()))
             except subprocess.TimeoutExpired:
                 reason = "timeout"
-        if reason != "exited":
+    finally:
+        # Own the group signal here only: a timeout must not signal the same
+        # group again after reaping its leader. Normal exits can leave children
+        # after closing both inherited pipes, so they also use this cleanup.
+        try:
             try:
                 os.killpg(process.pid, signal.SIGKILL)
             except ProcessLookupError:
                 pass
-            process.wait()
-        return process.returncode, bytes(streams["stdout"]), bytes(streams["stderr"]), reason
-    finally:
-        # A child may leave descendants after closing both inherited pipes.
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-        process.wait()
-        selector.close()
-        process.stdout.close()
-        process.stderr.close()
+            process.wait(timeout=5)
+        finally:
+            selector.close()
+            process.stdout.close()
+            process.stderr.close()
+    return process.returncode, bytes(streams["stdout"]), bytes(streams["stderr"]), reason
 
 
 def safe_error(stderr):
