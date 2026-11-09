@@ -74,7 +74,7 @@ def selected_assets(releases, previous):
     return result
 
 
-def bounded_api(command, maximum, seconds=65):
+def bounded_api(command, maximum, seconds=60):
     # gh obtains authentication from its environment/store, never an argv token.
     environment = os.environ.copy()
     environment.pop("GH_DEBUG", None)
@@ -116,12 +116,12 @@ def bounded_api(command, maximum, seconds=65):
             process.wait()
         return process.returncode, bytes(streams["stdout"]), bytes(streams["stderr"]), reason
     finally:
-        if process.poll() is None:
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-            process.wait()
+        # A child may leave descendants after closing both inherited pipes.
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.wait()
         selector.close()
         process.stdout.close()
         process.stderr.close()
@@ -271,6 +271,13 @@ def bind_actual(directory, receipt, requested, previous):
         require(len(data) == expected[path.name]["size"] and sha(data) == expected[path.name]["sha256"], "actual candidate bytes differ from fresh proof")
 
 
+def candidate_environment(directory, requested):
+    environment = {**os.environ, "OUTPUT_DIR": str(directory), "RELEASE_VERSION": requested}
+    for credential in ["GH_TOKEN", "GITHUB_TOKEN", "GH_ENTERPRISE_TOKEN", "GITHUB_ENTERPRISE_TOKEN", "GH_DEBUG"]:
+        environment.pop(credential, None)
+    return environment
+
+
 def main(requested, previous, actual_directory="dist"):
     new, old = version(requested), version(previous)
     if new[:2] != old[:2] or new[2] <= old[2]:
@@ -286,7 +293,8 @@ def main(requested, previous, actual_directory="dist"):
         previous_inventory = {kind: inventory(published / asset["name"]) for kind, asset in assets.items()}
         candidate = root / "fresh"
         require(not candidate.exists(), "candidate output must be fresh")
-        fresh_build(["blueprint", "run", "bundle"], {**os.environ, "OUTPUT_DIR": str(candidate), "RELEASE_VERSION": requested})
+        # Authenticated metadata admission finishes before candidate compilation.
+        fresh_build(["blueprint", "run", "bundle"], candidate_environment(candidate, requested))
         require(tracked_snapshot() == before, "source snapshot changed while building")
         paths = list(candidate.iterdir())
         require(len(paths) == 2 and all(p.is_file() and not p.is_symlink() and p.stat().st_size <= LIMIT and NAME.fullmatch(p.name) for p in paths), "ambiguous candidate inventory")

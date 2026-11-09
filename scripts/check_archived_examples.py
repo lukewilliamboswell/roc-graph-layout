@@ -17,6 +17,12 @@ def main():
     checks = builds = cases = 0
     with tempfile.TemporaryDirectory(prefix="canonical-archive-") as temporary:
         environment = {**os.environ, "XDG_CACHE_HOME": str(Path(temporary) / "cache")}
+        # Admit the fixed native dependencies into this fresh cache. Both
+        # candidate bundles still have to be fetched from loopback.
+        subprocess.run(
+            [sys.executable, "scripts/admit_release_sources.py", "seed", "--source", "font", "--source", "basic-cli", "--source", "legacy-http"],
+            env={**environment, "RA_COMPILER": compiler}, check=True, timeout=120,
+        )
         for index, app in enumerate(spec["apps"]):
             source = (root / app["path"]).read_text()
             replacements = []

@@ -148,6 +148,17 @@ class BundleIdentityTests(unittest.TestCase):
             self.assertEqual((code, stdout, stderr, reason), (0, b"auth\nno-debug\n", b"", "exited"))
             self.assertNotIn("synthetic-secret", str(command))
 
+    def test_fresh_candidate_compilation_has_no_admission_credentials(self):
+        credentials = {key: "synthetic-secret" for key in ["GH_TOKEN", "GITHUB_TOKEN", "GH_ENTERPRISE_TOKEN", "GITHUB_ENTERPRISE_TOKEN", "GH_DEBUG"]}
+        with patch.dict(os.environ, {**credentials, "GRAPH_RELEASE_SOURCES_DIR": "/verified/raw", "XDG_CACHE_HOME": "/existing/cache"}):
+            environment = proof.candidate_environment("/fresh/candidate", "0.3.1")
+            self.assertFalse(set(credentials) & set(environment))
+            self.assertEqual(environment["GRAPH_RELEASE_SOURCES_DIR"], "/verified/raw")
+            self.assertEqual(environment["XDG_CACHE_HOME"], "/existing/cache")
+            self.assertEqual(environment["OUTPUT_DIR"], "/fresh/candidate")
+            self.assertEqual(environment["RELEASE_VERSION"], "0.3.1")
+            self.assertEqual(os.environ["GH_TOKEN"], "synthetic-secret")
+
     def test_api_deadline_terminates_descendants(self):
         with tempfile.TemporaryDirectory() as temporary:
             marker = Path(temporary) / "descendant-survived"
@@ -159,6 +170,16 @@ class BundleIdentityTests(unittest.TestCase):
             self.assertNotEqual(code, 0)
             self.assertTrue(started.exists())
             time.sleep(1.3)
+            self.assertFalse(marker.exists())
+
+    def test_api_normal_exit_also_reaps_process_group(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            marker = Path(temporary) / "descendant-survived"
+            child = "import time,pathlib; time.sleep(0.5); pathlib.Path(" + repr(str(marker)) + ").write_text('alive')"
+            parent = "import subprocess,sys; subprocess.Popen([sys.executable,'-c'," + repr(child) + "],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)"
+            code, _, _, reason = proof.bounded_api([sys.executable, "-c", parent], 64, seconds=2)
+            self.assertEqual((code, reason), (0, "exited"))
+            time.sleep(0.7)
             self.assertFalse(marker.exists())
 
     def test_duplicate_unsafe_or_nonregular_inventory_is_rejected(self):

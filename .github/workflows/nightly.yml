@@ -29,3 +29,4 @@ jobs:
       nightly-tag: ${{ inputs.nightly-tag || '' }}
       release-tag: ${{ inputs.release-tag || '' }}
       runners: '["ubuntu-24.04"]'
+      setup-command: '["python3","scripts/admit_release_sources.py","seed","--source","font","--source","basic-cli","--source","legacy-http"]'

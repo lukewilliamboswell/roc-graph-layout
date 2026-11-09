@@ -30,6 +30,13 @@ jobs:
         with:
           version: nightly
 
+      - name: Admit the fixed build dependencies before Blueprint evaluation
+        run: |
+          raw="$RUNNER_TEMP/graph-release-sources"
+          python3 scripts/admit_release_sources.py prepare --raw-dir "$raw" --source core --source font --source basic-cli --source legacy-http
+          python3 scripts/admit_release_sources.py seed --raw-dir "$raw" --source core --source font --source basic-cli --source legacy-http
+          echo "GRAPH_RELEASE_SOURCES_DIR=$raw" >> "$GITHUB_ENV"
+
       - name: Run the scale rungs
         run: blueprint run bench -- scale --output benchmarks/results/manual
 
