@@ -19,9 +19,11 @@ def main():
         environment = {**os.environ, "XDG_CACHE_HOME": str(Path(temporary) / "cache")}
         # Admit the fixed native dependencies into this fresh cache. Both
         # candidate bundles still have to be fetched from loopback.
+        # Its children have explicit deadlines and process-group cleanup. An
+        # outer timeout could kill the helper before that cleanup can run.
         subprocess.run(
             [sys.executable, "scripts/admit_release_sources.py", "seed", "--source", "font", "--source", "basic-cli", "--source", "legacy-http"],
-            env={**environment, "RA_COMPILER": compiler}, check=True, timeout=120,
+            env={**environment, "RA_COMPILER": compiler}, check=True,
         )
         for index, app in enumerate(spec["apps"]):
             source = (root / app["path"]).read_text()

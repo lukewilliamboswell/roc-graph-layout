@@ -39,6 +39,10 @@ class ArchiveSourceAdmissionTests(unittest.TestCase):
             self.assertEqual(len(calls), 4)
             self.assertEqual(calls[0][0], [sys.executable, "scripts/admit_release_sources.py", "seed", "--source", "font", "--source", "basic-cli", "--source", "legacy-http"])
             self.assertTrue(calls[0][1]["check"])
+            # The helper must retain control of its bounded child groups.
+            self.assertNotIn("timeout", calls[0][1])
+            self.assertTrue(all(call[1]["timeout"] == 300 for call in calls[1:3]))
+            self.assertEqual(calls[-1][1]["timeout"], 10)
             self.assertEqual(calls[0][1]["env"]["RA_COMPILER"], "/trusted/roc")
             cache = calls[0][1]["env"]["XDG_CACHE_HOME"]
             self.assertNotEqual(cache, "/caller/cache")
