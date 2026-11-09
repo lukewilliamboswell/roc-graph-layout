@@ -32,7 +32,7 @@ class ArchiveSourceAdmissionTests(unittest.TestCase):
 
     def test_admission_is_mandatory_before_cold_check_and_uses_same_cache(self):
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
+            root = Path(temporary).resolve()
             self.suite(root)
             calls = []
             def execute(argv, **kwargs):
@@ -61,7 +61,7 @@ class ArchiveSourceAdmissionTests(unittest.TestCase):
 
     def test_missing_compiler_prevents_admission_and_candidate_execution(self):
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
+            root = Path(temporary).resolve()
             self.suite(root)
             with patch.object(sys, "argv", ["check", str(root), "missing-roc", "http://127.0.0.1:1"]), patch.dict(os.environ, {"PATH": str(root / "bin")}), patch.object(checker.subprocess, "run") as execute:
                 with self.assertRaisesRegex(RuntimeError, "archive compiler is unavailable"):
@@ -70,7 +70,7 @@ class ArchiveSourceAdmissionTests(unittest.TestCase):
 
     def test_failed_admission_prevents_all_candidate_execution(self):
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
+            root = Path(temporary).resolve()
             self.suite(root)
             with patch.object(sys, "argv", ["check", str(root), "roc", "http://127.0.0.1:1"]), patch.dict(os.environ, {"PATH": str(root / "bin")}), patch.object(checker.subprocess, "run", side_effect=subprocess.CalledProcessError(1, "seed")) as execute:
                 with self.assertRaises(subprocess.CalledProcessError):
