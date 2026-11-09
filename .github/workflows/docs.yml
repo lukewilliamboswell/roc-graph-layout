@@ -11,6 +11,11 @@ on:
     branches: [main]
   pull_request:
   workflow_call:
+    inputs:
+      nightly-tag:
+        description: "Roc nightly already resolved by the release caller; empty uses latest"
+        type: string
+        default: ''
   workflow_dispatch:
 
 permissions: {}
@@ -31,11 +36,12 @@ jobs:
       - name: Install blueprint
         uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@e12512e2605608588782edb044dd766137e34869
 
-      - name: Install the latest Roc nightly
+      - name: Install the caller's Roc nightly, or latest
         uses: roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c
         with:
           version: nightly
           download-method: asset-api
+          nightly-tag: ${{ inputs.nightly-tag }}
 
       - name: Admit the fixed build dependencies before Blueprint evaluation
         run: |

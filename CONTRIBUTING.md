@@ -25,6 +25,14 @@ changes in the release record.
 
 ## Release versions
 
+The release workflow's optional `nightly-tag` selects an exact compiler. Empty
+resolves the official latest once; an explicit value must be a canonical
+`nightly-YYYY-MM-DD-<7..40 lowercase hex>` tag with a valid calendar date. Inputs
+are environment data and are validated before becoming a workflow output. That
+one value feeds the build, archived-example tests and post-publication Site;
+standalone documentation, CI and benchmarks keep using latest. Release notes
+record the selected compiler, and compatibility evidence retains its actual tag.
+
 A release must name a canonical three-component version. Components fit in
 `U64`, contain no leading zeroes, and prerelease identifiers are nonempty;
 numeric prerelease identifiers also have no leading zeroes. The version check
