@@ -199,6 +199,26 @@ class TarTests(Fixture):
 
 
 class RawTests(Fixture):
+    def test_download_refusal_reports_fixed_source_without_leaking_credentials(self):
+        source = admission.SOURCES["core"]
+        binary = self.root / "bin"
+        binary.mkdir()
+        curl = binary / "curl"
+        curl.write_text(f"#!{sys.executable}\nimport sys\nsys.stderr.write('HTTP 403\\nnever-print\\n')\nsys.exit(56)\n")
+        curl.chmod(0o700)
+        with mock.patch.dict(os.environ, {"PATH": str(binary), "GH_TOKEN": "never-print"}):
+            with self.assertRaises(admission.AdmissionError) as failure:
+                admission.prepare(source, self.root / "raw")
+        message = str(failure.exception)
+        self.assertIn("prepare source=core asset=725946981", message)
+        self.assertIn("code=56", message)
+        self.assertIn("HTTP 403", message)
+        self.assertIn("[REDACTED]", message)
+        self.assertNotIn("never-print", message)
+        self.assertNotIn("\n", message)
+        self.assertLess(len(message), 2200)
+        self.assertEqual(list((self.root / "raw").iterdir()), [])
+
     def test_prepare_anonymous_fixed_api_and_repeat_rehash(self):
         self.mocks()
         path = admission.prepare(self.source, self.root / "raw")

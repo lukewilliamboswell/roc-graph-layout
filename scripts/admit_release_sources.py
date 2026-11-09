@@ -541,7 +541,10 @@ def prepare(source, directory):
                "--location", "--proto", "=https", "--proto-redir", "=https", "--max-redirs", "3",
                "--connect-timeout", "10", "--max-time", "60", "--max-filesize", str(source.size),
                "--header", "Accept: application/octet-stream", source.api_url]
-    data = run_bounded(command, source.size)
+    try:
+        data = run_bounded(command, source.size)
+    except AdmissionError as error:
+        raise AdmissionError(f"prepare source={source.key} asset={source.asset_id}: {error}") from error
     require(len(data) == source.size and sha(data) == source.sha256, "download digest/size mismatch")
     with tempfile.TemporaryDirectory(prefix=".source-download-", dir=directory) as temporary:
         pending = Path(temporary) / source.archive_name
