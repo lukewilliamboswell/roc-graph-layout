@@ -1,4 +1,4 @@
-name: Release transport diagnostic
+name: Token-free source delivery diagnostic
 on:
   workflow_dispatch:
 permissions:
@@ -6,36 +6,34 @@ permissions:
 jobs:
   transport:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
-      - name: Probe exact immutable bytes through browser and asset API
+      - name: Measure token-free admitted Core and Font asset delivery
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           python3 - <<'PY'
-          """Read-only hosted delivery probe; never extracts or executes downloaded bytes."""
+          """Read-only measurement of fixed token-free source delivery; no extraction/execution."""
           import hashlib
           import json
           import os
           from pathlib import Path
           import selectors
-          import shutil
           import signal
           import subprocess
           import time
-          
-          ROOT = Path(os.environ["RUNNER_TEMP"]) / "graph-transport-probe"
+
+          ROOT = Path(os.environ["RUNNER_TEMP"]) / "graph-token-free-transport-probe"
           ROOT.mkdir(mode=0o700, exist_ok=True)
           ASSETS = [
-              ("lukewilliamboswell/roc-graph-layout", "0.3.0", "layout-A3CBTbdsMzJdxUtRtceC4u4PX9uic9TxFTPF5HnnKmmP.tar.zst", 295288, "24b78309349e5f78236b462f1632b1cd88eff7eb971cb5713c286c9f3ac3876b"),
-              ("lukewilliamboswell/roc-graph-layout", "0.3.0", "mermaid-FX8oD6yjkBYmZzJEHLLA9VUGQEHRVu5kRGtow2NC7Nru.tar.zst", 259484, "c661ce011a42dc9247653d36553593567f1f2ec6da1825b871ad728cefdb30b7"),
-              ("lukewilliamboswell/roc-blueprint", "0.12.0", "roc-blueprint-core-3mh7nRh7hHcVamEwYFCtd7aMUEoP3cdpAk9gLsZMV17m.tar.zst", 132723, "b367d5d91a32c002d09d5309a28ae82c0e978a6cd59ed4eb249e395700a01910"),
+              ("lukewilliamboswell/roc-blueprint", "0.12.0", 725946981, "roc-blueprint-core-3mh7nRh7hHcVamEwYFCtd7aMUEoP3cdpAk9gLsZMV17m.tar.zst", 132723, "b367d5d91a32c002d09d5309a28ae82c0e978a6cd59ed4eb249e395700a01910"),
+              ("lukewilliamboswell/roc-font", "0.1.0-rc2", 674005967, "A14BmicBaf6dm4K9kdYH9j8Y6BoAZrpUmxWh9sojsFy5.tar.zst", 4106898, "11d50f4fd4758cb85dec5e76abc8045c454410efc346d41ff8d5c6605fc8ef0c"),
           ]
-          
-          
-          def bounded(command, maximum, seconds=65):
+
+
+          def bounded(command, maximum, environment, seconds=65):
               start = time.monotonic()
-              process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+              process = subprocess.Popen(command, env=environment, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
               selector = selectors.DefaultSelector()
               streams = {"stdout": bytearray(), "stderr": bytearray()}
               selector.register(process.stdout, selectors.EVENT_READ, "stdout")
@@ -47,54 +45,63 @@ jobs:
                       if remaining <= 0:
                           reason = "timeout"; break
                       for key, _ in selector.select(remaining):
-                          chunk = os.read(key.fileobj.fileno(), 65536)
+                          limit = maximum if key.data == "stdout" else 16384
+                          chunk = os.read(key.fileobj.fileno(), min(65536, max(1, limit - len(streams[key.data]) + 1)))
                           if not chunk:
                               selector.unregister(key.fileobj); continue
                           streams[key.data].extend(chunk)
-                          if len(streams[key.data]) > (maximum if key.data == "stdout" else 16384):
-                              reason = "output-limit"; break
+                          if len(streams[key.data]) > limit:
+                              reason = key.data + "-limit"; break
                       if reason != "exited":
                           break
                   if reason != "exited":
-                      os.killpg(process.pid, signal.SIGKILL)
+                      try: os.killpg(process.pid, signal.SIGKILL)
+                      except ProcessLookupError: pass
                   process.wait(timeout=5)
               finally:
                   if process.poll() is None:
                       os.killpg(process.pid, signal.SIGKILL); process.wait()
                   selector.close(); process.stdout.close(); process.stderr.close()
               return process.returncode, bytes(streams["stdout"]), bytes(streams["stderr"]), round(time.monotonic() - start, 3), reason
-          
-          
-          facts = {"curl_path": shutil.which("curl"), "curl_version": subprocess.check_output(["curl", "--version"], text=True), "requests": []}
-          for repository, version, name, size, digest in ASSETS:
-              rc, body, error, elapsed, reason = bounded(["gh", "api", f"repos/{repository}/releases/tags/{version}"], 1_000_000)
+
+
+          parent_environment = os.environ.copy()
+          child_environment = parent_environment.copy()
+          for key in list(child_environment):
+              if key.startswith("GH_") or key in ("GITHUB_TOKEN", "GITHUB_ENTERPRISE_TOKEN", "GIT_ASKPASS", "SSH_ASKPASS"):
+                  child_environment.pop(key)
+          child_environment["GH_TOKEN"] = ""
+          child_environment["GITHUB_TOKEN"] = ""
+          credentials_absent = all(not value for key, value in child_environment.items() if key.startswith("GH_") or key in ("GITHUB_TOKEN", "GITHUB_ENTERPRISE_TOKEN"))
+          assert credentials_absent
+          facts = {"run_id": os.environ["GITHUB_RUN_ID"], "attempt": os.environ["GITHUB_RUN_ATTEMPT"], "source": os.environ["GITHUB_SHA"], "child_credentials_absent": credentials_absent,
+                   "curl_version": subprocess.check_output(["curl", "--disable", "--version"], env=child_environment, text=True), "requests": []}
+          (ROOT / "report.json").write_text(json.dumps(facts, indent=2) + "\n")
+          for repository, version, identifier, name, size, digest in ASSETS:
+              rc, body, error, elapsed, reason = bounded(["gh", "api", "--hostname", "github.com", f"repos/{repository}/releases/tags/{version}"], 1_000_000, parent_environment)
               assert rc == 0 and reason == "exited", (repository, rc, error)
               release = json.loads(body)
-              assert release["immutable"]
-              asset, = [a for a in release["assets"] if a["name"] == name]
-              url = f"https://github.com/{repository}/releases/download/{version}/{name}"
-              assert asset["browser_download_url"] == url and asset["size"] == size and asset["digest"] == "sha256:" + digest
-              for transport in ["browser", "asset-api"]:
-                  path = ROOT / (name + "." + transport)
-                  if transport == "browser":
-                      command = ["curl", "--fail", "--silent", "--show-error", "--location", "--proto", "=https", "--proto-redir", "=https", "--max-time", "60", "--max-filesize", str(size), "--output", str(path), "--write-out", "%{http_code} %{time_total} %{size_download} %{num_redirects}", url]
-                      rc, body, error, elapsed, reason = bounded(command, 4096)
-                      data = path.read_bytes() if path.exists() else b""
-                      metrics = body.decode(errors="replace")
-                  else:
-                      command = ["gh", "api", "--method", "GET", "-H", "Accept: application/octet-stream", f"repos/{repository}/releases/assets/{asset['id']}"]
-                      rc, data, error, elapsed, reason = bounded(command, size + 1)
-                      metrics = "bounded authenticated asset-ID download"
-                  facts["requests"].append({"repository": repository, "version": version, "asset": name, "transport": transport, "code": rc, "reason": reason, "seconds": elapsed, "stderr": error.decode(errors="replace"), "metrics": metrics, "size": len(data), "sha256": hashlib.sha256(data).hexdigest(), "matches_admitted_bytes": rc == 0 and reason == "exited" and len(data) == size and hashlib.sha256(data).hexdigest() == digest})
-                  (ROOT / "report.json").write_text(json.dumps(facts, indent=2) + "\n")
-                  print(json.dumps(facts["requests"][-1]), flush=True)
-          assert all(request["matches_admitted_bytes"] for request in facts["requests"]), "One or more observed transport requests failed; evidence preserved"
+              assert release["immutable"] and release["tag_name"] == version
+              asset, = [a for a in release["assets"] if a["id"] == identifier]
+              assert asset["name"] == name and asset["size"] == size and asset["digest"] == "sha256:" + digest
+              assert asset["browser_download_url"] == f"https://github.com/{repository}/releases/download/{version}/{name}"
+              path = ROOT / name
+              command = ["curl", "--disable", "--fail", "--silent", "--show-error", "--location", "--proto", "=https", "--proto-redir", "=https", "--max-time", "60", "--max-filesize", str(size), "--header", "Accept: application/octet-stream", "--output", str(path), "--write-out", "%{http_code} %{time_total} %{size_download} %{num_redirects} %{content_type}", f"https://api.github.com/repos/{repository}/releases/assets/{identifier}"]
+              rc, metrics, error, elapsed, reason = bounded(command, 4096, child_environment)
+              data = path.read_bytes() if path.exists() else b""
+              result = {"repository": repository, "version": version, "asset_id": identifier, "asset": name, "transport": "token-free official asset-ID API", "argv": command, "child_credentials_absent": credentials_absent,
+                        "code": rc, "reason": reason, "seconds": elapsed, "stderr": error.decode(errors="replace"), "http_metrics": metrics.decode(errors="replace"), "size": len(data), "sha256": hashlib.sha256(data).hexdigest(),
+                        "matches_admitted_bytes": rc == 0 and reason == "exited" and len(data) == size and hashlib.sha256(data).hexdigest() == digest}
+              facts["requests"].append(result)
+              (ROOT / "report.json").write_text(json.dumps(facts, indent=2) + "\n")
+              print(json.dumps(result), flush=True)
+          assert len(facts["requests"]) == 2 and all(r["matches_admitted_bytes"] for r in facts["requests"]), "Token-free delivery failed; measurements preserved"
           PY
-      - name: Preserve read-only transport observations
+      - name: Preserve token-free transport measurements
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: graph-transport-probe
-          path: ${{ runner.temp }}/graph-transport-probe/report.json
+          name: graph-token-free-transport-probe
+          path: ${{ runner.temp }}/graph-token-free-transport-probe/report.json
           if-no-files-found: error
           retention-days: 14
