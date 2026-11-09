@@ -1,42 +1,100 @@
-name: Benchmarks
-
-# The scale rungs take longer than a pull request should wait, so they run on
-# request. Pull requests run the smoke rung as part of `blueprint run check`.
+name: Release transport diagnostic
 on:
   workflow_dispatch:
-
-permissions: {}
-
+permissions:
+  contents: read
 jobs:
-  scale:
+  transport:
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
-    permissions:
-      contents: read
+    timeout-minutes: 10
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@0ad737abd3cad3d14d7e409e91161cd42c05142c
-        with:
-          cache: 'true'
-          cache-workload: dev
-
-      - name: Install the latest Roc nightly
-        uses: roc-lang/setup-roc@dd81390553b0a1236aedb61cdd4c0ed7cf7eaec4
-        with:
-          version: nightly
-
-      - name: Run the scale rungs
-        run: blueprint run bench -- scale --output benchmarks/results/manual
-
-      - name: Upload the results
+      - name: Probe exact immutable bytes through browser and asset API
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          """Read-only hosted delivery probe; never extracts or executes downloaded bytes."""
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import selectors
+          import shutil
+          import signal
+          import subprocess
+          import time
+          
+          ROOT = Path(os.environ["RUNNER_TEMP"]) / "graph-transport-probe"
+          ROOT.mkdir(mode=0o700, exist_ok=True)
+          ASSETS = [
+              ("lukewilliamboswell/roc-graph-layout", "0.3.0", "layout-A3CBTbdsMzJdxUtRtceC4u4PX9uic9TxFTPF5HnnKmmP.tar.zst", 295288, "24b78309349e5f78236b462f1632b1cd88eff7eb971cb5713c286c9f3ac3876b"),
+              ("lukewilliamboswell/roc-graph-layout", "0.3.0", "mermaid-FX8oD6yjkBYmZzJEHLLA9VUGQEHRVu5kRGtow2NC7Nru.tar.zst", 259484, "c661ce011a42dc9247653d36553593567f1f2ec6da1825b871ad728cefdb30b7"),
+              ("lukewilliamboswell/roc-blueprint", "0.12.0", "roc-blueprint-core-3mh7nRh7hHcVamEwYFCtd7aMUEoP3cdpAk9gLsZMV17m.tar.zst", 132723, "b367d5d91a32c002d09d5309a28ae82c0e978a6cd59ed4eb249e395700a01910"),
+          ]
+          
+          
+          def bounded(command, maximum, seconds=65):
+              start = time.monotonic()
+              process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+              selector = selectors.DefaultSelector()
+              streams = {"stdout": bytearray(), "stderr": bytearray()}
+              selector.register(process.stdout, selectors.EVENT_READ, "stdout")
+              selector.register(process.stderr, selectors.EVENT_READ, "stderr")
+              reason = "exited"
+              try:
+                  while selector.get_map():
+                      remaining = seconds - (time.monotonic() - start)
+                      if remaining <= 0:
+                          reason = "timeout"; break
+                      for key, _ in selector.select(remaining):
+                          chunk = os.read(key.fileobj.fileno(), 65536)
+                          if not chunk:
+                              selector.unregister(key.fileobj); continue
+                          streams[key.data].extend(chunk)
+                          if len(streams[key.data]) > (maximum if key.data == "stdout" else 16384):
+                              reason = "output-limit"; break
+                      if reason != "exited":
+                          break
+                  if reason != "exited":
+                      os.killpg(process.pid, signal.SIGKILL)
+                  process.wait(timeout=5)
+              finally:
+                  if process.poll() is None:
+                      os.killpg(process.pid, signal.SIGKILL); process.wait()
+                  selector.close(); process.stdout.close(); process.stderr.close()
+              return process.returncode, bytes(streams["stdout"]), bytes(streams["stderr"]), round(time.monotonic() - start, 3), reason
+          
+          
+          facts = {"curl_path": shutil.which("curl"), "curl_version": subprocess.check_output(["curl", "--version"], text=True), "requests": []}
+          for repository, version, name, size, digest in ASSETS:
+              rc, body, error, elapsed, reason = bounded(["gh", "api", f"repos/{repository}/releases/tags/{version}"], 1_000_000)
+              assert rc == 0 and reason == "exited", (repository, rc, error)
+              release = json.loads(body)
+              assert release["immutable"]
+              asset, = [a for a in release["assets"] if a["name"] == name]
+              url = f"https://github.com/{repository}/releases/download/{version}/{name}"
+              assert asset["browser_download_url"] == url and asset["size"] == size and asset["digest"] == "sha256:" + digest
+              for transport in ["browser", "asset-api"]:
+                  path = ROOT / (name + "." + transport)
+                  if transport == "browser":
+                      command = ["curl", "--fail", "--silent", "--show-error", "--location", "--proto", "=https", "--proto-redir", "=https", "--max-time", "60", "--max-filesize", str(size), "--output", str(path), "--write-out", "%{http_code} %{time_total} %{size_download} %{num_redirects}", url]
+                      rc, body, error, elapsed, reason = bounded(command, 4096)
+                      data = path.read_bytes() if path.exists() else b""
+                      metrics = body.decode(errors="replace")
+                  else:
+                      command = ["gh", "api", "--method", "GET", "-H", "Accept: application/octet-stream", f"repos/{repository}/releases/assets/{asset['id']}"]
+                      rc, data, error, elapsed, reason = bounded(command, size + 1)
+                      metrics = "bounded authenticated asset-ID download"
+                  facts["requests"].append({"repository": repository, "version": version, "asset": name, "transport": transport, "code": rc, "reason": reason, "seconds": elapsed, "stderr": error.decode(errors="replace"), "metrics": metrics, "size": len(data), "sha256": hashlib.sha256(data).hexdigest(), "matches_admitted_bytes": rc == 0 and reason == "exited" and len(data) == size and hashlib.sha256(data).hexdigest() == digest})
+                  (ROOT / "report.json").write_text(json.dumps(facts, indent=2) + "\n")
+                  print(json.dumps(facts["requests"][-1]), flush=True)
+          assert all(request["matches_admitted_bytes"] for request in facts["requests"]), "One or more observed transport requests failed; evidence preserved"
+          PY
+      - name: Preserve read-only transport observations
         if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: benchmark-scale
-          path: benchmarks/results/manual
-          if-no-files-found: warn
+          name: graph-transport-probe
+          path: ${{ runner.temp }}/graph-transport-probe/report.json
+          if-no-files-found: error
+          retention-days: 14
