@@ -174,7 +174,7 @@ Release := [].{
 	## Mermaid source file directly inside one example directory.
 	valid_examples_entry : Str, Str -> Bool
 	valid_examples_entry = |root, entry|
-		if entry == "${root}/README.md" or entry == "${root}/spec.json" {
+		if entry == "${root}/README.md" or entry == "${root}/spec.json" or entry == "${root}/run-example.py" {
 			Bool.True
 		} else if entry.starts_with("${root}/examples/") {
 			match Str.split_on(entry.drop_prefix("${root}/examples/"), "/") {
@@ -241,6 +241,8 @@ Release := [].{
 				"    roc examples/org_chart/main.roc",
 				"",
 				"`spec.json` records what each example printed when ${version} was released.",
+				"Its explicit Python 3 launcher restores this directory when a test runner",
+				"starts in an application directory; Python 3 is supplied by the shared runner.",
 				"",
 				"Release notes: https://github.com/${Release.repository}/releases/tag/${version}",
 				"",
@@ -344,3 +346,5 @@ expect ["1.18446744073709551616.0", "1.0.18446744073709551616"].all(|requested| 
 expect ["1.18446744073709551616.0", "1.0.18446744073709551616"].all(|previous| Release.breaking_suffices("2.0.0", previous).is_err())
 expect Release.previous_release(["0.3.0", "https://github.com/lukewilliamboswell/roc-graph-layout/releases/download/0.3.0/layout-Abc.tar.zst", "https://github.com/lukewilliamboswell/roc-graph-layout/releases/download/0.3.0/mermaid-Def.tar.zst"]).is_ok()
 expect ["http://github.com/lukewilliamboswell/roc-graph-layout/releases/download/0.2.0/Abc.tar.zst", "https://github.com/lukewilliamboswell/roc-graph-layout/releases/download/0.2.0/../Abc.tar.zst", "https://github.com/lukewilliamboswell/roc-graph-layout/releases/download/0.2.0/Abc.tar.zst?redirect=1"].all(|bundle| Release.previous_release(["0.2.0", bundle]).is_err())
+
+expect Release.valid_examples_entry(root, "${root}/run-example.py") and !Release.valid_examples_entry(root, "${root}/other.py") and !Release.valid_examples_entry(root, "${root}/examples/run-example.py")

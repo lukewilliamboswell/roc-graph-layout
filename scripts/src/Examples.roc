@@ -16,8 +16,8 @@ import Spec
 ##
 ## It runs the working tree's examples, a candidate bundle's and a published
 ## archive's alike, so all three are held to the same recorded output. It
-## builds and runs them as the shared nightly runner does: from the directory
-## that holds `examples/`, with `--opt=dev`.
+## runs the documented suite-root examples with `--opt=dev`. The archive
+## additionally declares and tests an explicit application-directory launcher.
 Examples := [].{
 
 	## How the examples reach their packages. `Direct` leaves Roc to resolve
@@ -144,7 +144,7 @@ execute! = |roc, options, examples, colour, build| {
 				$failures = $failures.append("  ${step.name}: ${result.problem}")
 			}
 		}
-		$updated = $updated.append({ path: example.path, cases: $cases })
+		$updated = $updated.append({ ..example, cases: $cases })
 	}
 	Ok({ steps: $steps, failures: $failures, updated: $updated })
 }
@@ -163,7 +163,7 @@ load! = |options, paths| {
 			kept = recorded.keep_if(|example| paths.contains(example.path))
 			added = paths
 				.keep_if(|path| !kept.any(|example| example.path == path))
-				.map(|path| { path, cases: [{ name: "default", args: [], stdin: "", stdout: "", stderr: "", exit_code: 0, skip: Err(Missing) }] })
+				.map(|path| { path, run: Err(Missing), cases: [{ name: "default", args: [], stdin: "", stdout: "", stderr: "", exit_code: 0, skip: Err(Missing) }] })
 			kept.concat(added)
 		}
 	}

@@ -81,16 +81,6 @@ jobs:
           dry_run_version: 0.0.1-dry-run
           github_token: ${{ github.token }}
 
-      # A breaking-version boundary satisfies every API-change lower bound;
-      # versions within that boundary still require roc bump. A dry run has
-      # no publication version to check.
-      - name: Check the release version promise
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_VERSION: ${{ steps.validate.outputs.release_version }}
-        run: blueprint run check-version
-
       - name: Check the scripts, package, examples and release artifacts
         run: blueprint run check
 
@@ -101,6 +91,17 @@ jobs:
         env:
           RELEASE_VERSION: ${{ steps.validate.outputs.release_version }}
         run: blueprint run bundle
+
+      # A breaking-version boundary satisfies every API-change lower bound;
+      # an unchanged later patch binds exact bundle contents, while changed
+      # versions within that boundary still require roc bump. A dry run has
+      # no publication version to check.
+      - name: Check the release version promise
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ steps.validate.outputs.release_version }}
+        run: blueprint run check-version
 
       # The archived examples depend on this release's bundle URLs.
       - name: Package the examples archive

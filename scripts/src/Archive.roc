@@ -77,7 +77,7 @@ Archive := [].{
 		Env.with_temp_dir!(
 			|temporary| {
 				stage = Path.join(temporary, root)
-				var $entries = ["${root}/README.md", "${root}/spec.json"]
+				var $entries = ["${root}/README.md", "${root}/spec.json", "${root}/run-example.py"]
 				for directory in Archive.directories!()? {
 					name = Script.file_name(directory)?
 					staged = Path.join(Path.join(stage, "examples"), name)
@@ -97,6 +97,7 @@ Archive := [].{
 						}
 					}
 				}
+				Path.write_bytes!(Path.join(stage, "run-example.py"), Path.read_bytes!("scripts/archive_runner.py")?)?
 				Path.write_utf8!(Path.join(stage, "README.md"), Release.examples_readme(version, urls))?
 				Path.write_utf8!(Path.join(stage, "spec.json"), Spec.render_suite(apps, version, [urls.layout, urls.mermaid]))?
 				# -X leaves out owner and timestamp extras; -@ reads the entries to add.
@@ -125,6 +126,9 @@ Archive := [].{
 		suite = match Spec.parse_suite(Path.read_utf8!(Path.join(root, "spec.json"))?) {
 			Ok(parsed) => parsed
 			Err(InvalidSpec) => return Script.fail!("${file_name} holds no valid spec.json, so there is nothing to compare its examples with")
+		}
+		if !suite.apps.all(|example| example.run == Ok(Spec.archive_run)) or Path.read_bytes!(Path.join(root, "run-example.py"))? != Path.read_bytes!("scripts/archive_runner.py")? {
+			return Script.fail!("the archived examples must declare the reviewed suite-root launcher")
 		}
 		# The layout bundle comes first, then the Mermaid bundle.
 		urls = match suite.dependencies {

@@ -25,7 +25,7 @@ Spec := [].{
 
 	## An example, by the path of its application from the directory that
 	## holds `examples/`, and its cases.
-	App : { path : Str, cases : List(Case) }
+	App : { path : Str, cases : List(Case), run : Try(List(Str), [Missing]) }
 
 	## The archived form: the cases, the release they belong to, and the
 	## bundle URLs the archived examples depend on.
@@ -71,9 +71,13 @@ Spec := [].{
 	render_suite : List(App), Str, List(Str) -> Str
 	render_suite = |apps, version, dependencies| {
 		suite : Suite
-		suite = { schema_version: 1, release: version, dependencies, apps }
+		suite = { schema_version: 1, release: version, dependencies, apps: apps.map(|example| { ..example, run: Ok(Spec.archive_run) }) }
 		pretty(Json.to_str(suite))
 	}
+
+	## Explicit runtime argv; the shared runner starts in the application directory.
+	archive_run : List(Str)
+	archive_run = ["python3", "{suite}/run-example.py", "{suite}", "{executable}"]
 
 	## The label a case is reported under.
 	label : App, Case -> Str
@@ -130,7 +134,7 @@ case : Spec.Case
 case = { name: "default", args: [], stdin: "", stdout: "Laid out 3 nodes\n", stderr: "", exit_code: 0, skip: Err(Missing) }
 
 org_chart : Spec.App
-org_chart = { path: "examples/org_chart/main.roc", cases: [case] }
+org_chart = { path: "examples/org_chart/main.roc", cases: [case], run: Err(Missing) }
 
 expect Spec.parse(Spec.render([org_chart])) == Ok([org_chart])
 expect Spec.render([org_chart]).starts_with("{\n  \"apps\": [\n")
@@ -143,5 +147,5 @@ expect Spec.problems([{ ..org_chart, cases: [{ ..case, skip: Ok({ reason: "", is
 expect Spec.label(org_chart, case) == "org_chart"
 expect {
 	text = Spec.render_suite([org_chart], "0.2.0", ["https://example.com/A.tar.zst", "https://example.com/M.tar.zst"])
-	Spec.parse_suite(text) == Ok({ schema_version: 1, release: "0.2.0", dependencies: ["https://example.com/A.tar.zst", "https://example.com/M.tar.zst"], apps: [org_chart] })
+	Spec.parse_suite(text) == Ok({ schema_version: 1, release: "0.2.0", dependencies: ["https://example.com/A.tar.zst", "https://example.com/M.tar.zst"], apps: [{ ..org_chart, run: Ok(Spec.archive_run) }] })
 }
