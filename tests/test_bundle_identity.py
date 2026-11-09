@@ -91,16 +91,75 @@ class BundleIdentityTests(unittest.TestCase):
             with self.assertRaises(proof.IntegrityError):
                 proof.selected_assets(releases, "0.3.0")
 
-    def test_download_failure_or_digest_mismatch_is_integrity_failure(self):
+    def test_api_download_failure_digest_and_size_are_integrity_failures(self):
         asset = self.releases()[0]["assets"][0]
         with tempfile.TemporaryDirectory() as temporary:
             destination = Path(temporary) / "bundle"
-            for code, payload in [(1, b"data"), (0, b"evil"), (0, b"too long")]:
-                def download(*args, **kwargs):
-                    destination.write_bytes(payload)
-                    return subprocess.CompletedProcess(args, code)
-                with patch.object(proof.subprocess, "run", download), self.assertRaises(proof.IntegrityError):
+            for code, payload, reason in [(1, b"data", "exited"), (0, b"evil", "exited"), (0, b"too long", "exited"), (0, b"data", "timeout"), (0, b"data", "stderr-limit")]:
+                with patch.object(proof, "bounded_api", return_value=(code, payload, b"HTTP failure", reason)), self.assertRaises(proof.IntegrityError):
                     proof.admitted_download(asset, destination)
+                self.assertFalse(destination.exists())
+
+    def test_api_download_uses_only_admitted_official_asset_id(self):
+        asset = self.releases()[0]["assets"][0]
+        with tempfile.TemporaryDirectory() as temporary:
+            destination = Path(temporary) / "bundle"
+            with patch.object(proof, "bounded_api", return_value=(0, b"data", b"", "exited")) as request:
+                self.assertEqual(proof.admitted_download(asset, destination), b"data")
+            self.assertEqual(destination.read_bytes(), b"data")
+            self.assertEqual(request.call_args.args, (["gh", "api", "--hostname", "github.com", "--method", "GET", "-H", "Accept: application/octet-stream", "repos/lukewilliamboswell/roc-graph-layout/releases/assets/1"], 4))
+
+    def test_invalid_asset_ids_cannot_redirect_the_api_request(self):
+        for identifier in [True, 0, -1, 2**64, "1/other"]:
+            with tempfile.TemporaryDirectory() as temporary, patch.object(proof, "bounded_api") as request:
+                asset = {**self.releases()[0]["assets"][0], "id": identifier}
+                with self.assertRaises(proof.IntegrityError):
+                    proof.admitted_download(asset, Path(temporary) / "bundle")
+                request.assert_not_called()
+
+    def test_authentication_failure_is_bounded_useful_and_redacted(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.dict(os.environ, {"GH_TOKEN": "synthetic-secret"}):
+            with patch.object(proof, "bounded_api", return_value=(4, b"", b"authentication denied synthetic-secret\n", "exited")):
+                with self.assertRaises(proof.IntegrityError) as failure:
+                    proof.admitted_download(self.releases()[0]["assets"][0], Path(temporary) / "bundle")
+            message = str(failure.exception)
+            self.assertIn("code=4", message)
+            self.assertIn("reason=exited", message)
+            self.assertIn("authentication denied", message)
+            self.assertNotIn("synthetic-secret", message)
+
+    def test_api_process_bounds_and_cleanup(self):
+        for program, maximum, expected in [
+            ("import sys; sys.stdout.write('x'*10000)", 64, "stdout-limit"),
+            ("import sys; sys.stderr.write('x'*10000)", 64, "stderr-limit"),
+            ("import time; time.sleep(10)", 64, "timeout"),
+        ]:
+            code, stdout, stderr, reason = proof.bounded_api([sys.executable, "-c", program], maximum, seconds=0.2 if expected == "timeout" else 5)
+            self.assertEqual(reason, expected)
+            self.assertLessEqual(len(stdout), maximum + 1)
+            self.assertLessEqual(len(stderr), 8193)
+            if expected == "timeout":
+                self.assertNotEqual(code, 0)
+
+    def test_api_authentication_remains_in_environment_without_debug(self):
+        with patch.dict(os.environ, {"GH_TOKEN": "synthetic-secret", "GH_DEBUG": "api"}):
+            command = [sys.executable, "-c", "import os; print('auth' if os.environ.get('GH_TOKEN') else 'missing'); print(os.environ.get('GH_DEBUG','no-debug'))"]
+            code, stdout, stderr, reason = proof.bounded_api(command, 100)
+            self.assertEqual((code, stdout, stderr, reason), (0, b"auth\nno-debug\n", b"", "exited"))
+            self.assertNotIn("synthetic-secret", str(command))
+
+    def test_api_deadline_terminates_descendants(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            marker = Path(temporary) / "descendant-survived"
+            started = Path(temporary) / "descendant-started"
+            child = "import time,pathlib; pathlib.Path(" + repr(str(started)) + ").write_text('started'); time.sleep(2); pathlib.Path(" + repr(str(marker)) + ").write_text('alive')"
+            parent = "import subprocess,sys,time; subprocess.Popen([sys.executable,'-c'," + repr(child) + "]); time.sleep(10)"
+            code, _, _, reason = proof.bounded_api([sys.executable, "-c", parent], 64, seconds=1)
+            self.assertEqual(reason, "timeout")
+            self.assertNotEqual(code, 0)
+            self.assertTrue(started.exists())
+            time.sleep(1.3)
+            self.assertFalse(marker.exists())
 
     def test_duplicate_unsafe_or_nonregular_inventory_is_rejected(self):
         for names, kind in [(["main.roc", "main.roc"], tarfile.REGTYPE), (["../main.roc"], tarfile.REGTYPE), (["main.roc"], tarfile.SYMTYPE)]:

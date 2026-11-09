@@ -43,7 +43,13 @@ runs after bundling; locally, build the bundles first in `OUTPUT_DIR` (default
 `dist`) before `blueprint run check-version`. This does not add general
 Mermaid API inspection. Genuine package changes still require the normal layout
 API comparison; an unreadable previous API cannot satisfy it. Admission or freshness
-errors stop the gate. There is no manual switch to bypass validation.
+errors stop the gate. Source downloads use the authenticated official asset-ID
+API after validating the immutable release, canonical public URL, size and digest.
+This avoids browser-route delivery failures without changing the admitted bytes.
+Authentication stays in the environment, debug header tracing is disabled, and
+byte, stderr and deadline bounds terminate failed download process groups. Errors
+retain a bounded reason, return code and redacted diagnostic; no failed download
+can satisfy the proof. There is no manual switch to bypass validation.
 
 This prevents malformed metadata, a downgrade, or a different repository's bundle
 from being used to justify publication. Pure release tests cover those rejected
