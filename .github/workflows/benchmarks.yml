@@ -1,4 +1,4 @@
-name: Token-free source delivery diagnostic
+name: Token-free fixed basic-cli delivery diagnostic
 on:
   workflow_dispatch:
 permissions:
@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Measure token-free admitted Core and Font asset delivery
+      - name: Measure token-free fixed basic-cli asset delivery
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -26,8 +26,7 @@ jobs:
           ROOT = Path(os.environ["RUNNER_TEMP"]) / "graph-token-free-transport-probe"
           ROOT.mkdir(mode=0o700, exist_ok=True)
           ASSETS = [
-              ("lukewilliamboswell/roc-blueprint", "0.12.0", 725946981, "roc-blueprint-core-3mh7nRh7hHcVamEwYFCtd7aMUEoP3cdpAk9gLsZMV17m.tar.zst", 132723, "b367d5d91a32c002d09d5309a28ae82c0e978a6cd59ed4eb249e395700a01910"),
-              ("lukewilliamboswell/roc-font", "0.1.0-rc2", 674005967, "A14BmicBaf6dm4K9kdYH9j8Y6BoAZrpUmxWh9sojsFy5.tar.zst", 4106898, "11d50f4fd4758cb85dec5e76abc8045c454410efc346d41ff8d5c6605fc8ef0c"),
+              ("roc-lang/basic-cli", "0.27.0", 720815853, "9yjxqdGTP4xSpSEmDazwTmRsehfRZzA19pwEKkR6fj1g.tar.zst", 23399272, "81760dd9d6f31d8a1ef4263357228bdcacc4ef23e6ba624abff02e161724a8af"),
           ]
 
 
@@ -95,7 +94,7 @@ jobs:
               facts["requests"].append(result)
               (ROOT / "report.json").write_text(json.dumps(facts, indent=2) + "\n")
               print(json.dumps(result), flush=True)
-          assert len(facts["requests"]) == 2 and all(r["matches_admitted_bytes"] for r in facts["requests"]), "Token-free delivery failed; measurements preserved"
+          assert len(facts["requests"]) == 1 and all(r["matches_admitted_bytes"] for r in facts["requests"]), "Token-free delivery failed; measurements preserved"
           PY
       - name: Preserve token-free transport measurements
         if: always()
