@@ -50,6 +50,10 @@ Authentication stays in the environment, debug header tracing is disabled, and
 byte, stderr and deadline bounds terminate failed download process groups. Errors
 retain a bounded reason, return code and redacted diagnostic; no failed download
 can satisfy the proof. There is no manual switch to bypass validation.
+The reader signals its owned process group once during cleanup, with a separate
+five-second reap bound. Nested cleanup closes the selector and pipes even when
+signalling or reaping fails. Permission and cleanup errors still stop the proof;
+they cannot turn an incomplete download into accepted bytes.
 
 This prevents malformed metadata, a downgrade, or a different repository's bundle
 from being used to justify publication. Pure release tests cover those rejected
