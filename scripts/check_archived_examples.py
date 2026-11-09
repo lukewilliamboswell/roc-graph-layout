@@ -3,6 +3,7 @@
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -10,6 +11,10 @@ import tempfile
 
 def main():
     root, compiler, base = Path(sys.argv[1]).resolve(), sys.argv[2], sys.argv[3]
+    resolved_compiler = shutil.which(compiler)
+    if resolved_compiler is None:
+        raise RuntimeError("archive compiler is unavailable")
+    resolved_compiler = str(Path(resolved_compiler).resolve(strict=True))
     spec = json.loads((root / "spec.json").read_text())
     expected_run = ["python3", "{suite}/run-example.py", "{suite}", "{executable}"]
     assert (root / "run-example.py").read_bytes() == Path("scripts/archive_runner.py").read_bytes()
@@ -17,6 +22,14 @@ def main():
     checks = builds = cases = 0
     with tempfile.TemporaryDirectory(prefix="canonical-archive-") as temporary:
         environment = {**os.environ, "XDG_CACHE_HOME": str(Path(temporary) / "cache")}
+        # Admit the fixed native dependencies into this fresh cache. Both
+        # candidate bundles still have to be fetched from loopback.
+        # Its children have explicit deadlines and process-group cleanup. An
+        # outer timeout could kill the helper before that cleanup can run.
+        subprocess.run(
+            [sys.executable, "scripts/admit_release_sources.py", "seed", "--source", "font", "--source", "basic-cli", "--source", "legacy-http"],
+            env={**environment, "RA_COMPILER": resolved_compiler}, check=True,
+        )
         for index, app in enumerate(spec["apps"]):
             source = (root / app["path"]).read_text()
             replacements = []

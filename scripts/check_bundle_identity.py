@@ -65,6 +65,7 @@ def selected_assets(releases, previous):
         require(matched is not None, "invalid source bundle name")
         kind = matched[1]
         require(kind not in result, "ambiguous source bundle")
+        require(type(asset["id"]) is int and 0 < asset["id"] <= 2**64 - 1, "invalid source asset ID")
         require(asset["browser_download_url"] == PREFIX + previous + "/" + asset["name"], "wrong source URL")
         require(isinstance(asset["size"], int) and 0 < asset["size"] <= LIMIT, "source size out of bounds")
         require(bool(re.fullmatch(r"sha256:[0-9a-f]{64}", asset.get("digest") or "")), "missing or invalid digest")
@@ -73,16 +74,77 @@ def selected_assets(releases, previous):
     return result
 
 
+def bounded_api(command, maximum, seconds=60):
+    # gh obtains authentication from its environment/store, never an argv token.
+    environment = os.environ.copy()
+    environment.pop("GH_DEBUG", None)
+    process = subprocess.Popen(command, env=environment, stdin=subprocess.DEVNULL,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+    selector = selectors.DefaultSelector()
+    streams = {"stdout": bytearray(), "stderr": bytearray()}
+    selector.register(process.stdout, selectors.EVENT_READ, "stdout")
+    selector.register(process.stderr, selectors.EVENT_READ, "stderr")
+    deadline, reason = time.monotonic() + seconds, "exited"
+    try:
+        while selector.get_map():
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                reason = "timeout"
+                break
+            for key, _ in selector.select(remaining):
+                limit = maximum if key.data == "stdout" else 8192
+                chunk = os.read(key.fileobj.fileno(), min(65536, max(1, limit - len(streams[key.data]) + 1)))
+                if not chunk:
+                    selector.unregister(key.fileobj)
+                    continue
+                streams[key.data].extend(chunk)
+                if len(streams[key.data]) > limit:
+                    reason = key.data + "-limit"
+                    break
+            if reason != "exited":
+                break
+        if reason == "exited":
+            try:
+                process.wait(timeout=max(0.01, deadline - time.monotonic()))
+            except subprocess.TimeoutExpired:
+                reason = "timeout"
+        if reason != "exited":
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            process.wait()
+        return process.returncode, bytes(streams["stdout"]), bytes(streams["stderr"]), reason
+    finally:
+        # A child may leave descendants after closing both inherited pipes.
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.wait()
+        selector.close()
+        process.stdout.close()
+        process.stderr.close()
+
+
+def safe_error(stderr):
+    text = stderr.decode(errors="replace")
+    for name in ("GH_TOKEN", "GITHUB_TOKEN", "GH_ENTERPRISE_TOKEN", "GITHUB_ENTERPRISE_TOKEN"):
+        token = os.environ.get(name)
+        if token:
+            text = text.replace(token, "[REDACTED]")
+    return json.dumps(text[:4096])
+
+
 def admitted_download(asset, destination):
-    # curl bounds time, bytes and redirect protocols; content identity is checked again locally.
-    result = subprocess.run([
-        "curl", "--fail", "--silent", "--show-error", "--location", "--proto", "=https",
-        "--proto-redir", "=https", "--max-time", "60", "--max-filesize", str(asset["size"]),
-        "--output", str(destination), asset["browser_download_url"],
-    ], capture_output=True, timeout=65)
-    require(result.returncode == 0, "source download failed")
-    data = destination.read_bytes()
+    require(type(asset["id"]) is int and 0 < asset["id"] <= 2**64 - 1, "invalid source asset ID")
+    command = ["gh", "api", "--hostname", "github.com", "--method", "GET", "-H",
+               "Accept: application/octet-stream", f"repos/{REPOSITORY}/releases/assets/{asset['id']}"]
+    code, data, stderr, reason = bounded_api(command, asset["size"])
+    require(code == 0 and reason == "exited",
+            f"source asset API download failed: asset={asset['id']} reason={reason} code={code} stderr={safe_error(stderr)}")
     require(len(data) == asset["size"] and "sha256:" + sha(data) == asset["digest"], "download size/digest mismatch")
+    destination.write_bytes(data)
     return data
 
 
@@ -209,6 +271,13 @@ def bind_actual(directory, receipt, requested, previous):
         require(len(data) == expected[path.name]["size"] and sha(data) == expected[path.name]["sha256"], "actual candidate bytes differ from fresh proof")
 
 
+def candidate_environment(directory, requested):
+    environment = {**os.environ, "OUTPUT_DIR": str(directory), "RELEASE_VERSION": requested}
+    for credential in ["GH_TOKEN", "GITHUB_TOKEN", "GH_ENTERPRISE_TOKEN", "GITHUB_ENTERPRISE_TOKEN", "GH_DEBUG"]:
+        environment.pop(credential, None)
+    return environment
+
+
 def main(requested, previous, actual_directory="dist"):
     new, old = version(requested), version(previous)
     if new[:2] != old[:2] or new[2] <= old[2]:
@@ -224,7 +293,8 @@ def main(requested, previous, actual_directory="dist"):
         previous_inventory = {kind: inventory(published / asset["name"]) for kind, asset in assets.items()}
         candidate = root / "fresh"
         require(not candidate.exists(), "candidate output must be fresh")
-        fresh_build(["blueprint", "run", "bundle"], {**os.environ, "OUTPUT_DIR": str(candidate), "RELEASE_VERSION": requested})
+        # Authenticated metadata admission finishes before candidate compilation.
+        fresh_build(["blueprint", "run", "bundle"], candidate_environment(candidate, requested))
         require(tracked_snapshot() == before, "source snapshot changed while building")
         paths = list(candidate.iterdir())
         require(len(paths) == 2 and all(p.is_file() and not p.is_symlink() and p.stat().st_size <= LIMIT and NAME.fullmatch(p.name) for p in paths), "ambiguous candidate inventory")

@@ -52,10 +52,12 @@ Bundle := [].{
 				Path.copy_dir!("package-mermaid", staged)?
 				main = Path.join(staged, "main.roc")
 				Path.write_utf8!(main, Headers.with_dependency(Path.read_utf8!(main)?, Release.shorthand, layout_url)?)?
+				cache = Path.join(temporary, "cache")
+				admit_example_sources!(cache)?
 				server = Loopback.start!([layout], version)?
 				served = Loopback.url(server, layout)?
 				Script.info!("SERVE", "${served} in place of ${layout_url}")?
-				fetching = roc.with_empty_package_cache(Path.join(temporary, "cache"))
+				fetching = roc.with_empty_package_cache(cache)
 				checked = Loopback.run!(server, fetching.cmd(["check", "main.roc", "--replace-dep", OsStr.from_str(layout_url), OsStr.from_str(served)]).cwd(staged))?
 				Loopback.stop!(server)?
 				if checked.status != Exited(0) {
@@ -152,12 +154,14 @@ Bundle := [].{
 						return Script.fail!("${Path.display(archive)} depends on ${url}, which is not ${Path.display(bundle)}")
 					}
 				}
+				cache = Path.join(temporary, "cache")
+				admit_example_sources!(cache)?
 				server = Loopback.start!([bundles.layout, bundles.mermaid], unpacked.version)?
 				layout = ["--replace-dep", OsStr.from_str(unpacked.urls.layout), OsStr.from_str(Loopback.url(server, bundles.layout)?)]
 				mermaid = ["--replace-dep", OsStr.from_str(unpacked.urls.mermaid), OsStr.from_str(Loopback.url(server, bundles.mermaid)?)]
 				Script.info!("SERVE", "${server.base} in place of ${unpacked.urls.layout} and ${unpacked.urls.mermaid}")?
-				# An empty package cache makes Roc fetch the bundles from the server.
-				fetching = roc.with_empty_package_cache(Path.join(temporary, "cache"))
+				# Roc must fetch both candidate bundles from the server into this fresh cache.
+				fetching = roc.with_empty_package_cache(cache)
 				# Check both namespaces before building any native example. A
 				# versionless replacement used to hide conflicting package ids.
 				pair = check_package_pair!(fetching, server, unpacked.urls, layout.concat(mermaid), Path.join(temporary, "pair"))
@@ -244,13 +248,15 @@ check_conflict_control! = |roc, bundles, urls, version, temporary| {
 		$aliases = $aliases.append((alias, url))
 	}
 	aliases = $aliases
+	cache = Path.join(temporary, "conflict-cache")
+	admit_example_sources!(cache)?
 	server = Loopback.start!(aliases.map(|(file, _)| file), version)?
 	var $replacements = []
 	for (file, url) in aliases {
 		$replacements = $replacements.concat(["--replace-dep", OsStr.from_str(url), OsStr.from_str(Loopback.url(server, file)?)])
 	}
 	probe = Path.join(temporary, "pair")
-	checked = Loopback.run!(server, roc.with_empty_package_cache(Path.join(temporary, "conflict-cache")).cmd(["check", "main.roc"].concat($replacements)).cwd(probe))?
+	checked = Loopback.run!(server, roc.with_empty_package_cache(cache).cmd(["check", "main.roc"].concat($replacements)).cwd(probe))?
 	Loopback.stop!(server)?
 	if checked.status != Exited(0) and Str.from_utf8_lossy(checked.stderr_bytes).contains("same package version") {
 		Script.pass!("versioned URL control rejects conflicting unprefixed package identities")
@@ -264,3 +270,8 @@ entry_point! = |bundle| {
 	bytes = Script.command("tar").capture!(["--zstd", "-x", "-O", "-f", Path.to_os_str(bundle), "main.roc"], ".", [])?
 	Str.from_utf8(bytes).map_err(|_| BundleEntryPointNotUtf8(Path.display(bundle)))
 }
+
+# Each deliberately fresh cache admits the unchanged example dependencies from
+# verified raw archives. No source tree, .deps sidecar or compiled state is copied.
+admit_example_sources! = |cache|
+	Script.command("python3").run!(["scripts/admit_release_sources.py", "seed", "--source", "font", "--source", "basic-cli", "--source", "legacy-http", "--cache-root", Path.to_os_str(cache)])

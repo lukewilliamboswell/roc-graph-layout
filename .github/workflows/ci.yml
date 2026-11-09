@@ -49,6 +49,13 @@ jobs:
         with:
           version: nightly
 
+      - name: Admit the fixed build dependencies before Blueprint evaluation
+        run: |
+          raw="$RUNNER_TEMP/graph-release-sources"
+          python3 scripts/admit_release_sources.py prepare --raw-dir "$raw" --source core --source font --source basic-cli --source legacy-http
+          python3 scripts/admit_release_sources.py seed --raw-dir "$raw" --source core --source font --source basic-cli --source legacy-http
+          echo "GRAPH_RELEASE_SOURCES_DIR=$raw" >> "$GITHUB_ENV"
+
       - name: Check Blueprint.roc
         run: blueprint check
 
@@ -104,6 +111,9 @@ jobs:
         uses: roc-lang/setup-roc@dd81390553b0a1236aedb61cdd4c0ed7cf7eaec4
         with:
           version: nightly
+
+      - name: Admit the fixed dependencies for the native oracle
+        run: python3 scripts/admit_release_sources.py seed --source font --source basic-cli --source legacy-http
 
       - name: Install pinned oracle and browser dependencies
         run: |
