@@ -1,5 +1,5 @@
 app [main!] {
-	font: "https://github.com/lukewilliamboswell/roc-font/releases/download/0.1.0-rc2/A14BmicBaf6dm4K9kdYH9j8Y6BoAZrpUmxWh9sojsFy5.tar.zst",
+	font: "https://github.com/lukewilliamboswell/roc-font/releases/download/0.1.1/3Es9Gca6KTySYDqcDPHwVqpAqJk6KwT9G4xkcLoYaSsx.tar.zst",
 	pf: platform "../benchmarks/platform/main.roc",
 }
 import pf.Measure

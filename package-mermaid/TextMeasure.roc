@@ -329,7 +329,7 @@ TextMeasure :: {}.{
 	split_word : Metrics, List(U8), F64 -> { head : List(U8), rest : List(U8) }
 	split_word = |metrics, word, limit| {
 		shaped = TextMeasure.shape(metrics, word)
-		clusters = TextMeasure.clusters(word)
+		clusters_value = TextMeasure.clusters(word)
 		# `ends` are byte offsets where clusters end; a glyph lies inside a
 		# prefix when the byte offset of its first character does.
 		# Each candidate prefix of whole characters is shaped on its own, as the
@@ -344,8 +344,8 @@ TextMeasure :: {}.{
 		var $budget = 4096
 		var $going = True
 		var $c = 0
-		while $going and $c < clusters.len() {
-			cluster = clusters.get($c) ?? { end: word.len(), code_points: 1 }
+		while $going and $c < clusters_value.len() {
+			cluster = clusters_value.get($c) ?? { end: word.len(), code_points: 1 }
 			end = $characters + cluster.code_points
 			var $candidate = $sum
 			var $k = $glyphs
@@ -373,7 +373,7 @@ TextMeasure :: {}.{
 			}
 		}
 		head_len = if $taken == 0 {
-			(clusters.first() ?? { end: word.len(), code_points: 1 }).end
+			(clusters_value.first() ?? { end: word.len(), code_points: 1 }).end
 		} else {
 			$taken
 		}
@@ -446,8 +446,8 @@ TextMeasure :: {}.{
 		var $advances = List.with_capacity(count)
 		var $pairs = List.with_capacity(count)
 		var $ink = List.with_capacity(count)
-		var $ink_ascent = 0.0
-		var $ink_descent = 0.0
+		var $ink_ascent = 0.0.F64
+		var $ink_descent = 0.0.F64
 		var $k = 0
 		while $k < count {
 			glyph = run.glyphs.get($k) ?? 0
@@ -457,10 +457,10 @@ TextMeasure :: {}.{
 			kerned = (run.advances.get($k) ?? { x: own, y: 0 }).x
 			$pairs = $pairs.append(TextMeasure.floor((kerned - own).to_f64() * metrics.scale))
 			# A character the font does not map is drawn from a fallback font.
-			if Font.missing(run.flags.get($k) ?? 0) {
-				fallback = TextMeasure.fallback(metrics, Bytes.code_point(bytes, run.clusters.get($k) ?? 0))
-				$advances = $advances.append(fallback.advance)
-				$ink = $ink.append(fallback.ink)
+			if Font.is_missing(run.flags.get($k) ?? 0) {
+				fallback_value = TextMeasure.fallback(metrics, Bytes.code_point(bytes, run.clusters.get($k) ?? 0))
+				$advances = $advances.append(fallback_value.advance)
+				$ink = $ink.append(fallback_value.ink)
 			} else {
 				$advances = $advances.append(TextMeasure.floor(own.to_f64() * metrics.scale))
 				extents = Font.extents(font, glyph)
@@ -574,10 +574,10 @@ TextMeasure :: {}.{
 		emoji = row.any(|word| TextMeasure.has_emoji_fallback(metrics.font, word))
 		var $start = 0.0
 		var $left = 0.0
-		var $right = 0.0
+		var $right = 0.0.F64
 		var $index = 0
-		var $ink_ascent = 0.0
-		var $ink_descent = 0.0
+		var $ink_ascent = 0.0.F64
+		var $ink_descent = 0.0.F64
 		for word in row {
 			run = if ($index > 0) [' '].concat(word) else word
 			shaped = TextMeasure.shape_bounds(metrics, run, vertical_ink)
@@ -654,35 +654,35 @@ expect {
 		and TextMeasure.block("CardPayment", style).height == 17
 }
 
-inter : TextMeasure.Style
-inter = { font: TextMeasure.inter, size: 14.0, line_height: 1.1, wrap: Width(120.0), align: Middle }
+inter_style : TextMeasure.Style
+inter_style = { font: TextMeasure.inter, size: 14.0, line_height: 1.1, wrap: Width(120.0), align: Middle }
 
-expect TextMeasure.block("Square", inter) == { lines: ["Square"], width: 46.90625, height: 17.0 }
-expect TextMeasure.block("x", inter) == { lines: ["x"], width: 8.0, height: 17.0 }
-expect TextMeasure.block("j", { ..inter, align: Start }) == { lines: ["j"], width: 4.390625, height: 17.0 }
-expect TextMeasure.block("", inter) == { lines: [""], width: 0.0, height: 0.0 }
-expect TextMeasure.block("first\nsecond\nthird line here", inter).width == 90.59375
-expect close(TextMeasure.block("one\n\nthree", inter), { lines: ["one", "", "three"], width: 34.234375, height: 47.8 })
-expect TextMeasure.block("\nleading", inter) == { lines: ["", "leading"], width: 48.375, height: 17.0 }
-expect TextMeasure.block("literal \\n backslash n", inter).lines == ["literal", "backslash n"]
-expect close(TextMeasure.block("two   spaces   between", inter), { lines: ["two spaces", "between"], width: 75.84375, height: 32.4 })
+expect TextMeasure.block("Square", inter_style) == { lines: ["Square"], width: 46.90625, height: 17.0 }
+expect TextMeasure.block("x", inter_style) == { lines: ["x"], width: 8.0, height: 17.0 }
+expect TextMeasure.block("j", { ..inter_style, align: Start }) == { lines: ["j"], width: 4.390625, height: 17.0 }
+expect TextMeasure.block("", inter_style) == { lines: [""], width: 0.0, height: 0.0 }
+expect TextMeasure.block("first\nsecond\nthird line here", inter_style).width == 90.59375
+expect close(TextMeasure.block("one\n\nthree", inter_style), { lines: ["one", "", "three"], width: 34.234375, height: 47.8 })
+expect TextMeasure.block("\nleading", inter_style) == { lines: ["", "leading"], width: 48.375, height: 17.0 }
+expect TextMeasure.block("literal \\n backslash n", inter_style).lines == ["literal", "backslash n"]
+expect close(TextMeasure.block("two   spaces   between", inter_style), { lines: ["two spaces", "between"], width: 75.84375, height: 32.4 })
 expect
 	close(
-		TextMeasure.block("The quick brown fox jumps over the lazy dog and keeps running far away", inter),
+		TextMeasure.block("The quick brown fox jumps over the lazy dog and keeps running far away", inter_style),
 		{ lines: ["The quick brown", "fox jumps over", "the lazy dog and", "keeps running far", "away"], width: 115.984375, height: 78.6 },
 	)
 expect
-	TextMeasure.block("Supercalifragilisticexpialidocious-and-then-some-more-letters-to-force-a-split", inter).lines
+	TextMeasure.block("Supercalifragilisticexpialidocious-and-then-some-more-letters-to-force-a-split", inter_style).lines
 		== ["Supercalifragilisti", "cexpialidocious-a", "nd-then-some-m", "ore-letters-to-for", "ce-a-split"]
-expect TextMeasure.block("a & b < c", inter).lines == ["a & b < c"]
+expect TextMeasure.block("a & b < c", inter_style).lines == ["a & b < c"]
 # Deliberately unlike Mermaid, which draws this as "a - b = c".
-expect TextMeasure.block("a -> b => c", inter).lines == ["a -> b => c"]
-expect TextMeasure.block("x>y", inter).lines == ["x>y"]
+expect TextMeasure.block("a -> b => c", inter_style).lines == ["a -> b => c"]
+expect TextMeasure.block("x>y", inter_style).lines == ["x>y"]
 # Inter's contextual forms: a raised asterisk after a capital.
-expect TextMeasure.block("F*", inter).width == 17.296875
-expect TextMeasure.block("no\u(00A0)break  here", { ..inter, wrap: NoWrap }).lines == ["no break here"]
-expect TextMeasure.block("x < y\u(00A0)z", { ..inter, wrap: NoWrap }).lines == ["x < y\u(00A0)z"]
-expect TextMeasure.block("日本語のラベル", inter).width == 98.0
+expect TextMeasure.block("F*", inter_style).width == 17.296875
+expect TextMeasure.block("no\u(00A0)break  here", { ..inter_style, wrap: NoWrap }).lines == ["no break here"]
+expect TextMeasure.block("x < y\u(00A0)z", { ..inter_style, wrap: NoWrap }).lines == ["x < y\u(00A0)z"]
+expect TextMeasure.block("日本語のラベル", inter_style).width == 98.0
 
 ## Oracle regression: CDP identifies Times-Roman for U+FB02 on pinned Chrome.
 expect TextMeasure.block("ﬂ", { font: TextMeasure.inter, size: 16, line_height: 1.1, wrap: NoWrap, align: Start }).width == 8.90625

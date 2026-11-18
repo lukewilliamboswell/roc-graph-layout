@@ -11,8 +11,8 @@ BenchJson := [].{
 
 	## Read one JSON value, allowing surrounding whitespace.
 	parse : Str -> Try(Value, [InvalidJson(Str)])
-	parse = |text| {
-		bytes = Str.to_utf8(text)
+	parse = |text_value| {
+		bytes = Str.to_utf8(text_value)
 		{ value, next } = value_at(bytes, skip_space(bytes, 0))?
 		end = skip_space(bytes, next)
 		if (end == bytes.len()) Ok(value) else Err(InvalidJson("extra data at byte ${end.to_str()}"))
@@ -344,9 +344,9 @@ quote = |s| {
 	var $out = ['"']
 	for cp in code_points(Str.to_utf8(s)) {
 		$out = $out.concat(
-			if cp == '"'.to_u32() {
+			if cp == '"'.U32 {
 				Str.to_utf8("\\\"")
-			} else if cp == '\\'.to_u32() {
+			} else if cp == '\\'.U32 {
 				Str.to_utf8("\\\\")
 			} else if cp == 10 {
 				Str.to_utf8("\\n")

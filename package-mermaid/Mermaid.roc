@@ -35,7 +35,7 @@ Mermaid := [].{
 
 	## Read and lay out Mermaid text, giving a picture of outlines and text
 	## lines that any vector renderer can paint.
-	draw : Str -> [Ok(Drawing.Picture), Err(List(Flowchart.Problem))]
+	draw : Str -> Try(Drawing.Picture, List(Problem))
 	draw = |text| Mermaid.draw_with(text, Options.{})
 
 	## Draw with selected appearance options. Invalid numeric properties
@@ -62,7 +62,7 @@ Mermaid := [].{
 
 	## Read and lay out Mermaid text as a standalone SVG document whose labels
 	## are set in Inter.
-	svg : Str -> [Ok(Str), Err(List(Flowchart.Problem))]
+	svg : Str -> Try(Str, List(Problem))
 	svg = |text| Mermaid.svg_with(text, Options.{})
 
 	## Write standalone SVG using the same sizing and layout as `draw_with`.

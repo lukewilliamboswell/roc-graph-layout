@@ -76,9 +76,9 @@ LayeredFlow :: {}.{
 	ordered_traced : LayeredFlowInput.Input, LayeredFlowInput.Sizes, Bool -> { setup : LayeredFlowImport.Setup, model : LayeredFlowGraph.Model, trace : List(Str), randoms : List(LayeredFlowRandom.Random) }
 	ordered_traced = |diagram, sizes, tracing| {
 		setup = LayeredFlowImport.build(diagram, sizes)
-		layered = LayeredFlow.layered(setup.model)
-		names = if (tracing) List.repeat("", layered.nodes.len()) else []
-		r = LayeredFlow.order(layered, tracing, names)
+		layered_value = LayeredFlow.layered(setup.model)
+		names = if (tracing) List.repeat("", layered_value.nodes.len()) else []
+		r = LayeredFlow.order(layered_value, tracing, names)
 		{ setup, model: r.model, trace: r.trace, randoms: r.randoms }
 	}
 

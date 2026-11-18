@@ -86,7 +86,7 @@ privileged publisher handles only the tested artifact files.
 ## Admit fixed build inputs
 
 The nightly compiler fetches package URLs without GitHub authentication. Producer
-jobs therefore admit the fixed Blueprint Core, Font, basic-cli 0.27 and its HTTP
+jobs therefore admit the fixed Blueprint Core, Font, basic-cli 0.28.1 and its HTTP
 input through the official asset-ID API before the first Blueprint evaluation.
 Core, Font and basic-cli have fixed immutable release descriptors: repository,
 version, asset ID, canonical URL, size and SHA-256. The separately named legacy

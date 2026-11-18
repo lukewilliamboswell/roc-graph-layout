@@ -72,8 +72,8 @@ LayeredOrder :: {}.{
 		if ascending {
 			values
 		} else {
-			order = LayeredOrder.sort_by(LayeredOrder.indices(values.len()), |a, b| (values.get(a) ?? 0) < (values.get(b) ?? 0))
-			order.map(|i| values.get(i) ?? 0)
+			order_value = LayeredOrder.sort_by(LayeredOrder.indices(values.len()), |a, b| (values.get(a) ?? 0) < (values.get(b) ?? 0))
+			order_value.map(|i| values.get(i) ?? 0)
 		}
 	}
 

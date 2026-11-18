@@ -136,8 +136,8 @@ FlowLexer :: {}.{
 				if state == Initial and !($cache.from <= $pos and $pos < $cache.line_end) {
 					$cache = FlowLexer.direction_cache(bytes, $pos)
 				}
-				step = FlowLexer.step(bytes, $pos, state, $cache)
-				match step {
+				step_value = FlowLexer.step(bytes, $pos, state, $cache)
+				match step_value {
 					Emit({ kind, len: token_len, action }) => {
 						$tokens = $tokens.append({ kind, start: $pos, len: token_len })
 						$stack = FlowLexer.apply(action, $stack, $first_graph)
@@ -259,9 +259,9 @@ FlowLexer :: {}.{
 				Some(found) => return Emit({ kind: found.kind, len: found.end - pos, action: Stay })
 				None => {}
 			}
-			link_id = FlowLexer.link_id(bytes, pos)
-			if link_id > 0 {
-				return Emit({ kind: LinkId, len: link_id, action: Stay })
+			link_id_value = FlowLexer.link_id(bytes, pos)
+			if link_id_value > 0 {
+				return Emit({ kind: LinkId, len: link_id_value, action: Stay })
 			}
 			if Bytes.is_digit(b) {
 				var $j = pos

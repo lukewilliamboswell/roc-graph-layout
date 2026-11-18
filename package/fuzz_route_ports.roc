@@ -1,4 +1,4 @@
-app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst" }
+app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.2/3kyiehxxzwAsjM23uCQGJ3Hx7dAAdzSGtK3k9Jq7Egtu.tar.zst" }
 
 import fuzz.Fuzz
 import EdgeRoutes
@@ -137,18 +137,18 @@ test! = |bytes| {
 	}
 	large = ends(bytes, 8)
 	large_pairs = pairs(bytes, 8)
-	small_cost = Fuzz.measure_allocs!(|{}| ranked(small)).allocations + Fuzz.measure_allocs!(|{}| EdgeRoutes.parallel_ranks(small_pairs)).allocations
-	large_cost = Fuzz.measure_allocs!(|{}| ranked(large)).allocations + Fuzz.measure_allocs!(|{}| EdgeRoutes.parallel_ranks(large_pairs)).allocations
+	small_cost = Fuzz.measure!("allocations", || ranked(small)).stats.allocs + Fuzz.measure!("allocations", || EdgeRoutes.parallel_ranks(small_pairs)).stats.allocs
+	large_cost = Fuzz.measure!("allocations", || ranked(large)).stats.allocs + Fuzz.measure!("allocations", || EdgeRoutes.parallel_ranks(large_pairs)).stats.allocs
 	# Results are dropped inside each closure: the dev backend keeps a value
 	# bound to `_` alive until its block ends, which would read as a leak.
 	Fuzz.expect_no_leaks!(
-		|{}| {
+		|| {
 			_ = ranked(large)
 			{}
 		},
 	)
 	Fuzz.expect_no_leaks!(
-		|{}| {
+		|| {
 			_ = EdgeRoutes.parallel_ranks(large_pairs)
 			{}
 		},
@@ -160,6 +160,7 @@ test! = |bytes| {
 }
 
 target = Fuzz.target_with!({
+	examples: [],
 	name: "graph-layout-route-ports",
 	generator: Fuzz.raw_bytes,
 	test!,

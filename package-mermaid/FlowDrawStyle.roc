@@ -172,9 +172,9 @@ FlowDrawStyle :: {}.{
 		if !$current.is_empty() {
 			$parts = $parts.append($current)
 		}
-		channel = |i| FlowDrawStyle.channel($parts.get(i) ?? [])
+		channel_value = |i| FlowDrawStyle.channel($parts.get(i) ?? [])
 		if $closed and ($parts.len() == 3 or $parts.len() == 4) {
-			match (channel(0), channel(1), channel(2)) {
+			match (channel_value(0), channel_value(1), channel_value(2)) {
 				(Ok(r), Ok(g), Ok(b)) => Ok({ red: r, green: g, blue: b })
 				_ => Err(NotAColor)
 			}

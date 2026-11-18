@@ -38,13 +38,13 @@ EntityDraw :: {}.{
 	}
 
 	measure_text : Str, Theme.Options -> Block
-	measure_text = |text, theme| EntityDraw.measure_text_at(text, theme, theme.font_size)
+	measure_text = |text_value, theme| EntityDraw.measure_text_at(text_value, theme, theme.font_size)
 
 	measure_text_at : Str, Theme.Options, F64 -> Block
-	measure_text_at = |text, theme, font_size| EntityDraw.measure_text_weight(text, theme, font_size, False)
+	measure_text_at = |text_value, theme, font_size| EntityDraw.measure_text_weight(text_value, theme, font_size, False)
 
 	measure_text_weight : Str, Theme.Options, F64, Bool -> Block
-	measure_text_weight = |text, theme, font_size, bold| {
+	measure_text_weight = |text_value, theme, font_size, bold| {
 		style = {
 			font: TextMeasure.inter,
 			size: font_size,
@@ -58,9 +58,9 @@ EntityDraw :: {}.{
 			align: Start,
 		}
 		measured = if bold {
-			TextMeasure.block_bold(text, style)
+			TextMeasure.block_bold(text_value, style)
 		} else {
-			TextMeasure.block(text, style)
+			TextMeasure.block(text_value, style)
 		}
 		metrics = Font.metrics(TextMeasure.inter)
 		scale = font_size / Font.units_per_em(TextMeasure.inter).to_f64()
@@ -207,12 +207,12 @@ EntityDraw :: {}.{
 					Center => crash "filtered endpoint label"
 				}
 				edge = edges.get(spec.edge) ?? crash "source-aligned label edge"
-				mark = if endpoint == From {
+				mark_value = if endpoint == From {
 					edge.from_mark
 				} else {
 					edge.to_mark
 				}
-				pad = if mark == None {
+				pad = if mark_value == None {
 					0
 				} else {
 					12
@@ -259,12 +259,12 @@ EntityDraw :: {}.{
 		terminal_placements = DiagramLayout.ends(core, end_labels)
 		initial_anchors = $labels.map(
 			|spec| {
-				route = geometry.edges.get(spec.edge) ?? { points: [], label: None }
+				route_value = geometry.edges.get(spec.edge) ?? { points: [], label: None }
 				edge = edges.get(spec.edge) ?? { from: 0, to: 0, label: "", from_label: "", to_label: "", from_mark: None, to_mark: None, dashed: False }
 				match spec.placement {
-					Center => match route.label {
+					Center => match route_value.label {
 						Some(point) => point
-						None => route.points.first() ?? { x: 0, y: 0 }
+						None => route_value.points.first() ?? { x: 0, y: 0 }
 					}
 					Near(endpoint) => {
 						ends = terminal_placements.get(spec.edge) ?? { from: None, to: None }
@@ -274,12 +274,12 @@ EntityDraw :: {}.{
 							ends.to
 						}
 						match placement {
-							None => EntityDraw.terminal_label(route.points, endpoint, spec.block, if (endpoint == From) edge.from_mark else edge.to_mark)
+							None => EntityDraw.terminal_label(route_value.points, endpoint, spec.block, if (endpoint == From) edge.from_mark else edge.to_mark)
 							Some(value) => {
 								port = if endpoint == From {
-									route.points.first() ?? value.port
+									route_value.points.first() ?? value.port
 								} else {
-									route.points.last() ?? value.port
+									route_value.points.last() ?? value.port
 								}
 								{ x: value.point.x + port.x - value.port.x, y: value.point.y + port.y - value.port.y }
 							}
@@ -313,15 +313,15 @@ EntityDraw :: {}.{
 			match spec.placement {
 				Center => {}
 				Near(endpoint) => {
-					route = (geometry.edges.get(spec.edge) ?? { points: [], label: None }).points
-					if route.len() >= 2 {
+					route_value = (geometry.edges.get(spec.edge) ?? { points: [], label: None }).points
+					if route_value.len() >= 2 {
 						segment = if endpoint == From {
 							0
 						} else {
-							route.len() - 2
+							route_value.len() - 2
 						}
-						from = route.get(segment) ?? { x: 0, y: 0 }
-						to = route.get(segment + 1) ?? from
+						from = route_value.get(segment) ?? { x: 0, y: 0 }
+						to = route_value.get(segment + 1) ?? from
 						dx = to.x - from.x
 						dy = to.y - from.y
 						length = (dx * dx + dy * dy).sqrt()
@@ -361,7 +361,7 @@ EntityDraw :: {}.{
 	boxes_overlap = |a, b| a.x1 < b.x2 and b.x1 < a.x2 and a.y1 < b.y2 and b.y1 < a.y2
 
 	terminal_label : List(Drawing.Point), [From, To], Block, Mark -> Drawing.Point
-	terminal_label = |raw_points, endpoint, block, mark| {
+	terminal_label = |raw_points, endpoint, block, mark_value| {
 		points = if (endpoint == From) raw_points else raw_points.rev()
 		first = points.first() ?? { x: 0, y: 0 }
 		next = points.get(1) ?? { x: first.x + 1, y: first.y }
@@ -370,7 +370,7 @@ EntityDraw :: {}.{
 		length = (dx * dx + dy * dy).sqrt()
 		ux = if (length > 0) dx / length else 1
 		uy = if (length > 0) dy / length else 0
-		marker = if (mark == None) 0 else 6
+		marker = if (mark_value == None) 0 else 6
 		vertical = dy.abs() >= dx.abs()
 		along = (if (vertical) block.height else block.width) / 2 + 4 + marker
 		side = (if (vertical) block.width else block.height) / 2 + 5 + marker
@@ -407,8 +407,8 @@ EntityDraw :: {}.{
 		}
 		for i in 0..<edges.len() {
 			match (edges.get(i), result.layout.routes.get(i)) {
-				(Ok(edge), Ok(route)) => {
-					clipped = EntityDraw.clip_points(EntityDraw.route_points(route), edge, measured, result.layout.positions, EntityDraw.radius(theme))
+				(Ok(edge), Ok(route_value)) => {
+					clipped = EntityDraw.clip_points(EntityDraw.route_points(route_value), edge, measured, result.layout.positions, EntityDraw.radius(theme))
 					points = EntityDraw.inset_route(clipped, EntityDraw.marker_offset(edge.from_mark), EntityDraw.marker_offset(edge.to_mark))
 					$items = $items.concat(EntityDraw.route(points, edge.dashed, theme))
 					if points.len() >= 2 {
@@ -505,7 +505,7 @@ EntityDraw :: {}.{
 	}
 
 	route_points : Geom.Route -> List(Drawing.Point)
-	route_points = |route| match route {
+	route_points = |route_value| match route_value {
 		Line(a, b) => [a, b]
 		Polyline(ps) => ps
 		Curves(parts) => parts.fold([], |out, p| out.concat([p.from, p.to]))

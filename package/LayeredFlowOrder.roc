@@ -145,7 +145,7 @@ LayeredFlowOrder :: {}.{
 			$s = LayeredFlowOrder.note($s, "rand 1 ${if (relative) "1" else "0"}")
 			children = order.fold([], |acc, layer| acc.concat(layer.keep_if(|n| LayeredFlowGraph.node($s.model, n).nested != LayeredFlowOrder.nil).map(|n| LayeredFlowGraph.node($s.model, n).nested)))
 			parent = if (g == root) LayeredFlowOrder.nil else LayeredFlowGraph.graph($s.model, g).parent
-			holder = {
+			holder_value = {
 				graph: g,
 				parent,
 				bottom_up: g == root or LayeredFlowOrder.bottom_up($s.model, g, order),
@@ -160,7 +160,7 @@ LayeredFlowOrder :: {}.{
 			if g == root {
 				$s = { ..$s, minimizer_random: random1 }
 			}
-			$s = { ..$s, holder_of: $s.holder_of.set(g, $s.holders.len()) ?? $s.holder_of, holders: $s.holders.append(holder) }
+			$s = { ..$s, holder_of: $s.holder_of.set(g, $s.holders.len()) ?? $s.holder_of, holders: $s.holders.append(holder_value) }
 			$graphs = $graphs.concat(children)
 			# Initial node positions are indices within layers.
 			for layer in order {
@@ -169,7 +169,7 @@ LayeredFlowOrder :: {}.{
 					$s = { ..$s, node_pos: $s.node_pos.set(n, k) ?? $s.node_pos }
 				}
 			}
-			if holder.bottom_up {
+			if holder_value.bottom_up {
 				$sweep_on = [g].concat($sweep_on)
 			}
 		}

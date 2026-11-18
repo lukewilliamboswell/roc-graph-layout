@@ -36,30 +36,30 @@ SequenceParse :: {}.{
 				).trim()
 				parts = raw.split_on(" as ")
 				id = (parts.first() ?? "").trim()
-				label = if parts.len() > 1 {
+				label_value = if parts.len() > 1 {
 					Str.join_with(parts.drop_first(1), " as ").trim()
 				} else {
 					id
 				}
-				if FlowText.has_markup(label) {
+				if FlowText.has_markup(label_value) {
 					$problems = $problems.append(Unsupported("sequence HTML label"))
 				}
-				else if !SequenceParse.valid_id(id) or label.is_empty() {
+				else if !SequenceParse.valid_id(id) or label_value.is_empty() {
 					$problems = $problems.append(Syntax({ near: line }))
 				} else {
 					ensured = SequenceParse.ensure($participants, id)
 					$participants = ensured.participants
 					# ensure proves this index is in bounds.
-					$participants = $participants.set(ensured.index, { id, label: SequenceParse.content(label).text, actor, wrap: SequenceParse.content(label).wrap, source_text: SequenceParse.content(label).source_text }) ?? []
+					$participants = $participants.set(ensured.index, { id, label: SequenceParse.content(label_value).text, actor, wrap: SequenceParse.content(label_value).wrap, source_text: SequenceParse.content(label_value).source_text }) ?? []
 				}
 			} else if line == "autonumber" or line.starts_with("autonumber ") {
 				match SequenceParse.numbering(line) {
 					Err(_) => {
 						$problems = $problems.append(Syntax({ near: line }))
 					}
-					Ok(numbering) => {
-						$autonumber = numbering.visible
-						$events = $events.append(Numbering(numbering))
+					Ok(numbering_value) => {
+						$autonumber = numbering_value.visible
+						$events = $events.append(Numbering(numbering_value))
 					}
 				}
 			} else if line.starts_with("title ") {

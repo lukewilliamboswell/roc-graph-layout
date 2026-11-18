@@ -1,5 +1,5 @@
 app [target] {
-	fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst",
+	fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.2/3kyiehxxzwAsjM23uCQGJ3Hx7dAAdzSGtK3k9Jq7Egtu.tar.zst",
 	layout: "../package/main.roc",
 }
 
@@ -27,18 +27,18 @@ test! = |bytes| {
 		(Ok(small), Ok(large)) => {
 			small_sizes = sizes_for(small, bytes)
 			large_sizes = sizes_for(large, bytes)
-			small_cost = Fuzz.measure_allocs!(|{}| FlowLayout.layout(small, small_sizes))
-			large_cost = Fuzz.measure_allocs!(|{}| FlowLayout.layout(large, large_sizes))
+			small_cost = Fuzz.measure!("allocations", || FlowLayout.layout(small, small_sizes))
+			large_cost = Fuzz.measure!("allocations", || FlowLayout.layout(large, large_sizes))
 			# Results are dropped inside each closure: the dev backend keeps a value
 			# bound to `_` alive until its block ends, which would read as a leak.
 			Fuzz.expect_no_leaks!(
-				|{}| {
+				|| {
 					_ = FlowLayout.layout(large, large_sizes)
 					{}
 				},
 			)
-			if large_cost.allocations > 24 * small_cost.allocations + 4096 {
-				crash "laying out two copies took ${large_cost.allocations.to_str()} allocations, against ${small_cost.allocations.to_str()} for one"
+			if large_cost.stats.allocs > 24 * small_cost.stats.allocs + 4096 {
+				crash "laying out two copies took ${large_cost.stats.allocs.to_str()} allocations, against ${small_cost.stats.allocs.to_str()} for one"
 			}
 		}
 		_ => {}
@@ -217,6 +217,7 @@ check = |diagram, g| {
 }
 
 target = Fuzz.target_with!({
+	examples: [],
 	name: "mermaid-flowchart-layout",
 	generator: Fuzz.raw_bytes,
 	test!,

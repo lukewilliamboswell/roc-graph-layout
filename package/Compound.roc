@@ -429,7 +429,7 @@ CompoundInternals :: {}.{
 		}
 		route_problem = match Route.layout({ graph: input.graph, positions: List.repeat({ x: 0, y: 0 }, node_count), groups: [], memberships: [], attachments: input.attachments, boundaries: input.boundaries, group_attachments: [], edge_labels: input.edge_labels, shared_ends: [], waypoints: [], guides: [] }, route_settings) {
 			Ok(_) => []
-			Err(problems) => problems.keep_oks(
+			Err(problems_value) => problems_value.keep_oks(
 				|problem| match problem {
 					InvalidNodeWidth(_) | InvalidNodeHeight(_) | PositionCountMismatch | InvalidPosition(_) | InvalidEdgeFrom(_) | InvalidEdgeTo(_) => Err({})
 					_ => Ok(RouteProblem(problem))
@@ -1091,7 +1091,7 @@ CompoundInternals :: {}.{
 		Inside(payload) => payload.nodes
 	}
 
-	local_constraint : Constrained.Constraint, List(List(U64)) -> [Ok(Constrained.Constraint), Err({})]
+	local_constraint : Constrained.Constraint, List(List(U64)) -> Try(Constrained.Constraint, {})
 	local_constraint = |constraint, partitions| match constraint {
 		Separate(payload) => match (CompoundInternals.owner_members(partitions, payload.first), CompoundInternals.owner_members(partitions, payload.second)) {
 			(Some(first), Some(second)) => Ok(Separate({ ..payload, first, second }))

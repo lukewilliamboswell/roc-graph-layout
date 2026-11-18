@@ -70,7 +70,7 @@ FlowDb :: {}.{
 		var $state = FlowDb.empty
 		for event in events {
 			$state = match event {
-				Vertex({ id, text, shape }) => FlowDb.add_vertex($state, id, text, shape, [])
+				Vertex({ id, text, shape: shape_value }) => FlowDb.add_vertex($state, id, text, shape_value, [])
 				VertexStyle({ id, styles }) => FlowDb.add_vertex($state, id, None, None, styles)
 				Link({ starts, ends, info }) => FlowDb.add_link($state, starts, ends, info)?
 				SetClass({ ids, class }) => FlowDb.set_class($state, ids, class)
@@ -86,7 +86,7 @@ FlowDb :: {}.{
 	## `addVertex`. An id already used by an edge is edge metadata, not a
 	## vertex, so nothing happens.
 	add_vertex : State, Str, [None, Some(FlowParser.Text)], [None, Some(Str)], List(Str) -> State
-	add_vertex = |state, id, text, shape, styles| {
+	add_vertex = |state, id, text, shape_value, styles| {
 		if FlowText.trim(id) == "" or state.edge_index.contains(id) {
 			state
 		} else {
@@ -109,8 +109,8 @@ FlowDb :: {}.{
 				Some(t) => { ..vertex, text: FlowText.strip_quotes(FlowText.sanitize(FlowText.trim(t.text))) }
 				None => vertex
 			}
-			with_shape = match shape {
-				Some(_) => { ..with_text, shape }
+			with_shape = match shape_value {
+				Some(_) => { ..with_text, shape: shape_value }
 				None => with_text
 			}
 			updated = { ..with_shape, styles: with_shape.styles.concat(styles) }
@@ -379,7 +379,7 @@ FlowDb :: {}.{
 	## What Mermaid hands to layout, with ids resolved to indices.
 	diagram : State, Str -> Try(Diagram, Problem)
 	diagram = |state, header_direction| {
-		direction = FlowDb.direction(header_direction)?
+		direction_value = FlowDb.direction(header_direction)?
 		groups = FlowDb.group_order(state)?
 		group_ids = state.subgraphs.map(|s| s.id)
 		group_slot = groups.order.fold_with_index(Dict.empty(), |acc, sub, slot| acc.insert(sub, slot))
@@ -469,7 +469,7 @@ FlowDb :: {}.{
 
 		_ = group_ids
 		Ok({
-			direction,
+			direction: direction_value,
 			nodes: $nodes,
 			edges: $edges,
 			groups: $groups,

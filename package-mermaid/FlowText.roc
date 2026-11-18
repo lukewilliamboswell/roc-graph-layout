@@ -89,7 +89,7 @@ FlowText :: {}.{
 	display = |text| {
 		bytes = text.to_utf8()
 		numeric = "ﬂ°°".to_utf8()
-		named = "ﬂ°".to_utf8()
+		named_value = "ﬂ°".to_utf8()
 		suffix = "¶ß".to_utf8()
 		var $out = List.with_capacity(bytes.len())
 		var $i = 0
@@ -97,9 +97,9 @@ FlowText :: {}.{
 			if Bytes.starts_with_at(bytes, $i, numeric) {
 				$out = $out.concat(['&', '#'])
 				$i = $i + numeric.len()
-			} else if Bytes.starts_with_at(bytes, $i, named) {
+			} else if Bytes.starts_with_at(bytes, $i, named_value) {
 				$out = $out.append('&')
-				$i = $i + named.len()
+				$i = $i + named_value.len()
 			} else if Bytes.starts_with_at(bytes, $i, suffix) {
 				$out = $out.append(';')
 				$i = $i + suffix.len()

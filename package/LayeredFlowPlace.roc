@@ -275,10 +275,10 @@ LayeredFlowPlace :: {}.{
 				node = LayeredFlowGraph.node($m, n)
 				if node.kind == Label {
 					thickness = 1.0
-					port_y = LayeredFlowPlace.ceil(node.height - spacing.edge_label - thickness) / 2
+					port_y_value = LayeredFlowPlace.ceil(node.height - spacing.edge_label - thickness) / 2
 					$m = LayeredFlowGraph.set_node($m, n, { ..node, height: node.height - spacing.edge_label - thickness })
 					for p in node.ports {
-						$m = LayeredFlowGraph.set_port($m, p, { ..LayeredFlowGraph.port($m, p), y: port_y })
+						$m = LayeredFlowGraph.set_port($m, p, { ..LayeredFlowGraph.port($m, p), y: port_y_value })
 					}
 				}
 			}

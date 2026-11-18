@@ -123,7 +123,7 @@ FlowDrawEdge :: {}.{
 	## ends): straight runs, a quadratic curve at each bend, and a hop at
 	## each crossing it gives way at.
 	pieces : List(Point), List(Hop) -> List(Piece)
-	pieces = |points, hops| {
+	pieces = |points, hops_value| {
 		n = points.len()
 		if n < 2 {
 			[]
@@ -155,7 +155,7 @@ FlowDrawEdge :: {}.{
 				}
 				horizontal = (b.x - a.x).abs() >= (b.y - a.y).abs()
 				bump = if (horizontal) { x: 0, y: -1 } else { x: 1, y: 0 }
-				for jump in FlowDrawEdge.fit_hops(hops.keep_if(|h| h.segment == i), seg_len, consumed, stop) {
+				for jump in FlowDrawEdge.fit_hops(hops_value.keep_if(|h| h.segment == i), seg_len, consumed, stop) {
 					r = jump.r
 					pre = { x: jump.point.x - ux * r, y: jump.point.y - uy * r }
 					post = { x: jump.point.x + ux * r, y: jump.point.y + uy * r }
@@ -192,9 +192,9 @@ FlowDrawEdge :: {}.{
 	## clear of the bends at either end and of its neighbours, and a hop
 	## shrunk below 60% of its radius is left out.
 	fit_hops : List(Hop), F64, F64, F64 -> List({ point : Point, r : F64 })
-	fit_hops = |hops, seg_len, consumed, stop| {
+	fit_hops = |hops_value, seg_len, consumed, stop| {
 		smallest = FlowDrawEdge.hop_radius * 0.6
-		sorted = hops.sort_with(|a, b| if (a.t < b.t) Before else if (a.t > b.t) After else Same)
+		sorted = hops_value.sort_with(|a, b| if (a.t < b.t) Before else if (a.t > b.t) After else Same)
 		var $kept = []
 		for h in sorted {
 			d = h.t * seg_len

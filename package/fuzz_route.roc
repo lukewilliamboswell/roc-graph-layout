@@ -1,4 +1,4 @@
-app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst" }
+app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.2/3kyiehxxzwAsjM23uCQGJ3Hx7dAAdzSGtK3k9Jq7Egtu.tar.zst" }
 
 import fuzz.Fuzz
 import Route
@@ -450,12 +450,12 @@ scaling! : List(U8) => {}
 scaling! = |bytes| {
 	small = copied(bytes, 1)
 	large = copied(bytes, 8)
-	small_cost = Fuzz.measure_allocs!(|{}| Route.layout(small, Route.default_settings)).allocations
-	large_cost = Fuzz.measure_allocs!(|{}| Route.layout(large, Route.default_settings)).allocations
+	small_cost = Fuzz.measure!("allocations", || Route.layout(small, Route.default_settings)).stats.allocs
+	large_cost = Fuzz.measure!("allocations", || Route.layout(large, Route.default_settings)).stats.allocs
 	# Results are dropped inside each closure: the dev backend keeps a value
 	# bound to `_` alive until its block ends, which would read as a leak.
 	Fuzz.expect_no_leaks!(
-		|{}| {
+		|| {
 			_ = Route.layout(large, Route.default_settings)
 			{}
 		},

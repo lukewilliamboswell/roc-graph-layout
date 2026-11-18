@@ -26,7 +26,7 @@ config = [
 		[
 			Programs(
 				[
-					Fetch("roc-stable", Recipes.roc_nightly("nightly-2026-10-23-18478ff")),
+					Fetch("roc-stable", Recipes.roc_nightly("nightly-2026-11-18-a520eed")),
 					# Builds the benchmark platform's host library.
 					Fetch("zig", zig),
 					# The shared documentation renderer: the guides as a site and a PDF.
@@ -37,7 +37,7 @@ config = [
 			# dependencies: `roc-stable deps scripts/check.roc` lists them.
 			RocPackages(
 				[
-					"https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
+					"https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
 				],
 			),
 			# Programs the scripts start, beside the package compiler `roc`.

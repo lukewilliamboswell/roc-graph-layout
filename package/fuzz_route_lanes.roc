@@ -1,4 +1,4 @@
-app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst" }
+app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.2/3kyiehxxzwAsjM23uCQGJ3Hx7dAAdzSGtK3k9Jq7Egtu.tar.zst" }
 
 import fuzz.Fuzz
 import RouteLanes
@@ -74,15 +74,15 @@ test! = |bytes| {
 	if !same_bits(RouteLanes.lanes(stacked, gap), reference(stacked, gap)) {
 		crash "lane separation disagrees with its definition on a crowded line"
 	}
-	small_cost = Fuzz.measure_allocs!(|{}| RouteLanes.lanes(small, gap)).allocations
+	small_cost = Fuzz.measure!("allocations", || RouteLanes.lanes(small, gap)).stats.allocs
 	apart = segments(bytes, 8, False)
 	together = segments(bytes, 8, True)
-	apart_cost = Fuzz.measure_allocs!(|{}| RouteLanes.lanes(apart, gap)).allocations
-	together_cost = Fuzz.measure_allocs!(|{}| RouteLanes.lanes(together, gap)).allocations
+	apart_cost = Fuzz.measure!("allocations", || RouteLanes.lanes(apart, gap)).stats.allocs
+	together_cost = Fuzz.measure!("allocations", || RouteLanes.lanes(together, gap)).stats.allocs
 	# Results are dropped inside each closure: the dev backend keeps a value
 	# bound to `_` alive until its block ends, which would read as a leak.
 	Fuzz.expect_no_leaks!(
-		|{}| {
+		|| {
 			_ = RouteLanes.lanes(together, gap)
 			{}
 		},
@@ -94,6 +94,7 @@ test! = |bytes| {
 }
 
 target = Fuzz.target_with!({
+	examples: [],
 	name: "graph-layout-route-lanes",
 	generator: Fuzz.raw_bytes,
 	test!,

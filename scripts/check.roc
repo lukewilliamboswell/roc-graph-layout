@@ -1,7 +1,7 @@
 #!/usr/bin/env roc-stable
 app [main!] {
-	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
-	roc: "nightly-2026-10-23-18478ff",
+	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
+	roc: "nightly-2026-11-18-a520eed",
 }
 
 import cli.Cmd
@@ -103,7 +103,7 @@ check_scripts! = |roc_stable| {
 	}
 	# These need the cli platform of an app for their pure parts.
 	for (module_name, entry) in [("Preview", "serve"), ("Site", "site")] {
-		roc_stable.run!(["test", OsStr.from_str("scripts/src/${module_name}.roc"), OsStr.from_str("--main=scripts/${entry}.roc")])?
+		roc_stable.run!(["test", "--no-cache", OsStr.from_str("scripts/src/${module_name}.roc"), OsStr.from_str("--main=scripts/${entry}.roc")])?
 	}
 	for script in Files.direct_roc_files!("scripts")? {
 		roc_stable.run!(["check", Path.to_os_str(script)])?

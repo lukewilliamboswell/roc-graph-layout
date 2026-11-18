@@ -17,8 +17,8 @@ RouteIndex :: {}.{
 
 	## About `target` cells over the closed extent of `boxes`.
 	grid_for : List(Bounds), U64 -> Grid
-	grid_for = |boxes, target| {
-		extent = boxes.fold(
+	grid_for = |boxes_value, target| {
+		extent = boxes_value.fold(
 			{ min_x: F64.infinity, min_y: F64.infinity, max_x: 0 - F64.infinity, max_y: 0 - F64.infinity },
 			|acc, box| { min_x: acc.min_x.min(box.min_x), min_y: acc.min_y.min(box.min_y), max_x: acc.max_x.max(box.max_x), max_y: acc.max_y.max(box.max_y) },
 		)

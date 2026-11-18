@@ -69,8 +69,8 @@ FlowParser :: {}.{
 				}
 				End => {
 					match ($headers.last(), $starts.last()) {
-						(Ok(closing), Ok(start)) => {
-							$events = $events.append(Subgraph({ header: closing, items: $items.drop_first(start) }))
+						(Ok(closing_value), Ok(start)) => {
+							$events = $events.append(Subgraph({ header: closing_value, items: $items.drop_first(start) }))
 							$items = $items.take_first(start)
 							$headers = $headers.drop_last(1)
 							$starts = $starts.drop_last(1)
@@ -369,9 +369,9 @@ FlowParser :: {}.{
 		var $stmt = first.ids
 		var $nodes = first.ids
 		while FlowParser.is_link_start(FlowParser.kind_at(p, $i)) {
-			link = FlowParser.link(p, $i)?
-			target = FlowParser.node(p, link.i, $events)?
-			$events = target.events.append(Link({ starts: $stmt, ends: target.ids, info: link.value }))
+			link_value = FlowParser.link(p, $i)?
+			target = FlowParser.node(p, link_value.i, $events)?
+			$events = target.events.append(Link({ starts: $stmt, ends: target.ids, info: link_value.value }))
 			$nodes = target.ids.concat($nodes)
 			$stmt = target.ids
 			$i = if (FlowParser.kind_at(p, target.i) == Space) target.i + 1 else target.i
@@ -405,14 +405,14 @@ FlowParser :: {}.{
 
 	styled_vertex : { bytes : List(U8), tokens : List(FlowLexer.Token) }, U64, List(Event) -> Try({ i : U64, id : Str, events : List(Event) }, Failure)
 	styled_vertex = |p, start, events| {
-		vertex = FlowParser.vertex(p, start)?
-		value = vertex.value
+		vertex_value = FlowParser.vertex(p, start)?
+		value = vertex_value.value
 		with_vertex = events.append(Vertex({ id: value.id, text: value.text, shape: value.shape }))
-		if FlowParser.kind_at(p, vertex.i) == StyleSeparator {
-			class = FlowParser.run(p, vertex.i + 1, FlowParser.is_id_token)?
-			Ok({ i: class.i, id: vertex.value.id, events: with_vertex.append(SetClass({ ids: vertex.value.id, class: class.value })) })
+		if FlowParser.kind_at(p, vertex_value.i) == StyleSeparator {
+			class = FlowParser.run(p, vertex_value.i + 1, FlowParser.is_id_token)?
+			Ok({ i: class.i, id: vertex_value.value.id, events: with_vertex.append(SetClass({ ids: vertex_value.value.id, class: class.value })) })
 		} else {
-			Ok({ i: vertex.i, id: vertex.value.id, events: with_vertex })
+			Ok({ i: vertex_value.i, id: vertex_value.value.id, events: with_vertex })
 		}
 	}
 

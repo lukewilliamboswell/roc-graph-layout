@@ -1,4 +1,4 @@
-app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst" }
+app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.2/3kyiehxxzwAsjM23uCQGJ3Hx7dAAdzSGtK3k9Jq7Egtu.tar.zst" }
 
 import fuzz.Fuzz
 import RouteIndex
@@ -191,12 +191,12 @@ test! = |bytes| {
 		crash "a spatial index disagrees with a full scan"
 	}
 	large = shape(bytes, 8)
-	small_cost = Fuzz.measure_allocs!(|{}| work(small)).allocations
-	large_cost = Fuzz.measure_allocs!(|{}| work(large)).allocations
+	small_cost = Fuzz.measure!("allocations", || work(small)).stats.allocs
+	large_cost = Fuzz.measure!("allocations", || work(large)).stats.allocs
 	# Results are dropped inside each closure: the dev backend keeps a value
 	# bound to `_` alive until its block ends, which would read as a leak.
 	Fuzz.expect_no_leaks!(
-		|{}| {
+		|| {
 			_ = work(large)
 			{}
 		},
@@ -208,6 +208,7 @@ test! = |bytes| {
 }
 
 target = Fuzz.target_with!({
+	examples: [],
 	name: "graph-layout-route-index",
 	generator: Fuzz.raw_bytes,
 	test!,

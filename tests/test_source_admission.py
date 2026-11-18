@@ -104,8 +104,8 @@ class DescriptorTests(unittest.TestCase):
         mkdir.assert_not_called()
 
     def test_inventory_counts_and_sizes(self):
-        for name, count, content in (("core", 25, 511858), ("font", 35, 6655539),
-                                     ("basic-cli", 207, 82833720), ("legacy-http", 5, 5991)):
+        for name, count, content in (("core", 25, 511858), ("font", 43, 7985346),
+                                     ("basic-cli", 217, 89256198), ("legacy-http", 5, 5991)):
             source = admission.SOURCES[name]
             self.assertEqual(len(source.members), count)
             self.assertEqual(sum(member[1] for member in source.members), content)
@@ -113,8 +113,8 @@ class DescriptorTests(unittest.TestCase):
     def test_published_url_and_bare_unbundle_name_bind_to_same_fixed_source(self):
         for name, prefix, repository, tag in (
                 ("core", "roc-blueprint-core-", "roc-blueprint", "0.12.0"),
-                ("font", "", "roc-font", "0.1.0-rc2"),
-                ("basic-cli", "", "basic-cli", "0.27.0"),
+                ("font", "", "roc-font", "0.1.1"),
+                ("basic-cli", "", "basic-cli", "0.28.1"),
                 ("legacy-http", "", "http", "1.0.0")):
             source = admission.SOURCES[name]
             self.assertEqual(source.published_asset_name, prefix + source.archive_name)
@@ -125,13 +125,13 @@ class DescriptorTests(unittest.TestCase):
 
     def test_platform_caps_and_native_inventory_do_not_increase_other_source_limits(self):
         platform = admission.SOURCES["basic-cli"]
-        self.assertEqual((platform.size, platform.tar_size), (23399272, 83009024))
+        self.assertEqual((platform.size, platform.tar_size), (23779196, 89440768))
         native = [(name, size) for name, size, _ in platform.members if name.endswith((".a", ".o", ".lib"))]
         self.assertEqual(len(native), 12)
-        self.assertEqual(sum(size for _, size in native), 80176552)
-        self.assertEqual(max(size for _, size in native), 17848844)
+        self.assertEqual(sum(size for _, size in native), 86234724)
+        self.assertEqual(max(size for _, size in native), 17849612)
         self.assertEqual(admission.SOURCES["core"].tar_size, 531968)
-        self.assertEqual(admission.SOURCES["font"].tar_size, 6683136)
+        self.assertEqual(admission.SOURCES["font"].tar_size, 8017920)
         self.assertEqual(admission.SOURCES["legacy-http"].tar_size, 10752)
 
     def test_legacy_input_cannot_claim_immutable_authority(self):

@@ -323,10 +323,11 @@ LayeredFlowLayers :: {}.{
 						opposite = LayeredFlowGraph.port($m, opposite_port).node
 						on = LayeredFlowGraph.node($m, opposite)
 						if on.layer_constraint == Free {
+							bit : U64
 							bit = if (node.layer_constraint == FirstSeparate) 1 else 2
 							before = match $connections.find_first(|c| c.node == opposite) {
 								Ok(c) => c.value
-								Err(_) => 0
+								Err(_) => 0.U64
 							}
 							value = before.bitwise_or(bit)
 							$connections = $connections.drop_if(|c| c.node == opposite).append({ node: opposite, value })
@@ -827,7 +828,7 @@ LayeredFlowLayers :: {}.{
 	bit_add = |rows, words, row, x| {
 		i = row * words + x / 64
 		if i < rows.len() {
-			rows.set(i, (rows.get(i) ?? 0).bitwise_or((1).shl_wrap((x % 64).to_u8_wrap()))) ?? []
+			rows.set(i, (rows.get(i) ?? 0).bitwise_or((1.U64).shl_wrap((x % 64).to_u8_wrap()))) ?? []
 		} else {
 			rows
 		}

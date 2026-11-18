@@ -459,8 +459,8 @@ LayeredRank :: {}.{
 		label = $label
 		lowest = $lowest
 		ranks.map_with_index(
-			|rank, v| {
-				shifted = rank - (lowest.get(label.get(v) ?? 0) ?? 0)
+			|rank_value, v| {
+				shifted = rank_value - (lowest.get(label.get(v) ?? 0) ?? 0)
 				if shifted < 0 {
 					0
 				} else {

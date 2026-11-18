@@ -97,7 +97,7 @@ FlowSize :: {}.{
 	}
 
 	sqrt2 : F64
-	sqrt2 = (2.0).sqrt()
+	sqrt2 = (2.0.F64).sqrt()
 
 	half_diagonal : FlowGeometry.TextBlock -> F64
 	half_diagonal = |label| (label.width * label.width + label.height * label.height).sqrt() / 2.0
