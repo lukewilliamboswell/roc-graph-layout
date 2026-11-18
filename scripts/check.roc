@@ -209,8 +209,8 @@ check_fuzz_targets! = |roc| {
 					# and the next seeded run would start from different inputs.
 					corpus = Path.join(Path.join(build, "corpus"), name)
 					Path.create_all!(corpus)?
-					artifacts = OsStr.from_str("--artifact-dir=${Path.display(Path.join(build, "artifacts"))}")
-					Script.command(Path.to_os_str(executable)).run!(["run", Path.to_os_str(corpus), "--runs=200", "--seed=1", artifacts])?
+					report = OsStr.from_str("--report-dir=${Path.display(Path.join(Path.join(build, "reports"), name))}")
+					Script.command(Path.to_os_str(executable)).run!(["run", Path.to_os_str(corpus), "--runs=200", "--seed=1", report])?
 				}
 			}
 			Ok({})
