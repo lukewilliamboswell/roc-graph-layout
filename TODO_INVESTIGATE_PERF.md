@@ -1,5 +1,45 @@
 # Performance hypotheses to investigate
 
+## November 18 migration: flow layering allocation finding (2026-11-19)
+
+The November 18 regular compiler and roc-fuzz 0.6.2 find a native DEV cost
+failure for `fuzz_layered_phase_layering` with bytes `[10, 10, 3, 8]`.
+The existing 8-to-32-copy bound remains unchanged: `large <= 8 * small + 8192`.
+The first failing seeded run measured 28,159 versus 536,552 allocations.
+No optimization has been retained and this finding remains open.
+
+Controlled native measurements of the same diagram at three sizes, with
+preparation measured separately and a zero-work `nodes.len()` control:
+
+| Backend | Copies | Layering allocations | Requested bytes | Peak live bytes |
+|---|---:|---:|---:|---:|
+| SPEED | 8 | 6,104 | 1,051,034 | 445,552 |
+| SPEED | 16 | 12,840 | 3,937,091 | 792,520 |
+| SPEED | 32 | 26,898 | 26,696,038 | 1,785,424 |
+| DEV | 8 | 28,156 | 3,320,617 | 434,416 |
+| DEV | 16 | 106,843 | 14,399,835 | 945,664 |
+| DEV | 32 | 536,549 | 83,429,173 | 2,161,912 |
+
+Peak live bytes include memory live at region entry. Requested bytes are
+cumulative traffic. The zero-work control records zero allocations and requested
+bytes at all three sizes. SPEED whole-process measurements, including startup and
+reporting, span 24–40 ms (three runs per size); they do not establish phase
+throughput. The complete models at all three sizes were saved for exact comparisons.
+
+Phase attribution narrows DEV allocation calls to `sort_by_model_order`:
+21,704 of 28,159 calls at 8 copies and 94,009 of 106,846 calls at 16 copies.
+Instrumenting every subphase at 32 copies exceeds roc-fuzz's region capacity;
+that instrumented observation is invalid and is not used as evidence.
+Replacing the immutable phase handoff chain by a local variable was refuted as a
+fix: counts and model bytes are identical. Skipping unchanged relation bit writes
+and row unions also leaves all counts and model bytes identical, including a
+clean `--no-cache` build. Both experiments were removed.
+
+The earlier compiler/source replay is still needed before classifying this as a
+compiler regression. Local raw reports, exact snapshots, controls and the
+standalone investigation app are retained under `/tmp/graph-flow-*` and
+`/tmp/graph-fuzz-validate2/`; these are diagnostics, not a committed baseline.
+
 ## Mermaid theme and messy-label baseline (2026-10-28)
 
 Native optimized measurements on macOS arm64 with

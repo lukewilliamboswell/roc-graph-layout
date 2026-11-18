@@ -65,7 +65,7 @@ generate = |bytes| {
 	$source
 }
 
-target = Fuzz.target_with({ name: "mermaid-class-diagram", generator: Fuzz.raw_bytes, test, show: |bytes| Str.inspect(Str.from_utf8_lossy(bytes)) })
+target = Fuzz.target_with({ examples: [Fuzz.example({ name: "two-classes", revision: "1", make: || "classDiagram\nclass A\nclass B\nA --> B\n".to_utf8() })], name: "mermaid-class-diagram", generator: Fuzz.raw_bytes, test, show: |bytes| Str.inspect(Str.from_utf8_lossy(bytes)) })
 
 expect {
 	_ = test([0, 2, 0, 1, 1, 0, 2, 2])

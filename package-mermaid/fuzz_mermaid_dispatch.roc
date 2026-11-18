@@ -9,7 +9,7 @@ import mermaid.Mermaid
 import mermaid.Svg
 import mermaid.Theme
 
-target = Fuzz.target_with({ name: "Mermaid public dispatch and themes", generator: Fuzz.raw_bytes, test: verify, show: Str.inspect })
+target = Fuzz.target_with({ examples: [], name: "Mermaid public dispatch and themes", generator: Fuzz.raw_bytes, test: verify, show: Str.inspect })
 
 ## Exercise every family even from an empty corpus, varying text size,
 ## wrapping and padding. The same picture must back both public outputs.

@@ -75,7 +75,7 @@ check = |source, options| match StateDiagram.parse(source) {
 	}
 }
 
-target = Fuzz.target_with({ name: "mermaid-state", generator: Fuzz.raw_bytes, test, show: |bytes| Str.inspect(Str.from_utf8_lossy(bytes)) })
+target = Fuzz.target_with({ examples: [Fuzz.example({ name: "start-and-stop", revision: "1", make: || "stateDiagram-v2\n[*] --> A\nA --> [*]\n".to_utf8() })], name: "mermaid-state", generator: Fuzz.raw_bytes, test, show: |bytes| Str.inspect(Str.from_utf8_lossy(bytes)) })
 
 expect {
 	_ = test("stateDiagram-v2\n[*] --> Idle\nIdle --> Idle : retry\nIdle --> [*]\n".to_utf8())

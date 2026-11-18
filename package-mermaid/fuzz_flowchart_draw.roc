@@ -291,7 +291,7 @@ is_name_byte : U8 -> Bool
 is_name_byte = |c| (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c >= '0' and c <= '9') or c == '-' or c == ':'
 
 target = Fuzz.target_with({
-	examples: [],
+	examples: [Fuzz.example({ name: "labelled-edge", revision: "1", make: || "flowchart LR\na[Start] -->|label| b[End]\n".to_utf8() })],
 	name: "mermaid-flowchart-draw",
 	generator: Fuzz.raw_bytes,
 	test,

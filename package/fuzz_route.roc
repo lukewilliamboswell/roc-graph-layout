@@ -472,7 +472,7 @@ test! = |bytes| {
 	test(bytes)
 }
 
-target = Fuzz.target_with!({ name: "graph-layout-route", generator: Fuzz.list(Fuzz.u8, 208), test!, show: |input| Str.inspect(input) })
+target = Fuzz.target_with!({ examples: [], name: "graph-layout-route", generator: Fuzz.list(Fuzz.u8, 208), test!, show: |input| Str.inspect(input) })
 
 ## fuzz regression: nodes 3, 5 and 6 sit inside a group they do not belong
 ## to, so every L-shaped leg was blocked and the old exhaustive search gave

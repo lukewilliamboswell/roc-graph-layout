@@ -12,7 +12,7 @@ import SequenceDraw
 import Svg
 import Theme
 
-target = Fuzz.target_with({ name: "sequence contract", generator: Fuzz.raw_bytes, test: verify, show: |bytes| Str.inspect(Str.from_utf8_lossy(bytes)) })
+target = Fuzz.target_with({ examples: [Fuzz.example({ name: "message", revision: "1", make: || "sequenceDiagram\nparticipant A\nparticipant B\nA->>B: hello\n".to_utf8() })], name: "sequence contract", generator: Fuzz.raw_bytes, test: verify, show: |bytes| Str.inspect(Str.from_utf8_lossy(bytes)) })
 
 ## Accepted source must draw deterministically with finite positions and
 ## one participant column and event row per source item. Invalid arbitrary
