@@ -72,8 +72,8 @@ three sizes, complete captures) are:
 The second witness, `[43, 10, 10]`, still takes 14,026 allocation-plus-reallocation
 calls at 8 copies and 159,015 at 32 in DEV, exceeding the unchanged bound
 `8 * 14,026 + 8192 = 120,400`. Its optimized allocation-call growth is near linear;
-requested bytes are still superlinear. This is an open migration blocker, not an
-accepted baseline. The measure app includes both witnesses and zero-work controls;
+requested bytes are still superlinear. This is an open migration blocker, reported as
+[roc-lang/roc#13214](https://github.com/roc-lang/roc/issues/13214), not an accepted baseline. The measure app includes both witnesses and zero-work controls;
 its DEV controls allocate zero bytes (they release one temporary closure).
 
 All 71 deterministic native full-model comparisons, including empty, ascending,
@@ -88,6 +88,22 @@ The public grouped-flow benchmark retains practical 24-, 48- and 96-node
 `model_order` rungs plus a zero-work control in `benchmarks/cases/scale.jsonl`.
 Those public one-call costs include preparation, ordering, placement and routing,
 so they must not be presented as isolated layering measurements.
+
+Native optimized public one-call measurements after the fix (three fresh-process
+samples per size, November 18 compiler, same host) are:
+
+| Nodes | Median elapsed | roc_alloc | roc_realloc | Requested bytes | Peak live bytes |
+|---:|---:|---:|---:|---:|---:|
+| 24 | 42.31 ms | 24,010 | 4,052 | 7,805,579 | 876,424 |
+| 48 | 78.80 ms | 47,517 | 7,878 | 25,247,608 | 1,923,784 |
+| 96 | 469.36 ms | 94,293 | 15,423 | 87,805,059 | 4,133,896 |
+
+All 18 public samples completed. The three zero-work sizes record zero allocation
+calls and requested bytes. Runtime samples were collected alongside other compiler
+checks, so use their timing only as a practical completion check, not a controlled
+speedup comparison. Cumulative requested bytes in the complete layout remain
+superlinear; the phase fix does not claim to remove all package scaling costs.
+
 
 ## Mermaid theme and messy-label baseline (2026-10-28)
 
