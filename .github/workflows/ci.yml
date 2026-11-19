@@ -137,7 +137,10 @@ jobs:
         run: |
           mkdir -p "${{ runner.temp }}/mermaid-oracle-results"
           roc version > "${{ runner.temp }}/mermaid-oracle-results/compiler.txt"
-          roc build package-mermaid/oracle_dump.roc --output="${{ runner.temp }}/mermaid-oracle-dump"
+          # roc-lang/roc#13207: a520eed crashes in lambda_solve when
+          # specializing this probe. Keep LLVM optimization and every native
+          # failure gate/browser comparison while using the verified workaround.
+          roc build --opt=speed --specialize=no package-mermaid/oracle_dump.roc --output="${{ runner.temp }}/mermaid-oracle-dump"
 
       - name: Exercise failure gates against the real native CLI
         env:
