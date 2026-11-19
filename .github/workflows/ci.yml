@@ -39,10 +39,12 @@ jobs:
           persist-credentials: false
 
       - name: Install the latest Roc nightly
-        uses: roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c
+        # TODO: https://github.com/roc-lang/setup-roc/issues/12
+        # Restore asset-api after verified cold compiler API downloads pass.
+        uses: roc-lang/setup-roc@1dda09db455688e0f3612d509f3e4982b0e00ff6
         with:
           version: nightly
-          download-method: asset-api
+          download-method: verified-browser
 
       # TODO: https://github.com/lukewilliamboswell/roc-automation/issues/152
       # Remove this pre-admission and restore the original setup order after
@@ -87,10 +89,12 @@ jobs:
           persist-credentials: false
 
       - name: Install the latest Roc nightly
-        uses: roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c
+        # TODO: https://github.com/roc-lang/setup-roc/issues/12
+        # Restore asset-api after verified cold compiler API downloads pass.
+        uses: roc-lang/setup-roc@1dda09db455688e0f3612d509f3e4982b0e00ff6
         with:
           version: nightly
-          download-method: asset-api
+          download-method: verified-browser
 
       # TODO: https://github.com/lukewilliamboswell/roc-automation/issues/152
       # Remove this pre-admission and restore the original setup order after
@@ -122,10 +126,12 @@ jobs:
           persist-credentials: false
 
       - name: Install the latest Roc nightly
-        uses: roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c
+        # TODO: https://github.com/roc-lang/setup-roc/issues/12
+        # Restore asset-api after verified cold compiler API downloads pass.
+        uses: roc-lang/setup-roc@1dda09db455688e0f3612d509f3e4982b0e00ff6
         with:
           version: nightly
-          download-method: asset-api
+          download-method: verified-browser
 
       - name: Admit the fixed dependencies for the native oracle
         run: python3 scripts/admit_release_sources.py seed --source font --source basic-cli --source legacy-http
