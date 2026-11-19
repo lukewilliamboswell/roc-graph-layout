@@ -71,6 +71,13 @@ jobs:
       - name: Check the scripts, package, examples, benchmarks and release artifacts
         run: blueprint run check
 
+      - name: Diagnose a failed Linux benchmark process
+        if: ${{ failure() && runner.os == 'Linux' }}
+        run: |
+          if test -x benchmarks/.cache/layout-bench; then
+            gdb --batch -ex run -ex 'bt 30' --args benchmarks/.cache/layout-bench tree_tidy one_call generated star 100 0
+          fi
+
   editor-e2e:
     # TODO: restore after roc-lang/roc#12677 and the remaining Datastar
     # inference errors are resolved; their common cause is not yet confirmed.
