@@ -16,3 +16,22 @@ A host test covers argument lists containing both inline and heap strings.
 Linux host builds select musl, matching the platform's `x64musl`/`arm64musl`
 linker inputs rather than the build machine's default GNU ABI. The output
 directory follows the resolved target, including when cross-compiling.
+
+## Linux PIE startup and runtime
+
+The November 18 compiler requires position-independent Linux executables and
+relocating startup, as documented in [its platform target contract](https://github.com/roc-lang/roc/blob/a520eed/docs/langref/modules.md).
+The template's original `crt1.o` does not relocate stored pointers. Linux targets
+now use musl's `rcrt1.o` and its matching `libc.a` from the immutable
+[basic-cli 0.28.1 release](https://github.com/roc-lang/basic-cli/releases/tag/0.28.1),
+bundle `7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr`.
+Each copied file was rehashed against the approved complete inventory in
+`scripts/admit_release_sources.py`. The retained runtime licenses are in
+`runtime-licenses/`; the benchmark host is still built from the local Zig source.
+
+| Input | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `x64musl/rcrt1.o` | 11704 | `4594f82520509e2abdae76fedb2eb07887c1e1068f3b8fc167892e08706ea7e8` |
+| `x64musl/libc.a` | 8538374 | `0575ab9542e6faa7f09271478a6b257e6f44334d9c8cd605d94453e52d6f3711` |
+| `arm64musl/rcrt1.o` | 12008 | `bcc4ddca200e6a8a0069a3f4a3066414f150c55f68802d973506ef440cf36c31` |
+| `arm64musl/libc.a` | 9016108 | `29422237a038f967575982f49520716d56220099f2d397704d94d024bf17b21e` |

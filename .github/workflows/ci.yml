@@ -68,31 +68,8 @@ jobs:
       - name: Check Blueprint.roc
         run: blueprint check
 
-      - name: Diagnose the Linux benchmark before the full suite
-        if: ${{ runner.os == 'Linux' }}
-        run: blueprint run bench -- smoke --output "$RUNNER_TEMP/benchmark-diagnostic"
-
       - name: Check the scripts, package, examples, benchmarks and release artifacts
         run: blueprint run check
-
-      - name: Diagnose a failed Linux benchmark process
-        if: ${{ failure() && runner.os == 'Linux' }}
-        run: |
-          if test -x benchmarks/.cache/layout-bench; then
-            sudo apt-get update
-            sudo apt-get install -y gdb
-            gdb --batch -ex run -ex 'bt 30' --args benchmarks/.cache/layout-bench tree_tidy one_call generated star 100 0
-            eval "$(blueprint env default)"
-            (cd benchmarks/platform && zig build -Doptimize=Debug)
-            roc build --debug --no-cache --opt=dev benchmarks/probe_host.roc --output="$RUNNER_TEMP/probe-host"
-            for mode in entry measure; do
-              gdb --batch -ex run -ex 'bt 30' -ex 'info registers' --args "$RUNNER_TEMP/probe-host" "$mode" || true
-            done
-            roc build --debug --no-cache --opt=dev benchmarks/main.roc --output="$RUNNER_TEMP/bench-debug-host"
-            gdb --batch -ex run -ex 'bt 30' -ex 'info registers' --args "$RUNNER_TEMP/bench-debug-host" tree_tidy one_call generated star 100 0 || true
-            roc build --no-cache --opt=speed benchmarks/main.roc --output="$RUNNER_TEMP/bench-llvm-host"
-            gdb --batch -ex run -ex 'bt 30' --args "$RUNNER_TEMP/bench-llvm-host" tree_tidy one_call generated star 100 0 || true
-          fi
 
   editor-e2e:
     # TODO: restore after roc-lang/roc#12677 and the remaining Datastar

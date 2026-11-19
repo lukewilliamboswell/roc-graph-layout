@@ -1,5 +1,34 @@
 # Performance hypotheses to investigate
 
+## November 18 benchmark startup migration (2026-11-19)
+
+Hosted Linux completed all 38 DEV fuzz campaigns, then the first benchmark
+smoke process (`tree_tidy one_call generated star 100 0`) exited with SIGSEGV.
+This failure must not be attributed to graph complexity without a startup control.
+`benchmarks/probe_host.roc` separates argument entry (`entry`) from a zero-work
+measurement (`measure`); both execute natively on macOS, and the latter records
+zero allocation calls, reallocations and requested bytes.
+
+Two independent host defects were corrected first: an uninitialized backing
+element count (its new Zig regression failed before the fix), and compiling
+Linux host objects for GNU while linking a musl runtime. Neither correction
+removed the Linux crash, so both were refuted as its explanation. Cross-built
+x64 DEV/LLVM disassembly also passes the string-return output pointer in the
+expected C ABI registers; no hosted-return compiler bug was established.
+
+The pinned compiler's [platform contract](https://github.com/roc-lang/roc/blob/a520eed/docs/langref/modules.md)
+requires PIE executables and self-relocating Linux startup. Both cross-built
+controls are ELF static PIE. Our vendored template still selected ordinary
+`crt1.o`; the current upstream template and published basic-cli 0.28.1 select
+musl's relocating `rcrt1.o`. The benchmark manifest now selects `rcrt1.o` with
+matching verified musl runtimes for both declared Linux architectures. Exact
+input hashes, source release and licenses are in `benchmarks/platform/PROVENANCE.md`.
+PIE/ASLR remains enabled; this is an enduring compiler-contract migration.
+
+The corrected x64 DEV/LLVM and ARM64 DEV controls cross-build. Native confirmation
+belongs to the ordinary Linux `blueprint run check`, retaining all smoke cases
+and telemetry assertions. No benchmark is skipped and no backend is substituted.
+
 ## November 18 migration: flow layering allocation finding (2026-11-19)
 
 The November 18 regular compiler and roc-fuzz 0.6.2 find a native DEV cost
