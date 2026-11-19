@@ -2,7 +2,13 @@ const std = @import("std");
 const builtin = @import("builtin");
 
 pub fn build(b: *std.Build) void {
-    const target = b.standardTargetOptions(.{});
+    // The Roc Linux targets below link the vendored musl runtime. A host
+    // compiled for the build machine's GNU ABI must not be mixed with it.
+    const default_target: std.Target.Query = if (builtin.os.tag == .linux) .{ .abi = .musl } else .{};
+    const target = b.standardTargetOptions(.{ .default_target = default_target });
+    if (target.result.os.tag == .linux and target.result.abi != .musl) {
+        @panic("Linux benchmark hosts must use musl to match the vendored linker inputs");
+    }
     const optimize = b.standardOptimizeOption(.{});
     const host = b.addLibrary(.{
         .name = "host",
@@ -18,13 +24,13 @@ pub fn build(b: *std.Build) void {
     host.bundle_compiler_rt = true;
     b.installArtifact(host);
 
-    const target_dir = switch (builtin.os.tag) {
-        .macos => switch (builtin.cpu.arch) {
+    const target_dir = switch (target.result.os.tag) {
+        .macos => switch (target.result.cpu.arch) {
             .aarch64 => "arm64mac",
             .x86_64 => "x64mac",
             else => @panic("unsupported architecture"),
         },
-        .linux => switch (builtin.cpu.arch) {
+        .linux => switch (target.result.cpu.arch) {
             .aarch64 => "arm64musl",
             .x86_64 => "x64musl",
             else => @panic("unsupported architecture"),
