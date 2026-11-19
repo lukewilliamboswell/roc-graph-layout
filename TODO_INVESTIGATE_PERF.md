@@ -5,20 +5,26 @@
 The November 18 regular compiler and roc-fuzz 0.6.2 find a native DEV cost
 failure for `fuzz_layered_phase_layering` with bytes `[10, 10, 3, 8]`.
 The existing 8-to-32-copy bound remains unchanged: `large <= 8 * small + 8192`.
-The first failing seeded run measured 28,159 versus 536,552 allocations.
-No optimization has been retained and this finding remains open.
+The first failing seeded run measured 28,159 `roc_alloc` and 1,312
+`roc_realloc` calls versus 536,552 and 8,165. The old counter included both;
+the migration preserves that sum (29,471 versus 544,717 calls).
+A guarded sorting fast path now fixes this witness: layers with complete authored
+order, or previous-layer source keys consistent with authored order, use the same
+stable merge ordering without constructing a transitive relation table. The general
+stateful comparator remains for mixed or conflicting orders. Skipping already-set
+relation flags is also retained; it avoids a no-op copy without changing bits.
 
 Controlled native measurements of the same diagram at three sizes, with
 preparation measured separately and a zero-work `nodes.len()` control:
 
-| Backend | Copies | Layering allocations | Requested bytes | Peak live bytes |
-|---|---:|---:|---:|---:|
-| SPEED | 8 | 6,104 | 1,051,034 | 445,552 |
-| SPEED | 16 | 12,840 | 3,937,091 | 792,520 |
-| SPEED | 32 | 26,898 | 26,696,038 | 1,785,424 |
-| DEV | 8 | 28,156 | 3,320,617 | 434,416 |
-| DEV | 16 | 106,843 | 14,399,835 | 945,664 |
-| DEV | 32 | 536,549 | 83,429,173 | 2,161,912 |
+| Backend | Copies | roc_alloc calls | roc_realloc calls | Requested bytes | Peak live bytes |
+|---|---:|---:|---:|---:|---:|
+| SPEED | 8 | 6,104 | 1,312 | 1,051,034 | 445,552 |
+| SPEED | 16 | 12,840 | 3,210 | 3,937,091 | 792,520 |
+| SPEED | 32 | 26,898 | 8,163 | 26,696,038 | 1,785,424 |
+| DEV | 8 | 28,156 | 1,311 | 3,320,617 | 434,416 |
+| DEV | 16 | 106,843 | 3,211 | 14,399,835 | 945,664 |
+| DEV | 32 | 536,549 | 8,164 | 83,429,173 | 2,161,912 |
 
 Peak live bytes include memory live at region entry. Requested bytes are
 cumulative traffic. The zero-work control records zero allocations and requested
@@ -31,14 +37,57 @@ Phase attribution narrows DEV allocation calls to `sort_by_model_order`:
 Instrumenting every subphase at 32 copies exceeds roc-fuzz's region capacity;
 that instrumented observation is invalid and is not used as evidence.
 Replacing the immutable phase handoff chain by a local variable was refuted as a
-fix: counts and model bytes are identical. Skipping unchanged relation bit writes
-and row unions also leaves all counts and model bytes identical, including a
-clean `--no-cache` build. Both experiments were removed.
+fix: counts and model bytes are identical. Skipping unchanged relation-bit writes and batching row unions also leaves the
+original counts and model bytes identical, including a clean `--no-cache` build.
+Those experiments were removed. This does not establish a compiler root cause.
 
-The earlier compiler/source replay is still needed before classifying this as a
-compiler regression. Local raw reports, exact snapshots, controls and the
+The exact input passes against pre-upgrade source `4155b8b` with the October 23
+compiler and roc-fuzz 0.4.3. It fails against the current source with the November
+18 compiler and that same old fuzz host, measuring the same 29,471 versus 544,717
+allocation-plus-reallocation calls. This rules out the new measurement platform
+as the cause. `package/measure_flow_layering.roc` preserves the three-size
+optimized/DEV reproduction with separate preparation and zero-work controls. Local raw reports, exact snapshots, controls and the
 standalone investigation app are retained under `/tmp/graph-flow-*` and
 `/tmp/graph-fuzz-validate2/`; these are diagnostics, not a committed baseline.
+
+
+The final phase measurements after the guarded sort (same native compiler,
+three sizes, complete captures) are:
+
+| Backend | Witness | Copies | roc_alloc | roc_realloc | Requested bytes | Peak live bytes |
+|---|---|---:|---:|---:|---:|---:|
+| SPEED | copies | 8 | 4,131 | 1,037 | 663,002 | 445,552 |
+| SPEED | copies | 16 | 8,196 | 2,047 | 1,014,123 | 792,520 |
+| SPEED | copies | 32 | 16,319 | 4,056 | 2,521,238 | 1,785,424 |
+| SPEED | mixed | 8 | 3,827 | 844 | 441,651 | 306,008 |
+| SPEED | mixed | 16 | 7,728 | 1,924 | 1,896,966 | 741,528 |
+| SPEED | mixed | 32 | 15,335 | 4,200 | 6,411,427 | 1,573,056 |
+| DEV | copies | 8 | 10,945 | 1,036 | 1,266,377 | 434,416 |
+| DEV | copies | 16 | 21,743 | 2,048 | 2,631,123 | 945,664 |
+| DEV | copies | 32 | 43,321 | 4,057 | 5,868,141 | 2,161,912 |
+| DEV | mixed | 8 | 13,182 | 844 | 1,447,387 | 314,672 |
+| DEV | mixed | 16 | 44,098 | 1,922 | 5,489,557 | 629,712 |
+| DEV | mixed | 32 | 154,816 | 4,199 | 21,230,459 | 1,520,504 |
+
+The second witness, `[43, 10, 10]`, still takes 14,026 allocation-plus-reallocation
+calls at 8 copies and 159,015 at 32 in DEV, exceeding the unchanged bound
+`8 * 14,026 + 8192 = 120,400`. Its optimized allocation-call growth is near linear;
+requested bytes are still superlinear. This is an open migration blocker, not an
+accepted baseline. The measure app includes both witnesses and zero-work controls;
+its DEV controls allocate zero bytes (they release one temporary closure).
+
+All 71 deterministic native full-model comparisons, including empty, ascending,
+reverse, equal-key and scrambled producer inputs, are byte-identical to the
+original stateful sort. The original and mixed witnesses also retain exact
+full-model snapshots at all three sizes. Comparator tests retain the general
+implementation as an oracle for both fast paths, including duplicate authored
+orders and missing source metadata. The two witnesses are permanent fuzz examples;
+the fuzz allocation and leak limits have not changed.
+
+The public grouped-flow benchmark retains practical 24-, 48- and 96-node
+`model_order` rungs plus a zero-work control in `benchmarks/cases/scale.jsonl`.
+Those public one-call costs include preparation, ordering, placement and routing,
+so they must not be presented as isolated layering measurements.
 
 ## Mermaid theme and messy-label baseline (2026-10-28)
 

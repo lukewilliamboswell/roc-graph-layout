@@ -57,7 +57,7 @@ run_case! = |family, operation, source, fixture, n, seed| {
 		}
 		Measure.finish!(observation)
 	} else if family == "layered_grouped" {
-		GroupedBench.run!(graph, operation, seed)
+		GroupedBench.run!(graph, fixture, operation, seed)
 	} else if family == "layered" {
 		input = { ..Layered.default_input, graph }
 		if operation == "prepared_layout" {

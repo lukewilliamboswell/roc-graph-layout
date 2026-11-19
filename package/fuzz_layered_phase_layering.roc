@@ -77,8 +77,8 @@ test! = |bytes| {
 					{}
 				},
 			)
-			if !within(small_input, large_input, small_cost.stats.allocs, large_cost.stats.allocs) {
-				crash "layering: ${LayeredFlowFuzz.copies.to_str()} copies took ${large_cost.stats.allocs.to_str()} allocations, against ${small_cost.stats.allocs.to_str()} for ${LayeredFlowFuzz.base_copies.to_str()}"
+			if !within(small_input, large_input, allocation_calls(small_cost.stats), allocation_calls(large_cost.stats)) {
+				crash "layering: ${LayeredFlowFuzz.copies.to_str()} copies took ${allocation_calls(large_cost.stats).to_str()} allocations, against ${allocation_calls(small_cost.stats).to_str()} for ${LayeredFlowFuzz.base_copies.to_str()}"
 			}
 		}
 		_ => {}
@@ -104,7 +104,10 @@ test = |bytes|
 	}
 
 target = Fuzz.target_with!({
-	examples: [],
+	examples: [
+		Fuzz.example({ name: "previous-layer-sources", revision: "1", make: || [10, 10, 3, 8] }),
+		Fuzz.example({ name: "mixed-layer-order", revision: "1", make: || [43, 10, 10] }),
+	],
 	name: "graph-layout-flow-layering",
 	generator: Fuzz.raw_bytes,
 	test!,
@@ -114,4 +117,23 @@ target = Fuzz.target_with!({
 expect {
 	_ = test([0].concat("abcdefghijklmnopqrstuvwxyz0123456789".to_utf8()))
 	True
+}
+
+# The previous counter included both allocation and reallocation calls.
+# Keep the existing growth bounds on that same quantity.
+allocation_calls : Fuzz.Stats -> U64
+allocation_calls = |stats| stats.allocs + stats.reallocs
+
+## fuzz regression: dense virtual layers keep source-index alignment and
+## deterministic geometry; the named example also enforces the allocation bound.
+expect match test([10, 10, 3, 8]) {
+	Keep => True
+	Reject => False
+}
+
+## fuzz regression: mixed real/virtual cyclic layers stay deterministic;
+## the named example retains the unresolved compiler allocation-growth case.
+expect match test([43, 10, 10]) {
+	Keep => True
+	Reject => False
 }

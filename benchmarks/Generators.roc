@@ -7,9 +7,23 @@ Generators := [].{
 
 	graph : Str, U64, U64 -> { nodes : List({ width : F64, height : F64 }), edges : List({ from : U64, to : U64 }) }
 	graph = |name, n, seed| {
-		nodes = List.repeat({ width: 24, height: 16 }, n)
+		nodes = if name == "model_order" {
+			Generators.indices(n).map(|i| { width: ([10.0, 3.0, 8.0].get(i % 3) ?? 10), height: ([10.0, 3.0, 8.0].get(i % 3) ?? 10) })
+		} else {
+			List.repeat({ width: 24, height: 16 }, n)
+		}
 		edges = if n < 2 {
 			[]
+		} else if name == "model_order" {
+			# Independent three-node, ten-edge copies of the layering witness.
+			# The size ladder uses multiples of three, so all endpoints exist.
+			bytes = [10.U64, 10, 3, 8]
+			Generators.indices((n / 3) * 10).map(
+				|i| {
+					base = (i / 10) * 3
+					{ from: base + (bytes.get((3 + 2 * (i % 10)) % 4) ?? 0) % 3, to: base + (bytes.get((4 + 2 * (i % 10)) % 4) ?? 0) % 3 }
+				},
+			)
 		} else if name == "star" {
 			Generators.indices(n - 1).map(|i| { from: 0, to: i + 1 })
 		} else if name == "cycle_chords" {
