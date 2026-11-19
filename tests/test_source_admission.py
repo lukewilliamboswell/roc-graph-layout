@@ -104,7 +104,7 @@ class DescriptorTests(unittest.TestCase):
         mkdir.assert_not_called()
 
     def test_inventory_counts_and_sizes(self):
-        for name, count, content in (("core", 25, 511858), ("font", 43, 7985346),
+        for name, count, content in (("core", 25, 511858), ("font", 43, 7986382),
                                      ("basic-cli", 217, 89256198), ("legacy-http", 5, 5991)):
             source = admission.SOURCES[name]
             self.assertEqual(len(source.members), count)
@@ -113,7 +113,7 @@ class DescriptorTests(unittest.TestCase):
     def test_published_url_and_bare_unbundle_name_bind_to_same_fixed_source(self):
         for name, prefix, repository, tag in (
                 ("core", "roc-blueprint-core-", "roc-blueprint", "0.12.0"),
-                ("font", "", "roc-font", "0.1.1"),
+                ("font", "", "roc-font", "0.1.2"),
                 ("basic-cli", "", "basic-cli", "0.28.1"),
                 ("legacy-http", "", "http", "1.0.0")):
             source = admission.SOURCES[name]
@@ -131,7 +131,7 @@ class DescriptorTests(unittest.TestCase):
         self.assertEqual(sum(size for _, size in native), 86234724)
         self.assertEqual(max(size for _, size in native), 17849612)
         self.assertEqual(admission.SOURCES["core"].tar_size, 531968)
-        self.assertEqual(admission.SOURCES["font"].tar_size, 8017920)
+        self.assertEqual(admission.SOURCES["font"].tar_size, 8019456)
         self.assertEqual(admission.SOURCES["legacy-http"].tar_size, 10752)
 
     def test_legacy_input_cannot_claim_immutable_authority(self):

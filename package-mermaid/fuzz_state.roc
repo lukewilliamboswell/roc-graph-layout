@@ -1,5 +1,5 @@
 app [target] {
-	font: "https://github.com/lukewilliamboswell/roc-font/releases/download/0.1.1/3Es9Gca6KTySYDqcDPHwVqpAqJk6KwT9G4xkcLoYaSsx.tar.zst",
+	font: "https://github.com/lukewilliamboswell/roc-font/releases/download/0.1.2/3JcFLxX7P572R7BwYN1rNMm8kZh6HQnrVQL1oXetMmMX.tar.zst",
 	fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.2/3kyiehxxzwAsjM23uCQGJ3Hx7dAAdzSGtK3k9Jq7Egtu.tar.zst",
 	layout: "../package/main.roc",
 }
