@@ -236,6 +236,36 @@ class RawTests(Fixture):
             admission.prepare(self.source, self.root / "raw")
         self.process.assert_not_called()
 
+    def test_core_uses_fixed_canonical_transport_with_existing_bounds(self):
+        self.source = replace(self.source, key="core")
+        self.mocks()
+        path = admission.prepare(self.source, self.root / "raw")
+        command = self.process.call_args.args[0]
+        self.assertEqual(command[-1], self.source.canonical_url)
+        self.assertNotEqual(command[-1], self.source.api_url)
+        self.assertEqual(command[:2], ["curl", "--disable"])
+        self.assertIn("--no-netrc", command)
+        self.assertEqual(command[command.index("--max-filesize") + 1], str(self.source.size))
+        self.assertEqual(self.process.call_args.args[1], self.source.size)
+        self.assertFalse(any("auth" in argument.lower() for argument in command))
+        self.assertEqual(path.read_bytes(), self.raw)
+        path.write_bytes(b"X" * self.source.size)
+        self.process.reset_mock()
+        with self.assertRaises(admission.AdmissionError):
+            admission.prepare(self.source, self.root / "raw")
+        self.process.assert_not_called()
+
+    def test_core_transport_corruption_fails_closed_without_another_download(self):
+        self.source = replace(self.source, key="core")
+        self.mocks()
+        for data in (self.raw + b"x", b"X" * self.source.size):
+            with self.subTest(size=len(data)), mock.patch.object(admission, "run_bounded", return_value=data) as process:
+                with self.assertRaises(admission.AdmissionError):
+                    admission.prepare(self.source, self.root / "raw")
+                process.assert_called_once()
+                self.assertEqual(process.call_args.args[0][-1], self.source.canonical_url)
+                self.assertFalse(list((self.root / "raw").iterdir()))
+
     def test_download_wrong_size_and_digest_leave_no_raw(self):
         self.mocks()
         for data in (b"short", b"X" * self.source.size):

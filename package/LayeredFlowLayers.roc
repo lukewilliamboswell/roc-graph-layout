@@ -1163,6 +1163,12 @@ LayeredFlowLayers :: {}.{
 
 	NodeInfo : { source_port : U64, from_edges : I64, model_order : [None, Some(I64)] }
 
+	# TODO: https://github.com/roc-lang/roc/issues/13214
+	# Recheck these guarded sort paths and set_flag's unchanged-write guard after
+	# the upstream allocation fix. To back out, call general_node_indices here,
+	# remove the key/guard helpers, and restore set_flag's bounds-only update.
+	# Keep the comparator regressions, both retained witnesses and scale ladder;
+	# require identical native models and the original cost bound before removal.
 	## The sort's relation state is internal; callers need only item indices.
 	sort_node_indices : Model, Previous, List(U64), List(NodeInfo) -> List(U64)
 	sort_node_indices = |mm, prev, port_position, info| {

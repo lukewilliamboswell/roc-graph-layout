@@ -38,17 +38,23 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@6c796f299012707d2e9bad23fd6449ed93f1f475
-        with:
-          cache: 'true'
-          cache-workload: dev
-
       - name: Install the latest Roc nightly
         uses: roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c
         with:
           version: nightly
           download-method: asset-api
+
+      # TODO: https://github.com/lukewilliamboswell/roc-automation/issues/152
+      # Remove this pre-admission and restore the original setup order after
+      # setup-blueprint reliably admits the fixed Core source on cold runners.
+      - name: Admit verified Blueprint Core before setup
+        run: python3 scripts/admit_release_sources.py seed --source core
+
+      - name: Install blueprint
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@6c796f299012707d2e9bad23fd6449ed93f1f475
+        with:
+          cache: 'true'
+          cache-workload: dev
 
       - name: Admit the fixed build dependencies before Blueprint evaluation
         run: |
@@ -80,17 +86,23 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@6c796f299012707d2e9bad23fd6449ed93f1f475
-        with:
-          cache: 'true'
-          cache-workload: dev
-
       - name: Install the latest Roc nightly
         uses: roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c
         with:
           version: nightly
           download-method: asset-api
+
+      # TODO: https://github.com/lukewilliamboswell/roc-automation/issues/152
+      # Remove this pre-admission and restore the original setup order after
+      # setup-blueprint reliably admits the fixed Core source on cold runners.
+      - name: Admit verified Blueprint Core before setup
+        run: python3 scripts/admit_release_sources.py seed --source core
+
+      - name: Install blueprint
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@6c796f299012707d2e9bad23fd6449ed93f1f475
+        with:
+          cache: 'true'
+          cache-workload: dev
 
       - name: Build the node editor and run its browser tests
         env:
@@ -137,9 +149,10 @@ jobs:
         run: |
           mkdir -p "${{ runner.temp }}/mermaid-oracle-results"
           roc version > "${{ runner.temp }}/mermaid-oracle-results/compiler.txt"
-          # roc-lang/roc#13207: a520eed crashes in lambda_solve when
-          # specializing this probe. Keep LLVM optimization and every native
-          # failure gate/browser comparison while using the verified workaround.
+          # TODO: https://github.com/roc-lang/roc/issues/13207
+          # Remove --specialize=no once the ordinary optimized build succeeds
+          # and all native failure gates/browser comparisons pass with it.
+          # Retain --opt=speed and the complete comparison suite.
           roc build --opt=speed --specialize=no package-mermaid/oracle_dump.roc --output="${{ runner.temp }}/mermaid-oracle-dump"
 
       - name: Exercise failure gates against the real native CLI
