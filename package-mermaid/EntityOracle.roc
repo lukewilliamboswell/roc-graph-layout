@@ -59,8 +59,8 @@ EntityOracle :: {}.{
 					if (comments) with_keys.append("comment") else with_keys
 				},
 			)
-			geometry = EntityOracle.geometry_sized(ids, EntityRender.nodes(diagram.entities), EntityRender.edges(diagram.relationships), columns, diagram.direction, theme, picture, overrides)
-			OracleJson.object([("accepted", "true"), ("family", OracleJson.string("entity")), ("semantic", semantic), ("geometry", geometry), ("size_problems", EntityOracle.size_problems(ids, EntityRender.edges(diagram.relationships), overrides))])
+			rendered_geometry = EntityOracle.geometry_sized(ids, EntityRender.nodes(diagram.entities), EntityRender.edges(diagram.relationships), columns, diagram.direction, theme, picture, overrides)
+			OracleJson.object([("accepted", "true"), ("family", OracleJson.string("entity")), ("semantic", semantic), ("geometry", rendered_geometry), ("size_problems", EntityOracle.size_problems(ids, EntityRender.edges(diagram.relationships), overrides))])
 		}
 		_ => OracleJson.rejected("entity")
 	}
