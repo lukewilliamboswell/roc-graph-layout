@@ -82,6 +82,11 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y gdb
             gdb --batch -ex run -ex 'bt 30' --args benchmarks/.cache/layout-bench tree_tidy one_call generated star 100 0
+            for target in native x86_64-linux-musl; do
+              (cd benchmarks/platform && ../../.blueprint/env/default/bin/zig build -Doptimize=Debug -Dtarget="$target")
+              roc build --no-cache --opt=dev benchmarks/main.roc --output="$RUNNER_TEMP/layout-bench-$target"
+              gdb --batch -ex run -ex 'bt 30' -ex 'info registers' --args "$RUNNER_TEMP/layout-bench-$target" tree_tidy one_call generated star 100 0
+            done
           fi
 
   editor-e2e:
