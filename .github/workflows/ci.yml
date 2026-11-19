@@ -68,6 +68,10 @@ jobs:
       - name: Check Blueprint.roc
         run: blueprint check
 
+      - name: Reproduce the Linux benchmark failure before the full suite
+        if: ${{ runner.os == 'Linux' }}
+        run: blueprint run bench -- smoke --output "$RUNNER_TEMP/benchmark-diagnostic"
+
       - name: Check the scripts, package, examples, benchmarks and release artifacts
         run: blueprint run check
 
