@@ -867,6 +867,9 @@ LayeredFlowLayers :: {}.{
 		$out
 	}
 
+	# TODO: https://github.com/roc-lang/roc/issues/13214
+	# Recheck this unchanged-write guard with the sort workaround below; restore
+	# the bounds-only update only after native models and original cost gates pass.
 	set_flag : List(Bool), U64 -> List(Bool)
 	set_flag = |flags, i| if i < flags.len() and !(flags.get(i) ?? True) {
 		flags.set(i, True) ?? []
