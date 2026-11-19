@@ -102,6 +102,8 @@ check_scripts! = |roc_stable| {
 		roc_stable.run!(["test", OsStr.from_str("scripts/src/${module_name}.roc")])?
 	}
 	# These need the cli platform of an app for their pure parts.
+	# roc-lang/roc#13215: these platform-bound tests stall with caching enabled,
+	# even in a fresh cache. Keep the workaround local to these two commands.
 	for (module_name, entry) in [("Preview", "serve"), ("Site", "site")] {
 		roc_stable.run!(["test", "--no-cache", OsStr.from_str("scripts/src/${module_name}.roc"), OsStr.from_str("--main=scripts/${entry}.roc")])?
 	}
