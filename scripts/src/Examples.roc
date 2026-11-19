@@ -47,11 +47,13 @@ Examples := [].{
 		directories = Files.sort_paths(Path.list!(Path.join(root, "examples"))?)
 		var $found = []
 		for directory in directories {
-			main = Path.join(directory, "main.roc")
-			if Path.is_file!(main)? {
-				source = Path.read_utf8!(main)?
-				if Headers.is_app(source) and !source.contains("## scripts: service") {
-					$found = $found.append("examples/${Script.file_name(directory)?}/main.roc")
+			if Path.is_dir!(directory)? {
+				main = Path.join(directory, "main.roc")
+				if Path.is_file!(main)? {
+					source = Path.read_utf8!(main)?
+					if Headers.is_app(source) and !source.contains("## scripts: service") {
+						$found = $found.append("examples/${Script.file_name(directory)?}/main.roc")
+					}
 				}
 			}
 		}

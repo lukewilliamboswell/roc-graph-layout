@@ -115,8 +115,8 @@ test! = |bytes| {
 	phase! = |name, size, run|
 		bounded!(
 			name,
-			{ allocations: Fuzz.measure!("allocations", || run(small_graph, small)).stats.allocs, size: size(small_graph, small) },
-			{ allocations: Fuzz.measure!("allocations", || run(large_graph, large)).stats.allocs, size: size(large_graph, large) },
+			{ allocations: allocation_calls(Fuzz.measure!("allocations", || run(small_graph, small)).stats), size: size(small_graph, small) },
+			{ allocations: allocation_calls(Fuzz.measure!("allocations", || run(large_graph, large)).stats), size: size(large_graph, large) },
 		)
 	_ = phase!("cycle breaking", graph_size, |g, _| LayeredRank.orient(g.count, g.edges).edges.len())
 	_ = phase!("ranking", graph_size, |_, s| LayeredRank.rank(s.count, s.oriented, s.weights, s.spans).len())
@@ -221,3 +221,8 @@ expect {
 	)
 	xs.len() == s.widths.len() and separated
 }
+
+# The previous counter included both allocation and reallocation calls.
+# Keep the existing growth bounds on that same quantity.
+allocation_calls : Fuzz.Stats -> U64
+allocation_calls = |stats| stats.allocs + stats.reallocs

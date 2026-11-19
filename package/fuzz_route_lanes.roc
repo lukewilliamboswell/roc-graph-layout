@@ -74,11 +74,11 @@ test! = |bytes| {
 	if !same_bits(RouteLanes.lanes(stacked, gap), reference(stacked, gap)) {
 		crash "lane separation disagrees with its definition on a crowded line"
 	}
-	small_cost = Fuzz.measure!("allocations", || RouteLanes.lanes(small, gap)).stats.allocs
+	small_cost = allocation_calls(Fuzz.measure!("allocations", || RouteLanes.lanes(small, gap)).stats)
 	apart = segments(bytes, 8, False)
 	together = segments(bytes, 8, True)
-	apart_cost = Fuzz.measure!("allocations", || RouteLanes.lanes(apart, gap)).stats.allocs
-	together_cost = Fuzz.measure!("allocations", || RouteLanes.lanes(together, gap)).stats.allocs
+	apart_cost = allocation_calls(Fuzz.measure!("allocations", || RouteLanes.lanes(apart, gap)).stats)
+	together_cost = allocation_calls(Fuzz.measure!("allocations", || RouteLanes.lanes(together, gap)).stats)
 	# Results are dropped inside each closure: the dev backend keeps a value
 	# bound to `_` alive until its block ends, which would read as a leak.
 	Fuzz.expect_no_leaks!(
@@ -112,3 +112,8 @@ expect {
 		},
 	)
 }
+
+# The previous counter included both allocation and reallocation calls.
+# Keep the existing growth bounds on that same quantity.
+allocation_calls : Fuzz.Stats -> U64
+allocation_calls = |stats| stats.allocs + stats.reallocs

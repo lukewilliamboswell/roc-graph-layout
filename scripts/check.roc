@@ -155,18 +155,20 @@ check_examples! = |roc, node_editor_checks_enabled| {
 	# Committed examples must exercise the working tree, never a published bundle.
 	working_tree = { layout: "../../package/main.roc", mermaid: "../../package-mermaid/main.roc" }
 	for directory in Files.sort_paths(Path.list!("examples")?) {
-		main = Path.join(directory, "main.roc")
-		if Path.is_file!(main)? {
-			source = Path.read_utf8!(main)?
-			if Headers.is_app(source) and !Archive.depends_on(source, working_tree) {
-				return Script.fail!("${Path.display(main)}: the app header must declare ${Release.shorthand}: \"${working_tree.layout}\" or ${Release.mermaid_shorthand}: \"${working_tree.mermaid}\"")
-			}
-			# An interactive service is not run, but must still build.
-			if source.contains("## scripts: service") {
-				if Path.display(main) == "examples/node_editor/main.roc" and !node_editor_checks_enabled {
-					Script.info!("SKIP node editor service check", node_editor_skip_reason)?
-				} else {
-					roc.run!(["check", Path.to_os_str(main)])?
+		if Path.is_dir!(directory)? {
+			main = Path.join(directory, "main.roc")
+			if Path.is_file!(main)? {
+				source = Path.read_utf8!(main)?
+				if Headers.is_app(source) and !Archive.depends_on(source, working_tree) {
+					return Script.fail!("${Path.display(main)}: the app header must declare ${Release.shorthand}: \"${working_tree.layout}\" or ${Release.mermaid_shorthand}: \"${working_tree.mermaid}\"")
+				}
+				# An interactive service is not run, but must still build.
+				if source.contains("## scripts: service") {
+					if Path.display(main) == "examples/node_editor/main.roc" and !node_editor_checks_enabled {
+						Script.info!("SKIP node editor service check", node_editor_skip_reason)?
+					} else {
+						roc.run!(["check", Path.to_os_str(main)])?
+					}
 				}
 			}
 		}
@@ -182,7 +184,7 @@ check_benchmarks! = || {
 		Ok("../package/main.roc") => {}
 		_ => return Script.fail!("benchmarks/main.roc: the app header must declare ${Release.shorthand}: \"../package/main.roc\"")
 	}
-	Env.with_temp_dir!(|output| Script.command("scripts/bench.roc").run!(["--", "smoke", "--output", Path.to_os_str(output)]))
+	Env.with_temp_dir!(|output| Script.command("scripts/bench.roc").run!(["smoke", "--output", Path.to_os_str(output)]))
 }
 
 # A target that is never built goes stale, and its expects alone do not run

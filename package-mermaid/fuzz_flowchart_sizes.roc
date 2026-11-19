@@ -67,8 +67,8 @@ test! = |bytes|
 					{}
 				},
 			)
-			if large_cost.stats.allocs > 10 * small_cost.stats.allocs + 256 {
-				crash "measuring 8 times the text took ${large_cost.stats.allocs.to_str()} allocations, against ${small_cost.stats.allocs.to_str()} for one copy"
+			if allocation_calls(large_cost.stats) > 10 * allocation_calls(small_cost.stats) + 256 {
+				crash "measuring 8 times the text took ${allocation_calls(large_cost.stats).to_str()} allocations, against ${allocation_calls(small_cost.stats).to_str()} for one copy"
 			}
 			if !block_ok(TextMeasure.block(long, { ..style, wrap: NoWrap, align: Start })) {
 				crash "a label size is not finite and non-negative"
@@ -97,3 +97,8 @@ target = Fuzz.target_with!({
 	test!,
 	show: |bytes| Str.inspect(Str.from_utf8_lossy(bytes)),
 })
+
+# The previous counter included both allocation and reallocation calls.
+# Keep the existing growth bounds on that same quantity.
+allocation_calls : Fuzz.Stats -> U64
+allocation_calls = |stats| stats.allocs + stats.reallocs

@@ -72,8 +72,8 @@ test! = |bytes| {
 					{}
 				},
 			)
-			if !within(small_input, large_input, small_cost.stats.allocs, large_cost.stats.allocs) {
-				crash "placement: ${LayeredFlowFuzz.copies.to_str()} copies took ${large_cost.stats.allocs.to_str()} allocations, against ${small_cost.stats.allocs.to_str()} for ${LayeredFlowFuzz.base_copies.to_str()}"
+			if !within(small_input, large_input, allocation_calls(small_cost.stats), allocation_calls(large_cost.stats)) {
+				crash "placement: ${LayeredFlowFuzz.copies.to_str()} copies took ${allocation_calls(large_cost.stats).to_str()} allocations, against ${allocation_calls(small_cost.stats).to_str()} for ${LayeredFlowFuzz.base_copies.to_str()}"
 			}
 		}
 		_ => {}
@@ -110,3 +110,8 @@ expect {
 	_ = test([0].concat("abcdefghijklmnopqrstuvwxyz0123456789".to_utf8()))
 	True
 }
+
+# The previous counter included both allocation and reallocation calls.
+# Keep the existing growth bounds on that same quantity.
+allocation_calls : Fuzz.Stats -> U64
+allocation_calls = |stats| stats.allocs + stats.reallocs

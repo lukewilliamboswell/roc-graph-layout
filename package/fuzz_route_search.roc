@@ -239,8 +239,8 @@ test! = |bytes| {
 		crash "the A* search disagrees with the reference search"
 	}
 	large = case(bytes, 8)
-	small_cost = Fuzz.measure!("allocations", || search(small)).stats.allocs
-	large_cost = Fuzz.measure!("allocations", || search(large)).stats.allocs
+	small_cost = allocation_calls(Fuzz.measure!("allocations", || search(small)).stats)
+	large_cost = allocation_calls(Fuzz.measure!("allocations", || search(large)).stats)
 	# Results are dropped inside each closure: the dev backend keeps a value
 	# bound to `_` alive until its block ends, which would read as a leak.
 	Fuzz.expect_no_leaks!(
@@ -287,3 +287,8 @@ expect {
 	c = { start: { x: 0, y: 5 }, finish: { x: 20, y: 5 }, boxes: [{ min_x: 10, min_y: 0, max_x: 10, max_y: 10 }], prior: [], bend: 16, shared: 4 }
 	agree(c) and search(c).len() > 2
 }
+
+# The previous counter included both allocation and reallocation calls.
+# Keep the existing growth bounds on that same quantity.
+allocation_calls : Fuzz.Stats -> U64
+allocation_calls = |stats| stats.allocs + stats.reallocs

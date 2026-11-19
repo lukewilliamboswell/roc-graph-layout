@@ -37,8 +37,8 @@ test! = |bytes| {
 					{}
 				},
 			)
-			if large_cost.stats.allocs > 24 * small_cost.stats.allocs + 4096 {
-				crash "laying out two copies took ${large_cost.stats.allocs.to_str()} allocations, against ${small_cost.stats.allocs.to_str()} for one"
+			if allocation_calls(large_cost.stats) > 24 * allocation_calls(small_cost.stats) + 4096 {
+				crash "laying out two copies took ${allocation_calls(large_cost.stats).to_str()} allocations, against ${allocation_calls(small_cost.stats).to_str()} for one"
 			}
 		}
 		_ => {}
@@ -263,3 +263,8 @@ expect {
 	_ = test([85, 217, 107, 27, 27, 27, 27, 27, 19])
 	True
 }
+
+# The previous counter included both allocation and reallocation calls.
+# Keep the existing growth bounds on that same quantity.
+allocation_calls : Fuzz.Stats -> U64
+allocation_calls = |stats| stats.allocs + stats.reallocs

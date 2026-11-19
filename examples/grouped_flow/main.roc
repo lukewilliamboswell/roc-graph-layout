@@ -6,6 +6,7 @@ app [main!] {
 
 import layout.Layered
 import pf.Stdout
+import pf.OsStr
 
 ## A coordinated flow with a nested subsystem, a cross-boundary edge, a
 ## group endpoint and a measured edge label. This uses only the geometry
@@ -40,7 +41,7 @@ input = {
 }
 
 main! : List(_) => Try({}, _)
-main! = |args| match Layered.layout_grouped(input, { ..Layered.default_grouped_settings, direction: if (args.contains("--right")) Right else Down }, Layered.default_grouped_run) {
+main! = |args| match Layered.layout_grouped(input, { ..Layered.default_grouped_settings, direction: if (args.map(OsStr.display).contains("--right")) Right else Down }, Layered.default_grouped_run) {
 	Err(problems) => Err(InvalidDiagram(Str.inspect(problems)))
 	Ok(result) => Stdout.line!("Laid out ${result.nodes.len().to_str()} nodes, ${result.layout.routes.len().to_str()} edges and ${result.groups.len().to_str()} groups.")
 }

@@ -450,8 +450,8 @@ scaling! : List(U8) => {}
 scaling! = |bytes| {
 	small = copied(bytes, 1)
 	large = copied(bytes, 8)
-	small_cost = Fuzz.measure!("allocations", || Route.layout(small, Route.default_settings)).stats.allocs
-	large_cost = Fuzz.measure!("allocations", || Route.layout(large, Route.default_settings)).stats.allocs
+	small_cost = allocation_calls(Fuzz.measure!("allocations", || Route.layout(small, Route.default_settings)).stats)
+	large_cost = allocation_calls(Fuzz.measure!("allocations", || Route.layout(large, Route.default_settings)).stats)
 	# Results are dropped inside each closure: the dev backend keeps a value
 	# bound to `_` alive until its block ends, which would read as a leak.
 	Fuzz.expect_no_leaks!(
@@ -517,3 +517,8 @@ expect {
 		Err(_) => False
 	}
 }
+
+# The previous counter included both allocation and reallocation calls.
+# Keep the existing growth bounds on that same quantity.
+allocation_calls : Fuzz.Stats -> U64
+allocation_calls = |stats| stats.allocs + stats.reallocs
