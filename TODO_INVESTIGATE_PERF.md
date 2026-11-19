@@ -4,7 +4,9 @@
 
 The November 18 regular compiler and roc-fuzz 0.6.2 find a native DEV cost
 failure for `fuzz_layered_phase_layering` with bytes `[10, 10, 3, 8]`.
-The existing 8-to-32-copy bound remains unchanged: `large <= 8 * small + 8192`.
+The original 8-to-32-copy bound is `large <= 8 * small + 8192`.
+The measurements below use that bound; the temporary release allowance is
+recorded separately below.
 The first failing seeded run measured 28,159 `roc_alloc` and 1,312
 `roc_realloc` calls versus 536,552 and 8,165. The old counter included both;
 the migration preserves that sum (29,471 versus 544,717 calls).
@@ -72,8 +74,8 @@ three sizes, complete captures) are:
 The second witness, `[43, 10, 10]`, still takes 14,026 allocation-plus-reallocation
 calls at 8 copies and 159,015 at 32 in DEV, exceeding the unchanged bound
 `8 * 14,026 + 8192 = 120,400`. Its optimized allocation-call growth is near linear;
-requested bytes are still superlinear. This is an open migration blocker, reported as
-[roc-lang/roc#13214](https://github.com/roc-lang/roc/issues/13214), not an accepted baseline. The measure app includes both witnesses and zero-work controls;
+requested bytes are still superlinear. This is the open compiler-cost finding
+[roc-lang/roc#13214](https://github.com/roc-lang/roc/issues/13214), not an accepted baseline or a claimed allocation fix. The measure app includes both witnesses and zero-work controls;
 its DEV controls allocate zero bytes (they release one temporary closure).
 
 All 71 deterministic native full-model comparisons, including empty, ascending,
@@ -82,7 +84,8 @@ original stateful sort. The original and mixed witnesses also retain exact
 full-model snapshots at all three sizes. Comparator tests retain the general
 implementation as an oracle for both fast paths, including duplicate authored
 orders and missing source metadata. The two witnesses are permanent fuzz examples;
-the fuzz allocation and leak limits have not changed.
+the geometry and leak assertions remain unchanged. The target-specific temporary
+allocation allowance below is the only growth-limit change.
 
 The public grouped-flow benchmark retains practical 24-, 48- and 96-node
 `model_order` rungs plus a zero-work control in `benchmarks/cases/scale.jsonl`.
@@ -103,6 +106,39 @@ calls and requested bytes. Runtime samples were collected alongside other compil
 checks, so use their timing only as a practical completion check, not a controlled
 speedup comparison. Cumulative requested bytes in the complete layout remain
 superlinear; the phase fix does not claim to remove all package scaling costs.
+
+
+
+## Temporary release allowance for roc-lang/roc#13214 (2026-11-19)
+
+TODO: https://github.com/roc-lang/roc/issues/13214 — restore the layering
+fuzz target's `within` implementation to `LayeredFlowFuzz.within_bound`, the
+original `8 * small + 8192` limit, once the upstream allocation fix passes the
+retained inputs and the seeded campaign. Keep the regression cases and native
+scale controls when removing this workaround.
+
+At the user's request, `package/fuzz_layered_phase_layering.roc` temporarily
+allows `13 * small + 8192` combined allocation/reallocation calls for its
+8-versus-32-copy comparison. The shared bound and all other fuzz targets stay
+at their original limits. This target uses the allowance for both DEV and LLVM
+builds; it is a release tolerance, not a new linear-cost claim or a compiler fix.
+Geometry, deterministic output, source alignment, leak checks, the 200-input
+budget, fixed seed and fresh-corpus policy are unchanged. No baseline is accepted.
+
+The 12x trial passes the first two retained examples, then fails at execution
+128 of the fresh seed-1 campaign on bytes `[254, 197, 254, 10]`: 190,689 calls
+at 32 copies against 14,841 at 8 copies. The old limit is 126,920; 12x allows
+186,284 and still fails; 13x allows 201,125. The new case is retained as
+`mixed-layer-order-dense` with a permanent geometry/determinism expect. Both
+13x trials complete 200 inputs, including the final fresh corpus with all three
+retained examples. Hosted validation must also pass before a compatible release
+is published.
+
+Reversion must run all three retained examples and the fresh 200-input seed-1
+campaign with the original bound. Recheck DEV and optimized native measurements
+at the three preserved sizes, exact model output, and the comparator regressions
+before removing the related guarded-sort/unchanged-write workarounds. Their
+implementation sites also carry issue-linked TODOs.
 
 
 ## Mermaid theme and messy-label baseline (2026-10-28)
