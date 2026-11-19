@@ -323,10 +323,11 @@ LayeredFlowLayers :: {}.{
 						opposite = LayeredFlowGraph.port($m, opposite_port).node
 						on = LayeredFlowGraph.node($m, opposite)
 						if on.layer_constraint == Free {
+							bit : U64
 							bit = if (node.layer_constraint == FirstSeparate) 1 else 2
 							before = match $connections.find_first(|c| c.node == opposite) {
 								Ok(c) => c.value
-								Err(_) => 0
+								Err(_) => 0.U64
 							}
 							value = before.bitwise_or(bit)
 							$connections = $connections.drop_if(|c| c.node == opposite).append({ node: opposite, value })
@@ -827,7 +828,7 @@ LayeredFlowLayers :: {}.{
 	bit_add = |rows, words, row, x| {
 		i = row * words + x / 64
 		if i < rows.len() {
-			rows.set(i, (rows.get(i) ?? 0).bitwise_or((1).shl_wrap((x % 64).to_u8_wrap()))) ?? []
+			rows.set(i, (rows.get(i) ?? 0).bitwise_or((1.U64).shl_wrap((x % 64).to_u8_wrap()))) ?? []
 		} else {
 			rows
 		}
@@ -866,8 +867,15 @@ LayeredFlowLayers :: {}.{
 		$out
 	}
 
+	# TODO: https://github.com/roc-lang/roc/issues/13214
+	# Recheck this unchanged-write guard with the sort workaround below; restore
+	# the bounds-only update only after native models and original cost gates pass.
 	set_flag : List(Bool), U64 -> List(Bool)
-	set_flag = |flags, i| if (i < flags.len()) flags.set(i, True) ?? [] else flags
+	set_flag = |flags, i| if i < flags.len() and !(flags.get(i) ?? True) {
+		flags.set(i, True) ?? []
+	} else {
+		flags
+	}
 
 	## The comparison prologue shared by both comparators: answers from what
 	## is already known, registering both items.
@@ -1060,7 +1068,7 @@ LayeredFlowLayers :: {}.{
 					{ source_port: $sp, from_edges, model_order: node.model_order }
 				},
 			)
-			(sorted_index, _) = LayeredFlowGraph.merge_sort(LayeredFlowLayers.upto(items.len()), LayeredFlowLayers.relations(items.len()), |r, i, j| LayeredFlowLayers.compare_nodes(mm, prev, port_position, info, r, i, j))
+			sorted_index = LayeredFlowLayers.sort_node_indices(mm, prev, port_position, info)
 			sorted_nodes = sorted_index.map(|i| items.get(i) ?? 0)
 			for i in 0..<sorted_nodes.len() {
 				n = sorted_nodes.get(i) ?? 0
@@ -1157,6 +1165,117 @@ LayeredFlowLayers :: {}.{
 	}
 
 	NodeInfo : { source_port : U64, from_edges : I64, model_order : [None, Some(I64)] }
+
+	# TODO: https://github.com/roc-lang/roc/issues/13214
+	# Recheck these guarded sort paths and set_flag's unchanged-write guard after
+	# the upstream allocation fix. To back out, call general_node_indices here,
+	# remove the key/guard helpers, and restore set_flag's bounds-only update.
+	# Keep the comparator regressions, both retained witnesses and scale ladder;
+	# require identical native models and the original cost bound before removal.
+	## The sort's relation state is internal; callers need only item indices.
+	sort_node_indices : Model, Previous, List(U64), List(NodeInfo) -> List(U64)
+	sort_node_indices = |mm, prev, port_position, info| {
+		if info.all(|item| item.model_order != None) {
+			# With every item authored, compare_nodes reads only this numeric
+			# order. The stable sort therefore needs no relation bookkeeping.
+			keys = info.map(
+				|item| match item.model_order {
+					Some(value) => value
+					None => crash "all layer items have authored order"
+				},
+			)
+			indices = LayeredFlowLayers.upto(info.len())
+			monotonic = keys.fold_with_index(True, |ordered, value, i| ordered and (i == 0 or (keys.get(i - 1) ?? value) <= value))
+			if monotonic {
+				indices
+			} else {
+				LayeredFlowGraph.sort_by(indices, |i, j| LayeredFlowLayers.cmp_i64(keys.get(i) ?? (crash "one authored key per layer item"), keys.get(j) ?? (crash "one authored key per layer item")))
+			}
+		} else {
+			match LayeredFlowLayers.previous_source_keys(mm, prev, port_position, info) {
+				Usable(keys) => {
+					candidate = LayeredFlowGraph.sort_by(
+						LayeredFlowLayers.upto(info.len()),
+						|i, j| {
+							a = keys.get(i) ?? (crash "one source key per layer item")
+							b = keys.get(j) ?? (crash "one source key per layer item")
+							if a.node < b.node or (a.node == b.node and a.port < b.port) {
+								-1
+							}
+							else if a.node > b.node or (a.node == b.node and a.port > b.port) {
+								1
+							}
+							else {
+								0
+							}
+						},
+					)
+					if LayeredFlowLayers.authored_agrees(info, candidate) {
+						candidate
+					} else {
+						LayeredFlowLayers.general_node_indices(mm, prev, port_position, info)
+					}
+				}
+				General => LayeredFlowLayers.general_node_indices(mm, prev, port_position, info)
+			}
+		}
+	}
+
+	general_node_indices : Model, Previous, List(U64), List(NodeInfo) -> List(U64)
+	general_node_indices = |m, previous, ports, info| {
+		(sorted, _) = LayeredFlowGraph.merge_sort(LayeredFlowLayers.upto(info.len()), LayeredFlowLayers.relations(info.len()), |r, i, j| LayeredFlowLayers.compare_nodes(m, previous, ports, info, r, i, j))
+		sorted
+	}
+
+	## Numeric authored comparisons must agree strictly with the candidate.
+	## Duplicate authored orders keep the general mixed-order comparison.
+	authored_agrees : List(NodeInfo), List(U64) -> Bool
+	authored_agrees = |info, candidate| {
+		var $last = None
+		for i in candidate {
+			match (info.get(i) ?? crash "one info per layer item").model_order {
+				None => {}
+				Some(value) => {
+					match $last {
+						None => {}
+						Some(previous) => {
+							if value <= previous {
+								return False
+							}
+						}
+					}
+					$last = Some(value)
+				}
+			}
+		}
+		True
+	}
+
+	## When every item is fed by the previous layer,
+	## compare_nodes always decides by source-node position, then source-port
+	## position. Those keys form a total preorder, so the same stable merge sort
+	## needs no transitive relation table when authored orders agree with it.
+	## Equal source keys retain source item order.
+	previous_source_keys : Model, Previous, List(U64), List(NodeInfo) -> [Usable(List({ node : U64, port : U64 })), General]
+	previous_source_keys = |m, previous, port_position, info| {
+		var $keys = List.with_capacity(info.len())
+		for item in info {
+			if item.source_port >= m.ports.len() {
+				return General
+			}
+			source_node = LayeredFlowGraph.port(m, item.source_port).node
+			if previous.layer_of.get(source_node) != Ok(previous.layer) {
+				return General
+			}
+			match (previous.position.get(source_node), port_position.get(item.source_port)) {
+				(Ok(node), Ok(port)) => {
+					$keys = $keys.append({ node, port })
+				}
+				_ => return General
+			}
+		}
+		Usable($keys)
+	}
 
 	compare_nodes : Model, Previous, List(U64), List(NodeInfo), Relations, U64, U64 -> (Relations, I64)
 	compare_nodes = |m, previous, port_position, info, r0, i1, i2| {
@@ -1277,3 +1396,74 @@ expect {
 	ids = (LayeredFlowGraph.graph(r.model, 0).layers.get(1) ?? []).map(|n| r.setup.node_of.find_first_index(|x| x == n) ?? 99)
 	ids == [1, 2, 3]
 }
+
+source_key_model : LayeredFlowGraph.Model
+source_key_model = {
+	graphs: [],
+	nodes: List.repeat(LayeredFlowGraph.blank_node, 3),
+	ports: List.repeat(LayeredFlowGraph.blank_port, 12).map_with_index(|port, i| { ..port, node: i / 4 }),
+	edges: [],
+	loops: [],
+}
+
+source_key_previous : LayeredFlowLayers.Previous
+source_key_previous = { layer: 4, layer_of: [4, 4, 4], position: [2, 0, 1] }
+
+source_key_ports : List(U64)
+source_key_ports = [3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0]
+
+source_key_case : List(U64) -> Bool
+source_key_case = |ports| {
+	info = ports.map_with_index(|port, i| { source_port: port, from_edges: i.to_i64_wrap(), model_order: None })
+	node_order_case(info)
+}
+
+node_order_case : List(LayeredFlowLayers.NodeInfo) -> Bool
+node_order_case = |info| {
+	indices = List.repeat(0, info.len()).map_with_index(|_, i| i)
+	(reference, _) = LayeredFlowGraph.merge_sort(indices, LayeredFlowLayers.relations(info.len()), |r, i, j| LayeredFlowLayers.compare_nodes(source_key_model, source_key_previous, source_key_ports, info, r, i, j))
+	LayeredFlowLayers.sort_node_indices(source_key_model, source_key_previous, source_key_ports, info) == reference
+}
+
+## The fast path preserves the stateful comparator's stable source order,
+## including equal keys, reversed producers and both merge-sort branches.
+expect [0.U64, 1, 6, 7, 16, 64].all(
+	|n| {
+		ports = List.repeat(0, n).map_with_index(|_, i| i % 12)
+		source_key_case(ports)
+			and source_key_case(ports.rev())
+			and source_key_case(List.repeat(3, n))
+			and source_key_case(ports.map(|p| (p * 7 + 5) % 12))
+	},
+)
+
+## A missing source and a source outside the previous layer
+## retain the general comparison. Missing lookup data never becomes index zero.
+expect {
+	item = { source_port: 0, from_edges: 0, model_order: None }
+	LayeredFlowLayers.previous_source_keys(source_key_model, source_key_previous, source_key_ports, [{ ..item, source_port: LayeredFlowGraph.nil }]) == General
+		and LayeredFlowLayers.previous_source_keys(source_key_model, { ..source_key_previous, layer: 3 }, source_key_ports, [item]) == General
+		and LayeredFlowLayers.previous_source_keys(source_key_model, { ..source_key_previous, position: [] }, source_key_ports, [item]) == General
+		and LayeredFlowLayers.previous_source_keys(source_key_model, source_key_previous, [], [item]) == General
+}
+
+## Fully authored layers preserve equal-key stability and negative orders;
+## mixed layers continue to use the general comparison.
+expect [0.U64, 1, 6, 7, 16, 64].all(
+	|n| {
+		info = List.repeat(0, n).map_with_index(|_, i| { source_port: i % 12, from_edges: i.to_i64_wrap(), model_order: Some((i % 5).to_i64_wrap() - 2) })
+		node_order_case(info) and node_order_case(info.rev()) and node_order_case(info.map(|item| { ..item, model_order: Some(0) }))
+			and node_order_case(
+				info.map_with_index(
+					|item, i| {
+						..item,
+						model_order: if i % 2 == 0 {
+							None
+						} else {
+							item.model_order
+						},
+					},
+				),
+			)
+	},
+)

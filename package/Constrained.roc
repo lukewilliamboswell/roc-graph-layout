@@ -1087,7 +1087,7 @@ ConstrainedPrepared := {
 		routes = EdgeRoutes.route_edges(prepared.edges, solved.positions, outwards, prepared.nodes, prepared.node_gap)
 		normalized = EdgeRoutes.normalize(solved.positions, prepared.nodes, routes)
 
-		layout = if prepared.anchored {
+		layout_value = if prepared.anchored {
 			# Normalizing would move the pins and the banded coordinates;
 			# keep the raw coordinates and recover the tight box's corner
 			# from the shift normalize applied.
@@ -1108,9 +1108,9 @@ ConstrainedPrepared := {
 		}
 
 		{
-			layout,
+			layout: layout_value,
 			convergence: { iterations: solved.iterations, converged: solved.converged },
-			unsatisfied: ConstrainedInternals.unsatisfied_of(prepared.constraints, layout.positions),
+			unsatisfied: ConstrainedInternals.unsatisfied_of(prepared.constraints, layout_value.positions),
 		}
 	}
 

@@ -67,9 +67,9 @@ LayeredFlowRoute :: {}.{
 		var $m = m0
 		for n in layer {
 			node = LayeredFlowGraph.node($m, n)
-			ins = node.ports.count_if(|p| !LayeredFlowGraph.port($m, p).incoming.is_empty())
-			outs = node.ports.count_if(|p| !LayeredFlowGraph.port($m, p).outgoing.is_empty())
-			ratio = if (ins + outs == 0) 0.5 else outs.to_f64() / (ins + outs).to_f64()
+			ins_value = node.ports.count_if(|p| !LayeredFlowGraph.port($m, p).incoming.is_empty())
+			outs_value = node.ports.count_if(|p| !LayeredFlowGraph.port($m, p).outgoing.is_empty())
+			ratio = if (ins_value + outs_value == 0) 0.5 else outs_value.to_f64() / (ins_value + outs_value).to_f64()
 			var $x = (width - node.width) * ratio
 			if ratio > 0.5 {
 				$x = $x - $max_right * 2 * (ratio - 0.5)
@@ -397,7 +397,7 @@ LayeredFlowRoute :: {}.{
 		segments0 = $segments
 		min_diff = |values| {
 			sorted = LayeredFlowGraph.sort_by(values, |a, b| if (a < b) -1 else if (a > b) 1 else 0)
-			var $best = 1.7976931348623157e308
+			var $best = 1.7976931348623157e308.F64
 			var $prev = None
 			for v in sorted {
 				match $prev {

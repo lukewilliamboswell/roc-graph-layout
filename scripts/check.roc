@@ -1,7 +1,7 @@
 #!/usr/bin/env roc-stable
 app [main!] {
-	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
-	roc: "nightly-2026-10-23-18478ff",
+	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
+	roc: "nightly-2026-11-18-a520eed",
 }
 
 import cli.Cmd
@@ -102,8 +102,11 @@ check_scripts! = |roc_stable| {
 		roc_stable.run!(["test", OsStr.from_str("scripts/src/${module_name}.roc")])?
 	}
 	# These need the cli platform of an app for their pure parts.
+	# TODO: https://github.com/roc-lang/roc/issues/13215
+	# Remove --no-cache from these two commands once both modules pass twice
+	# with a fresh cache and then a warm cache. Other cache policy stays intact.
 	for (module_name, entry) in [("Preview", "serve"), ("Site", "site")] {
-		roc_stable.run!(["test", OsStr.from_str("scripts/src/${module_name}.roc"), OsStr.from_str("--main=scripts/${entry}.roc")])?
+		roc_stable.run!(["test", "--no-cache", OsStr.from_str("scripts/src/${module_name}.roc"), OsStr.from_str("--main=scripts/${entry}.roc")])?
 	}
 	for script in Files.direct_roc_files!("scripts")? {
 		roc_stable.run!(["check", Path.to_os_str(script)])?
@@ -155,18 +158,20 @@ check_examples! = |roc, node_editor_checks_enabled| {
 	# Committed examples must exercise the working tree, never a published bundle.
 	working_tree = { layout: "../../package/main.roc", mermaid: "../../package-mermaid/main.roc" }
 	for directory in Files.sort_paths(Path.list!("examples")?) {
-		main = Path.join(directory, "main.roc")
-		if Path.is_file!(main)? {
-			source = Path.read_utf8!(main)?
-			if Headers.is_app(source) and !Archive.depends_on(source, working_tree) {
-				return Script.fail!("${Path.display(main)}: the app header must declare ${Release.shorthand}: \"${working_tree.layout}\" or ${Release.mermaid_shorthand}: \"${working_tree.mermaid}\"")
-			}
-			# An interactive service is not run, but must still build.
-			if source.contains("## scripts: service") {
-				if Path.display(main) == "examples/node_editor/main.roc" and !node_editor_checks_enabled {
-					Script.info!("SKIP node editor service check", node_editor_skip_reason)?
-				} else {
-					roc.run!(["check", Path.to_os_str(main)])?
+		if Path.is_dir!(directory)? {
+			main = Path.join(directory, "main.roc")
+			if Path.is_file!(main)? {
+				source = Path.read_utf8!(main)?
+				if Headers.is_app(source) and !Archive.depends_on(source, working_tree) {
+					return Script.fail!("${Path.display(main)}: the app header must declare ${Release.shorthand}: \"${working_tree.layout}\" or ${Release.mermaid_shorthand}: \"${working_tree.mermaid}\"")
+				}
+				# An interactive service is not run, but must still build.
+				if source.contains("## scripts: service") {
+					if Path.display(main) == "examples/node_editor/main.roc" and !node_editor_checks_enabled {
+						Script.info!("SKIP node editor service check", node_editor_skip_reason)?
+					} else {
+						roc.run!(["check", Path.to_os_str(main)])?
+					}
 				}
 			}
 		}
@@ -182,7 +187,11 @@ check_benchmarks! = || {
 		Ok("../package/main.roc") => {}
 		_ => return Script.fail!("benchmarks/main.roc: the app header must declare ${Release.shorthand}: \"../package/main.roc\"")
 	}
-	Env.with_temp_dir!(|output| Script.command("scripts/bench.roc").run!(["--", "smoke", "--output", Path.to_os_str(output)]))
+	zig_test = Script.command("zig").cmd(["build", "test", "-Doptimize=Debug"]).cwd("benchmarks/platform").run!()?
+	if zig_test.status != Exited(0) {
+		return Script.fail!("${zig_test.stdout_utf8_lossy()}${zig_test.stderr_utf8_lossy()}")
+	}
+	Env.with_temp_dir!(|output| Script.command("scripts/bench.roc").run!(["smoke", "--output", Path.to_os_str(output)]))
 }
 
 # A target that is never built goes stale, and its expects alone do not run
@@ -209,8 +218,8 @@ check_fuzz_targets! = |roc| {
 					# and the next seeded run would start from different inputs.
 					corpus = Path.join(Path.join(build, "corpus"), name)
 					Path.create_all!(corpus)?
-					artifacts = OsStr.from_str("--artifact-dir=${Path.display(Path.join(build, "artifacts"))}")
-					Script.command(Path.to_os_str(executable)).run!(["run", Path.to_os_str(corpus), "--runs=200", "--seed=1", artifacts])?
+					report = OsStr.from_str("--report-dir=${Path.display(Path.join(Path.join(build, "reports"), name))}")
+					Script.command(Path.to_os_str(executable)).run!(["run", Path.to_os_str(corpus), "--runs=200", "--seed=1", report])?
 				}
 			}
 			Ok({})

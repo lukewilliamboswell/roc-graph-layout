@@ -1,6 +1,6 @@
 app [target] {
-	font: "https://github.com/lukewilliamboswell/roc-font/releases/download/0.1.0-rc2/A14BmicBaf6dm4K9kdYH9j8Y6BoAZrpUmxWh9sojsFy5.tar.zst",
-	fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst",
+	font: "https://github.com/lukewilliamboswell/roc-font/releases/download/0.1.2/3JcFLxX7P572R7BwYN1rNMm8kZh6HQnrVQL1oXetMmMX.tar.zst",
+	fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.2/3kyiehxxzwAsjM23uCQGJ3Hx7dAAdzSGtK3k9Jq7Egtu.tar.zst",
 	layout: "../package/main.roc",
 }
 
@@ -75,7 +75,7 @@ check = |source, options| match StateDiagram.parse(source) {
 	}
 }
 
-target = Fuzz.target_with({ name: "mermaid-state", generator: Fuzz.raw_bytes, test, show: |bytes| Str.inspect(Str.from_utf8_lossy(bytes)) })
+target = Fuzz.target_with({ examples: [Fuzz.example({ name: "start-and-stop", revision: "1", make: || "stateDiagram-v2\n[*] --> A\nA --> [*]\n".to_utf8() })], name: "mermaid-state", generator: Fuzz.raw_bytes, test, show: |bytes| Str.inspect(Str.from_utf8_lossy(bytes)) })
 
 expect {
 	_ = test("stateDiagram-v2\n[*] --> Idle\nIdle --> Idle : retry\nIdle --> [*]\n".to_utf8())

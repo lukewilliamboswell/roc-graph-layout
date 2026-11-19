@@ -1,11 +1,12 @@
 #!/usr/bin/env roc
 app [main!] {
 	layout: "../../package/main.roc",
-	pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.27.0/9yjxqdGTP4xSpSEmDazwTmRsehfRZzA19pwEKkR6fj1g.tar.zst",
+	pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
 }
 
 import layout.Layered
 import pf.Stdout
+import pf.OsStr
 
 ## A coordinated flow with a nested subsystem, a cross-boundary edge, a
 ## group endpoint and a measured edge label. This uses only the geometry
@@ -40,7 +41,7 @@ input = {
 }
 
 main! : List(_) => Try({}, _)
-main! = |args| match Layered.layout_grouped(input, { ..Layered.default_grouped_settings, direction: if (args.contains("--right")) Right else Down }, Layered.default_grouped_run) {
+main! = |args| match Layered.layout_grouped(input, { ..Layered.default_grouped_settings, direction: if (args.map(OsStr.display).contains("--right")) Right else Down }, Layered.default_grouped_run) {
 	Err(problems) => Err(InvalidDiagram(Str.inspect(problems)))
 	Ok(result) => Stdout.line!("Laid out ${result.nodes.len().to_str()} nodes, ${result.layout.routes.len().to_str()} edges and ${result.groups.len().to_str()} groups.")
 }

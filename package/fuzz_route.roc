@@ -1,4 +1,4 @@
-app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst" }
+app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.2/3kyiehxxzwAsjM23uCQGJ3Hx7dAAdzSGtK3k9Jq7Egtu.tar.zst" }
 
 import fuzz.Fuzz
 import Route
@@ -450,12 +450,12 @@ scaling! : List(U8) => {}
 scaling! = |bytes| {
 	small = copied(bytes, 1)
 	large = copied(bytes, 8)
-	small_cost = Fuzz.measure_allocs!(|{}| Route.layout(small, Route.default_settings)).allocations
-	large_cost = Fuzz.measure_allocs!(|{}| Route.layout(large, Route.default_settings)).allocations
+	small_cost = allocation_calls(Fuzz.measure!("allocations", || Route.layout(small, Route.default_settings)).stats)
+	large_cost = allocation_calls(Fuzz.measure!("allocations", || Route.layout(large, Route.default_settings)).stats)
 	# Results are dropped inside each closure: the dev backend keeps a value
 	# bound to `_` alive until its block ends, which would read as a leak.
 	Fuzz.expect_no_leaks!(
-		|{}| {
+		|| {
 			_ = Route.layout(large, Route.default_settings)
 			{}
 		},
@@ -472,7 +472,7 @@ test! = |bytes| {
 	test(bytes)
 }
 
-target = Fuzz.target_with!({ name: "graph-layout-route", generator: Fuzz.list(Fuzz.u8, 208), test!, show: |input| Str.inspect(input) })
+target = Fuzz.target_with!({ examples: [], name: "graph-layout-route", generator: Fuzz.list(Fuzz.u8, 208), test!, show: |input| Str.inspect(input) })
 
 ## fuzz regression: nodes 3, 5 and 6 sit inside a group they do not belong
 ## to, so every L-shaped leg was blocked and the old exhaustive search gave
@@ -517,3 +517,8 @@ expect {
 		Err(_) => False
 	}
 }
+
+# The previous counter included both allocation and reallocation calls.
+# Keep the existing growth bounds on that same quantity.
+allocation_calls : Fuzz.Stats -> U64
+allocation_calls = |stats| stats.allocs + stats.reallocs

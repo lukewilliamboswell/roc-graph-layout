@@ -24,22 +24,18 @@ config = [
 	Environment(
 		"dev",
 		[
-			Programs(
-				[
-					Fetch("roc-stable", Recipes.roc_nightly("nightly-2026-10-23-18478ff")),
-					# Builds the benchmark platform's host library.
-					Fetch("zig", zig),
-					# The shared documentation renderer: the guides as a site and a PDF.
-					Fetch("roc-docs", Recipes.file("https://github.com/lukewilliamboswell/roc-automation/releases/download/tools-0.10.1/roc-docs-{system}")),
-				],
-			),
+			Programs([
+				Fetch("roc-stable", Recipes.roc_nightly("nightly-2026-11-18-a520eed")),
+				# Builds the benchmark platform's host library.
+				Fetch("zig", zig),
+				# The shared documentation renderer: the guides as a site and a PDF.
+				Fetch("roc-docs", Recipes.file("https://github.com/lukewilliamboswell/roc-automation/releases/download/tools-0.10.1/roc-docs-{system}")),
+			]),
 			# Every bundle the scripts depend on, including dependencies of
 			# dependencies: `roc-stable deps scripts/check.roc` lists them.
-			RocPackages(
-				[
-					"https://github.com/roc-lang/basic-cli/releases/download/0.26.0/GddgvsGjiNXrHFW6au5i5dUDbTs8FinQdrgE2Gqmw53t.tar.zst",
-				],
-			),
+			RocPackages([
+				"https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
+			]),
 			# Programs the scripts start, beside the package compiler `roc`.
 			Expect(["chmod", "curl", "gh", "git", "python3", "roc", "shasum", "tar", "test", "touch", "uname", "unzip", "zip", "zstd"]),
 		],
@@ -53,7 +49,7 @@ config = [
 	Task("check", [Use("dev"), Run(["scripts/check.roc"])]),
 	# Run the examples and compare them with tests/examples.json. Pass
 	# `-- --update` to record their current output instead.
-	Task("examples", [Use("dev"), Run(["scripts/examples.roc", "--"])]),
+	Task("examples", [Use("dev"), Run(["scripts/examples.roc"])]),
 	# Release steps: each reads RELEASE_VERSION, and writes into dist/.
 	Task("check-version", [Use("dev"), Run(["scripts/check_version.roc"])]),
 	Task("bundle", [Use("dev"), Run(["scripts/bundle.roc"])]),
@@ -66,8 +62,8 @@ config = [
 	Task("serve", [Use("dev"), Run(["scripts/serve.roc"])]),
 	# Native optimized benchmarks: `-- smoke`, `-- scale` or
 	# `-- compare <baseline-dir> <candidate-dir>`, each with `--output <dir>`.
-	# The script's own `--` keeps Roc from reading its options.
-	Task("bench", [Use("dev"), Run(["scripts/bench.roc", "--"])]),
+	# Roc forwards arguments after the app path, including option names.
+	Task("bench", [Use("dev"), Run(["scripts/bench.roc"])]),
 	# Build the node editor and run its browser tests. Set
 	# PLAYWRIGHT_WITH_DEPS=1 to let Playwright install Chromium's system
 	# libraries too, as CI does.

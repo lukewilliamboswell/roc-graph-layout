@@ -1,4 +1,4 @@
-app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst" }
+app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.2/3kyiehxxzwAsjM23uCQGJ3Hx7dAAdzSGtK3k9Jq7Egtu.tar.zst" }
 
 import fuzz.Fuzz
 import Flowchart
@@ -13,18 +13,18 @@ test! : List(U8) => Fuzz.Outcome
 test! = |bytes| {
 	small = diagram_text(bytes, 1)
 	large = diagram_text(bytes, 8)
-	small_cost = Fuzz.measure_allocs!(|{}| Flowchart.parse(small))
-	large_cost = Fuzz.measure_allocs!(|{}| Flowchart.parse(large))
+	small_cost = Fuzz.measure!("allocations", || Flowchart.parse(small))
+	large_cost = Fuzz.measure!("allocations", || Flowchart.parse(large))
 	# Results are dropped inside each closure: the dev backend keeps a value
 	# bound to `_` alive until its block ends, which would read as a leak.
 	Fuzz.expect_no_leaks!(
-		|{}| {
+		|| {
 			_ = Flowchart.parse(large)
 			{}
 		},
 	)
-	if large_cost.allocations > 10 * small_cost.allocations + 256 {
-		crash "reading 8 times the text took ${large_cost.allocations.to_str()} allocations, against ${small_cost.allocations.to_str()} for one copy"
+	if allocation_calls(large_cost.stats) > 10 * allocation_calls(small_cost.stats) + 256 {
+		crash "reading 8 times the text took ${allocation_calls(large_cost.stats).to_str()} allocations, against ${allocation_calls(small_cost.stats).to_str()} for one copy"
 	}
 	Fuzz.keep
 }
@@ -65,8 +65,14 @@ statement = |choice, id|
 	}
 
 target = Fuzz.target_with!({
+	examples: [],
 	name: "mermaid-flowchart-scaling",
 	generator: Fuzz.raw_bytes,
 	test!,
 	show: |bytes| diagram_text(bytes, 1),
 })
+
+# The previous counter included both allocation and reallocation calls.
+# Keep the existing growth bounds on that same quantity.
+allocation_calls : Fuzz.Stats -> U64
+allocation_calls = |stats| stats.allocs + stats.reallocs

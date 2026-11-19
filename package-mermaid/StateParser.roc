@@ -38,14 +38,14 @@ StateParser :: {}.{
 							}
 						}
 						None => {
-							for statement in StateParser.statements(line) {
-								text = FlowText.trim(statement)
+							for statement_value in StateParser.statements(line) {
+								text = FlowText.trim(statement_value)
 								if text != "" {
 									if text.starts_with("note ") {
 										parsed = StateParser.read_note(text)
 										match parsed {
-											Err(problem) => {
-												$reader = { ..$reader, problems: $reader.problems.append(problem) }
+											Err(problem_value) => {
+												$reader = { ..$reader, problems: $reader.problems.append(problem_value) }
 											}
 											Ok(found) => {
 												$reader = { ..$reader, declarations: $reader.declarations.append(Note($reader.notes.len())) }
@@ -390,7 +390,7 @@ StateParser :: {}.{
 	}
 
 	problem : Reader, Flowchart.Problem -> Reader
-	problem = |reader, problem| { ..reader, problems: reader.problems.append(problem) }
+	problem = |reader, problem_value| { ..reader, problems: reader.problems.append(problem_value) }
 
 	valid_id : Str -> Bool
 	valid_id = |text| !text.is_empty() and !text.to_utf8().any(|c| c <= ' ' or c == ':' or c == ';' or c == '{' or c == '}' or c == '[' or c == ']' or c == '"' or c == '<' or c == '>' or c == '@')

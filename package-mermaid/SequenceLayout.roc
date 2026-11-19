@@ -42,7 +42,7 @@ SequenceLayout :: {}.{
 
 	measure : Str, Bool, F64, Theme.Options -> Block
 	measure = |text, wrap, width, theme| {
-		measured = TextMeasure.block(
+		measured_value = TextMeasure.block(
 			text,
 			{
 				font: TextMeasure.inter,
@@ -60,25 +60,25 @@ SequenceLayout :: {}.{
 		height = if text.is_empty() {
 			0
 		} else {
-			glyph_height + (measured.lines.len().max(1) - 1).to_f64() * glyph_height * theme.line_height
+			glyph_height + (measured_value.lines.len().max(1) - 1).to_f64() * glyph_height * theme.line_height
 		}
 		{
 			lines: if text.is_empty() {
 				[]
 			} else {
-				measured.lines
+				measured_value.lines
 			},
-			width: measured.width,
+			width: measured_value.width,
 			height,
 		}
 	}
 
 	measure_source : Str, Str, Bool, F64, Theme.Options -> Block
 	measure_source = |display, stored, wrap, width, theme| {
-		measured = SequenceLayout.measure(stored, SequenceStyle.wrap(wrap, theme), width, theme)
+		measured_value = SequenceLayout.measure(stored, SequenceStyle.wrap(wrap, theme), width, theme)
 		if stored == display {
-			measured
-		} else { ..measured, lines: measured.lines.map(FlowText.display) }
+			measured_value
+		} else { ..measured_value, lines: measured_value.lines.map(FlowText.display) }
 	}
 
 	text_labels : Str, Block, F64, F64, F64, Str, Theme.Options -> List(Label)
@@ -274,7 +274,7 @@ SequenceLayout :: {}.{
 		for i in 0..<diagram.events.len() {
 			match diagram.events.get(i) ?? EndBlock {
 				StartBlock(_) => {
-					$spans = $spans.append({ index: i, left: F64.infinity, right: -F64.infinity, width: 0.0, branches: [] })
+					$spans = $spans.append({ index: i, left: F64.infinity, right: -F64.infinity, width: 0.0.F64, branches: [] })
 				}
 				Branch(_) => if !$spans.is_empty() {
 					last = $spans.last() ?? { index: 0, left: 0, right: 0, width: 0, branches: [] }

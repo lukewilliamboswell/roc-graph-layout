@@ -1177,7 +1177,7 @@ ForcePrepared := {
 		outwards = ForceInternals.outward_directions(positions, prepared.labels, prepared.component_count)
 		routes = EdgeRoutes.route_edges(prepared.edges, positions, outwards, prepared.nodes, prepared.settings.node_gap)
 
-		layout = if prepared.settings.pins.is_empty() {
+		layout_value = if prepared.settings.pins.is_empty() {
 			EdgeRoutes.normalize(positions, prepared.nodes, routes)
 		} else {
 			{
@@ -1187,7 +1187,7 @@ ForcePrepared := {
 			}
 		}
 
-		{ layout, components: placed.components, convergence: placed.convergence }
+		{ layout: layout_value, components: placed.components, convergence: placed.convergence }
 	}
 
 	## Check and lay out in one call: exactly `build` followed by `run`.

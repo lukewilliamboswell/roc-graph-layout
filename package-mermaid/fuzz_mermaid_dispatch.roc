@@ -1,5 +1,5 @@
 app [target] {
-	fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst",
+	fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.2/3kyiehxxzwAsjM23uCQGJ3Hx7dAAdzSGtK3k9Jq7Egtu.tar.zst",
 	mermaid: "main.roc",
 }
 
@@ -9,7 +9,7 @@ import mermaid.Mermaid
 import mermaid.Svg
 import mermaid.Theme
 
-target = Fuzz.target_with({ name: "Mermaid public dispatch and themes", generator: Fuzz.raw_bytes, test: verify, show: Str.inspect })
+target = Fuzz.target_with({ examples: [], name: "Mermaid public dispatch and themes", generator: Fuzz.raw_bytes, test: verify, show: Str.inspect })
 
 ## Exercise every family even from an empty corpus, varying text size,
 ## wrapping and padding. The same picture must back both public outputs.

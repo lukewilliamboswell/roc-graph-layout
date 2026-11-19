@@ -76,7 +76,7 @@ FlowchartOracle :: {}.{
 				},
 			).map(|size| "unconsumed ${size.kind}:${size.id}")
 
-			semantic = FlowchartOracle.semantic(d)
+			semantics = FlowchartOracle.semantic(d)
 			nodes = d.nodes.map_with_index(|n, i| OracleJson.object([("id", OracleJson.string(n.id)), ("box", OracleJson.rect(g.nodes.get(i) ?? crash "aligned node"))]))
 			groups = d.groups.map_with_index(|n, i| OracleJson.object([("id", OracleJson.string(n.id)), ("box", OracleJson.rect(g.groups.get(i) ?? crash "aligned group"))]))
 			edges = d.edges.map_with_index(
@@ -91,7 +91,7 @@ FlowchartOracle :: {}.{
 					_ => []
 				},
 			).fold([], |all, part| all.concat(part))
-			OracleJson.object([("accepted", "true"), ("family", OracleJson.string("flowchart")), ("semantic", semantic), ("size_problems", OracleJson.strings(size_problems)), ("geometry", OracleJson.object([("view_box", OracleJson.rect(g.bounds)), ("nodes", OracleJson.array(nodes)), ("groups", OracleJson.array(groups)), ("edges", OracleJson.array(edges)), ("labels", OracleJson.array(labels))]))])
+			OracleJson.object([("accepted", "true"), ("family", OracleJson.string("flowchart")), ("semantic", semantics), ("size_problems", OracleJson.strings(size_problems)), ("geometry", OracleJson.object([("view_box", OracleJson.rect(g.bounds)), ("nodes", OracleJson.array(nodes)), ("groups", OracleJson.array(groups)), ("edges", OracleJson.array(edges)), ("labels", OracleJson.array(labels))]))])
 		}
 	}
 	endpoint : Flowchart.Diagram, Flowchart.Endpoint -> Str

@@ -1,4 +1,4 @@
-app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst" }
+app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.2/3kyiehxxzwAsjM23uCQGJ3Hx7dAAdzSGtK3k9Jq7Egtu.tar.zst" }
 
 import fuzz.Fuzz
 import Tree
@@ -6,8 +6,8 @@ import Tree
 byte_at : List(U8), U64 -> U8
 byte_at = |bytes, index| bytes.get(index) ?? 0
 
-node : List(U8), U64, List(a) -> { width : F64, height : F64, children : List(a) }
-node = |bytes, index, children| {
+node : List(U8), U64, List(Tree.Input) -> Tree.Input
+node = |bytes, index, children| Tree.Spec.{
 	width: (byte_at(bytes, index * 2) % 40).to_f64(),
 	height: (byte_at(bytes, index * 2 + 1) % 40).to_f64(),
 	children,
@@ -77,6 +77,7 @@ test = |bytes| {
 }
 
 target = Fuzz.target_with({
+	examples: [],
 	name: "graph-layout-tree-contract",
 	generator: Fuzz.list(Fuzz.u8, 32),
 	test,

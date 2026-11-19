@@ -813,7 +813,7 @@ StressPrepared := {
 		routes = EdgeRoutes.route_edges(prepared.edges, positions, outwards, prepared.nodes, prepared.node_gap)
 		normalized = EdgeRoutes.normalize(positions, prepared.nodes, routes)
 
-		layout = if has_pins {
+		layout_value = if has_pins {
 			# Normalizing would move the pins; keep the raw coordinates and
 			# recover the tight box's corner from the shift normalize applied.
 			first_raw = positions.get(0) ?? { x: 0, y: 0 }
@@ -832,7 +832,7 @@ StressPrepared := {
 			normalized
 		}
 
-		{ layout, components: placed.components, convergence: placed.convergence }
+		{ layout: layout_value, components: placed.components, convergence: placed.convergence }
 	}
 
 	## Check and lay out in one call: exactly `build` followed by `run`.

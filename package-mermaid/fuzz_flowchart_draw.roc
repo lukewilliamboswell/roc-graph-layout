@@ -1,4 +1,4 @@
-app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst" }
+app [target] { fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.2/3kyiehxxzwAsjM23uCQGJ3Hx7dAAdzSGtK3k9Jq7Egtu.tar.zst" }
 
 import fuzz.Fuzz
 import Drawing
@@ -291,6 +291,7 @@ is_name_byte : U8 -> Bool
 is_name_byte = |c| (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c >= '0' and c <= '9') or c == '-' or c == ':'
 
 target = Fuzz.target_with({
+	examples: [Fuzz.example({ name: "labelled-edge", revision: "1", make: || "flowchart LR\na[Start] -->|label| b[End]\n".to_utf8() })],
 	name: "mermaid-flowchart-draw",
 	generator: Fuzz.raw_bytes,
 	test,

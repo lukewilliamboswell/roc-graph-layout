@@ -12,6 +12,8 @@ import sys
 import tarfile
 import tempfile
 import unittest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from unittest import mock
 
 
@@ -104,8 +106,8 @@ class DescriptorTests(unittest.TestCase):
         mkdir.assert_not_called()
 
     def test_inventory_counts_and_sizes(self):
-        for name, count, content in (("core", 25, 511858), ("font", 35, 6655539),
-                                     ("basic-cli", 207, 82833720), ("legacy-http", 5, 5991)):
+        for name, count, content in (("core", 25, 511858), ("font", 43, 7986382),
+                                     ("basic-cli", 217, 89256198), ("legacy-http", 5, 5991)):
             source = admission.SOURCES[name]
             self.assertEqual(len(source.members), count)
             self.assertEqual(sum(member[1] for member in source.members), content)
@@ -113,8 +115,8 @@ class DescriptorTests(unittest.TestCase):
     def test_published_url_and_bare_unbundle_name_bind_to_same_fixed_source(self):
         for name, prefix, repository, tag in (
                 ("core", "roc-blueprint-core-", "roc-blueprint", "0.12.0"),
-                ("font", "", "roc-font", "0.1.0-rc2"),
-                ("basic-cli", "", "basic-cli", "0.27.0"),
+                ("font", "", "roc-font", "0.1.2"),
+                ("basic-cli", "", "basic-cli", "0.28.1"),
                 ("legacy-http", "", "http", "1.0.0")):
             source = admission.SOURCES[name]
             self.assertEqual(source.published_asset_name, prefix + source.archive_name)
@@ -125,13 +127,13 @@ class DescriptorTests(unittest.TestCase):
 
     def test_platform_caps_and_native_inventory_do_not_increase_other_source_limits(self):
         platform = admission.SOURCES["basic-cli"]
-        self.assertEqual((platform.size, platform.tar_size), (23399272, 83009024))
+        self.assertEqual((platform.size, platform.tar_size), (23779196, 89440768))
         native = [(name, size) for name, size, _ in platform.members if name.endswith((".a", ".o", ".lib"))]
         self.assertEqual(len(native), 12)
-        self.assertEqual(sum(size for _, size in native), 80176552)
-        self.assertEqual(max(size for _, size in native), 17848844)
+        self.assertEqual(sum(size for _, size in native), 86234724)
+        self.assertEqual(max(size for _, size in native), 17849612)
         self.assertEqual(admission.SOURCES["core"].tar_size, 531968)
-        self.assertEqual(admission.SOURCES["font"].tar_size, 6683136)
+        self.assertEqual(admission.SOURCES["font"].tar_size, 8019456)
         self.assertEqual(admission.SOURCES["legacy-http"].tar_size, 10752)
 
     def test_legacy_input_cannot_claim_immutable_authority(self):
@@ -219,13 +221,13 @@ class RawTests(Fixture):
         self.assertLess(len(message), 2200)
         self.assertEqual(list((self.root / "raw").iterdir()), [])
 
-    def test_prepare_anonymous_fixed_api_and_repeat_rehash(self):
+    def test_prepare_anonymous_fixed_release_and_repeat_rehash(self):
         self.mocks()
         path = admission.prepare(self.source, self.root / "raw")
         command = self.process.call_args.args[0]
         self.assertEqual(command[:2], ["curl", "--disable"])
         self.assertIn("--no-netrc", command)
-        self.assertEqual(command[-1], self.source.api_url)
+        self.assertEqual(command[-1], self.source.canonical_url)
         self.assertFalse(any("auth" in arg.lower() for arg in command))
         self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
         self.process.reset_mock()
@@ -235,6 +237,36 @@ class RawTests(Fixture):
         with self.assertRaises(admission.AdmissionError):
             admission.prepare(self.source, self.root / "raw")
         self.process.assert_not_called()
+
+    def test_core_uses_fixed_canonical_transport_with_existing_bounds(self):
+        self.source = replace(self.source, key="core")
+        self.mocks()
+        path = admission.prepare(self.source, self.root / "raw")
+        command = self.process.call_args.args[0]
+        self.assertEqual(command[-1], self.source.canonical_url)
+        self.assertNotEqual(command[-1], self.source.api_url)
+        self.assertEqual(command[:2], ["curl", "--disable"])
+        self.assertIn("--no-netrc", command)
+        self.assertEqual(command[command.index("--max-filesize") + 1], str(self.source.size))
+        self.assertEqual(self.process.call_args.args[1], self.source.size)
+        self.assertFalse(any("auth" in argument.lower() for argument in command))
+        self.assertEqual(path.read_bytes(), self.raw)
+        path.write_bytes(b"X" * self.source.size)
+        self.process.reset_mock()
+        with self.assertRaises(admission.AdmissionError):
+            admission.prepare(self.source, self.root / "raw")
+        self.process.assert_not_called()
+
+    def test_core_transport_corruption_fails_closed_without_another_download(self):
+        self.source = replace(self.source, key="core")
+        self.mocks()
+        for data in (self.raw + b"x", b"X" * self.source.size):
+            with self.subTest(size=len(data)), mock.patch.object(admission, "run_bounded", return_value=data) as process:
+                with self.assertRaises(admission.AdmissionError):
+                    admission.prepare(self.source, self.root / "raw")
+                process.assert_called_once()
+                self.assertEqual(process.call_args.args[0][-1], self.source.canonical_url)
+                self.assertFalse(list((self.root / "raw").iterdir()))
 
     def test_download_wrong_size_and_digest_leave_no_raw(self):
         self.mocks()
@@ -445,7 +477,7 @@ class LegacyParentTests(Fixture):
         self.process.side_effect = self.legacy_process
 
     def legacy_process(self, command, maximum, seconds=60, cwd=None, environment=None):
-        if command[0] == "curl" and command[-1] == self.parent.api_url:
+        if command[0] == "curl" and command[-1] == self.parent.canonical_url:
             return self.parent_raw
         if command[0] == "zstd" and Path(command[-1]).name == self.parent.archive_name:
             return self.parent_tar
@@ -495,7 +527,7 @@ class LegacyParentTests(Fixture):
         (directory / self.source.archive_name).write_bytes(self.raw)
         (directory / "receipt.json").write_text('{"immutable":true}')
         def fail(command, *args, **kwargs):
-            if command[0] == "curl" and command[-1] == self.parent.api_url:
+            if command[0] == "curl" and command[-1] == self.parent.canonical_url:
                 raise admission.AdmissionError("parent unavailable")
             return self.legacy_process(command, *args, **kwargs)
         self.process.side_effect = fail
@@ -556,7 +588,66 @@ class LegacyParentTests(Fixture):
         receipts = json.loads(output.getvalue())["admitted_sources"]
         self.assertEqual([receipt["source"] for receipt in receipts], ["basic-cli", "legacy-http"])
         commands = [call.args[0] for call in self.process.call_args_list]
-        self.assertEqual(sum(command[0] == "curl" and command[-1] == self.parent.api_url for command in commands), 1)
+        self.assertEqual(sum(command[0] == "curl" and command[-1] == self.parent.canonical_url for command in commands), 1)
+
+
+class CleanupTests(unittest.TestCase):
+    def child(self):
+        process = mock.Mock(pid=1234)
+        process.stdout = io.BytesIO()
+        process.stderr = io.BytesIO()
+        process.wait.return_value = 0
+        return process, mock.Mock()
+
+    def assert_closed(self, process, selector):
+        selector.close.assert_called_once()
+        self.assertTrue(process.stdout.closed)
+        self.assertTrue(process.stderr.closed)
+        process.wait.assert_called_once_with(timeout=5)
+
+    def test_zombie_group_permission_error_requires_proven_absence_after_reap(self):
+        process, selector = self.child()
+        def signal_group(group, sent):
+            if sent == admission.signal.SIGKILL:
+                raise PermissionError()
+            process.wait.assert_called_once_with(timeout=5)
+            raise ProcessLookupError()
+        with mock.patch.object(admission.os, "killpg", side_effect=signal_group) as kill:
+            admission.cleanup_child(process, selector)
+        self.assertEqual(kill.call_args_list, [mock.call(1234, admission.signal.SIGKILL), mock.call(1234, 0)])
+        self.assert_closed(process, selector)
+
+    def test_live_or_inaccessible_group_is_still_rejected(self):
+        for probe in (None, PermissionError()):
+            with self.subTest(probe=probe):
+                process, selector = self.child()
+                with mock.patch.object(admission.os, "killpg", side_effect=[PermissionError(), probe]) as kill:
+                    with self.assertRaises(admission.AdmissionError):
+                        admission.cleanup_child(process, selector)
+                self.assertEqual(kill.call_args_list, [mock.call(1234, admission.signal.SIGKILL), mock.call(1234, 0)])
+                self.assert_closed(process, selector)
+
+    def test_reap_timeout_is_bounded_and_closes_every_descriptor(self):
+        process, selector = self.child()
+        process.wait.side_effect = subprocess.TimeoutExpired("child", 5)
+        with mock.patch.object(admission.os, "killpg"), self.assertRaises(admission.AdmissionError):
+            admission.cleanup_child(process, selector)
+        self.assert_closed(process, selector)
+
+    def test_other_signal_errors_do_not_gain_an_absence_exception(self):
+        process, selector = self.child()
+        with mock.patch.object(admission.os, "killpg", side_effect=OSError("signal failed")) as kill:
+            with self.assertRaises(admission.AdmissionError):
+                admission.cleanup_child(process, selector)
+        kill.assert_called_once_with(1234, admission.signal.SIGKILL)
+        self.assert_closed(process, selector)
+
+    def test_selector_close_failure_still_closes_both_pipes(self):
+        process, selector = self.child()
+        selector.close.side_effect = OSError("selector close failed")
+        with mock.patch.object(admission.os, "killpg"), self.assertRaises(admission.AdmissionError):
+            admission.cleanup_child(process, selector)
+        self.assert_closed(process, selector)
 
 
 class ProcessAndPathTests(Fixture):

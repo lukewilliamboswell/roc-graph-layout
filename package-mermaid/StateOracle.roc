@@ -28,9 +28,9 @@ StateOracle :: {}.{
 			if !Theme.validate(theme).is_empty() {
 				return OracleJson.object([("accepted", "false"), ("family", OracleJson.string("state")), ("size_problems", "[]")])
 			}
-			size_problems = StateOracle.size_problems(diagram, inputs)
-			if !size_problems.is_empty() {
-				return OracleJson.object([("accepted", "false"), ("family", OracleJson.string("state")), ("size_problems", OracleJson.strings(size_problems))])
+			validation_problems = StateOracle.size_problems(diagram, inputs)
+			if !validation_problems.is_empty() {
+				return OracleJson.object([("accepted", "false"), ("family", OracleJson.string("state")), ("size_problems", OracleJson.strings(validation_problems))])
 			}
 			setup = StateDraw.setup_sized(diagram, theme, inputs)
 			picture = DiagramView.finish(StateDraw.draw_setup(diagram, theme, setup), theme)
@@ -186,7 +186,7 @@ StateOracle :: {}.{
 							OracleJson.string(
 								match group.direction {
 									Inherit => "TB"
-									Set(direction) => StateOracle.direction(direction)
+									Set(group_direction) => StateOracle.direction(group_direction)
 								},
 							),
 						),

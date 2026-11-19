@@ -7,7 +7,7 @@ import Theme
 ## and a cylinder's rim) are additional to the caller's label padding.
 FlowThemeShape :: {}.{
 	root_two : F64
-	root_two = (2.0).sqrt()
+	root_two = (2.0.F64).sqrt()
 
 	size : Flowchart.Shape, FlowGeometry.TextBlock, Theme.Options -> { width : F64, height : F64 }
 	size = |shape, label, theme| {

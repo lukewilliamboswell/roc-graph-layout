@@ -1,5 +1,5 @@
 app [target] {
-	fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst",
+	fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.2/3kyiehxxzwAsjM23uCQGJ3Hx7dAAdzSGtK3k9Jq7Egtu.tar.zst",
 }
 
 import fuzz.Fuzz
@@ -72,18 +72,18 @@ test! = |bytes| {
 		(Some(small), Some(large)) => {
 			small_input = input(small)
 			large_input = input(large)
-			small_cost = Fuzz.measure_allocs!(|{}| phase(small_input))
-			large_cost = Fuzz.measure_allocs!(|{}| phase(large_input))
+			small_cost = Fuzz.measure!("allocations", || phase(small_input))
+			large_cost = Fuzz.measure!("allocations", || phase(large_input))
 			# Results are dropped inside each closure: the dev backend keeps a value
 			# bound to `_` alive until its block ends, which would read as a leak.
 			Fuzz.expect_no_leaks!(
-				|{}| {
+				|| {
 					_ = phase(large_input)
 					{}
 				},
 			)
-			if !within(small_input, large_input, small_cost.allocations, large_cost.allocations) {
-				crash "loops: ${LayeredFlowFuzz.copies.to_str()} copies took ${large_cost.allocations.to_str()} allocations, against ${small_cost.allocations.to_str()} for ${LayeredFlowFuzz.base_copies.to_str()}"
+			if !within(small_input, large_input, allocation_calls(small_cost.stats), allocation_calls(large_cost.stats)) {
+				crash "loops: ${LayeredFlowFuzz.copies.to_str()} copies took ${allocation_calls(large_cost.stats).to_str()} allocations, against ${allocation_calls(small_cost.stats).to_str()} for ${LayeredFlowFuzz.base_copies.to_str()}"
 			}
 		}
 		_ => {}
@@ -109,6 +109,7 @@ test = |bytes|
 	}
 
 target = Fuzz.target_with!({
+	examples: [],
 	name: "graph-layout-flow-loops",
 	generator: Fuzz.raw_bytes,
 	test!,
@@ -137,3 +138,8 @@ expect {
 	before = input(d)
 	check(d, before, phase(before)) == Ok({})
 }
+
+# The previous counter included both allocation and reallocation calls.
+# Keep the existing growth bounds on that same quantity.
+allocation_calls : Fuzz.Stats -> U64
+allocation_calls = |stats| stats.allocs + stats.reallocs

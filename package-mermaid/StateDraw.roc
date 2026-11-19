@@ -194,13 +194,13 @@ StateDraw :: {}.{
 		supplied = {
 			..sizes,
 			nodes: sizes.nodes.map_with_index(
-				|node, i| {
+				|node_value, i| {
 					id = match diagram.states.get(i) {
 						Ok(state) => StateModel.state_id(diagram, state)
 						Err(_) => "${StateModel.endpoint_id(diagram, (diagram.notes.get(i - diagram.states.len()) ?? { state: Node(0), side: Right, text: "", after_transition: 0 }).state)}----note"
 					}
-					bounds = StateDraw.measured_size(inputs, "node", id, { width: node.width, height: node.height })
-					{ ..node, width: bounds.width, height: bounds.height }
+					bounds = StateDraw.measured_size(inputs, "node", id, { width: node_value.width, height: node_value.height })
+					{ ..node_value, width: bounds.width, height: bounds.height }
 				},
 			),
 			group_titles: sizes.group_titles.map_with_index(
@@ -272,8 +272,8 @@ StateDraw :: {}.{
 				Some(label_block) => Some({ width: label_block.width + 4, height: label_block.height + 4 })
 			},
 		)
-		title_boxes = supplied.group_titles.map(|title_block| { width: title_block.width, height: title_block.height })
-		normalized = FlowLayout.normalise({ ..placed, nodes: state_nodes }, label_boxes, title_boxes)
+		title_boxes_value = supplied.group_titles.map(|title_block| { width: title_block.width, height: title_block.height })
+		normalized = FlowLayout.normalise({ ..placed, nodes: state_nodes }, label_boxes, title_boxes_value)
 		clipped = FlowTheme.clip_routes(flow, normalized, StateDraw.radius(options))
 		# SVG cluster titles overhang the painted frame by2px. Include their
 		# actual label boxes with Mermaid's8px diagram margin in the frame.
@@ -395,8 +395,8 @@ StateDraw :: {}.{
 				(Ok(Some(label_block)), Ok(route)) => match route.label {
 					Some(at) => {
 						rect = { x: at.x - label_block.width / 2 - 2, y: at.y - label_block.height / 2 - 2, width: label_block.width + 4, height: label_block.height + 4 }
-						beneath = StateDraw.beneath(diagram, geometry, sizes, at, options)
-						background = FlowDraw.blend(options.transition_label_background, beneath, options.label_background_opacity)
+						beneath_value = StateDraw.beneath(diagram, geometry, sizes, at, options)
+						background = FlowDraw.blend(options.transition_label_background, beneath_value, options.label_background_opacity)
 						$items = $items.append(Shape({ path: Drawing.rectangle(rect), paint: { fill: Fill(background), stroke: NoStroke } }))
 						for stroke in $strokes {
 							color = FlowDraw.blend(options.transition_label_background, stroke.color, options.label_background_opacity)
@@ -424,8 +424,8 @@ StateDraw :: {}.{
 				(Ok(note), Ok(rect)) => {
 					note_block = StateDraw.block(note.text, options)
 					paint = { fill: Fill(options.note_fill), stroke: Stroke({ color: options.note_stroke, width: options.line_width }) }
-					note_path = Drawing.rectangle(rect)
-					$items = $items.concat(FlowDraw.shadows(theme, [note_path], paint, options.background)).append(Shape({ path: note_path, paint }))
+					note_path_value = Drawing.rectangle(rect)
+					$items = $items.concat(FlowDraw.shadows(theme, [note_path_value], paint, options.background)).append(Shape({ path: note_path_value, paint }))
 					$items = $items.concat(StateDraw.lines_left(note_block.lines, rect.x + rect.width / 2 - note_block.width / 2, rect.y + options.padding, options.note_text, options))
 				}
 				_ => {}

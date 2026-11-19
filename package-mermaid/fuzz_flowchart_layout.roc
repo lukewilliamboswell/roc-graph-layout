@@ -1,5 +1,5 @@
 app [target] {
-	fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.4.3/41NK5FShyGC9Z8HNpUdUeXMWwLmLNfFxsfmLvdPL4Fxb.tar.zst",
+	fuzz: platform "https://github.com/lukewilliamboswell/roc-fuzz/releases/download/0.6.2/3kyiehxxzwAsjM23uCQGJ3Hx7dAAdzSGtK3k9Jq7Egtu.tar.zst",
 	layout: "../package/main.roc",
 }
 
@@ -27,18 +27,18 @@ test! = |bytes| {
 		(Ok(small), Ok(large)) => {
 			small_sizes = sizes_for(small, bytes)
 			large_sizes = sizes_for(large, bytes)
-			small_cost = Fuzz.measure_allocs!(|{}| FlowLayout.layout(small, small_sizes))
-			large_cost = Fuzz.measure_allocs!(|{}| FlowLayout.layout(large, large_sizes))
+			small_cost = Fuzz.measure!("allocations", || FlowLayout.layout(small, small_sizes))
+			large_cost = Fuzz.measure!("allocations", || FlowLayout.layout(large, large_sizes))
 			# Results are dropped inside each closure: the dev backend keeps a value
 			# bound to `_` alive until its block ends, which would read as a leak.
 			Fuzz.expect_no_leaks!(
-				|{}| {
+				|| {
 					_ = FlowLayout.layout(large, large_sizes)
 					{}
 				},
 			)
-			if large_cost.allocations > 24 * small_cost.allocations + 4096 {
-				crash "laying out two copies took ${large_cost.allocations.to_str()} allocations, against ${small_cost.allocations.to_str()} for one"
+			if allocation_calls(large_cost.stats) > 24 * allocation_calls(small_cost.stats) + 4096 {
+				crash "laying out two copies took ${allocation_calls(large_cost.stats).to_str()} allocations, against ${allocation_calls(small_cost.stats).to_str()} for one"
 			}
 		}
 		_ => {}
@@ -217,6 +217,7 @@ check = |diagram, g| {
 }
 
 target = Fuzz.target_with!({
+	examples: [],
 	name: "mermaid-flowchart-layout",
 	generator: Fuzz.raw_bytes,
 	test!,
@@ -262,3 +263,8 @@ expect {
 	_ = test([85, 217, 107, 27, 27, 27, 27, 27, 19])
 	True
 }
+
+# The previous counter included both allocation and reallocation calls.
+# Keep the existing growth bounds on that same quantity.
+allocation_calls : Fuzz.Stats -> U64
+allocation_calls = |stats| stats.allocs + stats.reallocs

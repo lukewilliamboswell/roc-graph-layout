@@ -349,3 +349,20 @@ fn buildStrArgsList(argc: usize, argv: [*][*:0]u8, roc_host: *abi.RocHost) abi.R
 
     return args_list;
 }
+
+test "host argument lists initialize the Roc backing element count" {
+    var env = abi.RocEnv{ .allocator = std.testing.allocator, .roc_io = abi.RocIo.default() };
+    var roc_host = abi.makeRocHost(&env);
+    var short = "short".*;
+    var long = "a heap-allocated argument longer than twenty-three bytes".*;
+    var argv = [_][*:0]u8{ &short, &long };
+    const args = buildStrArgsList(argv.len, &argv, &roc_host);
+    defer {
+        for (args.items()) |arg| arg.decref(&roc_host);
+        args.decref(&roc_host);
+    }
+    const count: *const usize = @ptrFromInt(@intFromPtr(args.elements_ptr.?) - 2 * @sizeOf(usize));
+    try std.testing.expectEqual(argv.len, count.*);
+    try std.testing.expectEqualStrings(&short, args.items()[0].asSlice());
+    try std.testing.expectEqualStrings(&long, args.items()[1].asSlice());
+}

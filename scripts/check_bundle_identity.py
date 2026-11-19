@@ -19,6 +19,8 @@ import tarfile
 import tempfile
 import time
 
+from process_cleanup import cleanup_child_group
+
 REPOSITORY = "lukewilliamboswell/roc-graph-layout"
 PREFIX = f"https://github.com/{REPOSITORY}/releases/download/"
 LIMIT = 32_000_000
@@ -109,19 +111,7 @@ def bounded_api(command, maximum, seconds=60):
             except subprocess.TimeoutExpired:
                 reason = "timeout"
     finally:
-        # Own the group signal here only: a timeout must not signal the same
-        # group again after reaping its leader. Normal exits can leave children
-        # after closing both inherited pipes, so they also use this cleanup.
-        try:
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-            process.wait(timeout=5)
-        finally:
-            selector.close()
-            process.stdout.close()
-            process.stderr.close()
+        cleanup_child_group(process, selector)
     return process.returncode, bytes(streams["stdout"]), bytes(streams["stderr"]), reason
 
 

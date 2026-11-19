@@ -65,17 +65,17 @@ LayeredFlowImport :: {}.{
 	## Default registration of a container: groups first, last
 	## declared first, then nodes in order.
 	children : LayeredFlowInput.Input, LayeredFlowInput.Container -> List(Item)
-	children = |diagram, container| {
+	children = |diagram, container_value| {
 		var $out = []
 		var $g = diagram.groups.len()
 		while $g > 0 {
 			$g = $g - 1
-			if (diagram.groups.get($g) ?? LayeredFlowImport.no_group).container == container {
+			if (diagram.groups.get($g) ?? LayeredFlowImport.no_group).container == container_value {
 				$out = $out.append(GroupItem($g))
 			}
 		}
 		for i in 0..<diagram.nodes.len() {
-			if (diagram.nodes.get(i) ?? LayeredFlowImport.no_node).container == container {
+			if (diagram.nodes.get(i) ?? LayeredFlowImport.no_node).container == container_value {
 				$out = $out.append(NodeItem(i))
 			}
 		}
@@ -83,9 +83,9 @@ LayeredFlowImport :: {}.{
 	}
 
 	registered_children : LayeredFlowInput.Input, LayeredFlowInput.Container, List(Item) -> List(Item)
-	registered_children = |diagram, container, registration| {
+	registered_children = |diagram, container_value, registration| {
 		if registration.is_empty() {
-			return LayeredFlowImport.children(diagram, container)
+			return LayeredFlowImport.children(diagram, container_value)
 		}
 		registration.keep_if(
 			|item| {
@@ -93,7 +93,7 @@ LayeredFlowImport :: {}.{
 					NodeItem(i) => (diagram.nodes.get(i) ?? crash "validated node registration").container
 					GroupItem(i) => (diagram.groups.get(i) ?? crash "validated group registration").container
 				}
-				parent == container
+				parent == container_value
 			},
 		)
 	}
@@ -110,11 +110,11 @@ LayeredFlowImport :: {}.{
 	## Which subgraph each container lies in, by item.
 	parent_of : LayeredFlowInput.Input, Item -> [Root, Group(U64)]
 	parent_of = |diagram, item| {
-		container = match item {
+		container_value = match item {
 			GroupItem(g) => (diagram.groups.get(g) ?? LayeredFlowImport.no_group).container
 			NodeItem(i) => (diagram.nodes.get(i) ?? LayeredFlowImport.no_node).container
 		}
-		match container {
+		match container_value {
 			Root => Root
 			Group(g) => if (g < diagram.groups.len()) Group(g) else Root
 		}

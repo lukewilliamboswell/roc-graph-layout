@@ -12,6 +12,8 @@ import tarfile
 import tempfile
 import time
 import unittest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from unittest.mock import patch
 
 module = importlib.util.spec_from_file_location("bundle_identity", "scripts/check_bundle_identity.py")

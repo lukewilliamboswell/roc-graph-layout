@@ -1,5 +1,175 @@
 # Performance hypotheses to investigate
 
+## November 18 benchmark startup migration (2026-11-19)
+
+Hosted Linux completed all 38 DEV fuzz campaigns, then the first benchmark
+smoke process (`tree_tidy one_call generated star 100 0`) exited with SIGSEGV.
+This failure must not be attributed to graph complexity without a startup control.
+`benchmarks/probe_host.roc` separates argument entry (`entry`) from a zero-work
+measurement (`measure`); both execute natively on macOS, and the latter records
+zero allocation calls, reallocations and requested bytes.
+
+Two independent host defects were corrected first: an uninitialized backing
+element count (its new Zig regression failed before the fix), and compiling
+Linux host objects for GNU while linking a musl runtime. Neither correction
+removed the Linux crash, so both were refuted as its explanation. Cross-built
+x64 DEV/LLVM disassembly also passes the string-return output pointer in the
+expected C ABI registers; no hosted-return compiler bug was established.
+
+The pinned compiler's [platform contract](https://github.com/roc-lang/roc/blob/a520eed/docs/langref/modules.md)
+requires PIE executables and self-relocating Linux startup. Both cross-built
+controls are ELF static PIE. Our vendored template still selected ordinary
+`crt1.o`; the current upstream template and published basic-cli 0.28.1 select
+musl's relocating `rcrt1.o`. The benchmark manifest now selects `rcrt1.o` with
+matching verified musl runtimes for both declared Linux architectures. Exact
+input hashes, source release and licenses are in `benchmarks/platform/PROVENANCE.md`.
+PIE/ASLR remains enabled; this is an enduring compiler-contract migration.
+
+The corrected x64 DEV/LLVM and ARM64 DEV controls cross-build. Native confirmation
+belongs to the ordinary Linux `blueprint run check`, retaining all smoke cases
+and telemetry assertions. No benchmark is skipped and no backend is substituted.
+
+## November 18 migration: flow layering allocation finding (2026-11-19)
+
+The November 18 regular compiler and roc-fuzz 0.6.2 find a native DEV cost
+failure for `fuzz_layered_phase_layering` with bytes `[10, 10, 3, 8]`.
+The original 8-to-32-copy bound is `large <= 8 * small + 8192`.
+The measurements below use that bound; the temporary release allowance is
+recorded separately below.
+The first failing seeded run measured 28,159 `roc_alloc` and 1,312
+`roc_realloc` calls versus 536,552 and 8,165. The old counter included both;
+the migration preserves that sum (29,471 versus 544,717 calls).
+A guarded sorting fast path now fixes this witness: layers with complete authored
+order, or previous-layer source keys consistent with authored order, use the same
+stable merge ordering without constructing a transitive relation table. The general
+stateful comparator remains for mixed or conflicting orders. Skipping already-set
+relation flags is also retained; it avoids a no-op copy without changing bits.
+
+Controlled native measurements of the same diagram at three sizes, with
+preparation measured separately and a zero-work `nodes.len()` control:
+
+| Backend | Copies | roc_alloc calls | roc_realloc calls | Requested bytes | Peak live bytes |
+|---|---:|---:|---:|---:|---:|
+| SPEED | 8 | 6,104 | 1,312 | 1,051,034 | 445,552 |
+| SPEED | 16 | 12,840 | 3,210 | 3,937,091 | 792,520 |
+| SPEED | 32 | 26,898 | 8,163 | 26,696,038 | 1,785,424 |
+| DEV | 8 | 28,156 | 1,311 | 3,320,617 | 434,416 |
+| DEV | 16 | 106,843 | 3,211 | 14,399,835 | 945,664 |
+| DEV | 32 | 536,549 | 8,164 | 83,429,173 | 2,161,912 |
+
+Peak live bytes include memory live at region entry. Requested bytes are
+cumulative traffic. The zero-work control records zero allocations and requested
+bytes at all three sizes. SPEED whole-process measurements, including startup and
+reporting, span 24–40 ms (three runs per size); they do not establish phase
+throughput. The complete models at all three sizes were saved for exact comparisons.
+
+Phase attribution narrows DEV allocation calls to `sort_by_model_order`:
+21,704 of 28,159 calls at 8 copies and 94,009 of 106,846 calls at 16 copies.
+Instrumenting every subphase at 32 copies exceeds roc-fuzz's region capacity;
+that instrumented observation is invalid and is not used as evidence.
+Replacing the immutable phase handoff chain by a local variable was refuted as a
+fix: counts and model bytes are identical. Skipping unchanged relation-bit writes and batching row unions also leaves the
+original counts and model bytes identical, including a clean `--no-cache` build.
+Those experiments were removed. This does not establish a compiler root cause.
+
+The exact input passes against pre-upgrade source `4155b8b` with the October 23
+compiler and roc-fuzz 0.4.3. It fails against the current source with the November
+18 compiler and that same old fuzz host, measuring the same 29,471 versus 544,717
+allocation-plus-reallocation calls. This rules out the new measurement platform
+as the cause. `package/measure_flow_layering.roc` preserves the three-size
+optimized/DEV reproduction with separate preparation and zero-work controls. Local raw reports, exact snapshots, controls and the
+standalone investigation app are retained under `/tmp/graph-flow-*` and
+`/tmp/graph-fuzz-validate2/`; these are diagnostics, not a committed baseline.
+
+
+The final phase measurements after the guarded sort (same native compiler,
+three sizes, complete captures) are:
+
+| Backend | Witness | Copies | roc_alloc | roc_realloc | Requested bytes | Peak live bytes |
+|---|---|---:|---:|---:|---:|---:|
+| SPEED | copies | 8 | 4,131 | 1,037 | 663,002 | 445,552 |
+| SPEED | copies | 16 | 8,196 | 2,047 | 1,014,123 | 792,520 |
+| SPEED | copies | 32 | 16,319 | 4,056 | 2,521,238 | 1,785,424 |
+| SPEED | mixed | 8 | 3,827 | 844 | 441,651 | 306,008 |
+| SPEED | mixed | 16 | 7,728 | 1,924 | 1,896,966 | 741,528 |
+| SPEED | mixed | 32 | 15,335 | 4,200 | 6,411,427 | 1,573,056 |
+| DEV | copies | 8 | 10,945 | 1,036 | 1,266,377 | 434,416 |
+| DEV | copies | 16 | 21,743 | 2,048 | 2,631,123 | 945,664 |
+| DEV | copies | 32 | 43,321 | 4,057 | 5,868,141 | 2,161,912 |
+| DEV | mixed | 8 | 13,182 | 844 | 1,447,387 | 314,672 |
+| DEV | mixed | 16 | 44,098 | 1,922 | 5,489,557 | 629,712 |
+| DEV | mixed | 32 | 154,816 | 4,199 | 21,230,459 | 1,520,504 |
+
+The second witness, `[43, 10, 10]`, still takes 14,026 allocation-plus-reallocation
+calls at 8 copies and 159,015 at 32 in DEV, exceeding the unchanged bound
+`8 * 14,026 + 8192 = 120,400`. Its optimized allocation-call growth is near linear;
+requested bytes are still superlinear. This is the open compiler-cost finding
+[roc-lang/roc#13214](https://github.com/roc-lang/roc/issues/13214), not an accepted baseline or a claimed allocation fix. The measure app includes both witnesses and zero-work controls;
+its DEV controls allocate zero bytes (they release one temporary closure).
+
+All 71 deterministic native full-model comparisons, including empty, ascending,
+reverse, equal-key and scrambled producer inputs, are byte-identical to the
+original stateful sort. The original and mixed witnesses also retain exact
+full-model snapshots at all three sizes. Comparator tests retain the general
+implementation as an oracle for both fast paths, including duplicate authored
+orders and missing source metadata. The two witnesses are permanent fuzz examples;
+the geometry and leak assertions remain unchanged. The target-specific temporary
+allocation allowance below is the only growth-limit change.
+
+The public grouped-flow benchmark retains practical 24-, 48- and 96-node
+`model_order` rungs plus a zero-work control in `benchmarks/cases/scale.jsonl`.
+Those public one-call costs include preparation, ordering, placement and routing,
+so they must not be presented as isolated layering measurements.
+
+Native optimized public one-call measurements after the fix (three fresh-process
+samples per size, November 18 compiler, same host) are:
+
+| Nodes | Median elapsed | roc_alloc | roc_realloc | Requested bytes | Peak live bytes |
+|---:|---:|---:|---:|---:|---:|
+| 24 | 42.31 ms | 24,010 | 4,052 | 7,805,579 | 876,424 |
+| 48 | 78.80 ms | 47,517 | 7,878 | 25,247,608 | 1,923,784 |
+| 96 | 469.36 ms | 94,293 | 15,423 | 87,805,059 | 4,133,896 |
+
+All 18 public samples completed. The three zero-work sizes record zero allocation
+calls and requested bytes. Runtime samples were collected alongside other compiler
+checks, so use their timing only as a practical completion check, not a controlled
+speedup comparison. Cumulative requested bytes in the complete layout remain
+superlinear; the phase fix does not claim to remove all package scaling costs.
+
+
+
+## Temporary release allowance for roc-lang/roc#13214 (2026-11-19)
+
+TODO: https://github.com/roc-lang/roc/issues/13214 — restore the layering
+fuzz target's `within` implementation to `LayeredFlowFuzz.within_bound`, the
+original `8 * small + 8192` limit, once the upstream allocation fix passes the
+retained inputs and the seeded campaign. Keep the regression cases and native
+scale controls when removing this workaround.
+
+At the user's request, `package/fuzz_layered_phase_layering.roc` temporarily
+allows `13 * small + 8192` combined allocation/reallocation calls for its
+8-versus-32-copy comparison. The shared bound and all other fuzz targets stay
+at their original limits. This target uses the allowance for both DEV and LLVM
+builds; it is a release tolerance, not a new linear-cost claim or a compiler fix.
+Geometry, deterministic output, source alignment, leak checks, the 200-input
+budget, fixed seed and fresh-corpus policy are unchanged. No baseline is accepted.
+
+The 12x trial passes the first two retained examples, then fails at execution
+128 of the fresh seed-1 campaign on bytes `[254, 197, 254, 10]`: 190,689 calls
+at 32 copies against 14,841 at 8 copies. The old limit is 126,920; 12x allows
+186,284 and still fails; 13x allows 201,125. The new case is retained as
+`mixed-layer-order-dense` with a permanent geometry/determinism expect. Both
+13x trials complete 200 inputs, including the final fresh corpus with all three
+retained examples. Hosted validation must also pass before a compatible release
+is published.
+
+Reversion must run all three retained examples and the fresh 200-input seed-1
+campaign with the original bound. Recheck DEV and optimized native measurements
+at the three preserved sizes, exact model output, and the comparator regressions
+before removing the related guarded-sort/unchanged-write workarounds. Their
+implementation sites also carry issue-linked TODOs.
+
+
 ## Mermaid theme and messy-label baseline (2026-10-28)
 
 Native optimized measurements on macOS arm64 with

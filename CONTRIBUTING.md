@@ -86,7 +86,7 @@ privileged publisher handles only the tested artifact files.
 ## Admit fixed build inputs
 
 The nightly compiler fetches package URLs without GitHub authentication. Producer
-jobs therefore admit the fixed Blueprint Core, Font, basic-cli 0.27 and its HTTP
+jobs therefore admit the fixed Blueprint Core, Font, basic-cli 0.28.1 and its HTTP
 input through the official asset-ID API before the first Blueprint evaluation.
 Core, Font and basic-cli have fixed immutable release descriptors: repository,
 version, asset ID, canonical URL, size and SHA-256. The separately named legacy
@@ -116,3 +116,24 @@ compiler through `RA_COMPILER` and blanks credentials. That hook does not evalua
 Blueprint or move the managed cache. These controls admit only the four fixed
 inputs; other package and provider downloads retain their existing contracts and
 availability assumptions.
+
+Fixed-source admission and bundle-identity validation share cleanup for macOS's
+exited-but-unreaped child groups:
+`SIGKILL` can report `EPERM` when only a zombie remains. Cleanup reaps the parent
+within five seconds, then tolerates that signal error only if a separate probe
+proves the whole process group absent. Live or inaccessible groups and reap
+failures still reject admission; selectors and both pipes close even on failure.
+This is a cleanup correctness fix, not a temporary compiler exception.
+
+## Temporary upstream workarounds
+
+Each implementation site has a TODO linking its upstream issue. Remove these
+only after the ordinary path passes the listed checks; keep regression inputs.
+
+| Upstream issue | Temporary change | Restore and verify |
+| --- | --- | --- |
+| [Roc #13214](https://github.com/roc-lang/roc/issues/13214) | The layering fuzz target alone allows `13 * small + 8192` allocation/reallocation calls; guarded sorting avoids the first cost witness. | Restore `LayeredFlowFuzz.within_bound` (`8 * small + 8192`), rerun all retained seeds and 200 seed-1 inputs, then check the native scale/model controls before removing guarded-sort helpers. Measurements are in `TODO_INVESTIGATE_PERF.md`. |
+| [Roc #13215](https://github.com/roc-lang/roc/issues/13215) | Preview/Site script-module tests use `--no-cache`. | Remove those two flags after both modules pass with fresh and warm caches. |
+| [Roc #13207](https://github.com/roc-lang/roc/issues/13207) | Only the LLVM oracle build uses `--specialize=no`. | Remove that flag after the ordinary `--opt=speed` build and every native/browser comparison gate pass. |
+| [roc-automation #152](https://github.com/lukewilliamboswell/roc-automation/issues/152) | Workflows install Roc and pre-admit the fixed Core archive before Blueprint setup; Fixed source archives use their canonical anonymous release-asset URLs. | Remove Core pre-admission and restore source API transport/setup order after cold Linux/macOS runs pass. Preserve exact archive/tar/file hashes, bounds, private-cache rules and Roc's verified unbundler. |
+| [setup-roc #12](https://github.com/roc-lang/setup-roc/issues/12) | Compiler setup pins the verified-browser option from [setup-roc #13](https://github.com/roc-lang/setup-roc/pull/13). | Restore `download-method: asset-api` after cold Linux/macOS API downloads pass. Keep immutable metadata, exact size/SHA-256, redirect/time limits and credential isolation. |

@@ -497,9 +497,9 @@ FlowLayoutAdjust :: {}.{
 			c = FlowLayoutAdjust.centre(bounds)
 			dx = out.x - inside.x
 			dy = out.y - inside.y
-			sign = |v| if (v > 0) 1.0 else if (v < 0) -1.0 else 0.0
-			tx = if (dx == 0) F64.infinity else (c.x + sign(dx) * bounds.width / 2 - inside.x) / dx
-			ty = if (dy == 0) F64.infinity else (c.y + sign(dy) * bounds.height / 2 - inside.y) / dy
+			sign_value = |v| if (v > 0) 1.0 else if (v < 0) -1.0 else 0.0
+			tx = if (dx == 0) F64.infinity else (c.x + sign_value(dx) * bounds.width / 2 - inside.x) / dx
+			ty = if (dy == 0) F64.infinity else (c.y + sign_value(dy) * bounds.height / 2 - inside.y) / dy
 			t = tx.min(ty)
 			crossing = if (F64.is_finite(t)) { x: inside.x + t * dx, y: inside.y + t * dy } else inside
 			([crossing].concat(points.drop_first($index)), True)

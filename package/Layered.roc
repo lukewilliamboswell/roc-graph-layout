@@ -2145,41 +2145,7 @@ ExactPrepared := {
 		order_constraints : List({ before : U64, after : U64 }),
 		non_ranking_edges : List(U64),
 	}
-	Problem : [
-		InvalidNodeWidth(U64),
-		InvalidNodeHeight(U64),
-		MissingEdgeStart(U64, U64),
-		MissingEdgeEnd(U64, U64),
-		InvalidNodeGap,
-		InvalidLayerGap,
-		MissingEdgeWeightEdge(U64),
-		InvalidEdgeWeight(U64),
-		NonRankingEdgeWeight(U64, U64),
-		MissingMinimumSpanEdge(U64),
-		InvalidMinimumSpan(U64),
-		NonRankingMinimumSpan(U64, U64),
-		InvalidAttachmentEdge(U64),
-		InvalidAttachmentOffset(U64),
-		DuplicateAttachment(U64),
-		InvalidBoundaryNode(U64),
-		DuplicateBoundary(U64),
-		MissingPinNode(U64, U64),
-		InvalidPin(U64),
-		DuplicatePin(U64),
-		ConflictingPins,
-		InvalidEdgeLabelEdge(U64),
-		InvalidEdgeLabelWidth(U64),
-		InvalidEdgeLabelHeight(U64),
-		MissingLayerConstraintNode(U64, U64),
-		InvalidLayerConstraintSpan(U64),
-		ConflictingLayerConstraints,
-		MissingOrderConstraintNode(U64, U64),
-		OrderConstraintAcrossLayers(U64),
-		ConflictingOrderConstraints,
-		MissingNonRankingEdge(U64, U64),
-		DuplicateNonRankingEdge(U64),
-		InvalidRouting(Route.Problem),
-	]
+	Problem : Prepared.Problem
 
 	## Turn one typed problem into a short explanation for a person reading a
 	## log or error message. List positions and referenced values start at zero.
@@ -2632,41 +2598,7 @@ Layered := [].{
 	## checking input. `NonRankingEdgeWeight` and
 	## `NonRankingMinimumSpan` report the sparse setting index followed by its
 	## edge index.
-	Problem : [
-		InvalidNodeWidth(U64),
-		InvalidNodeHeight(U64),
-		MissingEdgeStart(U64, U64),
-		MissingEdgeEnd(U64, U64),
-		InvalidNodeGap,
-		InvalidLayerGap,
-		MissingEdgeWeightEdge(U64),
-		InvalidEdgeWeight(U64),
-		NonRankingEdgeWeight(U64, U64),
-		MissingMinimumSpanEdge(U64),
-		InvalidMinimumSpan(U64),
-		NonRankingMinimumSpan(U64, U64),
-		InvalidAttachmentEdge(U64),
-		InvalidAttachmentOffset(U64),
-		DuplicateAttachment(U64),
-		InvalidBoundaryNode(U64),
-		DuplicateBoundary(U64),
-		MissingPinNode(U64, U64),
-		InvalidPin(U64),
-		DuplicatePin(U64),
-		ConflictingPins,
-		InvalidEdgeLabelEdge(U64),
-		InvalidEdgeLabelWidth(U64),
-		InvalidEdgeLabelHeight(U64),
-		MissingLayerConstraintNode(U64, U64),
-		InvalidLayerConstraintSpan(U64),
-		ConflictingLayerConstraints,
-		MissingOrderConstraintNode(U64, U64),
-		OrderConstraintAcrossLayers(U64),
-		ConflictingOrderConstraints,
-		MissingNonRankingEdge(U64, U64),
-		DuplicateNonRankingEdge(U64),
-		InvalidRouting(Route.Problem),
-	]
+	Problem : Prepared.Problem
 
 	## Explain one validation problem in plain language. Numbers identify
 	## zero-based positions or referenced values as stated in each message.

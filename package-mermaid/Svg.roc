@@ -32,7 +32,7 @@ SvgParts :: {}.{
 			Shape(shape) => {
 				fill = match shape.paint.fill {
 					NoFill => "none"
-					Fill(color) => SvgParts.color(color)
+					Fill(color_value) => SvgParts.color(color_value)
 				}
 				stroke = match shape.paint.stroke {
 					NoStroke => ""

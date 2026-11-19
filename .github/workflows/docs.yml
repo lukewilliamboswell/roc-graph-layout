@@ -33,15 +33,23 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@e12512e2605608588782edb044dd766137e34869
-
       - name: Install the caller's Roc nightly, or latest
-        uses: roc-lang/setup-roc@30af91a173612e462a5df47f3b697c53c211f48c
+        # TODO: https://github.com/roc-lang/setup-roc/issues/12
+        # Restore asset-api after verified cold compiler API downloads pass.
+        uses: roc-lang/setup-roc@1dda09db455688e0f3612d509f3e4982b0e00ff6
         with:
           version: nightly
-          download-method: asset-api
+          download-method: verified-browser
           nightly-tag: ${{ inputs.nightly-tag }}
+
+      # TODO: https://github.com/lukewilliamboswell/roc-automation/issues/152
+      # Remove this pre-admission and restore the original setup order after
+      # setup-blueprint reliably admits the fixed Core source on cold runners.
+      - name: Admit verified Blueprint Core before setup
+        run: python3 scripts/admit_release_sources.py seed --source core
+
+      - name: Install blueprint
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@6c796f299012707d2e9bad23fd6449ed93f1f475
 
       - name: Admit the fixed build dependencies before Blueprint evaluation
         run: |
