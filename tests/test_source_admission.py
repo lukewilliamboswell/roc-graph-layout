@@ -12,6 +12,8 @@ import sys
 import tarfile
 import tempfile
 import unittest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from unittest import mock
 
 
@@ -587,6 +589,65 @@ class LegacyParentTests(Fixture):
         self.assertEqual([receipt["source"] for receipt in receipts], ["basic-cli", "legacy-http"])
         commands = [call.args[0] for call in self.process.call_args_list]
         self.assertEqual(sum(command[0] == "curl" and command[-1] == self.parent.canonical_url for command in commands), 1)
+
+
+class CleanupTests(unittest.TestCase):
+    def child(self):
+        process = mock.Mock(pid=1234)
+        process.stdout = io.BytesIO()
+        process.stderr = io.BytesIO()
+        process.wait.return_value = 0
+        return process, mock.Mock()
+
+    def assert_closed(self, process, selector):
+        selector.close.assert_called_once()
+        self.assertTrue(process.stdout.closed)
+        self.assertTrue(process.stderr.closed)
+        process.wait.assert_called_once_with(timeout=5)
+
+    def test_zombie_group_permission_error_requires_proven_absence_after_reap(self):
+        process, selector = self.child()
+        def signal_group(group, sent):
+            if sent == admission.signal.SIGKILL:
+                raise PermissionError()
+            process.wait.assert_called_once_with(timeout=5)
+            raise ProcessLookupError()
+        with mock.patch.object(admission.os, "killpg", side_effect=signal_group) as kill:
+            admission.cleanup_child(process, selector)
+        self.assertEqual(kill.call_args_list, [mock.call(1234, admission.signal.SIGKILL), mock.call(1234, 0)])
+        self.assert_closed(process, selector)
+
+    def test_live_or_inaccessible_group_is_still_rejected(self):
+        for probe in (None, PermissionError()):
+            with self.subTest(probe=probe):
+                process, selector = self.child()
+                with mock.patch.object(admission.os, "killpg", side_effect=[PermissionError(), probe]) as kill:
+                    with self.assertRaises(admission.AdmissionError):
+                        admission.cleanup_child(process, selector)
+                self.assertEqual(kill.call_args_list, [mock.call(1234, admission.signal.SIGKILL), mock.call(1234, 0)])
+                self.assert_closed(process, selector)
+
+    def test_reap_timeout_is_bounded_and_closes_every_descriptor(self):
+        process, selector = self.child()
+        process.wait.side_effect = subprocess.TimeoutExpired("child", 5)
+        with mock.patch.object(admission.os, "killpg"), self.assertRaises(admission.AdmissionError):
+            admission.cleanup_child(process, selector)
+        self.assert_closed(process, selector)
+
+    def test_other_signal_errors_do_not_gain_an_absence_exception(self):
+        process, selector = self.child()
+        with mock.patch.object(admission.os, "killpg", side_effect=OSError("signal failed")) as kill:
+            with self.assertRaises(admission.AdmissionError):
+                admission.cleanup_child(process, selector)
+        kill.assert_called_once_with(1234, admission.signal.SIGKILL)
+        self.assert_closed(process, selector)
+
+    def test_selector_close_failure_still_closes_both_pipes(self):
+        process, selector = self.child()
+        selector.close.side_effect = OSError("selector close failed")
+        with mock.patch.object(admission.os, "killpg"), self.assertRaises(admission.AdmissionError):
+            admission.cleanup_child(process, selector)
+        self.assert_closed(process, selector)
 
 
 class ProcessAndPathTests(Fixture):

@@ -117,6 +117,14 @@ Blueprint or move the managed cache. These controls admit only the four fixed
 inputs; other package and provider downloads retain their existing contracts and
 availability assumptions.
 
+Fixed-source admission and bundle-identity validation share cleanup for macOS's
+exited-but-unreaped child groups:
+`SIGKILL` can report `EPERM` when only a zombie remains. Cleanup reaps the parent
+within five seconds, then tolerates that signal error only if a separate probe
+proves the whole process group absent. Live or inaccessible groups and reap
+failures still reject admission; selectors and both pipes close even on failure.
+This is a cleanup correctness fix, not a temporary compiler exception.
+
 ## Temporary upstream workarounds
 
 Each implementation site has a TODO linking its upstream issue. Remove these

@@ -26,6 +26,8 @@ import time
 from dataclasses import dataclass
 from types import MappingProxyType
 
+from process_cleanup import cleanup_child_group
+
 
 class AdmissionError(Exception):
     pass
@@ -459,15 +461,14 @@ def run_bounded(command, maximum, seconds=60, cwd=None, environment=None):
                 f"stderr={safe_diagnostic(bytes(streams['stderr']), environment)}")
         return bytes(streams["stdout"])
     finally:
-        # Kill lingering descendants even if their parent already exited.
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-        process.wait()
-        selector.close()
-        process.stdout.close()
-        process.stderr.close()
+        cleanup_child(process, selector)
+
+
+def cleanup_child(process, selector):
+    try:
+        cleanup_child_group(process, selector)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise AdmissionError("child process cleanup failed") from error
 
 
 _DARWIN_ROOT_ALIASES = ((Path("/var"), Path("/private/var")),
