@@ -556,10 +556,11 @@ def prepare(source, directory):
     # --disable must be first: neither curlrc nor netrc nor auth environment is
     # consulted. Both the URL and byte bounds come only from fixed descriptors.
     # TODO: https://github.com/lukewilliamboswell/roc-automation/issues/152
-    # Restore Core's API transport after hosted cold admissions stop returning
-    # HTTP 403. Its canonical release URL serves the same fixed archive; retain
-    # every byte/hash/inventory and trusted-unbundler check when removing this.
-    url = source.canonical_url if source.key == "core" else source.api_url
+    # Restore API transport after hosted cold admissions of these fixed assets
+    # stop returning HTTP 403 (observed for Core and font). Canonical release
+    # URLs serve the same exact approved bytes. Keep every bound/hash/inventory
+    # and trusted-unbundler check; corruption still fails without a fallback.
+    url = source.canonical_url
     command = ["curl", "--disable", "--no-netrc", "--fail", "--silent", "--show-error",
                "--location", "--proto", "=https", "--proto-redir", "=https", "--max-redirs", "3",
                "--connect-timeout", "10", "--max-time", "60", "--max-filesize", str(source.size),

@@ -219,13 +219,13 @@ class RawTests(Fixture):
         self.assertLess(len(message), 2200)
         self.assertEqual(list((self.root / "raw").iterdir()), [])
 
-    def test_prepare_anonymous_fixed_api_and_repeat_rehash(self):
+    def test_prepare_anonymous_fixed_release_and_repeat_rehash(self):
         self.mocks()
         path = admission.prepare(self.source, self.root / "raw")
         command = self.process.call_args.args[0]
         self.assertEqual(command[:2], ["curl", "--disable"])
         self.assertIn("--no-netrc", command)
-        self.assertEqual(command[-1], self.source.api_url)
+        self.assertEqual(command[-1], self.source.canonical_url)
         self.assertFalse(any("auth" in arg.lower() for arg in command))
         self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
         self.process.reset_mock()
@@ -475,7 +475,7 @@ class LegacyParentTests(Fixture):
         self.process.side_effect = self.legacy_process
 
     def legacy_process(self, command, maximum, seconds=60, cwd=None, environment=None):
-        if command[0] == "curl" and command[-1] == self.parent.api_url:
+        if command[0] == "curl" and command[-1] == self.parent.canonical_url:
             return self.parent_raw
         if command[0] == "zstd" and Path(command[-1]).name == self.parent.archive_name:
             return self.parent_tar
@@ -525,7 +525,7 @@ class LegacyParentTests(Fixture):
         (directory / self.source.archive_name).write_bytes(self.raw)
         (directory / "receipt.json").write_text('{"immutable":true}')
         def fail(command, *args, **kwargs):
-            if command[0] == "curl" and command[-1] == self.parent.api_url:
+            if command[0] == "curl" and command[-1] == self.parent.canonical_url:
                 raise admission.AdmissionError("parent unavailable")
             return self.legacy_process(command, *args, **kwargs)
         self.process.side_effect = fail
@@ -586,7 +586,7 @@ class LegacyParentTests(Fixture):
         receipts = json.loads(output.getvalue())["admitted_sources"]
         self.assertEqual([receipt["source"] for receipt in receipts], ["basic-cli", "legacy-http"])
         commands = [call.args[0] for call in self.process.call_args_list]
-        self.assertEqual(sum(command[0] == "curl" and command[-1] == self.parent.api_url for command in commands), 1)
+        self.assertEqual(sum(command[0] == "curl" and command[-1] == self.parent.canonical_url for command in commands), 1)
 
 
 class ProcessAndPathTests(Fixture):
