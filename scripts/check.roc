@@ -187,6 +187,10 @@ check_benchmarks! = || {
 		Ok("../package/main.roc") => {}
 		_ => return Script.fail!("benchmarks/main.roc: the app header must declare ${Release.shorthand}: \"../package/main.roc\"")
 	}
+	zig_test = Script.command("zig").cmd(["build", "test", "-Doptimize=Debug"]).cwd("benchmarks/platform").run!()?
+	if zig_test.status != Exited(0) {
+		return Script.fail!("${zig_test.stdout_utf8_lossy()}${zig_test.stderr_utf8_lossy()}")
+	}
 	Env.with_temp_dir!(|output| Script.command("scripts/bench.roc").run!(["smoke", "--output", Path.to_os_str(output)]))
 }
 

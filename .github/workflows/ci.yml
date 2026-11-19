@@ -79,6 +79,8 @@ jobs:
         if: ${{ failure() && runner.os == 'Linux' }}
         run: |
           if test -x benchmarks/.cache/layout-bench; then
+            sudo apt-get update
+            sudo apt-get install -y gdb
             gdb --batch -ex run -ex 'bt 30' --args benchmarks/.cache/layout-bench tree_tidy one_call generated star 100 0
           fi
 
