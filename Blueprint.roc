@@ -29,7 +29,7 @@ config = [
 				# Builds the benchmark platform's host library.
 				Fetch("zig", zig),
 				# The shared documentation renderer: the guides as a site and a PDF.
-				Fetch("roc-docs", Recipes.file("https://github.com/lukewilliamboswell/roc-automation/releases/download/tools-0.10.1/roc-docs-{system}")),
+				Fetch("roc-docs", Recipes.file("https://github.com/lukewilliamboswell/roc-automation/releases/download/tools-0.12.0/roc-docs-{system}")),
 			]),
 			# Every bundle the scripts depend on, including dependencies of
 			# dependencies: `roc-stable deps scripts/check.roc` lists them.

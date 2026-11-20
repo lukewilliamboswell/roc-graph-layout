@@ -125,6 +125,14 @@ proves the whole process group absent. Live or inaccessible groups and reap
 failures still reject admission; selectors and both pipes close even on failure.
 This is a cleanup correctness fix, not a temporary compiler exception.
 
+## Reuse verified tooling
+
+Hosted build and check jobs use roc-automation's nightly installer. It
+identifies the selected compiler archive, verifies its SHA-256, and
+downloads it only when the verified cache cannot supply it. Blueprint
+separately restores and verifies locked tools for each job. The fixed Roc
+package source admission described above still runs before its consumers.
+
 ## Temporary upstream workarounds
 
 Each implementation site has a TODO linking its upstream issue. Remove these
@@ -136,4 +144,3 @@ only after the ordinary path passes the listed checks; keep regression inputs.
 | [Roc #13215](https://github.com/roc-lang/roc/issues/13215) | Preview/Site script-module tests use `--no-cache`. | Remove those two flags after both modules pass with fresh and warm caches. |
 | [Roc #13207](https://github.com/roc-lang/roc/issues/13207) | Only the LLVM oracle build uses `--specialize=no`. | Remove that flag after the ordinary `--opt=speed` build and every native/browser comparison gate pass. |
 | [roc-automation #152](https://github.com/lukewilliamboswell/roc-automation/issues/152) | Workflows install Roc and pre-admit the fixed Core archive before Blueprint setup; Fixed source archives use their canonical anonymous release-asset URLs. | Remove Core pre-admission and restore source API transport/setup order after cold Linux/macOS runs pass. Preserve exact archive/tar/file hashes, bounds, private-cache rules and Roc's verified unbundler. |
-| [setup-roc #12](https://github.com/roc-lang/setup-roc/issues/12) | Compiler setup pins the verified-browser option from [setup-roc #13](https://github.com/roc-lang/setup-roc/pull/13). | Restore `download-method: asset-api` after cold Linux/macOS API downloads pass. Keep immutable metadata, exact size/SHA-256, redirect/time limits and credential isolation. |
