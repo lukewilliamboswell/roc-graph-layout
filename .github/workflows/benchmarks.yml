@@ -20,12 +20,7 @@ jobs:
           persist-credentials: false
 
       - name: Install the latest Roc nightly
-        # TODO: https://github.com/roc-lang/setup-roc/issues/12
-        # Restore asset-api after verified cold compiler API downloads pass.
-        uses: roc-lang/setup-roc@1dda09db455688e0f3612d509f3e4982b0e00ff6
-        with:
-          version: nightly
-          download-method: verified-browser
+        uses: lukewilliamboswell/roc-automation/actions/setup-roc-nightly@dd30a5dd576973b6e224db70d96e3e12c96bcc95
 
       # TODO: https://github.com/lukewilliamboswell/roc-automation/issues/152
       # Remove this pre-admission and restore the original setup order after
@@ -34,7 +29,7 @@ jobs:
         run: python3 scripts/admit_release_sources.py seed --source core
 
       - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@6c796f299012707d2e9bad23fd6449ed93f1f475
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@dd30a5dd576973b6e224db70d96e3e12c96bcc95
         with:
           cache: 'true'
           cache-workload: dev
