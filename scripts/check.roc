@@ -207,6 +207,7 @@ check_fuzz_targets! = |roc| {
 		return Script.info!("SKIP", "roc-fuzz builds only for Linux x86-64 and Apple Silicon macOS, not ${system}")
 	}
 	version = roc.capture_utf8!(["version"], ".")?.trim()
+	affected_nightlies = ["Roc compiler version nightly-2026-11-23-b5c77fc", "Roc compiler version nightly-2026-11-24-ff5e544"]
 	Env.with_temp_dir!(
 		|build| {
 			sources = Files.direct_roc_files!("package")?.concat(Files.direct_roc_files!("package-mermaid")?)
@@ -214,10 +215,10 @@ check_fuzz_targets! = |roc| {
 				name = Script.file_name(target)?
 				if name.starts_with("fuzz_") {
 					executable = Path.join(build, name.drop_suffix(".roc"))
-					# The November 23 nightly's default pipeline incurs excessive
+					# The November 23 and 24 default pipelines incur excessive
 					# allocations in routing. Keep the dev backend and its existing
 					# allocation bound, and specialize only the affected target.
-					specialization = if (version == "Roc compiler version nightly-2026-11-23-b5c77fc" and name == "fuzz_layered_phase_routing.roc") ["--specialize=yes"] else []
+					specialization = if (affected_nightlies.contains(version) and name == "fuzz_layered_phase_routing.roc") ["--specialize=yes"] else []
 					args = ["build", "--opt=dev"].concat(specialization).concat([Path.to_os_str(target), OsStr.from_str("--output=${Path.display(executable)}")])
 					roc.run!(args)?
 					# A fresh corpus each time: `run` otherwise grows ./.roc-fuzz/corpus,
