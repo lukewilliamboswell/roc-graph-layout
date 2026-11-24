@@ -25,7 +25,7 @@ config = [
 		"dev",
 		[
 			Programs([
-				Fetch("roc-stable", Recipes.roc_nightly("nightly-2026-11-18-a520eed")),
+				Fetch("roc-stable", Recipes.roc_nightly("nightly-2026-11-23-b5c77fc")),
 				# Builds the benchmark platform's host library.
 				Fetch("zig", zig),
 				# The shared documentation renderer: the guides as a site and a PDF.
