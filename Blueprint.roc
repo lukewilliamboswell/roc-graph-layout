@@ -81,5 +81,5 @@ zig = |system| {
 		_ => return Unavailable
 	}
 	top = "zig-${arch}-${os}-0.16.0"
-	Archive("https://ziglang.org/download/0.16.0/${top}.tar.xz", TarXz, "${top}/zig")
+	Mirrored(Archive("https://pkg.hexops.org/zig/${top}.tar.xz", TarXz, "${top}/zig"), ["https://ziglang.org/download/0.16.0/${top}.tar.xz"])
 }
