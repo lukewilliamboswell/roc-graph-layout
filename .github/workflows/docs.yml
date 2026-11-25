@@ -45,7 +45,7 @@ jobs:
         run: python3 scripts/admit_release_sources.py seed --source core
 
       - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@dd30a5dd576973b6e224db70d96e3e12c96bcc95
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@2b0ffc9c556f465759ca81055bb819c7e15624eb
         with:
           cache: 'true'
           cache-workload: docs
