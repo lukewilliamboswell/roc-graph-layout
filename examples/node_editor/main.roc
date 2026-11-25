@@ -4,7 +4,7 @@ app [Context, program] {
 	ds: "./datastar/main.roc",
 	http: "https://github.com/roc-lang/http/releases/download/2.0.0/6ZUwqYhCS8PU9Mo6MF7oV82ET2o7KYb57CLKDq4cq4sS.tar.zst",
 	layout: "../../package/main.roc",
-	pf: platform "https://github.com/roc-lang/basic-webserver/releases/download/0.19.0/4KBAoiBazDfi9UF6e3BYKwon6rA8mnx3dbLMLKFzdEMw.tar.zst",
+	pf: platform "https://github.com/roc-lang/basic-webserver/releases/download/0.22.0/BM2BUXA8mwbcoKPUfRV8cLtsUdnsSBPwjNLPRUJQAQ7Q.tar.zst",
 }
 
 import ./datastar/Datastar
@@ -86,7 +86,7 @@ init! = || {
 	geometry = Server.relative_file("assets/geometry.js").map_err(|_| InitFailed("The geometry asset path is invalid."))?
 	canvas = Server.relative_file("assets/node-editor-canvas.js").map_err(|_| InitFailed("The canvas asset path is invalid."))?
 	config =
-		Server.with_request_body_limit(Server.default_config, Datastar.default_signals_limit_bytes)
+		Server.default_config.with_request_body_limit(Datastar.default_signals_limit_bytes)
 			.with_listen({ host: "127.0.0.1", port })
 			.with_file_roots([assets])
 			.with_native_routes({
