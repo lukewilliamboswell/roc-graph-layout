@@ -1,7 +1,7 @@
 #!/usr/bin/env roc-stable
 app [main!] {
 	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
-	roc: "nightly-2026-11-24-ff5e544",
+	roc: "nightly-2026-11-25-d5a4f1e",
 }
 
 import cli.Cmd
@@ -102,11 +102,8 @@ check_scripts! = |roc_stable| {
 		roc_stable.run!(["test", OsStr.from_str("scripts/src/${module_name}.roc")])?
 	}
 	# These need the cli platform of an app for their pure parts.
-	# TODO: https://github.com/roc-lang/roc/issues/13215
-	# Remove --no-cache from these two commands once both modules pass twice
-	# with a fresh cache and then a warm cache. Other cache policy stays intact.
 	for (module_name, entry) in [("Preview", "serve"), ("Site", "site")] {
-		roc_stable.run!(["test", "--no-cache", OsStr.from_str("scripts/src/${module_name}.roc"), OsStr.from_str("--main=scripts/${entry}.roc")])?
+		roc_stable.run!(["test", OsStr.from_str("scripts/src/${module_name}.roc"), OsStr.from_str("--main=scripts/${entry}.roc")])?
 	}
 	for script in Files.direct_roc_files!("scripts")? {
 		roc_stable.run!(["check", Path.to_os_str(script)])?
@@ -207,7 +204,7 @@ check_fuzz_targets! = |roc| {
 		return Script.info!("SKIP", "roc-fuzz builds only for Linux x86-64 and Apple Silicon macOS, not ${system}")
 	}
 	version = roc.capture_utf8!(["version"], ".")?.trim()
-	affected_nightlies = ["Roc compiler version nightly-2026-11-23-b5c77fc", "Roc compiler version nightly-2026-11-24-ff5e544"]
+	affected_nightlies = ["Roc compiler version nightly-2026-11-23-b5c77fc", "Roc compiler version nightly-2026-11-24-ff5e544", "Roc compiler version nightly-2026-11-25-d5a4f1e"]
 	Env.with_temp_dir!(
 		|build| {
 			sources = Files.direct_roc_files!("package")?.concat(Files.direct_roc_files!("package-mermaid")?)
@@ -215,7 +212,7 @@ check_fuzz_targets! = |roc| {
 				name = Script.file_name(target)?
 				if name.starts_with("fuzz_") {
 					executable = Path.join(build, name.drop_suffix(".roc"))
-					# The November 23 and 24 default pipelines incur excessive
+					# The November 23–25 default pipelines incur excessive
 					# allocations in routing. Keep the dev backend and its existing
 					# allocation bound, and specialize only the affected target.
 					specialization = if (affected_nightlies.contains(version) and name == "fuzz_layered_phase_routing.roc") ["--specialize=yes"] else []
