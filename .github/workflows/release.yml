@@ -22,11 +22,6 @@ on:
 
 permissions: {}
 
-env:
-  # TODO: restore the node-editor checks after roc-lang/roc#12677 and the
-  # remaining Datastar inference errors are resolved. Package/release checks run.
-  RUN_NODE_EDITOR_CHECKS: ${{ vars.RUN_NODE_EDITOR_CHECKS || '0' }}
-
 concurrency:
   group: ${{ github.event_name == 'workflow_dispatch' && format('release-{0}', github.repository) || format('release-dry-run-{0}', github.ref) }}
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
@@ -99,7 +94,7 @@ jobs:
         run: python3 scripts/admit_release_sources.py seed --source core
 
       - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@dd30a5dd576973b6e224db70d96e3e12c96bcc95
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@2b0ffc9c556f465759ca81055bb819c7e15624eb
         with:
           cache: 'true'
           cache-workload: dev
@@ -203,7 +198,7 @@ jobs:
         run: python3 scripts/admit_release_sources.py seed --source core
 
       - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@dd30a5dd576973b6e224db70d96e3e12c96bcc95
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@2b0ffc9c556f465759ca81055bb819c7e15624eb
         with:
           cache: 'true'
           cache-workload: dev

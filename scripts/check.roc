@@ -1,7 +1,7 @@
 #!/usr/bin/env roc-stable
 app [main!] {
 	cli: platform "https://github.com/roc-lang/basic-cli/releases/download/0.28.1/7brgwR8YUqfeGrkdfF1V4GPPN7DnP7ftqub9KcrTEZtr.tar.zst",
-	roc: "nightly-2026-11-18-a520eed",
+	roc: "nightly-2026-11-25-d5a4f1e",
 }
 
 import cli.Cmd
@@ -20,10 +20,6 @@ import src/Script
 import src/Site
 import src/Text
 
-# TODO: restore the node-editor checks after roc-lang/roc#12677 and the
-# remaining Datastar inference errors are resolved; their cause is unconfirmed.
-node_editor_skip_reason = "TODO: node editor compiler/Datastar inference failures; restore after https://github.com/roc-lang/roc/issues/12677 and the remaining Datastar errors are resolved"
-
 ## Everything CI checks, in one command.
 ##
 ##     blueprint run check
@@ -35,12 +31,9 @@ node_editor_skip_reason = "TODO: node editor compiler/Datastar inference failure
 ## script and checks the other scripts. The package, the examples, the site,
 ## the benchmarks and what a release would publish are checked with the `roc`
 ## on PATH, which is meant to be the latest nightly.
-##
-## RUN_NODE_EDITOR_CHECKS=1 retries the temporarily excluded node-editor checks.
 main! = |_args| {
 	roc_stable = Script.roc_stable!()?
 	roc = Script.roc!()?
-	node_editor_checks_enabled = Script.env_or!("RUN_NODE_EDITOR_CHECKS", "0")? == "1"
 
 	Script.section!("Compilers")?
 	roc_stable.run!(["version"])?
@@ -50,12 +43,8 @@ main! = |_args| {
 	check_scripts!(roc_stable)?
 	check_package!(roc)?
 	check_mermaid_package!(roc)?
-	check_examples!(roc, node_editor_checks_enabled)?
-	if node_editor_checks_enabled {
-		check_node_editor!(roc)?
-	} else {
-		Script.info!("SKIP node editor native smoke", node_editor_skip_reason)?
-	}
+	check_examples!(roc)?
+	check_node_editor!(roc)?
 	check_fuzz_targets!(roc)?
 	check_benchmarks!()?
 	check_release_artifacts!(roc)?
@@ -102,11 +91,8 @@ check_scripts! = |roc_stable| {
 		roc_stable.run!(["test", OsStr.from_str("scripts/src/${module_name}.roc")])?
 	}
 	# These need the cli platform of an app for their pure parts.
-	# TODO: https://github.com/roc-lang/roc/issues/13215
-	# Remove --no-cache from these two commands once both modules pass twice
-	# with a fresh cache and then a warm cache. Other cache policy stays intact.
 	for (module_name, entry) in [("Preview", "serve"), ("Site", "site")] {
-		roc_stable.run!(["test", "--no-cache", OsStr.from_str("scripts/src/${module_name}.roc"), OsStr.from_str("--main=scripts/${entry}.roc")])?
+		roc_stable.run!(["test", OsStr.from_str("scripts/src/${module_name}.roc"), OsStr.from_str("--main=scripts/${entry}.roc")])?
 	}
 	for script in Files.direct_roc_files!("scripts")? {
 		roc_stable.run!(["check", Path.to_os_str(script)])?
@@ -153,7 +139,7 @@ check_mermaid_package! = |roc| {
 	Ok({})
 }
 
-check_examples! = |roc, node_editor_checks_enabled| {
+check_examples! = |roc| {
 	Script.section!("Examples, against the working tree")?
 	# Committed examples must exercise the working tree, never a published bundle.
 	working_tree = { layout: "../../package/main.roc", mermaid: "../../package-mermaid/main.roc" }
@@ -167,11 +153,7 @@ check_examples! = |roc, node_editor_checks_enabled| {
 				}
 				# An interactive service is not run, but must still build.
 				if source.contains("## scripts: service") {
-					if Path.display(main) == "examples/node_editor/main.roc" and !node_editor_checks_enabled {
-						Script.info!("SKIP node editor service check", node_editor_skip_reason)?
-					} else {
-						roc.run!(["check", Path.to_os_str(main)])?
-					}
+					roc.run!(["check", Path.to_os_str(main)])?
 				}
 			}
 		}
@@ -206,6 +188,8 @@ check_fuzz_targets! = |roc| {
 	if system != "Linux x86_64" and system != "Darwin arm64" {
 		return Script.info!("SKIP", "roc-fuzz builds only for Linux x86-64 and Apple Silicon macOS, not ${system}")
 	}
+	version = roc.capture_utf8!(["version"], ".")?.trim()
+	affected_nightlies = ["Roc compiler version nightly-2026-11-23-b5c77fc", "Roc compiler version nightly-2026-11-24-ff5e544", "Roc compiler version nightly-2026-11-25-d5a4f1e"]
 	Env.with_temp_dir!(
 		|build| {
 			sources = Files.direct_roc_files!("package")?.concat(Files.direct_roc_files!("package-mermaid")?)
@@ -213,7 +197,12 @@ check_fuzz_targets! = |roc| {
 				name = Script.file_name(target)?
 				if name.starts_with("fuzz_") {
 					executable = Path.join(build, name.drop_suffix(".roc"))
-					roc.run!(["build", "--opt=dev", Path.to_os_str(target), OsStr.from_str("--output=${Path.display(executable)}")])?
+					# The November 23–25 default pipelines incur excessive
+					# allocations in routing. Keep the dev backend and its existing
+					# allocation bound, and specialize only the affected target.
+					specialization = if (affected_nightlies.contains(version) and name == "fuzz_layered_phase_routing.roc") ["--specialize=yes"] else []
+					args = ["build", "--opt=dev"].concat(specialization).concat([Path.to_os_str(target), OsStr.from_str("--output=${Path.display(executable)}")])
+					roc.run!(args)?
 					# A fresh corpus each time: `run` otherwise grows ./.roc-fuzz/corpus,
 					# and the next seeded run would start from different inputs.
 					corpus = Path.join(Path.join(build, "corpus"), name)

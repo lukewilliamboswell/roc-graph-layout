@@ -11,11 +11,6 @@ on:
 
 permissions: {}
 
-env:
-  # TODO: remove this temporary opt-in after roc-lang/roc#12677 and the
-  # remaining Datastar inference errors are resolved. Other checks stay on.
-  RUN_NODE_EDITOR_CHECKS: ${{ vars.RUN_NODE_EDITOR_CHECKS || '0' }}
-
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -48,7 +43,7 @@ jobs:
         run: python3 scripts/admit_release_sources.py seed --source core
 
       - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@dd30a5dd576973b6e224db70d96e3e12c96bcc95
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@2b0ffc9c556f465759ca81055bb819c7e15624eb
         with:
           cache: 'true'
           cache-workload: dev
@@ -67,10 +62,6 @@ jobs:
         run: blueprint run check
 
   editor-e2e:
-    # TODO: restore after roc-lang/roc#12677 and the remaining Datastar
-    # inference errors are resolved; their common cause is not yet confirmed.
-    # Keep the required check name, with an explicit skipped conclusion.
-    if: ${{ vars.RUN_NODE_EDITOR_CHECKS == '1' }}
     # This name is a required status check in the branch ruleset.
     name: Node editor browser tests
     runs-on: ubuntu-24.04
@@ -93,7 +84,7 @@ jobs:
         run: python3 scripts/admit_release_sources.py seed --source core
 
       - name: Install blueprint
-        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@dd30a5dd576973b6e224db70d96e3e12c96bcc95
+        uses: lukewilliamboswell/roc-automation/actions/setup-blueprint@2b0ffc9c556f465759ca81055bb819c7e15624eb
         with:
           cache: 'true'
           cache-workload: dev
@@ -140,11 +131,7 @@ jobs:
         run: |
           mkdir -p "${{ runner.temp }}/mermaid-oracle-results"
           roc version > "${{ runner.temp }}/mermaid-oracle-results/compiler.txt"
-          # TODO: https://github.com/roc-lang/roc/issues/13207
-          # Remove --specialize=no once the ordinary optimized build succeeds
-          # and all native failure gates/browser comparisons pass with it.
-          # Retain --opt=speed and the complete comparison suite.
-          roc build --opt=speed --specialize=no package-mermaid/oracle_dump.roc --output="${{ runner.temp }}/mermaid-oracle-dump"
+          roc build --opt=speed package-mermaid/oracle_dump.roc --output="${{ runner.temp }}/mermaid-oracle-dump"
 
       - name: Exercise failure gates against the real native CLI
         env:

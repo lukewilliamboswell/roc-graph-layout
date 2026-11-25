@@ -12,7 +12,7 @@
 # examples, the site and the benchmarks are built with whatever `roc` is on
 # PATH, which is meant to be the latest nightly, so nothing here provides a
 # bare `roc`.
-app [config] { pf: platform "https://github.com/lukewilliamboswell/roc-blueprint/releases/download/0.12.0/GSb71LxYHqLohZz8jMfawWEwQcyev9ZdVC26sfsDwfq8.tar.zst" }
+app [config] { pf: platform "https://github.com/lukewilliamboswell/roc-blueprint/releases/download/0.15.0-rc.1/FwWWY6PczB7QsUoWKgaLTuBGGajLjfA4MhaLD36sJxrN.tar.zst" }
 
 import pf.Config
 import pf.Recipes
@@ -25,7 +25,7 @@ config = [
 		"dev",
 		[
 			Programs([
-				Fetch("roc-stable", Recipes.roc_nightly("nightly-2026-11-18-a520eed")),
+				Fetch("roc-stable", Recipes.roc_nightly("nightly-2026-11-25-d5a4f1e")),
 				# Builds the benchmark platform's host library.
 				Fetch("zig", zig),
 				# The shared documentation renderer: the guides as a site and a PDF.
@@ -81,5 +81,5 @@ zig = |system| {
 		_ => return Unavailable
 	}
 	top = "zig-${arch}-${os}-0.16.0"
-	Archive("https://ziglang.org/download/0.16.0/${top}.tar.xz", TarXz, "${top}/zig")
+	Mirrored(Archive("https://pkg.hexops.org/zig/${top}.tar.xz", TarXz, "${top}/zig"), ["https://ziglang.org/download/0.16.0/${top}.tar.xz"])
 }
